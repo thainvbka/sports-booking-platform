@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  # ---  DATABASE ---
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: sports-app-db
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    restart: always
+    networks:
+      - my-network
+
+  # ---  BACKEND ---
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile.dev
+    container_name: sports-app-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount toàn bộ source code để hot-reload
+      # Loại trừ node_modules ở thư mục gốc để không ghi đè lên thư mục đã được cài đặt bên trong container
+      - ./:/app
+      - /app/node_modules
+    env_file:
+      - ./.env
+    # Đảm bảo DATABASE_URL được truyền vào đúng cách
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - postgres-db
+    restart: always
+    networks:
+      - my-network
+
+  # ---  FRONTEND ---
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web-owner/Dockerfile.dev
+    container_name: sports-app-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    restart: always
+    networks:
+      - my-network
+
+volumes:
+  postgres-data:
+
+networks:
+  my-network:
+    driver: bridge

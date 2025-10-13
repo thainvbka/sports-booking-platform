@@ -1,0 +1,26 @@
+# Sử dụng image Node.js phiên bản 22
+FROM node:22-alpine
+
+# Đặt thư mục làm việc bên trong container
+WORKDIR /app
+
+# Sao chép các file package.json và lock file từ thư mục gốc và các workspace
+# Điều này giúp tận dụng cache của Docker. Nếu các file này không đổi, Docker sẽ không chạy lại npm install.
+COPY package.json package-lock.json* ./
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/web-owner/package.json ./apps/web-owner/
+
+# Cài đặt tất cả dependencies trong monorepo
+# Sử dụng --omit=dev cho production, nhưng ở đây là dev nên cài hết
+RUN npm install
+
+# Sao chép toàn bộ source code còn lại vào container
+# .dockerignore nên được sử dụng để loại trừ node_modules, .git, etc.
+COPY . .
+
+# Expose port mà backend sẽ chạy
+EXPOSE 3000
+
+# Lệnh mặc định để chạy server.
+# Container đã có sẵn các biến môi trường từ docker-compose, không cần dotenv-cli
+CMD ["npm", "run", "dev", "--workspace=backend"]

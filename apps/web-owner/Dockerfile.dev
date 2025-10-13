@@ -1,0 +1,21 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Tận dụng cache, sao chép các file quản lý package trước
+COPY package.json package-lock.json* ./
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/web-owner/package.json ./apps/web-owner/
+
+# Cài đặt tất cả dependencies
+RUN npm install
+
+# Sao chép toàn bộ source code
+COPY . .
+
+# Expose port mặc định của Vite
+EXPOSE 5173
+
+# Lệnh để chạy server development của Vite
+# Cờ --host là CỰC KỲ QUAN TRỌNG để có thể truy cập từ máy thật
+CMD ["npm", "run", "dev", "--workspace=web-owner", "--", "--host"]
