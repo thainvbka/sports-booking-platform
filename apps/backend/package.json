@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -13,12 +13,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.17.1",
+    "@sports-booking-platform/db": "file:../../packages/db",
+    "@sports-booking-platform/validation": "file:../../packages/validation",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "pg": "^8.16.3",
-    "prisma": "^6.17.1"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -26,6 +26,7 @@
     "@types/node": "^24.7.2",
     "dotenv-cli": "^10.0.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "prisma": "^6.17.1"
   }
 }
