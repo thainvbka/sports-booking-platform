@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # ---  DATABASE ---
   postgres-db:
@@ -22,7 +20,7 @@ services:
       dockerfile: apps/backend/Dockerfile.dev
     container_name: sports-app-backend
     ports:
-      - "3000:3000"
+      - "${SERVER_PORT}:3000"
     volumes:
       # Mount toàn bộ source code để hot-reload
       # Loại trừ node_modules ở thư mục gốc để không ghi đè lên thư mục đã được cài đặt bên trong container
@@ -46,7 +44,7 @@ services:
       dockerfile: apps/web-owner/Dockerfile.dev
     container_name: sports-app-frontend
     ports:
-      - "5173:5173"
+      - "${CLIENT_PORT}:5173"
     volumes:
       - ./:/app
       - /app/node_modules

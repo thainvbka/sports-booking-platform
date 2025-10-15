@@ -1,3 +1,13 @@
 .env
 node_modules/
 postgres-data/
+libquery_engine-*
+query_engine-*
+
+# Build outputs
+dist/
+build/
+out/
+.cache/
+.tmp/
+*.tsbuildinfo

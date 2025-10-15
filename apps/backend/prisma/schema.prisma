@@ -13,3 +13,140 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  PLAYER
+  OWNER
+  ADMIN
+}
+
+enum Level {
+  BEGINNER
+  AMATEUR
+  INTERMEDIATE
+  ADVANCED
+  PRO
+}
+
+enum SportType {
+  FOOTBALL
+  BASKETBALL
+  TENNIS
+  BADMINTON
+  VOLLEYBALL
+  PICKLEBALL
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+enum PaymentProvider {
+  MOMO
+  VNPAY
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id              String          @id @default(uuid()) @db.Uuid
+  email           String          @unique
+  password_hash   String
+  full_name       String
+  phone_number    String          @unique
+  role            Role
+  level           Level?
+  avatar_url      String?         @db.Text
+  company_name    String?
+  social_accounts SocialAccount[]
+  complexes       Complex[]
+  bookings        Booking[]
+}
+
+model SocialAccount {
+  id          String @id @default(uuid()) @db.Uuid
+  provider    String
+  provider_id String
+  user_id     String @db.Uuid
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_id]) // một social account là duy nhất theo (provider, provider_id)
+  @@unique([user_id, provider]) // mỗi user chỉ liên kết 1 account cho mỗi provider
+  @@index([user_id])
+}
+
+model Complex {
+  id         String     @id @default(uuid()) @db.Uuid
+  name       String
+  address    String     @db.Text
+  sport_type SportType
+  owner_id   String     @db.Uuid
+  owner      User       @relation(fields: [owner_id], references: [id], onDelete: Restrict)
+  is_active  Boolean    @default(true)
+  sub_fields SubField[]
+
+  @@index([owner_id])
+}
+
+model SubField {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String
+  capacity      Int           @db.SmallInt
+  complex_id    String        @db.Uuid
+  complex       Complex       @relation(fields: [complex_id], references: [id], onDelete: Restrict)
+  bookings      Booking[]
+  pricing_rules PricingRule[]
+
+  @@unique([complex_id, name]) // tên sân con là duy nhất trong 1 khu
+  @@index([complex_id])
+}
+
+model PricingRule {
+  id             String   @id @default(uuid()) @db.Uuid
+  day_of_week    Int      @db.SmallInt
+  start_time     DateTime @db.Time(0) // Format: "HH:MM"
+  end_time       DateTime @db.Time(0) // Format: "HH:MM"
+  base_price     Decimal  @db.Decimal(10, 2)
+  sub_field_id   String   @db.Uuid
+  sub_field      SubField @relation(fields: [sub_field_id], references: [id], onDelete: Cascade)
+  is_dynamic     Boolean  @default(false)
+  dynamic_config Json?    @db.JsonB
+
+  @@unique([sub_field_id, day_of_week, start_time, end_time]) // tránh trùng rule y hệt
+  @@index([sub_field_id, day_of_week, start_time])
+}
+
+model Booking {
+  id           String        @id @default(uuid()) @db.Uuid
+  start_time   DateTime      @db.Timestamptz(0)
+  end_time     DateTime      @db.Timestamptz(0)
+  total_price  Decimal       @db.Decimal(10, 2)
+  status       BookingStatus
+  created_at   DateTime      @default(now()) @db.Timestamptz(0)
+  pair_at      DateTime?     @db.Timestamptz(0)
+  user_id      String        @db.Uuid
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Restrict)
+  sub_field_id String        @db.Uuid
+  sub_field    SubField      @relation(fields: [sub_field_id], references: [id], onDelete: Restrict)
+  payment      Payment?
+
+  @@index([sub_field_id, start_time])
+  @@index([user_id, start_time])
+}
+
+model Payment {
+  id               String          @id @default(uuid()) @db.Uuid
+  amount           Decimal         @db.Decimal(10, 2)
+  provider         PaymentProvider
+  status           PaymentStatus
+  booking_id       String          @unique @db.Uuid
+  booking          Booking         @relation(fields: [booking_id], references: [id], onDelete: Cascade)
+  transaction_code String          @unique
+}
