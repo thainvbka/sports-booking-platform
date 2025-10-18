@@ -63,11 +63,29 @@ model User {
   phone_number    String          @unique
   role            Role
   level           Level?
-  avatar_url      String?         @db.Text
+  avatar          String?         @db.Text
   company_name    String?
   social_accounts SocialAccount[]
   complexes       Complex[]
   bookings        Booking[]
+  created_at      DateTime        @default(now()) @db.Timestamptz(0)
+  updated_at      DateTime        @updatedAt @db.Timestamptz(0)
+  email_verified  Boolean         @default(false)
+  phone_verified  Boolean         @default(false)
+  refresh_tokens  RefreshToken[]
+}
+
+model RefreshToken {
+  id      String @id @default(uuid()) @db.Uuid
+  token   String @unique
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  revoked    Boolean  @default(false)
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([user_id])
 }
 
 model SocialAccount {
@@ -83,26 +101,32 @@ model SocialAccount {
 }
 
 model Complex {
-  id         String     @id @default(uuid()) @db.Uuid
-  name       String
-  address    String     @db.Text
-  sport_type SportType
-  owner_id   String     @db.Uuid
-  owner      User       @relation(fields: [owner_id], references: [id], onDelete: Restrict)
-  is_active  Boolean    @default(true)
-  sub_fields SubField[]
+  id            String     @id @default(uuid()) @db.Uuid
+  name          String
+  address       String     @db.Text
+  sport_type    SportType
+  owner_id      String     @db.Uuid
+  owner         User       @relation(fields: [owner_id], references: [id], onDelete: Restrict)
+  is_active     Boolean    @default(true)
+  sub_fields    SubField[]
+  complex_image String?    @db.Text
+  created_at    DateTime   @default(now()) @db.Timestamptz(0)
+  updated_at    DateTime   @updatedAt @db.Timestamptz(0)
 
   @@index([owner_id])
 }
 
 model SubField {
-  id            String        @id @default(uuid()) @db.Uuid
-  name          String
-  capacity      Int           @db.SmallInt
-  complex_id    String        @db.Uuid
-  complex       Complex       @relation(fields: [complex_id], references: [id], onDelete: Restrict)
-  bookings      Booking[]
-  pricing_rules PricingRule[]
+  id              String        @id @default(uuid()) @db.Uuid
+  name            String
+  capacity        Int           @db.SmallInt
+  complex_id      String        @db.Uuid
+  complex         Complex       @relation(fields: [complex_id], references: [id], onDelete: Restrict)
+  bookings        Booking[]
+  pricing_rules   PricingRule[]
+  sub_field_image String?       @db.Text
+  created_at      DateTime      @default(now()) @db.Timestamptz(0)
+  updated_at      DateTime      @updatedAt @db.Timestamptz(0)
 
   @@unique([complex_id, name]) // tên sân con là duy nhất trong 1 khu
   @@index([complex_id])
@@ -130,7 +154,7 @@ model Booking {
   total_price  Decimal       @db.Decimal(10, 2)
   status       BookingStatus
   created_at   DateTime      @default(now()) @db.Timestamptz(0)
-  pair_at      DateTime?     @db.Timestamptz(0)
+  paid_at      DateTime?     @db.Timestamptz(0)
   user_id      String        @db.Uuid
   user         User          @relation(fields: [user_id], references: [id], onDelete: Restrict)
   sub_field_id String        @db.Uuid
@@ -147,6 +171,7 @@ model Payment {
   provider         PaymentProvider
   status           PaymentStatus
   booking_id       String          @unique @db.Uuid
-  booking          Booking         @relation(fields: [booking_id], references: [id], onDelete: Cascade)
+  booking          Booking         @relation(fields: [booking_id], references: [id], onDelete: Restrict)
   transaction_code String          @unique
+  created_at       DateTime        @default(now()) @db.Timestamptz(0)
 }

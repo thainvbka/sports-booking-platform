@@ -476,10 +476,6 @@ export type PricingRuleUncheckedUpdateManyWithoutSub_fieldNestedInput = {
   deleteMany?: Prisma.PricingRuleScalarWhereInput | Prisma.PricingRuleScalarWhereInput[]
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
 export type DecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string

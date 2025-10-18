@@ -1,54 +1,53 @@
 import { statusCodes, reasonPhrases } from "../configs";
 
-interface ErrorResponse {
-  name: string;
-  status: number;
-  message: string;
+export class ErrorResponse extends Error {
+  public status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }
 
-function errorResponse(
-  name: string,
-  message: string,
-  status: number
-): ErrorResponse {
-  const error = new Error() as ErrorResponse;
-  error.name = name;
-  error.message = message;
-  error.status = status;
-  return error;
+export class ConflictRequestError extends ErrorResponse {
+  constructor(message = reasonPhrases.CONFLICT, status = statusCodes.CONFLICT) {
+    super(message, status);
+  }
 }
 
-export function ConflictRequestError(
-  message = reasonPhrases.CONFLICT,
-  status = statusCodes.CONFLICT
-) {
-  return errorResponse("ConflictRequestError", message, status);
+export class BadRequestError extends ErrorResponse {
+  constructor(
+    message = reasonPhrases.BAD_REQUEST,
+    status = statusCodes.BAD_REQUEST
+  ) {
+    super(message, status);
+  }
+}
+export class NotFoundError extends ErrorResponse {
+  constructor(
+    message = reasonPhrases.NOT_FOUND,
+    status = statusCodes.NOT_FOUND
+  ) {
+    super(message, status);
+  }
 }
 
-export function BadRequestError(
-  message = reasonPhrases.BAD_REQUEST,
-  status = statusCodes.BAD_REQUEST
-) {
-  return errorResponse("BadRequestError", message, status);
+export class UnauthorizedError extends ErrorResponse {
+  constructor(
+    message = reasonPhrases.UNAUTHORIZED,
+    status = statusCodes.UNAUTHORIZED
+  ) {
+    super(message, status);
+  }
 }
 
-export function AuthFailureError(
-  message = reasonPhrases.UNAUTHORIZED,
-  status = statusCodes.UNAUTHORIZED
-) {
-  return errorResponse("AuthFailureError", message, status);
-}
-
-export function NotFoundError(
-  message = reasonPhrases.NOT_FOUND,
-  status = statusCodes.NOT_FOUND
-) {
-  return errorResponse("NotFoundError", message, status);
-}
-
-export function ForbiddenError(
-  message = reasonPhrases.FORBIDDEN,
-  status = statusCodes.FORBIDDEN
-) {
-  return errorResponse("ForbiddenError", message, status);
+export class ForbiddenError extends ErrorResponse {
+  constructor(
+    message = reasonPhrases.FORBIDDEN,
+    status = statusCodes.FORBIDDEN
+  ) {
+    super(message, status);
+  }
 }

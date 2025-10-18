@@ -49,6 +49,11 @@ path.join(process.cwd(), "packages/db/generated/prisma-client/libquery_engine-li
  */
 export type User = Prisma.UserModel
 /**
+ * Model RefreshToken
+ * 
+ */
+export type RefreshToken = Prisma.RefreshTokenModel
+/**
  * Model SocialAccount
  * 
  */

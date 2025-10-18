@@ -49,6 +49,7 @@ export const AnyNull = runtime.objectEnumValues.instances.AnyNull
 
 export const ModelName = {
   User: 'User',
+  RefreshToken: 'RefreshToken',
   SocialAccount: 'SocialAccount',
   Complex: 'Complex',
   SubField: 'SubField',
@@ -81,11 +82,27 @@ export const UserScalarFieldEnum = {
   phone_number: 'phone_number',
   role: 'role',
   level: 'level',
-  avatar_url: 'avatar_url',
-  company_name: 'company_name'
+  avatar: 'avatar',
+  company_name: 'company_name',
+  created_at: 'created_at',
+  updated_at: 'updated_at',
+  email_verified: 'email_verified',
+  phone_verified: 'phone_verified'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RefreshTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  user_id: 'user_id',
+  revoked: 'revoked',
+  expires_at: 'expires_at',
+  created_at: 'created_at'
+} as const
+
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
 export const SocialAccountScalarFieldEnum = {
@@ -104,7 +121,10 @@ export const ComplexScalarFieldEnum = {
   address: 'address',
   sport_type: 'sport_type',
   owner_id: 'owner_id',
-  is_active: 'is_active'
+  is_active: 'is_active',
+  complex_image: 'complex_image',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
 export type ComplexScalarFieldEnum = (typeof ComplexScalarFieldEnum)[keyof typeof ComplexScalarFieldEnum]
@@ -114,7 +134,10 @@ export const SubFieldScalarFieldEnum = {
   id: 'id',
   name: 'name',
   capacity: 'capacity',
-  complex_id: 'complex_id'
+  complex_id: 'complex_id',
+  sub_field_image: 'sub_field_image',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
 export type SubFieldScalarFieldEnum = (typeof SubFieldScalarFieldEnum)[keyof typeof SubFieldScalarFieldEnum]
@@ -141,7 +164,7 @@ export const BookingScalarFieldEnum = {
   total_price: 'total_price',
   status: 'status',
   created_at: 'created_at',
-  pair_at: 'pair_at',
+  paid_at: 'paid_at',
   user_id: 'user_id',
   sub_field_id: 'sub_field_id'
 } as const
@@ -155,7 +178,8 @@ export const PaymentScalarFieldEnum = {
   provider: 'provider',
   status: 'status',
   booking_id: 'booking_id',
-  transaction_code: 'transaction_code'
+  transaction_code: 'transaction_code',
+  created_at: 'created_at'
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]

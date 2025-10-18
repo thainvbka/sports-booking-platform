@@ -38,6 +38,9 @@ export type SubFieldMinAggregateOutputType = {
   name: string | null
   capacity: number | null
   complex_id: string | null
+  sub_field_image: string | null
+  created_at: Date | null
+  updated_at: Date | null
 }
 
 export type SubFieldMaxAggregateOutputType = {
@@ -45,6 +48,9 @@ export type SubFieldMaxAggregateOutputType = {
   name: string | null
   capacity: number | null
   complex_id: string | null
+  sub_field_image: string | null
+  created_at: Date | null
+  updated_at: Date | null
 }
 
 export type SubFieldCountAggregateOutputType = {
@@ -52,6 +58,9 @@ export type SubFieldCountAggregateOutputType = {
   name: number
   capacity: number
   complex_id: number
+  sub_field_image: number
+  created_at: number
+  updated_at: number
   _all: number
 }
 
@@ -69,6 +78,9 @@ export type SubFieldMinAggregateInputType = {
   name?: true
   capacity?: true
   complex_id?: true
+  sub_field_image?: true
+  created_at?: true
+  updated_at?: true
 }
 
 export type SubFieldMaxAggregateInputType = {
@@ -76,6 +88,9 @@ export type SubFieldMaxAggregateInputType = {
   name?: true
   capacity?: true
   complex_id?: true
+  sub_field_image?: true
+  created_at?: true
+  updated_at?: true
 }
 
 export type SubFieldCountAggregateInputType = {
@@ -83,6 +98,9 @@ export type SubFieldCountAggregateInputType = {
   name?: true
   capacity?: true
   complex_id?: true
+  sub_field_image?: true
+  created_at?: true
+  updated_at?: true
   _all?: true
 }
 
@@ -177,6 +195,9 @@ export type SubFieldGroupByOutputType = {
   name: string
   capacity: number
   complex_id: string
+  sub_field_image: string | null
+  created_at: Date
+  updated_at: Date
   _count: SubFieldCountAggregateOutputType | null
   _avg: SubFieldAvgAggregateOutputType | null
   _sum: SubFieldSumAggregateOutputType | null
@@ -207,6 +228,9 @@ export type SubFieldWhereInput = {
   name?: Prisma.StringFilter<"SubField"> | string
   capacity?: Prisma.IntFilter<"SubField"> | number
   complex_id?: Prisma.UuidFilter<"SubField"> | string
+  sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
+  created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   complex?: Prisma.XOR<Prisma.ComplexScalarRelationFilter, Prisma.ComplexWhereInput>
   bookings?: Prisma.BookingListRelationFilter
   pricing_rules?: Prisma.PricingRuleListRelationFilter
@@ -217,6 +241,9 @@ export type SubFieldOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
   complex_id?: Prisma.SortOrder
+  sub_field_image?: Prisma.SortOrderInput | Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
   complex?: Prisma.ComplexOrderByWithRelationInput
   bookings?: Prisma.BookingOrderByRelationAggregateInput
   pricing_rules?: Prisma.PricingRuleOrderByRelationAggregateInput
@@ -231,6 +258,9 @@ export type SubFieldWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"SubField"> | string
   capacity?: Prisma.IntFilter<"SubField"> | number
   complex_id?: Prisma.UuidFilter<"SubField"> | string
+  sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
+  created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   complex?: Prisma.XOR<Prisma.ComplexScalarRelationFilter, Prisma.ComplexWhereInput>
   bookings?: Prisma.BookingListRelationFilter
   pricing_rules?: Prisma.PricingRuleListRelationFilter
@@ -241,6 +271,9 @@ export type SubFieldOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
   complex_id?: Prisma.SortOrder
+  sub_field_image?: Prisma.SortOrderInput | Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
   _count?: Prisma.SubFieldCountOrderByAggregateInput
   _avg?: Prisma.SubFieldAvgOrderByAggregateInput
   _max?: Prisma.SubFieldMaxOrderByAggregateInput
@@ -256,12 +289,18 @@ export type SubFieldScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"SubField"> | string
   capacity?: Prisma.IntWithAggregatesFilter<"SubField"> | number
   complex_id?: Prisma.UuidWithAggregatesFilter<"SubField"> | string
+  sub_field_image?: Prisma.StringNullableWithAggregatesFilter<"SubField"> | string | null
+  created_at?: Prisma.DateTimeWithAggregatesFilter<"SubField"> | Date | string
+  updated_at?: Prisma.DateTimeWithAggregatesFilter<"SubField"> | Date | string
 }
 
 export type SubFieldCreateInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
   bookings?: Prisma.BookingCreateNestedManyWithoutSub_fieldInput
   pricing_rules?: Prisma.PricingRuleCreateNestedManyWithoutSub_fieldInput
@@ -272,6 +311,9 @@ export type SubFieldUncheckedCreateInput = {
   name: string
   capacity: number
   complex_id: string
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutSub_fieldInput
   pricing_rules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutSub_fieldInput
 }
@@ -280,6 +322,9 @@ export type SubFieldUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutSub_fieldNestedInput
   pricing_rules?: Prisma.PricingRuleUpdateManyWithoutSub_fieldNestedInput
@@ -290,6 +335,9 @@ export type SubFieldUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   complex_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutSub_fieldNestedInput
   pricing_rules?: Prisma.PricingRuleUncheckedUpdateManyWithoutSub_fieldNestedInput
 }
@@ -299,12 +347,18 @@ export type SubFieldCreateManyInput = {
   name: string
   capacity: number
   complex_id: string
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type SubFieldUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SubFieldUncheckedUpdateManyInput = {
@@ -312,6 +366,9 @@ export type SubFieldUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   complex_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SubFieldListRelationFilter = {
@@ -334,6 +391,9 @@ export type SubFieldCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
   complex_id?: Prisma.SortOrder
+  sub_field_image?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type SubFieldAvgOrderByAggregateInput = {
@@ -345,6 +405,9 @@ export type SubFieldMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
   complex_id?: Prisma.SortOrder
+  sub_field_image?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type SubFieldMinOrderByAggregateInput = {
@@ -352,6 +415,9 @@ export type SubFieldMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   capacity?: Prisma.SortOrder
   complex_id?: Prisma.SortOrder
+  sub_field_image?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type SubFieldSumOrderByAggregateInput = {
@@ -445,6 +511,9 @@ export type SubFieldCreateWithoutComplexInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   bookings?: Prisma.BookingCreateNestedManyWithoutSub_fieldInput
   pricing_rules?: Prisma.PricingRuleCreateNestedManyWithoutSub_fieldInput
 }
@@ -453,6 +522,9 @@ export type SubFieldUncheckedCreateWithoutComplexInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutSub_fieldInput
   pricing_rules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutSub_fieldInput
 }
@@ -491,12 +563,18 @@ export type SubFieldScalarWhereInput = {
   name?: Prisma.StringFilter<"SubField"> | string
   capacity?: Prisma.IntFilter<"SubField"> | number
   complex_id?: Prisma.UuidFilter<"SubField"> | string
+  sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
+  created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
 }
 
 export type SubFieldCreateWithoutPricing_rulesInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
   bookings?: Prisma.BookingCreateNestedManyWithoutSub_fieldInput
 }
@@ -506,6 +584,9 @@ export type SubFieldUncheckedCreateWithoutPricing_rulesInput = {
   name: string
   capacity: number
   complex_id: string
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutSub_fieldInput
 }
 
@@ -529,6 +610,9 @@ export type SubFieldUpdateWithoutPricing_rulesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutSub_fieldNestedInput
 }
@@ -538,6 +622,9 @@ export type SubFieldUncheckedUpdateWithoutPricing_rulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   complex_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutSub_fieldNestedInput
 }
 
@@ -545,6 +632,9 @@ export type SubFieldCreateWithoutBookingsInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
   pricing_rules?: Prisma.PricingRuleCreateNestedManyWithoutSub_fieldInput
 }
@@ -554,6 +644,9 @@ export type SubFieldUncheckedCreateWithoutBookingsInput = {
   name: string
   capacity: number
   complex_id: string
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   pricing_rules?: Prisma.PricingRuleUncheckedCreateNestedManyWithoutSub_fieldInput
 }
 
@@ -577,6 +670,9 @@ export type SubFieldUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
   pricing_rules?: Prisma.PricingRuleUpdateManyWithoutSub_fieldNestedInput
 }
@@ -586,6 +682,9 @@ export type SubFieldUncheckedUpdateWithoutBookingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   complex_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pricing_rules?: Prisma.PricingRuleUncheckedUpdateManyWithoutSub_fieldNestedInput
 }
 
@@ -593,12 +692,18 @@ export type SubFieldCreateManyComplexInput = {
   id?: string
   name: string
   capacity: number
+  sub_field_image?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type SubFieldUpdateWithoutComplexInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUpdateManyWithoutSub_fieldNestedInput
   pricing_rules?: Prisma.PricingRuleUpdateManyWithoutSub_fieldNestedInput
 }
@@ -607,6 +712,9 @@ export type SubFieldUncheckedUpdateWithoutComplexInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutSub_fieldNestedInput
   pricing_rules?: Prisma.PricingRuleUncheckedUpdateManyWithoutSub_fieldNestedInput
 }
@@ -615,6 +723,9 @@ export type SubFieldUncheckedUpdateManyWithoutComplexInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -662,6 +773,9 @@ export type SubFieldSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name?: boolean
   capacity?: boolean
   complex_id?: boolean
+  sub_field_image?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.SubField$bookingsArgs<ExtArgs>
   pricing_rules?: boolean | Prisma.SubField$pricing_rulesArgs<ExtArgs>
@@ -673,6 +787,9 @@ export type SubFieldSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   name?: boolean
   capacity?: boolean
   complex_id?: boolean
+  sub_field_image?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subField"]>
 
@@ -681,6 +798,9 @@ export type SubFieldSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   name?: boolean
   capacity?: boolean
   complex_id?: boolean
+  sub_field_image?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subField"]>
 
@@ -689,9 +809,12 @@ export type SubFieldSelectScalar = {
   name?: boolean
   capacity?: boolean
   complex_id?: boolean
+  sub_field_image?: boolean
+  created_at?: boolean
+  updated_at?: boolean
 }
 
-export type SubFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "capacity" | "complex_id", ExtArgs["result"]["subField"]>
+export type SubFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "capacity" | "complex_id" | "sub_field_image" | "created_at" | "updated_at", ExtArgs["result"]["subField"]>
 export type SubFieldInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.SubField$bookingsArgs<ExtArgs>
@@ -717,6 +840,9 @@ export type $SubFieldPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     name: string
     capacity: number
     complex_id: string
+    sub_field_image: string | null
+    created_at: Date
+    updated_at: Date
   }, ExtArgs["result"]["subField"]>
   composites: {}
 }
@@ -1147,6 +1273,9 @@ export interface SubFieldFieldRefs {
   readonly name: Prisma.FieldRef<"SubField", 'String'>
   readonly capacity: Prisma.FieldRef<"SubField", 'Int'>
   readonly complex_id: Prisma.FieldRef<"SubField", 'String'>
+  readonly sub_field_image: Prisma.FieldRef<"SubField", 'String'>
+  readonly created_at: Prisma.FieldRef<"SubField", 'DateTime'>
+  readonly updated_at: Prisma.FieldRef<"SubField", 'DateTime'>
 }
     
 
