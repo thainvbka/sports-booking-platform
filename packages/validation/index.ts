@@ -1,5 +1,5 @@
-import { userSignupSchema } from "./user.schema";
+import { userSignupSchema, userLoginSchema } from "./user.schema";
 
-export { userSignupSchema };
+export { userSignupSchema, userLoginSchema };
 
 export * from "zod";

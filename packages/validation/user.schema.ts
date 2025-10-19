@@ -29,4 +29,14 @@ export const userSignupSchema = z.object({
     }),
 });
 
+export const userLoginSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email address"),
+    password_hash: z
+      .string()
+      .min(8, "Password must be at least 8 characters long"),
+  }),
+});
+
 export type UserSignupInput = z.infer<typeof userSignupSchema>["body"];
+export type UserLoginInput = z.infer<typeof userLoginSchema>["body"];
