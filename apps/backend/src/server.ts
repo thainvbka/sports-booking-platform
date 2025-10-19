@@ -5,6 +5,7 @@ import cors from "cors";
 import helmet from "helmet";
 import routesV1 from "./routes/v1";
 import compression from "compression";
+import errorHandler from "./middlewares/errorHandler";
 
 const app = express();
 
@@ -23,12 +24,15 @@ app.use(
 //use helmet to enhance security by settings various HTTP headers
 app.use(helmet());
 
-// Sample route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Sports Booking Platform API" });
+app.use("/api/v1", routesV1);
+
+app.use((req, res) => {
+  return res
+    .status(404)
+    .json({ error: "NotFound", message: "Route not found" });
 });
 
-app.use("/api/v1", routesV1);
+app.use(errorHandler);
 
 app.listen(config.SERVER_PORT, () => {
   console.log(`Server is running on http://localhost:${config.SERVER_PORT}`);
