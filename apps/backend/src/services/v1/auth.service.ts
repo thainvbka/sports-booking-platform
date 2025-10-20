@@ -87,3 +87,11 @@ export const logIn = async (email: string, password_hash: string) => {
     refreshToken,
   };
 };
+
+export const logOut = async (refreshToken: string) => {
+  return await prisma.refreshToken.deleteMany({
+    where: {
+      token: refreshToken,
+    },
+  });
+};

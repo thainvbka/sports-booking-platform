@@ -39,7 +39,7 @@ export class SuccessResponse {
   }
 }
 
-export class CREATED extends SuccessResponse {
+export class Created extends SuccessResponse {
   constructor(options: SuccessResponseOptions = {}) {
     super({
       ...options,

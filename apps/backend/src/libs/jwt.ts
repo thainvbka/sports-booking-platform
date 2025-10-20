@@ -13,10 +13,10 @@ export const generateRefreshToken = (userId: string): string => {
   });
 };
 
-export const verifyAccessToken = (token: string): jwt.JwtPayload => {
-  return jwt.verify(token, config.JWT_ACCESS_SECRET) as jwt.JwtPayload;
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, config.JWT_ACCESS_SECRET);
 };
 
-export const verifyRefreshToken = (token: string): jwt.JwtPayload => {
-  return jwt.verify(token, config.JWT_REFRESH_SECRET) as jwt.JwtPayload;
+export const verifyRefreshToken = (token: string) => {
+  return jwt.verify(token, config.JWT_REFRESH_SECRET);
 };
