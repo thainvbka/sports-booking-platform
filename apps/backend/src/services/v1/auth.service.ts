@@ -2,6 +2,7 @@ import { prisma } from "@sports-booking-platform/db";
 import { ConflictRequestError } from "../../utils/error.response";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
+import cookieParser from "cookie-parser";
 
 export const signUp = async (userData: any) => {
   const existingUser = await prisma.user.findFirst({

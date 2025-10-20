@@ -6,13 +6,26 @@ import helmet from "helmet";
 import routesV1 from "./routes/v1";
 import compression from "compression";
 import errorHandler from "./middlewares/errorHandler";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = (config.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim());
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 //enable response compression to reduce payload size and improve performance
 app.use(
