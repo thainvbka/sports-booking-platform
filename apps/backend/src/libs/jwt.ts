@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import { config } from "../configs";
-import { verify } from "crypto";
 
 export const generateAccessToken = (userId: string): string => {
   return jwt.sign({ userId }, config.JWT_ACCESS_SECRET, {

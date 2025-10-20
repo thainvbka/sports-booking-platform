@@ -5,6 +5,7 @@ import {
 } from "../../utils/error.response";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
+import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
 
 export const signUp = async (userData: any) => {
   const existingUser = await prisma.user.findFirst({
@@ -39,7 +40,7 @@ export const signUp = async (userData: any) => {
     data: {
       token: refreshToken,
       user_id: newUser.id,
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expires_at: getRefreshExpiryDate(),
     },
   });
 
@@ -75,7 +76,7 @@ export const logIn = async (email: string, password_hash: string) => {
     data: {
       token: refreshToken,
       user_id: user.id,
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expires_at: getRefreshExpiryDate(),
     },
   });
 
@@ -119,7 +120,7 @@ export const handlerRefreshToken = async (refreshToken: string) => {
 
   const accessToken = generateAccessToken(storedToken.user_id);
   const newRefreshToken = generateRefreshToken(storedToken.user_id);
-  const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const newExpiry = getRefreshExpiryDate();
   await prisma.$transaction([
     prisma.refreshToken.update({
       where: {
