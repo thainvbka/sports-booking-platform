@@ -1,8 +1,10 @@
 import { prisma } from "@sports-booking-platform/db";
-import { ConflictRequestError } from "../../utils/error.response";
+import {
+  ConflictRequestError,
+  UnauthorizedError,
+} from "../../utils/error.response";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
-import cookieParser from "cookie-parser";
 
 export const signUp = async (userData: any) => {
   const existingUser = await prisma.user.findFirst({
@@ -95,4 +97,49 @@ export const logOut = async (refreshToken: string) => {
       token: refreshToken,
     },
   });
+};
+
+export const handlerRefreshToken = async (refreshToken: string) => {
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: {
+      token: refreshToken,
+    },
+  });
+
+  if (!storedToken) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+
+  if (storedToken.expires_at < new Date()) {
+    throw new UnauthorizedError("Refresh token has expired");
+  }
+  if (storedToken.revoked) {
+    throw new UnauthorizedError("Refresh token has been revoked");
+  }
+
+  const accessToken = generateAccessToken(storedToken.user_id);
+  const newRefreshToken = generateRefreshToken(storedToken.user_id);
+  const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  await prisma.$transaction([
+    prisma.refreshToken.update({
+      where: {
+        token: refreshToken,
+      },
+      data: {
+        revoked: true,
+      },
+    }),
+    prisma.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        user_id: storedToken.user_id,
+        expires_at: newExpiry,
+      },
+    }),
+  ]);
+
+  return {
+    accessToken,
+    refreshToken: newRefreshToken,
+  };
 };

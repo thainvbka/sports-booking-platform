@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { signUp, logIn, logOut } from "../../services/v1/auth.service";
+import {
+  signUp,
+  logIn,
+  logOut,
+  handlerRefreshToken,
+} from "../../services/v1/auth.service";
 import { Created, SuccessResponse } from "../../utils/success.response";
 import { config } from "../../configs";
 
@@ -49,5 +54,21 @@ export const logoutController = async (req: Request, res: Response) => {
   });
   return new SuccessResponse({
     message: "User logged out successfully",
+  }).send(res);
+};
+
+export const refreshTokenController = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken as string;
+  const data = await handlerRefreshToken(refreshToken);
+  res.cookie("refreshToken", data.refreshToken, {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  return new SuccessResponse({
+    message: "Token refreshed successfully",
+    data: {
+      accessToken: data.accessToken,
+    },
   }).send(res);
 };
