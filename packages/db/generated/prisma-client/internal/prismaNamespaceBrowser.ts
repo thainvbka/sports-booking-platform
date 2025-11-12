@@ -48,14 +48,19 @@ export const AnyNull = runtime.objectEnumValues.instances.AnyNull
 
 
 export const ModelName = {
-  User: 'User',
+  Account: 'Account',
+  Admin: 'Admin',
+  Owner: 'Owner',
+  Player: 'Player',
   RefreshToken: 'RefreshToken',
   SocialAccount: 'SocialAccount',
   Complex: 'Complex',
   SubField: 'SubField',
   PricingRule: 'PricingRule',
+  RecurringBooking: 'RecurringBooking',
   Booking: 'Booking',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Notification: 'Notification'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -74,32 +79,61 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UserScalarFieldEnum = {
+export const AccountScalarFieldEnum = {
   id: 'id',
   email: 'email',
   password_hash: 'password_hash',
   full_name: 'full_name',
   phone_number: 'phone_number',
-  role: 'role',
-  level: 'level',
   avatar: 'avatar',
-  company_name: 'company_name',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
   email_verified: 'email_verified',
-  phone_verified: 'phone_verified'
+  phone_verified: 'phone_verified',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const AdminScalarFieldEnum = {
+  id: 'id',
+  account_id: 'account_id',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type AdminScalarFieldEnum = (typeof AdminScalarFieldEnum)[keyof typeof AdminScalarFieldEnum]
+
+
+export const OwnerScalarFieldEnum = {
+  id: 'id',
+  account_id: 'account_id',
+  company_name: 'company_name',
+  stripe_account_id: 'stripe_account_id',
+  stripe_onboarding_complete: 'stripe_onboarding_complete',
+  status: 'status'
+} as const
+
+export type OwnerScalarFieldEnum = (typeof OwnerScalarFieldEnum)[keyof typeof OwnerScalarFieldEnum]
+
+
+export const PlayerScalarFieldEnum = {
+  id: 'id',
+  account_id: 'account_id',
+  status: 'status'
+} as const
+
+export type PlayerScalarFieldEnum = (typeof PlayerScalarFieldEnum)[keyof typeof PlayerScalarFieldEnum]
 
 
 export const RefreshTokenScalarFieldEnum = {
   id: 'id',
   token: 'token',
-  user_id: 'user_id',
+  account_id: 'account_id',
   revoked: 'revoked',
-  expires_at: 'expires_at',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  expires_at: 'expires_at'
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
@@ -109,7 +143,7 @@ export const SocialAccountScalarFieldEnum = {
   id: 'id',
   provider: 'provider',
   provider_id: 'provider_id',
-  user_id: 'user_id'
+  account_id: 'account_id'
 } as const
 
 export type SocialAccountScalarFieldEnum = (typeof SocialAccountScalarFieldEnum)[keyof typeof SocialAccountScalarFieldEnum]
@@ -117,11 +151,11 @@ export type SocialAccountScalarFieldEnum = (typeof SocialAccountScalarFieldEnum)
 
 export const ComplexScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  address: 'address',
-  sport_type: 'sport_type',
   owner_id: 'owner_id',
-  is_active: 'is_active',
+  complex_name: 'complex_name',
+  complex_address: 'complex_address',
+  status: 'status',
+  verification_docs: 'verification_docs',
   complex_image: 'complex_image',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -132,10 +166,11 @@ export type ComplexScalarFieldEnum = (typeof ComplexScalarFieldEnum)[keyof typeo
 
 export const SubFieldScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  capacity: 'capacity',
   complex_id: 'complex_id',
+  sub_field_name: 'sub_field_name',
+  capacity: 'capacity',
   sub_field_image: 'sub_field_image',
+  sport_type: 'sport_type',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -145,16 +180,29 @@ export type SubFieldScalarFieldEnum = (typeof SubFieldScalarFieldEnum)[keyof typ
 
 export const PricingRuleScalarFieldEnum = {
   id: 'id',
+  sub_field_id: 'sub_field_id',
   day_of_week: 'day_of_week',
   start_time: 'start_time',
   end_time: 'end_time',
-  base_price: 'base_price',
-  sub_field_id: 'sub_field_id',
-  is_dynamic: 'is_dynamic',
-  dynamic_config: 'dynamic_config'
+  base_price: 'base_price'
 } as const
 
 export type PricingRuleScalarFieldEnum = (typeof PricingRuleScalarFieldEnum)[keyof typeof PricingRuleScalarFieldEnum]
+
+
+export const RecurringBookingScalarFieldEnum = {
+  id: 'id',
+  player_id: 'player_id',
+  sub_field_id: 'sub_field_id',
+  recurrence_type: 'recurrence_type',
+  recurrence_detail: 'recurrence_detail',
+  start_date: 'start_date',
+  end_date: 'end_date',
+  status: 'status',
+  created_at: 'created_at'
+} as const
+
+export type RecurringBookingScalarFieldEnum = (typeof RecurringBookingScalarFieldEnum)[keyof typeof RecurringBookingScalarFieldEnum]
 
 
 export const BookingScalarFieldEnum = {
@@ -165,8 +213,10 @@ export const BookingScalarFieldEnum = {
   status: 'status',
   created_at: 'created_at',
   paid_at: 'paid_at',
-  user_id: 'user_id',
-  sub_field_id: 'sub_field_id'
+  player_id: 'player_id',
+  sub_field_id: 'sub_field_id',
+  recurring_booking_id: 'recurring_booking_id',
+  expires_at: 'expires_at'
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
@@ -174,15 +224,28 @@ export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeo
 
 export const PaymentScalarFieldEnum = {
   id: 'id',
+  booking_id: 'booking_id',
   amount: 'amount',
   provider: 'provider',
-  status: 'status',
-  booking_id: 'booking_id',
   transaction_code: 'transaction_code',
+  status: 'status',
   created_at: 'created_at'
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  account_id: 'account_id',
+  message: 'message',
+  is_read: 'is_read',
+  type: 'type',
+  link_to: 'link_to',
+  created_at: 'created_at'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -193,12 +256,11 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-export const NullableJsonNullValueInput = {
-  DbNull: DbNull,
+export const JsonNullValueInput = {
   JsonNull: JsonNull
 } as const
 
-export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

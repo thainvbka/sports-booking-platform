@@ -37,33 +37,29 @@ export type PricingRuleSumAggregateOutputType = {
 
 export type PricingRuleMinAggregateOutputType = {
   id: string | null
+  sub_field_id: string | null
   day_of_week: number | null
   start_time: Date | null
   end_time: Date | null
   base_price: runtime.Decimal | null
-  sub_field_id: string | null
-  is_dynamic: boolean | null
 }
 
 export type PricingRuleMaxAggregateOutputType = {
   id: string | null
+  sub_field_id: string | null
   day_of_week: number | null
   start_time: Date | null
   end_time: Date | null
   base_price: runtime.Decimal | null
-  sub_field_id: string | null
-  is_dynamic: boolean | null
 }
 
 export type PricingRuleCountAggregateOutputType = {
   id: number
+  sub_field_id: number
   day_of_week: number
   start_time: number
   end_time: number
   base_price: number
-  sub_field_id: number
-  is_dynamic: number
-  dynamic_config: number
   _all: number
 }
 
@@ -80,33 +76,29 @@ export type PricingRuleSumAggregateInputType = {
 
 export type PricingRuleMinAggregateInputType = {
   id?: true
+  sub_field_id?: true
   day_of_week?: true
   start_time?: true
   end_time?: true
   base_price?: true
-  sub_field_id?: true
-  is_dynamic?: true
 }
 
 export type PricingRuleMaxAggregateInputType = {
   id?: true
+  sub_field_id?: true
   day_of_week?: true
   start_time?: true
   end_time?: true
   base_price?: true
-  sub_field_id?: true
-  is_dynamic?: true
 }
 
 export type PricingRuleCountAggregateInputType = {
   id?: true
+  sub_field_id?: true
   day_of_week?: true
   start_time?: true
   end_time?: true
   base_price?: true
-  sub_field_id?: true
-  is_dynamic?: true
-  dynamic_config?: true
   _all?: true
 }
 
@@ -198,13 +190,11 @@ export type PricingRuleGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 
 export type PricingRuleGroupByOutputType = {
   id: string
+  sub_field_id: string
   day_of_week: number
   start_time: Date
   end_time: Date
   base_price: runtime.Decimal
-  sub_field_id: string
-  is_dynamic: boolean
-  dynamic_config: runtime.JsonValue | null
   _count: PricingRuleCountAggregateOutputType | null
   _avg: PricingRuleAvgAggregateOutputType | null
   _sum: PricingRuleSumAggregateOutputType | null
@@ -232,25 +222,21 @@ export type PricingRuleWhereInput = {
   OR?: Prisma.PricingRuleWhereInput[]
   NOT?: Prisma.PricingRuleWhereInput | Prisma.PricingRuleWhereInput[]
   id?: Prisma.UuidFilter<"PricingRule"> | string
+  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
   day_of_week?: Prisma.IntFilter<"PricingRule"> | number
   start_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   end_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   base_price?: Prisma.DecimalFilter<"PricingRule"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
-  is_dynamic?: Prisma.BoolFilter<"PricingRule"> | boolean
-  dynamic_config?: Prisma.JsonNullableFilter<"PricingRule">
   sub_field?: Prisma.XOR<Prisma.SubFieldScalarRelationFilter, Prisma.SubFieldWhereInput>
 }
 
 export type PricingRuleOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  sub_field_id?: Prisma.SortOrder
   day_of_week?: Prisma.SortOrder
   start_time?: Prisma.SortOrder
   end_time?: Prisma.SortOrder
   base_price?: Prisma.SortOrder
-  sub_field_id?: Prisma.SortOrder
-  is_dynamic?: Prisma.SortOrder
-  dynamic_config?: Prisma.SortOrderInput | Prisma.SortOrder
   sub_field?: Prisma.SubFieldOrderByWithRelationInput
 }
 
@@ -260,25 +246,21 @@ export type PricingRuleWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.PricingRuleWhereInput | Prisma.PricingRuleWhereInput[]
   OR?: Prisma.PricingRuleWhereInput[]
   NOT?: Prisma.PricingRuleWhereInput | Prisma.PricingRuleWhereInput[]
+  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
   day_of_week?: Prisma.IntFilter<"PricingRule"> | number
   start_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   end_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   base_price?: Prisma.DecimalFilter<"PricingRule"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
-  is_dynamic?: Prisma.BoolFilter<"PricingRule"> | boolean
-  dynamic_config?: Prisma.JsonNullableFilter<"PricingRule">
   sub_field?: Prisma.XOR<Prisma.SubFieldScalarRelationFilter, Prisma.SubFieldWhereInput>
 }, "id" | "sub_field_id_day_of_week_start_time_end_time">
 
 export type PricingRuleOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  sub_field_id?: Prisma.SortOrder
   day_of_week?: Prisma.SortOrder
   start_time?: Prisma.SortOrder
   end_time?: Prisma.SortOrder
   base_price?: Prisma.SortOrder
-  sub_field_id?: Prisma.SortOrder
-  is_dynamic?: Prisma.SortOrder
-  dynamic_config?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PricingRuleCountOrderByAggregateInput
   _avg?: Prisma.PricingRuleAvgOrderByAggregateInput
   _max?: Prisma.PricingRuleMaxOrderByAggregateInput
@@ -291,13 +273,11 @@ export type PricingRuleScalarWhereWithAggregatesInput = {
   OR?: Prisma.PricingRuleScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PricingRuleScalarWhereWithAggregatesInput | Prisma.PricingRuleScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"PricingRule"> | string
+  sub_field_id?: Prisma.UuidWithAggregatesFilter<"PricingRule"> | string
   day_of_week?: Prisma.IntWithAggregatesFilter<"PricingRule"> | number
   start_time?: Prisma.DateTimeWithAggregatesFilter<"PricingRule"> | Date | string
   end_time?: Prisma.DateTimeWithAggregatesFilter<"PricingRule"> | Date | string
   base_price?: Prisma.DecimalWithAggregatesFilter<"PricingRule"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.UuidWithAggregatesFilter<"PricingRule"> | string
-  is_dynamic?: Prisma.BoolWithAggregatesFilter<"PricingRule"> | boolean
-  dynamic_config?: Prisma.JsonNullableWithAggregatesFilter<"PricingRule">
 }
 
 export type PricingRuleCreateInput = {
@@ -306,20 +286,16 @@ export type PricingRuleCreateInput = {
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sub_field: Prisma.SubFieldCreateNestedOneWithoutPricing_rulesInput
 }
 
 export type PricingRuleUncheckedCreateInput = {
   id?: string
+  sub_field_id: string
   day_of_week: number
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id: string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUpdateInput = {
@@ -328,31 +304,25 @@ export type PricingRuleUpdateInput = {
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutPricing_rulesNestedInput
 }
 
 export type PricingRuleUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
   day_of_week?: Prisma.IntFieldUpdateOperationsInput | number
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleCreateManyInput = {
   id?: string
+  sub_field_id: string
   day_of_week: number
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id: string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUpdateManyMutationInput = {
@@ -361,19 +331,15 @@ export type PricingRuleUpdateManyMutationInput = {
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
   day_of_week?: Prisma.IntFieldUpdateOperationsInput | number
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleListRelationFilter = {
@@ -395,13 +361,11 @@ export type PricingRuleSub_field_idDay_of_weekStart_timeEnd_timeCompoundUniqueIn
 
 export type PricingRuleCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  sub_field_id?: Prisma.SortOrder
   day_of_week?: Prisma.SortOrder
   start_time?: Prisma.SortOrder
   end_time?: Prisma.SortOrder
   base_price?: Prisma.SortOrder
-  sub_field_id?: Prisma.SortOrder
-  is_dynamic?: Prisma.SortOrder
-  dynamic_config?: Prisma.SortOrder
 }
 
 export type PricingRuleAvgOrderByAggregateInput = {
@@ -411,22 +375,20 @@ export type PricingRuleAvgOrderByAggregateInput = {
 
 export type PricingRuleMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  sub_field_id?: Prisma.SortOrder
   day_of_week?: Prisma.SortOrder
   start_time?: Prisma.SortOrder
   end_time?: Prisma.SortOrder
   base_price?: Prisma.SortOrder
-  sub_field_id?: Prisma.SortOrder
-  is_dynamic?: Prisma.SortOrder
 }
 
 export type PricingRuleMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  sub_field_id?: Prisma.SortOrder
   day_of_week?: Prisma.SortOrder
   start_time?: Prisma.SortOrder
   end_time?: Prisma.SortOrder
   base_price?: Prisma.SortOrder
-  sub_field_id?: Prisma.SortOrder
-  is_dynamic?: Prisma.SortOrder
 }
 
 export type PricingRuleSumOrderByAggregateInput = {
@@ -490,8 +452,6 @@ export type PricingRuleCreateWithoutSub_fieldInput = {
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUncheckedCreateWithoutSub_fieldInput = {
@@ -500,8 +460,6 @@ export type PricingRuleUncheckedCreateWithoutSub_fieldInput = {
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleCreateOrConnectWithoutSub_fieldInput = {
@@ -535,13 +493,11 @@ export type PricingRuleScalarWhereInput = {
   OR?: Prisma.PricingRuleScalarWhereInput[]
   NOT?: Prisma.PricingRuleScalarWhereInput | Prisma.PricingRuleScalarWhereInput[]
   id?: Prisma.UuidFilter<"PricingRule"> | string
+  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
   day_of_week?: Prisma.IntFilter<"PricingRule"> | number
   start_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   end_time?: Prisma.DateTimeFilter<"PricingRule"> | Date | string
   base_price?: Prisma.DecimalFilter<"PricingRule"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  sub_field_id?: Prisma.UuidFilter<"PricingRule"> | string
-  is_dynamic?: Prisma.BoolFilter<"PricingRule"> | boolean
-  dynamic_config?: Prisma.JsonNullableFilter<"PricingRule">
 }
 
 export type PricingRuleCreateManySub_fieldInput = {
@@ -550,8 +506,6 @@ export type PricingRuleCreateManySub_fieldInput = {
   start_time: Date | string
   end_time: Date | string
   base_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUpdateWithoutSub_fieldInput = {
@@ -560,8 +514,6 @@ export type PricingRuleUpdateWithoutSub_fieldInput = {
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUncheckedUpdateWithoutSub_fieldInput = {
@@ -570,8 +522,6 @@ export type PricingRuleUncheckedUpdateWithoutSub_fieldInput = {
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type PricingRuleUncheckedUpdateManyWithoutSub_fieldInput = {
@@ -580,60 +530,50 @@ export type PricingRuleUncheckedUpdateManyWithoutSub_fieldInput = {
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   base_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  is_dynamic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dynamic_config?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
 
 export type PricingRuleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  sub_field_id?: boolean
   day_of_week?: boolean
   start_time?: boolean
   end_time?: boolean
   base_price?: boolean
-  sub_field_id?: boolean
-  is_dynamic?: boolean
-  dynamic_config?: boolean
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pricingRule"]>
 
 export type PricingRuleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  sub_field_id?: boolean
   day_of_week?: boolean
   start_time?: boolean
   end_time?: boolean
   base_price?: boolean
-  sub_field_id?: boolean
-  is_dynamic?: boolean
-  dynamic_config?: boolean
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pricingRule"]>
 
 export type PricingRuleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  sub_field_id?: boolean
   day_of_week?: boolean
   start_time?: boolean
   end_time?: boolean
   base_price?: boolean
-  sub_field_id?: boolean
-  is_dynamic?: boolean
-  dynamic_config?: boolean
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pricingRule"]>
 
 export type PricingRuleSelectScalar = {
   id?: boolean
+  sub_field_id?: boolean
   day_of_week?: boolean
   start_time?: boolean
   end_time?: boolean
   base_price?: boolean
-  sub_field_id?: boolean
-  is_dynamic?: boolean
-  dynamic_config?: boolean
 }
 
-export type PricingRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "day_of_week" | "start_time" | "end_time" | "base_price" | "sub_field_id" | "is_dynamic" | "dynamic_config", ExtArgs["result"]["pricingRule"]>
+export type PricingRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sub_field_id" | "day_of_week" | "start_time" | "end_time" | "base_price", ExtArgs["result"]["pricingRule"]>
 export type PricingRuleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
 }
@@ -651,13 +591,11 @@ export type $PricingRulePayload<ExtArgs extends runtime.Types.Extensions.Interna
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    sub_field_id: string
     day_of_week: number
     start_time: Date
     end_time: Date
     base_price: runtime.Decimal
-    sub_field_id: string
-    is_dynamic: boolean
-    dynamic_config: runtime.JsonValue | null
   }, ExtArgs["result"]["pricingRule"]>
   composites: {}
 }
@@ -1083,13 +1021,11 @@ export interface Prisma__PricingRuleClient<T, Null = never, ExtArgs extends runt
  */
 export interface PricingRuleFieldRefs {
   readonly id: Prisma.FieldRef<"PricingRule", 'String'>
+  readonly sub_field_id: Prisma.FieldRef<"PricingRule", 'String'>
   readonly day_of_week: Prisma.FieldRef<"PricingRule", 'Int'>
   readonly start_time: Prisma.FieldRef<"PricingRule", 'DateTime'>
   readonly end_time: Prisma.FieldRef<"PricingRule", 'DateTime'>
   readonly base_price: Prisma.FieldRef<"PricingRule", 'Decimal'>
-  readonly sub_field_id: Prisma.FieldRef<"PricingRule", 'String'>
-  readonly is_dynamic: Prisma.FieldRef<"PricingRule", 'Boolean'>
-  readonly dynamic_config: Prisma.FieldRef<"PricingRule", 'Json'>
 }
     
 

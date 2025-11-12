@@ -2,7 +2,7 @@ services:
   # ---  DATABASE ---
   postgres-db:
     image: postgres:16-alpine
-    container_name: sports-app-db
+    container_name: sports-booking-db
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
@@ -18,9 +18,10 @@ services:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile.dev
-    container_name: sports-app-backend
+    container_name: sports-booking-backend
     ports:
       - "${SERVER_PORT}:3000"
+      - "${PRISMA_STUDIO_PORT}:5555"
     volumes:
       # Mount toàn bộ source code để hot-reload
       # Loại trừ node_modules ở thư mục gốc để không ghi đè lên thư mục đã được cài đặt bên trong container
@@ -41,8 +42,8 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: apps/web-owner/Dockerfile.dev
-    container_name: sports-app-frontend
+      dockerfile: apps/frontend/Dockerfile.dev
+    container_name: sports-booking-frontend
     ports:
       - "${CLIENT_PORT}:5173"
     volumes:

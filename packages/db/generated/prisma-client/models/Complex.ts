@@ -25,11 +25,10 @@ export type AggregateComplex = {
 
 export type ComplexMinAggregateOutputType = {
   id: string | null
-  name: string | null
-  address: string | null
-  sport_type: $Enums.SportType | null
   owner_id: string | null
-  is_active: boolean | null
+  complex_name: string | null
+  complex_address: string | null
+  status: $Enums.ComplexStatus | null
   complex_image: string | null
   created_at: Date | null
   updated_at: Date | null
@@ -37,11 +36,10 @@ export type ComplexMinAggregateOutputType = {
 
 export type ComplexMaxAggregateOutputType = {
   id: string | null
-  name: string | null
-  address: string | null
-  sport_type: $Enums.SportType | null
   owner_id: string | null
-  is_active: boolean | null
+  complex_name: string | null
+  complex_address: string | null
+  status: $Enums.ComplexStatus | null
   complex_image: string | null
   created_at: Date | null
   updated_at: Date | null
@@ -49,11 +47,11 @@ export type ComplexMaxAggregateOutputType = {
 
 export type ComplexCountAggregateOutputType = {
   id: number
-  name: number
-  address: number
-  sport_type: number
   owner_id: number
-  is_active: number
+  complex_name: number
+  complex_address: number
+  status: number
+  verification_docs: number
   complex_image: number
   created_at: number
   updated_at: number
@@ -63,11 +61,10 @@ export type ComplexCountAggregateOutputType = {
 
 export type ComplexMinAggregateInputType = {
   id?: true
-  name?: true
-  address?: true
-  sport_type?: true
   owner_id?: true
-  is_active?: true
+  complex_name?: true
+  complex_address?: true
+  status?: true
   complex_image?: true
   created_at?: true
   updated_at?: true
@@ -75,11 +72,10 @@ export type ComplexMinAggregateInputType = {
 
 export type ComplexMaxAggregateInputType = {
   id?: true
-  name?: true
-  address?: true
-  sport_type?: true
   owner_id?: true
-  is_active?: true
+  complex_name?: true
+  complex_address?: true
+  status?: true
   complex_image?: true
   created_at?: true
   updated_at?: true
@@ -87,11 +83,11 @@ export type ComplexMaxAggregateInputType = {
 
 export type ComplexCountAggregateInputType = {
   id?: true
-  name?: true
-  address?: true
-  sport_type?: true
   owner_id?: true
-  is_active?: true
+  complex_name?: true
+  complex_address?: true
+  status?: true
+  verification_docs?: true
   complex_image?: true
   created_at?: true
   updated_at?: true
@@ -172,11 +168,11 @@ export type ComplexGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 
 export type ComplexGroupByOutputType = {
   id: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
   owner_id: string
-  is_active: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: runtime.JsonValue
   complex_image: string | null
   created_at: Date
   updated_at: Date
@@ -205,29 +201,29 @@ export type ComplexWhereInput = {
   OR?: Prisma.ComplexWhereInput[]
   NOT?: Prisma.ComplexWhereInput | Prisma.ComplexWhereInput[]
   id?: Prisma.UuidFilter<"Complex"> | string
-  name?: Prisma.StringFilter<"Complex"> | string
-  address?: Prisma.StringFilter<"Complex"> | string
-  sport_type?: Prisma.EnumSportTypeFilter<"Complex"> | $Enums.SportType
   owner_id?: Prisma.UuidFilter<"Complex"> | string
-  is_active?: Prisma.BoolFilter<"Complex"> | boolean
+  complex_name?: Prisma.StringFilter<"Complex"> | string
+  complex_address?: Prisma.StringFilter<"Complex"> | string
+  status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
-  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  owner?: Prisma.XOR<Prisma.OwnerScalarRelationFilter, Prisma.OwnerWhereInput>
   sub_fields?: Prisma.SubFieldListRelationFilter
 }
 
 export type ComplexOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  sport_type?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
-  is_active?: Prisma.SortOrder
+  complex_name?: Prisma.SortOrder
+  complex_address?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
-  owner?: Prisma.UserOrderByWithRelationInput
+  owner?: Prisma.OwnerOrderByWithRelationInput
   sub_fields?: Prisma.SubFieldOrderByRelationAggregateInput
 }
 
@@ -236,25 +232,25 @@ export type ComplexWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ComplexWhereInput | Prisma.ComplexWhereInput[]
   OR?: Prisma.ComplexWhereInput[]
   NOT?: Prisma.ComplexWhereInput | Prisma.ComplexWhereInput[]
-  name?: Prisma.StringFilter<"Complex"> | string
-  address?: Prisma.StringFilter<"Complex"> | string
-  sport_type?: Prisma.EnumSportTypeFilter<"Complex"> | $Enums.SportType
   owner_id?: Prisma.UuidFilter<"Complex"> | string
-  is_active?: Prisma.BoolFilter<"Complex"> | boolean
+  complex_name?: Prisma.StringFilter<"Complex"> | string
+  complex_address?: Prisma.StringFilter<"Complex"> | string
+  status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
-  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  owner?: Prisma.XOR<Prisma.OwnerScalarRelationFilter, Prisma.OwnerWhereInput>
   sub_fields?: Prisma.SubFieldListRelationFilter
 }, "id">
 
 export type ComplexOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  sport_type?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
-  is_active?: Prisma.SortOrder
+  complex_name?: Prisma.SortOrder
+  complex_address?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -268,11 +264,11 @@ export type ComplexScalarWhereWithAggregatesInput = {
   OR?: Prisma.ComplexScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ComplexScalarWhereWithAggregatesInput | Prisma.ComplexScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"Complex"> | string
-  name?: Prisma.StringWithAggregatesFilter<"Complex"> | string
-  address?: Prisma.StringWithAggregatesFilter<"Complex"> | string
-  sport_type?: Prisma.EnumSportTypeWithAggregatesFilter<"Complex"> | $Enums.SportType
   owner_id?: Prisma.UuidWithAggregatesFilter<"Complex"> | string
-  is_active?: Prisma.BoolWithAggregatesFilter<"Complex"> | boolean
+  complex_name?: Prisma.StringWithAggregatesFilter<"Complex"> | string
+  complex_address?: Prisma.StringWithAggregatesFilter<"Complex"> | string
+  status?: Prisma.EnumComplexStatusWithAggregatesFilter<"Complex"> | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonWithAggregatesFilter<"Complex">
   complex_image?: Prisma.StringNullableWithAggregatesFilter<"Complex"> | string | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Complex"> | Date | string
@@ -280,24 +276,24 @@ export type ComplexScalarWhereWithAggregatesInput = {
 
 export type ComplexCreateInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
-  owner: Prisma.UserCreateNestedOneWithoutComplexesInput
+  owner: Prisma.OwnerCreateNestedOneWithoutComplexesInput
   sub_fields?: Prisma.SubFieldCreateNestedManyWithoutComplexInput
 }
 
 export type ComplexUncheckedCreateInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
   owner_id: string
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -306,24 +302,24 @@ export type ComplexUncheckedCreateInput = {
 
 export type ComplexUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  owner?: Prisma.UserUpdateOneRequiredWithoutComplexesNestedInput
+  owner?: Prisma.OwnerUpdateOneRequiredWithoutComplexesNestedInput
   sub_fields?: Prisma.SubFieldUpdateManyWithoutComplexNestedInput
 }
 
 export type ComplexUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
   owner_id?: Prisma.StringFieldUpdateOperationsInput | string
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -332,11 +328,11 @@ export type ComplexUncheckedUpdateInput = {
 
 export type ComplexCreateManyInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
   owner_id: string
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -344,10 +340,10 @@ export type ComplexCreateManyInput = {
 
 export type ComplexUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -355,11 +351,11 @@ export type ComplexUpdateManyMutationInput = {
 
 export type ComplexUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
   owner_id?: Prisma.StringFieldUpdateOperationsInput | string
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -377,11 +373,11 @@ export type ComplexOrderByRelationAggregateInput = {
 
 export type ComplexCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  sport_type?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
-  is_active?: Prisma.SortOrder
+  complex_name?: Prisma.SortOrder
+  complex_address?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -389,11 +385,10 @@ export type ComplexCountOrderByAggregateInput = {
 
 export type ComplexMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  sport_type?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
-  is_active?: Prisma.SortOrder
+  complex_name?: Prisma.SortOrder
+  complex_address?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -401,11 +396,10 @@ export type ComplexMaxOrderByAggregateInput = {
 
 export type ComplexMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  sport_type?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
-  is_active?: Prisma.SortOrder
+  complex_name?: Prisma.SortOrder
+  complex_address?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
@@ -458,8 +452,8 @@ export type ComplexUncheckedUpdateManyWithoutOwnerNestedInput = {
   deleteMany?: Prisma.ComplexScalarWhereInput | Prisma.ComplexScalarWhereInput[]
 }
 
-export type EnumSportTypeFieldUpdateOperationsInput = {
-  set?: $Enums.SportType
+export type EnumComplexStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ComplexStatus
 }
 
 export type ComplexCreateNestedOneWithoutSub_fieldsInput = {
@@ -478,10 +472,10 @@ export type ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput = {
 
 export type ComplexCreateWithoutOwnerInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -490,10 +484,10 @@ export type ComplexCreateWithoutOwnerInput = {
 
 export type ComplexUncheckedCreateWithoutOwnerInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -531,11 +525,11 @@ export type ComplexScalarWhereInput = {
   OR?: Prisma.ComplexScalarWhereInput[]
   NOT?: Prisma.ComplexScalarWhereInput | Prisma.ComplexScalarWhereInput[]
   id?: Prisma.UuidFilter<"Complex"> | string
-  name?: Prisma.StringFilter<"Complex"> | string
-  address?: Prisma.StringFilter<"Complex"> | string
-  sport_type?: Prisma.EnumSportTypeFilter<"Complex"> | $Enums.SportType
   owner_id?: Prisma.UuidFilter<"Complex"> | string
-  is_active?: Prisma.BoolFilter<"Complex"> | boolean
+  complex_name?: Prisma.StringFilter<"Complex"> | string
+  complex_address?: Prisma.StringFilter<"Complex"> | string
+  status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
@@ -543,23 +537,23 @@ export type ComplexScalarWhereInput = {
 
 export type ComplexCreateWithoutSub_fieldsInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
-  owner: Prisma.UserCreateNestedOneWithoutComplexesInput
+  owner: Prisma.OwnerCreateNestedOneWithoutComplexesInput
 }
 
 export type ComplexUncheckedCreateWithoutSub_fieldsInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
   owner_id: string
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -583,23 +577,23 @@ export type ComplexUpdateToOneWithWhereWithoutSub_fieldsInput = {
 
 export type ComplexUpdateWithoutSub_fieldsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  owner?: Prisma.UserUpdateOneRequiredWithoutComplexesNestedInput
+  owner?: Prisma.OwnerUpdateOneRequiredWithoutComplexesNestedInput
 }
 
 export type ComplexUncheckedUpdateWithoutSub_fieldsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
   owner_id?: Prisma.StringFieldUpdateOperationsInput | string
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -607,10 +601,10 @@ export type ComplexUncheckedUpdateWithoutSub_fieldsInput = {
 
 export type ComplexCreateManyOwnerInput = {
   id?: string
-  name: string
-  address: string
-  sport_type: $Enums.SportType
-  is_active?: boolean
+  complex_name: string
+  complex_address: string
+  status: $Enums.ComplexStatus
+  verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
   created_at?: Date | string
   updated_at?: Date | string
@@ -618,10 +612,10 @@ export type ComplexCreateManyOwnerInput = {
 
 export type ComplexUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -630,10 +624,10 @@ export type ComplexUpdateWithoutOwnerInput = {
 
 export type ComplexUncheckedUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -642,10 +636,10 @@ export type ComplexUncheckedUpdateWithoutOwnerInput = {
 
 export type ComplexUncheckedUpdateManyWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
-  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  complex_name?: Prisma.StringFieldUpdateOperationsInput | string
+  complex_address?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
+  verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -684,83 +678,83 @@ export type ComplexCountOutputTypeCountSub_fieldsArgs<ExtArgs extends runtime.Ty
 
 export type ComplexSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
-  address?: boolean
-  sport_type?: boolean
   owner_id?: boolean
-  is_active?: boolean
+  complex_name?: boolean
+  complex_address?: boolean
+  status?: boolean
+  verification_docs?: boolean
   complex_image?: boolean
   created_at?: boolean
   updated_at?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
   sub_fields?: boolean | Prisma.Complex$sub_fieldsArgs<ExtArgs>
   _count?: boolean | Prisma.ComplexCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["complex"]>
 
 export type ComplexSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
-  address?: boolean
-  sport_type?: boolean
   owner_id?: boolean
-  is_active?: boolean
+  complex_name?: boolean
+  complex_address?: boolean
+  status?: boolean
+  verification_docs?: boolean
   complex_image?: boolean
   created_at?: boolean
   updated_at?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["complex"]>
 
 export type ComplexSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  name?: boolean
-  address?: boolean
-  sport_type?: boolean
   owner_id?: boolean
-  is_active?: boolean
+  complex_name?: boolean
+  complex_address?: boolean
+  status?: boolean
+  verification_docs?: boolean
   complex_image?: boolean
   created_at?: boolean
   updated_at?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["complex"]>
 
 export type ComplexSelectScalar = {
   id?: boolean
-  name?: boolean
-  address?: boolean
-  sport_type?: boolean
   owner_id?: boolean
-  is_active?: boolean
+  complex_name?: boolean
+  complex_address?: boolean
+  status?: boolean
+  verification_docs?: boolean
   complex_image?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type ComplexOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "address" | "sport_type" | "owner_id" | "is_active" | "complex_image" | "created_at" | "updated_at", ExtArgs["result"]["complex"]>
+export type ComplexOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "owner_id" | "complex_name" | "complex_address" | "status" | "verification_docs" | "complex_image" | "created_at" | "updated_at", ExtArgs["result"]["complex"]>
 export type ComplexInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
   sub_fields?: boolean | Prisma.Complex$sub_fieldsArgs<ExtArgs>
   _count?: boolean | Prisma.ComplexCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ComplexIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
 }
 export type ComplexIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
 }
 
 export type $ComplexPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Complex"
   objects: {
-    owner: Prisma.$UserPayload<ExtArgs>
+    owner: Prisma.$OwnerPayload<ExtArgs>
     sub_fields: Prisma.$SubFieldPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    name: string
-    address: string
-    sport_type: $Enums.SportType
     owner_id: string
-    is_active: boolean
+    complex_name: string
+    complex_address: string
+    status: $Enums.ComplexStatus
+    verification_docs: runtime.JsonValue
     complex_image: string | null
     created_at: Date
     updated_at: Date
@@ -1158,7 +1152,7 @@ readonly fields: ComplexFieldRefs;
  */
 export interface Prisma__ComplexClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  owner<T extends Prisma.OwnerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OwnerDefaultArgs<ExtArgs>>): Prisma.Prisma__OwnerClient<runtime.Types.Result.GetResult<Prisma.$OwnerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   sub_fields<T extends Prisma.Complex$sub_fieldsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Complex$sub_fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubFieldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1190,11 +1184,11 @@ export interface Prisma__ComplexClient<T, Null = never, ExtArgs extends runtime.
  */
 export interface ComplexFieldRefs {
   readonly id: Prisma.FieldRef<"Complex", 'String'>
-  readonly name: Prisma.FieldRef<"Complex", 'String'>
-  readonly address: Prisma.FieldRef<"Complex", 'String'>
-  readonly sport_type: Prisma.FieldRef<"Complex", 'SportType'>
   readonly owner_id: Prisma.FieldRef<"Complex", 'String'>
-  readonly is_active: Prisma.FieldRef<"Complex", 'Boolean'>
+  readonly complex_name: Prisma.FieldRef<"Complex", 'String'>
+  readonly complex_address: Prisma.FieldRef<"Complex", 'String'>
+  readonly status: Prisma.FieldRef<"Complex", 'ComplexStatus'>
+  readonly verification_docs: Prisma.FieldRef<"Complex", 'Json'>
   readonly complex_image: Prisma.FieldRef<"Complex", 'String'>
   readonly created_at: Prisma.FieldRef<"Complex", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Complex", 'DateTime'>

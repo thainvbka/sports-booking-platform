@@ -26,28 +26,28 @@ export type AggregateRefreshToken = {
 export type RefreshTokenMinAggregateOutputType = {
   id: string | null
   token: string | null
-  user_id: string | null
+  account_id: string | null
   revoked: boolean | null
-  expires_at: Date | null
   created_at: Date | null
+  expires_at: Date | null
 }
 
 export type RefreshTokenMaxAggregateOutputType = {
   id: string | null
   token: string | null
-  user_id: string | null
+  account_id: string | null
   revoked: boolean | null
-  expires_at: Date | null
   created_at: Date | null
+  expires_at: Date | null
 }
 
 export type RefreshTokenCountAggregateOutputType = {
   id: number
   token: number
-  user_id: number
+  account_id: number
   revoked: number
-  expires_at: number
   created_at: number
+  expires_at: number
   _all: number
 }
 
@@ -55,28 +55,28 @@ export type RefreshTokenCountAggregateOutputType = {
 export type RefreshTokenMinAggregateInputType = {
   id?: true
   token?: true
-  user_id?: true
+  account_id?: true
   revoked?: true
-  expires_at?: true
   created_at?: true
+  expires_at?: true
 }
 
 export type RefreshTokenMaxAggregateInputType = {
   id?: true
   token?: true
-  user_id?: true
+  account_id?: true
   revoked?: true
-  expires_at?: true
   created_at?: true
+  expires_at?: true
 }
 
 export type RefreshTokenCountAggregateInputType = {
   id?: true
   token?: true
-  user_id?: true
+  account_id?: true
   revoked?: true
-  expires_at?: true
   created_at?: true
+  expires_at?: true
   _all?: true
 }
 
@@ -155,10 +155,10 @@ export type RefreshTokenGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type RefreshTokenGroupByOutputType = {
   id: string
   token: string
-  user_id: string
+  account_id: string
   revoked: boolean
-  expires_at: Date
   created_at: Date
+  expires_at: Date
   _count: RefreshTokenCountAggregateOutputType | null
   _min: RefreshTokenMinAggregateOutputType | null
   _max: RefreshTokenMaxAggregateOutputType | null
@@ -185,21 +185,21 @@ export type RefreshTokenWhereInput = {
   NOT?: Prisma.RefreshTokenWhereInput | Prisma.RefreshTokenWhereInput[]
   id?: Prisma.UuidFilter<"RefreshToken"> | string
   token?: Prisma.StringFilter<"RefreshToken"> | string
-  user_id?: Prisma.UuidFilter<"RefreshToken"> | string
+  account_id?: Prisma.UuidFilter<"RefreshToken"> | string
   revoked?: Prisma.BoolFilter<"RefreshToken"> | boolean
-  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
   created_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
+  account?: Prisma.XOR<Prisma.AccountScalarRelationFilter, Prisma.AccountWhereInput>
 }
 
 export type RefreshTokenOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
+  account_id?: Prisma.SortOrder
   revoked?: Prisma.SortOrder
-  expires_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
+  expires_at?: Prisma.SortOrder
+  account?: Prisma.AccountOrderByWithRelationInput
 }
 
 export type RefreshTokenWhereUniqueInput = Prisma.AtLeast<{
@@ -208,20 +208,20 @@ export type RefreshTokenWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.RefreshTokenWhereInput | Prisma.RefreshTokenWhereInput[]
   OR?: Prisma.RefreshTokenWhereInput[]
   NOT?: Prisma.RefreshTokenWhereInput | Prisma.RefreshTokenWhereInput[]
-  user_id?: Prisma.UuidFilter<"RefreshToken"> | string
+  account_id?: Prisma.UuidFilter<"RefreshToken"> | string
   revoked?: Prisma.BoolFilter<"RefreshToken"> | boolean
-  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
   created_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
+  account?: Prisma.XOR<Prisma.AccountScalarRelationFilter, Prisma.AccountWhereInput>
 }, "id" | "token">
 
 export type RefreshTokenOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
+  account_id?: Prisma.SortOrder
   revoked?: Prisma.SortOrder
-  expires_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  expires_at?: Prisma.SortOrder
   _count?: Prisma.RefreshTokenCountOrderByAggregateInput
   _max?: Prisma.RefreshTokenMaxOrderByAggregateInput
   _min?: Prisma.RefreshTokenMinOrderByAggregateInput
@@ -233,72 +233,72 @@ export type RefreshTokenScalarWhereWithAggregatesInput = {
   NOT?: Prisma.RefreshTokenScalarWhereWithAggregatesInput | Prisma.RefreshTokenScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"RefreshToken"> | string
   token?: Prisma.StringWithAggregatesFilter<"RefreshToken"> | string
-  user_id?: Prisma.UuidWithAggregatesFilter<"RefreshToken"> | string
+  account_id?: Prisma.UuidWithAggregatesFilter<"RefreshToken"> | string
   revoked?: Prisma.BoolWithAggregatesFilter<"RefreshToken"> | boolean
-  expires_at?: Prisma.DateTimeWithAggregatesFilter<"RefreshToken"> | Date | string
   created_at?: Prisma.DateTimeWithAggregatesFilter<"RefreshToken"> | Date | string
+  expires_at?: Prisma.DateTimeWithAggregatesFilter<"RefreshToken"> | Date | string
 }
 
 export type RefreshTokenCreateInput = {
   id?: string
   token: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutRefresh_tokensInput
+  expires_at: Date | string
+  account: Prisma.AccountCreateNestedOneWithoutRefresh_tokensInput
 }
 
 export type RefreshTokenUncheckedCreateInput = {
   id?: string
   token: string
-  user_id: string
+  account_id: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
+  expires_at: Date | string
 }
 
 export type RefreshTokenUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutRefresh_tokensNestedInput
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  account?: Prisma.AccountUpdateOneRequiredWithoutRefresh_tokensNestedInput
 }
 
 export type RefreshTokenUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
+  account_id?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RefreshTokenCreateManyInput = {
   id?: string
   token: string
-  user_id: string
+  account_id: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
+  expires_at: Date | string
 }
 
 export type RefreshTokenUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RefreshTokenUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
-  user_id?: Prisma.StringFieldUpdateOperationsInput | string
+  account_id?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RefreshTokenListRelationFilter = {
@@ -314,112 +314,112 @@ export type RefreshTokenOrderByRelationAggregateInput = {
 export type RefreshTokenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
+  account_id?: Prisma.SortOrder
   revoked?: Prisma.SortOrder
-  expires_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  expires_at?: Prisma.SortOrder
 }
 
 export type RefreshTokenMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
+  account_id?: Prisma.SortOrder
   revoked?: Prisma.SortOrder
-  expires_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  expires_at?: Prisma.SortOrder
 }
 
 export type RefreshTokenMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
-  user_id?: Prisma.SortOrder
+  account_id?: Prisma.SortOrder
   revoked?: Prisma.SortOrder
-  expires_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  expires_at?: Prisma.SortOrder
 }
 
-export type RefreshTokenCreateNestedManyWithoutUserInput = {
-  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput> | Prisma.RefreshTokenCreateWithoutUserInput[] | Prisma.RefreshTokenUncheckedCreateWithoutUserInput[]
-  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutUserInput | Prisma.RefreshTokenCreateOrConnectWithoutUserInput[]
-  createMany?: Prisma.RefreshTokenCreateManyUserInputEnvelope
+export type RefreshTokenCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput> | Prisma.RefreshTokenCreateWithoutAccountInput[] | Prisma.RefreshTokenUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutAccountInput | Prisma.RefreshTokenCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.RefreshTokenCreateManyAccountInputEnvelope
   connect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
 }
 
-export type RefreshTokenUncheckedCreateNestedManyWithoutUserInput = {
-  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput> | Prisma.RefreshTokenCreateWithoutUserInput[] | Prisma.RefreshTokenUncheckedCreateWithoutUserInput[]
-  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutUserInput | Prisma.RefreshTokenCreateOrConnectWithoutUserInput[]
-  createMany?: Prisma.RefreshTokenCreateManyUserInputEnvelope
+export type RefreshTokenUncheckedCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput> | Prisma.RefreshTokenCreateWithoutAccountInput[] | Prisma.RefreshTokenUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutAccountInput | Prisma.RefreshTokenCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.RefreshTokenCreateManyAccountInputEnvelope
   connect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
 }
 
-export type RefreshTokenUpdateManyWithoutUserNestedInput = {
-  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput> | Prisma.RefreshTokenCreateWithoutUserInput[] | Prisma.RefreshTokenUncheckedCreateWithoutUserInput[]
-  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutUserInput | Prisma.RefreshTokenCreateOrConnectWithoutUserInput[]
-  upsert?: Prisma.RefreshTokenUpsertWithWhereUniqueWithoutUserInput | Prisma.RefreshTokenUpsertWithWhereUniqueWithoutUserInput[]
-  createMany?: Prisma.RefreshTokenCreateManyUserInputEnvelope
+export type RefreshTokenUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput> | Prisma.RefreshTokenCreateWithoutAccountInput[] | Prisma.RefreshTokenUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutAccountInput | Prisma.RefreshTokenCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.RefreshTokenUpsertWithWhereUniqueWithoutAccountInput | Prisma.RefreshTokenUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.RefreshTokenCreateManyAccountInputEnvelope
   set?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   disconnect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   delete?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   connect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
-  update?: Prisma.RefreshTokenUpdateWithWhereUniqueWithoutUserInput | Prisma.RefreshTokenUpdateWithWhereUniqueWithoutUserInput[]
-  updateMany?: Prisma.RefreshTokenUpdateManyWithWhereWithoutUserInput | Prisma.RefreshTokenUpdateManyWithWhereWithoutUserInput[]
+  update?: Prisma.RefreshTokenUpdateWithWhereUniqueWithoutAccountInput | Prisma.RefreshTokenUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.RefreshTokenUpdateManyWithWhereWithoutAccountInput | Prisma.RefreshTokenUpdateManyWithWhereWithoutAccountInput[]
   deleteMany?: Prisma.RefreshTokenScalarWhereInput | Prisma.RefreshTokenScalarWhereInput[]
 }
 
-export type RefreshTokenUncheckedUpdateManyWithoutUserNestedInput = {
-  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput> | Prisma.RefreshTokenCreateWithoutUserInput[] | Prisma.RefreshTokenUncheckedCreateWithoutUserInput[]
-  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutUserInput | Prisma.RefreshTokenCreateOrConnectWithoutUserInput[]
-  upsert?: Prisma.RefreshTokenUpsertWithWhereUniqueWithoutUserInput | Prisma.RefreshTokenUpsertWithWhereUniqueWithoutUserInput[]
-  createMany?: Prisma.RefreshTokenCreateManyUserInputEnvelope
+export type RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput> | Prisma.RefreshTokenCreateWithoutAccountInput[] | Prisma.RefreshTokenUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.RefreshTokenCreateOrConnectWithoutAccountInput | Prisma.RefreshTokenCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.RefreshTokenUpsertWithWhereUniqueWithoutAccountInput | Prisma.RefreshTokenUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.RefreshTokenCreateManyAccountInputEnvelope
   set?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   disconnect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   delete?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
   connect?: Prisma.RefreshTokenWhereUniqueInput | Prisma.RefreshTokenWhereUniqueInput[]
-  update?: Prisma.RefreshTokenUpdateWithWhereUniqueWithoutUserInput | Prisma.RefreshTokenUpdateWithWhereUniqueWithoutUserInput[]
-  updateMany?: Prisma.RefreshTokenUpdateManyWithWhereWithoutUserInput | Prisma.RefreshTokenUpdateManyWithWhereWithoutUserInput[]
+  update?: Prisma.RefreshTokenUpdateWithWhereUniqueWithoutAccountInput | Prisma.RefreshTokenUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.RefreshTokenUpdateManyWithWhereWithoutAccountInput | Prisma.RefreshTokenUpdateManyWithWhereWithoutAccountInput[]
   deleteMany?: Prisma.RefreshTokenScalarWhereInput | Prisma.RefreshTokenScalarWhereInput[]
 }
 
-export type RefreshTokenCreateWithoutUserInput = {
+export type RefreshTokenCreateWithoutAccountInput = {
   id?: string
   token: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
+  expires_at: Date | string
 }
 
-export type RefreshTokenUncheckedCreateWithoutUserInput = {
+export type RefreshTokenUncheckedCreateWithoutAccountInput = {
   id?: string
   token: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
+  expires_at: Date | string
 }
 
-export type RefreshTokenCreateOrConnectWithoutUserInput = {
+export type RefreshTokenCreateOrConnectWithoutAccountInput = {
   where: Prisma.RefreshTokenWhereUniqueInput
-  create: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput>
+  create: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput>
 }
 
-export type RefreshTokenCreateManyUserInputEnvelope = {
-  data: Prisma.RefreshTokenCreateManyUserInput | Prisma.RefreshTokenCreateManyUserInput[]
+export type RefreshTokenCreateManyAccountInputEnvelope = {
+  data: Prisma.RefreshTokenCreateManyAccountInput | Prisma.RefreshTokenCreateManyAccountInput[]
   skipDuplicates?: boolean
 }
 
-export type RefreshTokenUpsertWithWhereUniqueWithoutUserInput = {
+export type RefreshTokenUpsertWithWhereUniqueWithoutAccountInput = {
   where: Prisma.RefreshTokenWhereUniqueInput
-  update: Prisma.XOR<Prisma.RefreshTokenUpdateWithoutUserInput, Prisma.RefreshTokenUncheckedUpdateWithoutUserInput>
-  create: Prisma.XOR<Prisma.RefreshTokenCreateWithoutUserInput, Prisma.RefreshTokenUncheckedCreateWithoutUserInput>
+  update: Prisma.XOR<Prisma.RefreshTokenUpdateWithoutAccountInput, Prisma.RefreshTokenUncheckedUpdateWithoutAccountInput>
+  create: Prisma.XOR<Prisma.RefreshTokenCreateWithoutAccountInput, Prisma.RefreshTokenUncheckedCreateWithoutAccountInput>
 }
 
-export type RefreshTokenUpdateWithWhereUniqueWithoutUserInput = {
+export type RefreshTokenUpdateWithWhereUniqueWithoutAccountInput = {
   where: Prisma.RefreshTokenWhereUniqueInput
-  data: Prisma.XOR<Prisma.RefreshTokenUpdateWithoutUserInput, Prisma.RefreshTokenUncheckedUpdateWithoutUserInput>
+  data: Prisma.XOR<Prisma.RefreshTokenUpdateWithoutAccountInput, Prisma.RefreshTokenUncheckedUpdateWithoutAccountInput>
 }
 
-export type RefreshTokenUpdateManyWithWhereWithoutUserInput = {
+export type RefreshTokenUpdateManyWithWhereWithoutAccountInput = {
   where: Prisma.RefreshTokenScalarWhereInput
-  data: Prisma.XOR<Prisma.RefreshTokenUpdateManyMutationInput, Prisma.RefreshTokenUncheckedUpdateManyWithoutUserInput>
+  data: Prisma.XOR<Prisma.RefreshTokenUpdateManyMutationInput, Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountInput>
 }
 
 export type RefreshTokenScalarWhereInput = {
@@ -428,42 +428,42 @@ export type RefreshTokenScalarWhereInput = {
   NOT?: Prisma.RefreshTokenScalarWhereInput | Prisma.RefreshTokenScalarWhereInput[]
   id?: Prisma.UuidFilter<"RefreshToken"> | string
   token?: Prisma.StringFilter<"RefreshToken"> | string
-  user_id?: Prisma.UuidFilter<"RefreshToken"> | string
+  account_id?: Prisma.UuidFilter<"RefreshToken"> | string
   revoked?: Prisma.BoolFilter<"RefreshToken"> | boolean
-  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
   created_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
+  expires_at?: Prisma.DateTimeFilter<"RefreshToken"> | Date | string
 }
 
-export type RefreshTokenCreateManyUserInput = {
+export type RefreshTokenCreateManyAccountInput = {
   id?: string
   token: string
   revoked?: boolean
-  expires_at: Date | string
   created_at?: Date | string
+  expires_at: Date | string
 }
 
-export type RefreshTokenUpdateWithoutUserInput = {
+export type RefreshTokenUpdateWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type RefreshTokenUncheckedUpdateWithoutUserInput = {
+export type RefreshTokenUncheckedUpdateWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type RefreshTokenUncheckedUpdateManyWithoutUserInput = {
+export type RefreshTokenUncheckedUpdateManyWithoutAccountInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -471,65 +471,65 @@ export type RefreshTokenUncheckedUpdateManyWithoutUserInput = {
 export type RefreshTokenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
-  user_id?: boolean
+  account_id?: boolean
   revoked?: boolean
-  expires_at?: boolean
   created_at?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  expires_at?: boolean
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["refreshToken"]>
 
 export type RefreshTokenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
-  user_id?: boolean
+  account_id?: boolean
   revoked?: boolean
-  expires_at?: boolean
   created_at?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  expires_at?: boolean
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["refreshToken"]>
 
 export type RefreshTokenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
-  user_id?: boolean
+  account_id?: boolean
   revoked?: boolean
-  expires_at?: boolean
   created_at?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  expires_at?: boolean
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["refreshToken"]>
 
 export type RefreshTokenSelectScalar = {
   id?: boolean
   token?: boolean
-  user_id?: boolean
+  account_id?: boolean
   revoked?: boolean
-  expires_at?: boolean
   created_at?: boolean
+  expires_at?: boolean
 }
 
-export type RefreshTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "user_id" | "revoked" | "expires_at" | "created_at", ExtArgs["result"]["refreshToken"]>
+export type RefreshTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "account_id" | "revoked" | "created_at" | "expires_at", ExtArgs["result"]["refreshToken"]>
 export type RefreshTokenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }
 export type RefreshTokenIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }
 export type RefreshTokenIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.AccountDefaultArgs<ExtArgs>
 }
 
 export type $RefreshTokenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "RefreshToken"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
+    account: Prisma.$AccountPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     token: string
-    user_id: string
+    account_id: string
     revoked: boolean
-    expires_at: Date
     created_at: Date
+    expires_at: Date
   }, ExtArgs["result"]["refreshToken"]>
   composites: {}
 }
@@ -924,7 +924,7 @@ readonly fields: RefreshTokenFieldRefs;
  */
 export interface Prisma__RefreshTokenClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  account<T extends Prisma.AccountDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AccountDefaultArgs<ExtArgs>>): Prisma.Prisma__AccountClient<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -956,10 +956,10 @@ export interface Prisma__RefreshTokenClient<T, Null = never, ExtArgs extends run
 export interface RefreshTokenFieldRefs {
   readonly id: Prisma.FieldRef<"RefreshToken", 'String'>
   readonly token: Prisma.FieldRef<"RefreshToken", 'String'>
-  readonly user_id: Prisma.FieldRef<"RefreshToken", 'String'>
+  readonly account_id: Prisma.FieldRef<"RefreshToken", 'String'>
   readonly revoked: Prisma.FieldRef<"RefreshToken", 'Boolean'>
-  readonly expires_at: Prisma.FieldRef<"RefreshToken", 'DateTime'>
   readonly created_at: Prisma.FieldRef<"RefreshToken", 'DateTime'>
+  readonly expires_at: Prisma.FieldRef<"RefreshToken", 'DateTime'>
 }
     
 

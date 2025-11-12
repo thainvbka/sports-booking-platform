@@ -8,7 +8,7 @@ WORKDIR /app
 # Điều này giúp tận dụng cache của Docker. Nếu các file này không đổi, Docker sẽ không chạy lại npm install.
 COPY package.json package-lock.json* ./
 COPY apps/backend/package.json ./apps/backend/
-COPY apps/web-owner/package.json ./apps/web-owner/
+COPY apps/frontend/package.json ./apps/frontend/
 
 # Cài đặt tất cả dependencies trong monorepo
 # Sử dụng --omit=dev cho production, nhưng ở đây là dev nên cài hết

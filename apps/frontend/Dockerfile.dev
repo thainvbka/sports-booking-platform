@@ -5,7 +5,7 @@ WORKDIR /app
 # Tận dụng cache, sao chép các file quản lý package trước
 COPY package.json package-lock.json* ./
 COPY apps/backend/package.json ./apps/backend/
-COPY apps/web-owner/package.json ./apps/web-owner/
+COPY apps/frontend/package.json ./apps/frontend/
 
 # Cài đặt tất cả dependencies
 RUN npm install
@@ -18,4 +18,4 @@ EXPOSE 5173
 
 # Lệnh để chạy server development của Vite
 # Cờ --host là CỰC KỲ QUAN TRỌNG để có thể truy cập từ máy thật
-CMD ["npm", "run", "dev", "--workspace=web-owner", "--", "--host"]
+CMD ["npm", "run", "dev", "--workspace=frontend", "--", "--host"]

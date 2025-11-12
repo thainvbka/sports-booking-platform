@@ -17,10 +17,25 @@ export { Prisma }
 export * as $Enums from './enums.ts'
 export * from './enums.ts';
 /**
- * Model User
+ * Model Account
  * 
  */
-export type User = Prisma.UserModel
+export type Account = Prisma.AccountModel
+/**
+ * Model Admin
+ * 
+ */
+export type Admin = Prisma.AdminModel
+/**
+ * Model Owner
+ * 
+ */
+export type Owner = Prisma.OwnerModel
+/**
+ * Model Player
+ * 
+ */
+export type Player = Prisma.PlayerModel
 /**
  * Model RefreshToken
  * 
@@ -47,6 +62,11 @@ export type SubField = Prisma.SubFieldModel
  */
 export type PricingRule = Prisma.PricingRuleModel
 /**
+ * Model RecurringBooking
+ * 
+ */
+export type RecurringBooking = Prisma.RecurringBookingModel
+/**
  * Model Booking
  * 
  */
@@ -56,3 +76,8 @@ export type Booking = Prisma.BookingModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel

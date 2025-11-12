@@ -8,26 +8,6 @@
 * 🟢 You can import this file directly.
 */
 
-export const Role = {
-  PLAYER: 'PLAYER',
-  OWNER: 'OWNER',
-  ADMIN: 'ADMIN'
-} as const
-
-export type Role = (typeof Role)[keyof typeof Role]
-
-
-export const Level = {
-  BEGINNER: 'BEGINNER',
-  AMATEUR: 'AMATEUR',
-  INTERMEDIATE: 'INTERMEDIATE',
-  ADVANCED: 'ADVANCED',
-  PRO: 'PRO'
-} as const
-
-export type Level = (typeof Level)[keyof typeof Level]
-
-
 export const SportType = {
   FOOTBALL: 'FOOTBALL',
   BASKETBALL: 'BASKETBALL',
@@ -51,8 +31,7 @@ export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 
 
 export const PaymentProvider = {
-  MOMO: 'MOMO',
-  VNPAY: 'VNPAY'
+  STRIPE: 'STRIPE'
 } as const
 
 export type PaymentProvider = (typeof PaymentProvider)[keyof typeof PaymentProvider]
@@ -65,3 +44,54 @@ export const PaymentStatus = {
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const AdminStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type AdminStatus = (typeof AdminStatus)[keyof typeof AdminStatus]
+
+
+export const PlayerStatus = {
+  ACTIVE: 'ACTIVE',
+  BANNED: 'BANNED'
+} as const
+
+export type PlayerStatus = (typeof PlayerStatus)[keyof typeof PlayerStatus]
+
+
+export const OwnerStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type OwnerStatus = (typeof OwnerStatus)[keyof typeof OwnerStatus]
+
+
+export const RecurrenceType = {
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY'
+} as const
+
+export type RecurrenceType = (typeof RecurrenceType)[keyof typeof RecurrenceType]
+
+
+export const RecurringStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELED: 'CANCELED'
+} as const
+
+export type RecurringStatus = (typeof RecurringStatus)[keyof typeof RecurringStatus]
+
+
+export const ComplexStatus = {
+  DRAFT: 'DRAFT',
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  REJECTED: 'REJECTED',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type ComplexStatus = (typeof ComplexStatus)[keyof typeof ComplexStatus]

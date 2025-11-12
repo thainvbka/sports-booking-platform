@@ -28,8 +28,8 @@ export * from "./enums.ts"
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Accounts
+ * const accounts = await prisma.account.findMany()
  * ```
  * 
  * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
@@ -44,10 +44,25 @@ path.join(__dirname, "libquery_engine-linux-musl-openssl-3.0.x.so.node")
 path.join(process.cwd(), "packages/db/generated/prisma-client/libquery_engine-linux-musl-openssl-3.0.x.so.node")
 
 /**
- * Model User
+ * Model Account
  * 
  */
-export type User = Prisma.UserModel
+export type Account = Prisma.AccountModel
+/**
+ * Model Admin
+ * 
+ */
+export type Admin = Prisma.AdminModel
+/**
+ * Model Owner
+ * 
+ */
+export type Owner = Prisma.OwnerModel
+/**
+ * Model Player
+ * 
+ */
+export type Player = Prisma.PlayerModel
 /**
  * Model RefreshToken
  * 
@@ -74,6 +89,11 @@ export type SubField = Prisma.SubFieldModel
  */
 export type PricingRule = Prisma.PricingRuleModel
 /**
+ * Model RecurringBooking
+ * 
+ */
+export type RecurringBooking = Prisma.RecurringBookingModel
+/**
  * Model Booking
  * 
  */
@@ -83,3 +103,8 @@ export type Booking = Prisma.BookingModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel

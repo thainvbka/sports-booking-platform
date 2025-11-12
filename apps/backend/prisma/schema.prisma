@@ -14,20 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  PLAYER
-  OWNER
-  ADMIN
-}
-
-enum Level {
-  BEGINNER
-  AMATEUR
-  INTERMEDIATE
-  ADVANCED
-  PRO
-}
-
 enum SportType {
   FOOTBALL
   BASKETBALL
@@ -45,8 +31,7 @@ enum BookingStatus {
 }
 
 enum PaymentProvider {
-  MOMO
-  VNPAY
+  STRIPE
 }
 
 enum PaymentStatus {
@@ -55,123 +40,221 @@ enum PaymentStatus {
   REFUNDED
 }
 
-model User {
+enum AdminStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PlayerStatus {
+  ACTIVE
+  BANNED
+}
+
+enum OwnerStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RecurrenceType {
+  WEEKLY
+  MONTHLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  CANCELED
+}
+
+enum ComplexStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  REJECTED
+  INACTIVE
+}
+
+model Account {
   id              String          @id @default(uuid()) @db.Uuid
-  email           String          @unique
-  password_hash   String
-  full_name       String
-  phone_number    String          @unique
-  role            Role
-  level           Level?
+  email           String          @unique @db.VarChar(50)
+  password_hash   String          @db.Text
+  full_name       String          @db.VarChar(100)
+  phone_number    String          @unique @db.VarChar(15)
   avatar          String?         @db.Text
-  company_name    String?
-  social_accounts SocialAccount[]
-  complexes       Complex[]
-  bookings        Booking[]
-  created_at      DateTime        @default(now()) @db.Timestamptz(0)
-  updated_at      DateTime        @updatedAt @db.Timestamptz(0)
   email_verified  Boolean         @default(false)
   phone_verified  Boolean         @default(false)
+  created_at      DateTime        @default(now()) @db.Timestamptz(0)
+  updated_at      DateTime        @updatedAt @db.Timestamptz(0)
+  social_accounts SocialAccount[]
   refresh_tokens  RefreshToken[]
+  notifications   Notification[]
+  admin           Admin?
+  owner           Owner?
+  player          Player?
+}
+
+model Admin {
+  id         String      @id @default(uuid()) @db.Uuid
+  account_id String      @unique @db.Uuid
+  account    Account     @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  status     AdminStatus
+  created_at DateTime    @default(now()) @db.Timestamptz(0)
+  updated_at DateTime    @updatedAt @db.Timestamptz(0)
+}
+
+model Owner {
+  id                         String      @id @default(uuid()) @db.Uuid
+  account_id                 String      @unique @db.Uuid
+  account                    Account     @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  company_name               String      @db.VarChar(100)
+  stripe_account_id          String?     @db.VarChar(100)
+  stripe_onboarding_complete Boolean     @default(false)
+  status                     OwnerStatus
+  complexes                  Complex[]
+}
+
+model Player {
+  id                String             @id @default(uuid()) @db.Uuid
+  account_id        String             @unique @db.Uuid
+  account           Account            @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  status            PlayerStatus
+  bookings          Booking[]
+  recurringBookings RecurringBooking[]
 }
 
 model RefreshToken {
-  id      String @id @default(uuid()) @db.Uuid
-  token   String @unique
-  user_id String @db.Uuid
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String  @id @default(uuid()) @db.Uuid
+  token      String  @unique @db.Text
+  account_id String  @db.Uuid
+  account    Account @relation(fields: [account_id], references: [id], onDelete: Cascade)
 
   revoked    Boolean  @default(false)
-  expires_at DateTime
-  created_at DateTime @default(now())
+  created_at DateTime @default(now()) @db.Timestamptz(0)
+  expires_at DateTime @db.Timestamptz(0)
 
-  @@index([user_id])
+  @@index([account_id])
 }
 
 model SocialAccount {
-  id          String @id @default(uuid()) @db.Uuid
-  provider    String
-  provider_id String
-  user_id     String @db.Uuid
-  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id          String  @id @default(uuid()) @db.Uuid
+  provider    String  @db.VarChar(50)
+  provider_id String  @db.VarChar(100)
+  account_id  String  @db.Uuid
+  account     Account @relation(fields: [account_id], references: [id], onDelete: Cascade)
 
   @@unique([provider, provider_id]) // một social account là duy nhất theo (provider, provider_id)
-  @@unique([user_id, provider]) // mỗi user chỉ liên kết 1 account cho mỗi provider
-  @@index([user_id])
+  @@unique([account_id, provider]) // mỗi account chỉ liên kết 1 account cho mỗi provider
+  @@index([account_id])
 }
 
 model Complex {
-  id            String     @id @default(uuid()) @db.Uuid
-  name          String
-  address       String     @db.Text
-  sport_type    SportType
-  owner_id      String     @db.Uuid
-  owner         User       @relation(fields: [owner_id], references: [id], onDelete: Restrict)
-  is_active     Boolean    @default(true)
-  sub_fields    SubField[]
-  complex_image String?    @db.Text
-  created_at    DateTime   @default(now()) @db.Timestamptz(0)
-  updated_at    DateTime   @updatedAt @db.Timestamptz(0)
+  id                String        @id @default(uuid()) @db.Uuid
+  owner_id          String        @db.Uuid
+  owner             Owner         @relation(fields: [owner_id], references: [id], onDelete: Restrict)
+  complex_name      String        @db.VarChar(100)
+  complex_address   String        @db.Text
+  status            ComplexStatus
+  verification_docs Json          @db.Json
+  complex_image     String?       @db.Text
+  created_at        DateTime      @default(now()) @db.Timestamptz(0)
+  updated_at        DateTime      @updatedAt @db.Timestamptz(0)
+  sub_fields        SubField[]
 
   @@index([owner_id])
 }
 
 model SubField {
-  id              String        @id @default(uuid()) @db.Uuid
-  name            String
-  capacity        Int           @db.SmallInt
-  complex_id      String        @db.Uuid
-  complex         Complex       @relation(fields: [complex_id], references: [id], onDelete: Restrict)
-  bookings        Booking[]
-  pricing_rules   PricingRule[]
-  sub_field_image String?       @db.Text
-  created_at      DateTime      @default(now()) @db.Timestamptz(0)
-  updated_at      DateTime      @updatedAt @db.Timestamptz(0)
+  id                String             @id @default(uuid()) @db.Uuid
+  complex_id        String             @db.Uuid
+  complex           Complex            @relation(fields: [complex_id], references: [id], onDelete: Restrict)
+  sub_field_name    String             @db.VarChar(100)
+  capacity          Int                @db.SmallInt
+  sub_field_image   String?            @db.Text
+  sport_type        SportType
+  created_at        DateTime           @default(now()) @db.Timestamptz(0)
+  updated_at        DateTime           @updatedAt @db.Timestamptz(0)
+  recurringBookings RecurringBooking[]
+  bookings          Booking[]
+  pricing_rules     PricingRule[]
 
-  @@unique([complex_id, name]) // tên sân con là duy nhất trong 1 khu
+  @@unique([complex_id, sub_field_name]) // tên sân con là duy nhất trong 1 khu
   @@index([complex_id])
 }
 
 model PricingRule {
-  id             String   @id @default(uuid()) @db.Uuid
-  day_of_week    Int      @db.SmallInt
-  start_time     DateTime @db.Time(0) // Format: "HH:MM"
-  end_time       DateTime @db.Time(0) // Format: "HH:MM"
-  base_price     Decimal  @db.Decimal(10, 2)
-  sub_field_id   String   @db.Uuid
-  sub_field      SubField @relation(fields: [sub_field_id], references: [id], onDelete: Cascade)
-  is_dynamic     Boolean  @default(false)
-  dynamic_config Json?    @db.JsonB
+  id           String   @id @default(uuid()) @db.Uuid
+  sub_field_id String   @db.Uuid
+  sub_field    SubField @relation(fields: [sub_field_id], references: [id], onDelete: Cascade)
+  day_of_week  Int      @db.SmallInt
+  start_time   DateTime @db.Time(0) // Format: "HH:MM"
+  end_time     DateTime @db.Time(0) // Format: "HH:MM"
+  base_price   Decimal  @db.Decimal(10, 2)
 
   @@unique([sub_field_id, day_of_week, start_time, end_time]) // tránh trùng rule y hệt
   @@index([sub_field_id, day_of_week, start_time])
 }
 
+model RecurringBooking {
+  id                String          @id @default(uuid()) @db.Uuid
+  player_id         String          @db.Uuid
+  player            Player          @relation(fields: [player_id], references: [id], onDelete: Cascade)
+  sub_field_id      String          @db.Uuid
+  sub_field         SubField        @relation(fields: [sub_field_id], references: [id], onDelete: Cascade)
+  recurrence_type   RecurrenceType
+  recurrence_detail Json            @db.Json
+  // {
+  //   "day_of_week": 2, // 1: T2, 2: T3, ..., 7: CN
+  //   "start_time": "19:00",
+  //   "end_time": "20:30"
+  // }
+  start_date        DateTime        @db.Date
+  end_date          DateTime        @db.Date
+  status            RecurringStatus
+  created_at        DateTime        @default(now()) @db.Timestamptz(0)
+  bookings          Booking[]
+
+  @@index([player_id])
+  @@index([sub_field_id])
+}
+
 model Booking {
-  id           String        @id @default(uuid()) @db.Uuid
-  start_time   DateTime      @db.Timestamptz(0)
-  end_time     DateTime      @db.Timestamptz(0)
-  total_price  Decimal       @db.Decimal(10, 2)
-  status       BookingStatus
-  created_at   DateTime      @default(now()) @db.Timestamptz(0)
-  paid_at      DateTime?     @db.Timestamptz(0)
-  user_id      String        @db.Uuid
-  user         User          @relation(fields: [user_id], references: [id], onDelete: Restrict)
-  sub_field_id String        @db.Uuid
-  sub_field    SubField      @relation(fields: [sub_field_id], references: [id], onDelete: Restrict)
-  payment      Payment?
+  id                   String            @id @default(uuid()) @db.Uuid
+  start_time           DateTime          @db.Timestamptz(0)
+  end_time             DateTime          @db.Timestamptz(0)
+  total_price          Decimal           @db.Decimal(10, 2)
+  status               BookingStatus
+  created_at           DateTime          @default(now()) @db.Timestamptz(0) // thời gian tạo booking
+  paid_at              DateTime?         @db.Timestamptz(0) // thời gian thanh toán
+  player_id            String            @db.Uuid
+  player               Player            @relation(fields: [player_id], references: [id], onDelete: Restrict)
+  sub_field_id         String            @db.Uuid
+  sub_field            SubField          @relation(fields: [sub_field_id], references: [id], onDelete: Restrict)
+  payment              Payment?
+  recurring_booking_id String?           @db.Uuid
+  recurringBooking     RecurringBooking? @relation(fields: [recurring_booking_id], references: [id])
+  expires_at           DateTime          @db.Timestamptz(0)
 
   @@index([sub_field_id, start_time])
-  @@index([user_id, start_time])
+  @@index([player_id, start_time])
 }
 
 model Payment {
   id               String          @id @default(uuid()) @db.Uuid
-  amount           Decimal         @db.Decimal(10, 2)
-  provider         PaymentProvider
-  status           PaymentStatus
   booking_id       String          @unique @db.Uuid
   booking          Booking         @relation(fields: [booking_id], references: [id], onDelete: Restrict)
+  amount           Decimal         @db.Decimal(10, 2)
+  provider         PaymentProvider
   transaction_code String          @unique
+  status           PaymentStatus
   created_at       DateTime        @default(now()) @db.Timestamptz(0)
+}
+
+model Notification {
+  id         String   @id @default(uuid()) @db.Uuid
+  account_id String   @db.Uuid
+  account    Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  message    String   @db.Text
+  is_read    Boolean  @default(false)
+  type       String
+  link_to    String?
+  created_at DateTime @default(now()) @db.Timestamptz(0)
 }
