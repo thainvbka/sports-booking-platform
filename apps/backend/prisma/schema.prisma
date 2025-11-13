@@ -76,7 +76,7 @@ enum ComplexStatus {
 model Account {
   id              String          @id @default(uuid()) @db.Uuid
   email           String          @unique @db.VarChar(50)
-  password_hash   String          @db.Text
+  password        String          @db.Text
   full_name       String          @db.VarChar(100)
   phone_number    String          @unique @db.VarChar(15)
   avatar          String?         @db.Text

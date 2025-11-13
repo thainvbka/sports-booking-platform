@@ -26,7 +26,7 @@ export type AggregateAccount = {
 export type AccountMinAggregateOutputType = {
   id: string | null
   email: string | null
-  password_hash: string | null
+  password: string | null
   full_name: string | null
   phone_number: string | null
   avatar: string | null
@@ -39,7 +39,7 @@ export type AccountMinAggregateOutputType = {
 export type AccountMaxAggregateOutputType = {
   id: string | null
   email: string | null
-  password_hash: string | null
+  password: string | null
   full_name: string | null
   phone_number: string | null
   avatar: string | null
@@ -52,7 +52,7 @@ export type AccountMaxAggregateOutputType = {
 export type AccountCountAggregateOutputType = {
   id: number
   email: number
-  password_hash: number
+  password: number
   full_name: number
   phone_number: number
   avatar: number
@@ -67,7 +67,7 @@ export type AccountCountAggregateOutputType = {
 export type AccountMinAggregateInputType = {
   id?: true
   email?: true
-  password_hash?: true
+  password?: true
   full_name?: true
   phone_number?: true
   avatar?: true
@@ -80,7 +80,7 @@ export type AccountMinAggregateInputType = {
 export type AccountMaxAggregateInputType = {
   id?: true
   email?: true
-  password_hash?: true
+  password?: true
   full_name?: true
   phone_number?: true
   avatar?: true
@@ -93,7 +93,7 @@ export type AccountMaxAggregateInputType = {
 export type AccountCountAggregateInputType = {
   id?: true
   email?: true
-  password_hash?: true
+  password?: true
   full_name?: true
   phone_number?: true
   avatar?: true
@@ -179,7 +179,7 @@ export type AccountGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type AccountGroupByOutputType = {
   id: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar: string | null
@@ -213,7 +213,7 @@ export type AccountWhereInput = {
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   id?: Prisma.UuidFilter<"Account"> | string
   email?: Prisma.StringFilter<"Account"> | string
-  password_hash?: Prisma.StringFilter<"Account"> | string
+  password?: Prisma.StringFilter<"Account"> | string
   full_name?: Prisma.StringFilter<"Account"> | string
   phone_number?: Prisma.StringFilter<"Account"> | string
   avatar?: Prisma.StringNullableFilter<"Account"> | string | null
@@ -232,7 +232,7 @@ export type AccountWhereInput = {
 export type AccountOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password_hash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   full_name?: Prisma.SortOrder
   phone_number?: Prisma.SortOrder
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -255,7 +255,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   OR?: Prisma.AccountWhereInput[]
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
-  password_hash?: Prisma.StringFilter<"Account"> | string
+  password?: Prisma.StringFilter<"Account"> | string
   full_name?: Prisma.StringFilter<"Account"> | string
   avatar?: Prisma.StringNullableFilter<"Account"> | string | null
   email_verified?: Prisma.BoolFilter<"Account"> | boolean
@@ -273,7 +273,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password_hash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   full_name?: Prisma.SortOrder
   phone_number?: Prisma.SortOrder
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,7 +292,7 @@ export type AccountScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AccountScalarWhereWithAggregatesInput | Prisma.AccountScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"Account"> | string
   email?: Prisma.StringWithAggregatesFilter<"Account"> | string
-  password_hash?: Prisma.StringWithAggregatesFilter<"Account"> | string
+  password?: Prisma.StringWithAggregatesFilter<"Account"> | string
   full_name?: Prisma.StringWithAggregatesFilter<"Account"> | string
   phone_number?: Prisma.StringWithAggregatesFilter<"Account"> | string
   avatar?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
@@ -305,7 +305,7 @@ export type AccountScalarWhereWithAggregatesInput = {
 export type AccountCreateInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -324,7 +324,7 @@ export type AccountCreateInput = {
 export type AccountUncheckedCreateInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -343,7 +343,7 @@ export type AccountUncheckedCreateInput = {
 export type AccountUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -362,7 +362,7 @@ export type AccountUpdateInput = {
 export type AccountUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -381,7 +381,7 @@ export type AccountUncheckedUpdateInput = {
 export type AccountCreateManyInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -394,7 +394,7 @@ export type AccountCreateManyInput = {
 export type AccountUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -407,7 +407,7 @@ export type AccountUpdateManyMutationInput = {
 export type AccountUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -420,7 +420,7 @@ export type AccountUncheckedUpdateManyInput = {
 export type AccountCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password_hash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   full_name?: Prisma.SortOrder
   phone_number?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
@@ -433,7 +433,7 @@ export type AccountCountOrderByAggregateInput = {
 export type AccountMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password_hash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   full_name?: Prisma.SortOrder
   phone_number?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
@@ -446,7 +446,7 @@ export type AccountMaxOrderByAggregateInput = {
 export type AccountMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  password_hash?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   full_name?: Prisma.SortOrder
   phone_number?: Prisma.SortOrder
   avatar?: Prisma.SortOrder
@@ -564,7 +564,7 @@ export type AccountUpdateOneRequiredWithoutNotificationsNestedInput = {
 export type AccountCreateWithoutAdminInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -582,7 +582,7 @@ export type AccountCreateWithoutAdminInput = {
 export type AccountUncheckedCreateWithoutAdminInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -616,7 +616,7 @@ export type AccountUpdateToOneWithWhereWithoutAdminInput = {
 export type AccountUpdateWithoutAdminInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -634,7 +634,7 @@ export type AccountUpdateWithoutAdminInput = {
 export type AccountUncheckedUpdateWithoutAdminInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -652,7 +652,7 @@ export type AccountUncheckedUpdateWithoutAdminInput = {
 export type AccountCreateWithoutOwnerInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -670,7 +670,7 @@ export type AccountCreateWithoutOwnerInput = {
 export type AccountUncheckedCreateWithoutOwnerInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -704,7 +704,7 @@ export type AccountUpdateToOneWithWhereWithoutOwnerInput = {
 export type AccountUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -722,7 +722,7 @@ export type AccountUpdateWithoutOwnerInput = {
 export type AccountUncheckedUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -740,7 +740,7 @@ export type AccountUncheckedUpdateWithoutOwnerInput = {
 export type AccountCreateWithoutPlayerInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -758,7 +758,7 @@ export type AccountCreateWithoutPlayerInput = {
 export type AccountUncheckedCreateWithoutPlayerInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -792,7 +792,7 @@ export type AccountUpdateToOneWithWhereWithoutPlayerInput = {
 export type AccountUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -810,7 +810,7 @@ export type AccountUpdateWithoutPlayerInput = {
 export type AccountUncheckedUpdateWithoutPlayerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -828,7 +828,7 @@ export type AccountUncheckedUpdateWithoutPlayerInput = {
 export type AccountCreateWithoutRefresh_tokensInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -846,7 +846,7 @@ export type AccountCreateWithoutRefresh_tokensInput = {
 export type AccountUncheckedCreateWithoutRefresh_tokensInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -880,7 +880,7 @@ export type AccountUpdateToOneWithWhereWithoutRefresh_tokensInput = {
 export type AccountUpdateWithoutRefresh_tokensInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -898,7 +898,7 @@ export type AccountUpdateWithoutRefresh_tokensInput = {
 export type AccountUncheckedUpdateWithoutRefresh_tokensInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -916,7 +916,7 @@ export type AccountUncheckedUpdateWithoutRefresh_tokensInput = {
 export type AccountCreateWithoutSocial_accountsInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -934,7 +934,7 @@ export type AccountCreateWithoutSocial_accountsInput = {
 export type AccountUncheckedCreateWithoutSocial_accountsInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -968,7 +968,7 @@ export type AccountUpdateToOneWithWhereWithoutSocial_accountsInput = {
 export type AccountUpdateWithoutSocial_accountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -986,7 +986,7 @@ export type AccountUpdateWithoutSocial_accountsInput = {
 export type AccountUncheckedUpdateWithoutSocial_accountsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1004,7 +1004,7 @@ export type AccountUncheckedUpdateWithoutSocial_accountsInput = {
 export type AccountCreateWithoutNotificationsInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -1022,7 +1022,7 @@ export type AccountCreateWithoutNotificationsInput = {
 export type AccountUncheckedCreateWithoutNotificationsInput = {
   id?: string
   email: string
-  password_hash: string
+  password: string
   full_name: string
   phone_number: string
   avatar?: string | null
@@ -1056,7 +1056,7 @@ export type AccountUpdateToOneWithWhereWithoutNotificationsInput = {
 export type AccountUpdateWithoutNotificationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1074,7 +1074,7 @@ export type AccountUpdateWithoutNotificationsInput = {
 export type AccountUncheckedUpdateWithoutNotificationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   full_name?: Prisma.StringFieldUpdateOperationsInput | string
   phone_number?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1141,7 +1141,7 @@ export type AccountCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime
 export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
-  password_hash?: boolean
+  password?: boolean
   full_name?: boolean
   phone_number?: boolean
   avatar?: boolean
@@ -1161,7 +1161,7 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
-  password_hash?: boolean
+  password?: boolean
   full_name?: boolean
   phone_number?: boolean
   avatar?: boolean
@@ -1174,7 +1174,7 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
-  password_hash?: boolean
+  password?: boolean
   full_name?: boolean
   phone_number?: boolean
   avatar?: boolean
@@ -1187,7 +1187,7 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type AccountSelectScalar = {
   id?: boolean
   email?: boolean
-  password_hash?: boolean
+  password?: boolean
   full_name?: boolean
   phone_number?: boolean
   avatar?: boolean
@@ -1197,7 +1197,7 @@ export type AccountSelectScalar = {
   updated_at?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password_hash" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   social_accounts?: boolean | Prisma.Account$social_accountsArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.Account$refresh_tokensArgs<ExtArgs>
@@ -1223,7 +1223,7 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     email: string
-    password_hash: string
+    password: string
     full_name: string
     phone_number: string
     avatar: string | null
@@ -1662,7 +1662,7 @@ export interface Prisma__AccountClient<T, Null = never, ExtArgs extends runtime.
 export interface AccountFieldRefs {
   readonly id: Prisma.FieldRef<"Account", 'String'>
   readonly email: Prisma.FieldRef<"Account", 'String'>
-  readonly password_hash: Prisma.FieldRef<"Account", 'String'>
+  readonly password: Prisma.FieldRef<"Account", 'String'>
   readonly full_name: Prisma.FieldRef<"Account", 'String'>
   readonly phone_number: Prisma.FieldRef<"Account", 'String'>
   readonly avatar: Prisma.FieldRef<"Account", 'String'>

@@ -1,146 +1,203 @@
-// import { prisma } from "@sports-booking-platform/db";
-// import {
-//   ConflictRequestError,
-//   UnauthorizedError,
-// } from "../../utils/error.response";
-// import bcrypt from "bcrypt";
-// import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
-// import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
+import { prisma, Prisma } from "@sports-booking-platform/db";
+import {
+  ConflictRequestError,
+  UnauthorizedError,
+  InternalServerError,
+} from "../../utils/error.response";
+import bcrypt from "bcrypt";
+import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
+import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
+import { registerInput } from "@sports-booking-platform/validation/access.schema";
 
-// export const signUp = async (userData: any) => {
-//   const existingUser = await prisma.user.findFirst({
-//     where: {
-//       OR: [{ email: userData.email }, { phone_number: userData.phone_number }],
-//     },
-//   });
+type PrismaTransactionClient = Prisma.TransactionClient;
 
-//   if (existingUser) {
-//     throw new ConflictRequestError("Email or phone number already exists");
-//   }
+const roleCreationStrategy = {
+  PLAYER: async (tx: PrismaTransactionClient, accountId: string) => {
+    await tx.player.create({
+      data: {
+        account_id: accountId,
+        status: "ACTIVE",
+      },
+    });
+  },
+  OWNER: async (
+    tx: PrismaTransactionClient,
+    accountId: string,
+    data: registerInput
+  ) => {
+    // type guard để TypeScript hiểu data này có company_name
+    if (data.role !== "OWNER") {
+      throw new InternalServerError("Invalid data provided for OWNER role");
+    }
+    await tx.owner.create({
+      data: {
+        account_id: accountId,
+        company_name: data.company_name,
+        status: "ACTIVE",
+      },
+    });
+  },
+  ADMIN: async (tx: PrismaTransactionClient, accountId: string) => {
+    await tx.admin.create({
+      data: {
+        account_id: accountId,
+        status: "ACTIVE",
+      },
+    });
+  },
+};
 
-//   const hashPassword = await bcrypt.hash(userData.password_hash, 10);
+export const signUp = async (userData: registerInput) => {
+  const existingUser = await prisma.account.findFirst({
+    where: {
+      OR: [{ email: userData.email }, { phone_number: userData.phone_number }],
+    },
+  });
 
-//   const newUser = await prisma.user.create({
-//     data: {
-//       ...userData,
-//       password_hash: hashPassword,
-//     },
-//     select: {
-//       id: true,
-//       email: true,
-//       phone_number: true,
-//       full_name: true,
-//     },
-//   });
+  if (existingUser) {
+    throw new ConflictRequestError("Email or phone number already exists");
+  }
 
-//   const accessToken = generateAccessToken(newUser.id);
-//   const refreshToken = generateRefreshToken(newUser.id);
+  const hashPassword = await bcrypt.hash(userData.password, 10);
 
-//   await prisma.refreshToken.create({
-//     data: {
-//       token: refreshToken,
-//       user_id: newUser.id,
-//       expires_at: getRefreshExpiryDate(),
-//     },
-//   });
+  //transaction tạo account và role account
+  const newUser = await prisma.$transaction(async (tx) => {
+    const account = await tx.account.create({
+      data: {
+        email: userData.email,
+        password: hashPassword,
+        full_name: userData.full_name,
+        phone_number: userData.phone_number,
+        avatar: userData.avatar,
+      },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        phone_number: true,
+        avatar: true,
+      },
+    });
 
-//   return {
-//     user: newUser,
-//     accessToken,
-//     refreshToken,
-//   };
-// };
+    const createRoleAccount = roleCreationStrategy[userData.role];
 
-// export const logIn = async (email: string, password_hash: string) => {
-//   const user = await prisma.user.findUnique({
-//     where: { email },
-//   });
+    if (!createRoleAccount) {
+      //schema có role mới nhưng strategy chưa cập nhật
+      throw new InternalServerError(
+        `Role creation for '${userData.role}' is not implemented.`
+      );
+    }
 
-//   if (!user) {
-//     throw new ConflictRequestError("Invalid email or password");
-//   }
+    await createRoleAccount(tx, account.id, userData);
+    return account;
+  });
 
-//   const isPasswordValid = await bcrypt.compare(
-//     password_hash,
-//     user.password_hash
-//   );
+  const accessToken = generateAccessToken(newUser.id);
+  const refreshToken = generateRefreshToken(newUser.id);
 
-//   if (!isPasswordValid) {
-//     throw new ConflictRequestError("Invalid email or password");
-//   }
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      account_id: newUser.id,
+      expires_at: getRefreshExpiryDate(),
+    },
+  });
 
-//   const accessToken = generateAccessToken(user.id);
-//   const refreshToken = generateRefreshToken(user.id);
+  return {
+    user: newUser,
+    accessToken,
+    refreshToken,
+  };
+};
 
-//   await prisma.refreshToken.create({
-//     data: {
-//       token: refreshToken,
-//       user_id: user.id,
-//       expires_at: getRefreshExpiryDate(),
-//     },
-//   });
+export const logIn = async (email: string, password: string) => {
+  const user = await prisma.account.findUnique({
+    where: { email },
+  });
 
-//   return {
-//     user: {
-//       id: user.id,
-//       email: user.email,
-//       full_name: user.full_name,
-//       phone_number: user.phone_number,
-//     },
-//     accessToken,
-//     refreshToken,
-//   };
-// };
+  if (!user) {
+    throw new ConflictRequestError("Invalid email or password");
+  }
 
-// export const logOut = async (refreshToken: string) => {
-//   return await prisma.refreshToken.deleteMany({
-//     where: {
-//       token: refreshToken,
-//     },
-//   });
-// };
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
-// export const handlerRefreshToken = async (refreshToken: string) => {
-//   const storedToken = await prisma.refreshToken.findUnique({
-//     where: {
-//       token: refreshToken,
-//     },
-//   });
+  if (!isPasswordValid) {
+    throw new ConflictRequestError("Invalid email or password");
+  }
 
-//   if (!storedToken) {
-//     throw new UnauthorizedError("Invalid refresh token");
-//   }
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
-//   if (storedToken.expires_at < new Date()) {
-//     throw new UnauthorizedError("Refresh token has expired");
-//   }
-//   if (storedToken.revoked) {
-//     throw new UnauthorizedError("Refresh token has been revoked");
-//   }
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      account_id: user.id,
+      expires_at: getRefreshExpiryDate(),
+    },
+  });
 
-//   const accessToken = generateAccessToken(storedToken.user_id);
-//   const newRefreshToken = generateRefreshToken(storedToken.user_id);
-//   const newExpiry = getRefreshExpiryDate();
-//   await prisma.$transaction([
-//     prisma.refreshToken.update({
-//       where: {
-//         token: refreshToken,
-//       },
-//       data: {
-//         revoked: true,
-//       },
-//     }),
-//     prisma.refreshToken.create({
-//       data: {
-//         token: newRefreshToken,
-//         user_id: storedToken.user_id,
-//         expires_at: newExpiry,
-//       },
-//     }),
-//   ]);
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      phone_number: user.phone_number,
+      avatar: user.avatar,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
 
-//   return {
-//     accessToken,
-//     refreshToken: newRefreshToken,
-//   };
-// };
+export const logOut = async (refreshToken: string) => {
+  return await prisma.refreshToken.deleteMany({
+    where: {
+      token: refreshToken,
+    },
+  });
+};
+
+export const handlerRefreshToken = async (refreshToken: string) => {
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: {
+      token: refreshToken,
+    },
+  });
+
+  if (!storedToken) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+
+  if (storedToken.expires_at < new Date()) {
+    throw new UnauthorizedError("Refresh token has expired");
+  }
+  if (storedToken.revoked) {
+    throw new UnauthorizedError("Refresh token has been revoked");
+  }
+
+  const accessToken = generateAccessToken(storedToken.account_id);
+  const newRefreshToken = generateRefreshToken(storedToken.account_id);
+  const newExpiry = getRefreshExpiryDate();
+  await prisma.$transaction([
+    prisma.refreshToken.update({
+      where: {
+        token: refreshToken,
+      },
+      data: {
+        revoked: true,
+      },
+    }),
+    prisma.refreshToken.create({
+      data: {
+        token: newRefreshToken,
+        account_id: storedToken.account_id,
+        expires_at: newExpiry,
+      },
+    }),
+  ]);
+
+  return {
+    accessToken,
+    refreshToken: newRefreshToken,
+  };
+};

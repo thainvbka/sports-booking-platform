@@ -51,3 +51,12 @@ export class ForbiddenError extends ErrorResponse {
     super(message, status);
   }
 }
+
+export class InternalServerError extends ErrorResponse {
+  constructor(
+    message = reasonPhrases.INTERNAL_SERVER_ERROR,
+    status = statusCodes.INTERNAL_SERVER_ERROR
+  ) {
+    super(message, status);
+  }
+}
