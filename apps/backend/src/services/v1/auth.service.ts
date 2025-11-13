@@ -8,10 +8,11 @@ import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
 import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
 import { registerInput } from "@sports-booking-platform/validation/access.schema";
+import { addRoleInput } from "@sports-booking-platform/validation/account.schema";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
-const roleCreationStrategy = {
+export const roleCreationStrategy = {
   PLAYER: async (tx: PrismaTransactionClient, accountId: string) => {
     await tx.player.create({
       data: {
@@ -23,7 +24,7 @@ const roleCreationStrategy = {
   OWNER: async (
     tx: PrismaTransactionClient,
     accountId: string,
-    data: registerInput
+    data: registerInput | addRoleInput
   ) => {
     // type guard để TypeScript hiểu data này có company_name
     if (data.role !== "OWNER") {

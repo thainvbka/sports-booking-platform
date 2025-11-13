@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
 import { config } from "../configs";
 
-export const generateAccessToken = (userId: string): string => {
-  return jwt.sign({ userId }, config.JWT_ACCESS_SECRET, {
+export const generateAccessToken = (accountId: string): string => {
+  return jwt.sign({ accountId }, config.JWT_ACCESS_SECRET, {
     expiresIn: config.JWT_ACCESS_EXPIRATION,
   });
 };
-export const generateRefreshToken = (userId: string): string => {
-  return jwt.sign({ userId }, config.JWT_REFRESH_SECRET, {
+export const generateRefreshToken = (accountId: string): string => {
+  return jwt.sign({ accountId }, config.JWT_REFRESH_SECRET, {
     expiresIn: config.JWT_REFRESH_EXPIRATION,
   });
 };

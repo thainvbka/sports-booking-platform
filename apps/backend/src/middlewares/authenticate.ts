@@ -15,12 +15,12 @@ const authenticate = async (
 
   const token = authHeader.split(" ")[1];
 
-  const decoded = verifyAccessToken(token) as { userId: string };
+  const decoded = verifyAccessToken(token) as { accountId: string };
 
   if (!decoded) {
     throw new UnauthorizedError("Invalid or expired token");
   }
-  req.userId = decoded.userId;
+  req.accountId = decoded.accountId;
   next();
 };
 
