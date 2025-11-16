@@ -1,8 +1,18 @@
 import jwt from "jsonwebtoken";
 import { config } from "../configs";
 
-export const generateAccessToken = (accountId: string): string => {
-  return jwt.sign({ accountId }, config.JWT_ACCESS_SECRET, {
+export interface JwtPayload {
+  accountId: string;
+  roles: ("PLAYER" | "OWNER" | "ADMIN")[];
+  profiles: {
+    playerId?: string;
+    ownerId?: string;
+    adminId?: string;
+  };
+}
+
+export const generateAccessToken = (payload: JwtPayload): string => {
+  return jwt.sign(payload, config.JWT_ACCESS_SECRET, {
     expiresIn: config.JWT_ACCESS_EXPIRATION,
   });
 };
@@ -12,8 +22,8 @@ export const generateRefreshToken = (accountId: string): string => {
   });
 };
 
-export const verifyAccessToken = (token: string) => {
-  return jwt.verify(token, config.JWT_ACCESS_SECRET);
+export const verifyAccessToken = (token: string): JwtPayload => {
+  return jwt.verify(token, config.JWT_ACCESS_SECRET) as JwtPayload;
 };
 
 export const verifyRefreshToken = (token: string) => {
