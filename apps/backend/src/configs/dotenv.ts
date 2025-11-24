@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import ms from "ms";
+import path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 
 const config = {
   SERVER_PORT: process.env.SERVER_PORT || 3000,

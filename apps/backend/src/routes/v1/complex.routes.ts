@@ -24,6 +24,44 @@ import {
 const router = Router();
 
 /**
+ * ADMIN Routes
+ */
+router.get(
+  "/pending",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(getPendingComplexesController)
+);
+
+router.get(
+  "/all",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(getAllComplexesAdminController)
+);
+
+router.post(
+  "/:id/approve",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(approveComplexController)
+);
+
+router.post(
+  "/:id/reject",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(rejectComplexController)
+);
+
+router.post(
+  "/:id/suspend",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(suspendComplexController)
+);
+
+/**
  * OWNER Routes
  */
 // Tạo Complex (upload ảnh đại diện + ảnh giấy tờ)
@@ -66,44 +104,6 @@ router.delete(
   authenticate,
   authorize(["OWNER"]),
   asyncHandler(deleteComplexController)
-);
-
-/**
- * ADMIN Routes
- */
-router.get(
-  "/pending",
-  authenticate,
-  authorize(["ADMIN"]),
-  asyncHandler(getPendingComplexesController)
-);
-
-router.post(
-  "/:id/approve",
-  authenticate,
-  authorize(["ADMIN"]),
-  asyncHandler(approveComplexController)
-);
-
-router.post(
-  "/:id/reject",
-  authenticate,
-  authorize(["ADMIN"]),
-  asyncHandler(rejectComplexController)
-);
-
-router.post(
-  "/:id/suspend",
-  authenticate,
-  authorize(["ADMIN"]),
-  asyncHandler(suspendComplexController)
-);
-
-router.get(
-  "/all",
-  authenticate,
-  authorize(["ADMIN"]),
-  asyncHandler(getAllComplexesAdminController)
 );
 
 export default router;

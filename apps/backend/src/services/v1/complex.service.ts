@@ -237,10 +237,11 @@ export const rejectComplex = async (complexId: string) => {
     throw new BadRequestError("Only PENDING complexes can be rejected");
   }
 
-  await prisma.complex.update({
+  const updatedComplex = await prisma.complex.update({
     where: { id: complexId },
     data: { status: "REJECTED" },
   });
+  return updatedComplex;
 };
 
 //suspend complex
@@ -297,3 +298,30 @@ export const getAllComplexesAdmin = async () => {
 /**
  * PUBLIC SERVICES
  */
+export const getComplexActive = async () => {
+  const complexes = await prisma.complex.findMany({
+    where: { status: "ACTIVE" },
+    orderBy: { created_at: "desc" },
+    select: {
+      id: true,
+      complex_name: true,
+      complex_address: true,
+      complex_image: true,
+      status: true,
+      owner: {
+        select: {
+          id: true,
+          account: {
+            select: {
+              email: true,
+              full_name: true,
+              phone_number: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return complexes;
+};

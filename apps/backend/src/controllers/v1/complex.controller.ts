@@ -85,6 +85,7 @@ export const deleteComplexController = async (req: Request, res: Response) => {
 
   return new SuccessResponse({
     message: "Complex deleted successfully",
+    data: null,
   }).send(res);
 };
 
@@ -115,10 +116,11 @@ export const approveComplexController = async (req: Request, res: Response) => {
 export const rejectComplexController = async (req: Request, res: Response) => {
   const complexId = req.params.id;
 
-  await rejectComplex(complexId);
+  const rejectedComplex = await rejectComplex(complexId);
 
   return new SuccessResponse({
     message: "Complex rejected successfully",
+    data: { complex: rejectedComplex },
   }).send(res);
 };
 
