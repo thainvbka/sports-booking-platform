@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import ms from "ms";
+import path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 
 const config = {
   SERVER_PORT: process.env.SERVER_PORT || 3000,
@@ -12,6 +13,9 @@ const config = {
   JWT_REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION as ms.StringValue,
   NODE_ENV: process.env.NODE_ENV || "development",
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:5173",
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 };
 
 export default config;

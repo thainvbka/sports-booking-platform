@@ -23,10 +23,10 @@ router.post(
 
 router.post("/login", validate(loginSchema), asyncHandler(loginController));
 
-router.use(asyncHandler(authenticate));
+router.post("/refresh-token", asyncHandler(refreshTokenController));
+
+router.use(authenticate);
 
 router.post("/logout", asyncHandler(logoutController));
-
-router.post("/refresh-token", asyncHandler(refreshTokenController));
 
 export default router;

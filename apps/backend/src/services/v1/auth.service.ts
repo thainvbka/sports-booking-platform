@@ -4,11 +4,13 @@ import {
   UnauthorizedError,
   InternalServerError,
 } from "../../utils/error.response";
+import { JwtPayload } from "../../libs/jwt";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
 import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
 import { registerInput } from "@sports-booking-platform/validation/access.schema";
 import { addRoleInput } from "@sports-booking-platform/validation/account.schema";
+import { getUserRolesAndProfiles } from "../../helpers";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
@@ -93,7 +95,17 @@ export const signUp = async (userData: registerInput) => {
     return account;
   });
 
-  const accessToken = generateAccessToken(newUser.id);
+  //fetch roles và profiles
+  const { roles, profiles } = await getUserRolesAndProfiles(newUser.id);
+
+  //tạo payload cho jwt
+  const jwtPayload: JwtPayload = {
+    accountId: newUser.id,
+    roles,
+    profiles,
+  };
+
+  const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(newUser.id);
 
   await prisma.refreshToken.create({
@@ -105,7 +117,10 @@ export const signUp = async (userData: registerInput) => {
   });
 
   return {
-    user: newUser,
+    user: {
+      ...newUser,
+      roles,
+    },
     accessToken,
     refreshToken,
   };
@@ -126,7 +141,17 @@ export const logIn = async (email: string, password: string) => {
     throw new ConflictRequestError("Invalid email or password");
   }
 
-  const accessToken = generateAccessToken(user.id);
+  //fetch roles và profiles
+  const { roles, profiles } = await getUserRolesAndProfiles(user.id);
+  console.log(roles, profiles);
+  //tạo payload cho jwt
+  const jwtPayload: JwtPayload = {
+    accountId: user.id,
+    roles,
+    profiles,
+  };
+
+  const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(user.id);
 
   await prisma.refreshToken.create({
@@ -144,6 +169,7 @@ export const logIn = async (email: string, password: string) => {
       full_name: user.full_name,
       phone_number: user.phone_number,
       avatar: user.avatar,
+      roles,
     },
     accessToken,
     refreshToken,
@@ -151,7 +177,16 @@ export const logIn = async (email: string, password: string) => {
 };
 
 export const logOut = async (refreshToken: string) => {
-  return await prisma.refreshToken.deleteMany({
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: {
+      token: refreshToken,
+    },
+  });
+
+  if (!storedToken) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+  return await prisma.refreshToken.delete({
     where: {
       token: refreshToken,
     },
@@ -176,7 +211,19 @@ export const handlerRefreshToken = async (refreshToken: string) => {
     throw new UnauthorizedError("Refresh token has been revoked");
   }
 
-  const accessToken = generateAccessToken(storedToken.account_id);
+  //fetch roles và profiles
+  const { roles, profiles } = await getUserRolesAndProfiles(
+    storedToken.account_id
+  );
+
+  //tạo payload cho jwt
+  const jwtPayload: JwtPayload = {
+    accountId: storedToken.account_id,
+    roles,
+    profiles,
+  };
+
+  const accessToken = generateAccessToken(jwtPayload);
   const newRefreshToken = generateRefreshToken(storedToken.account_id);
   const newExpiry = getRefreshExpiryDate();
   await prisma.$transaction([
