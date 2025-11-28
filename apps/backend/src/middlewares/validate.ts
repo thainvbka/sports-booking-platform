@@ -7,6 +7,8 @@ export const validate =
   (schema: ZodTypeAny) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log("req.body", req.body);
+
       // Parse và xác thực request body, params, và query
       const parsed = await schema.parseAsync({
         body: req.body,
