@@ -18,7 +18,7 @@ export const getUserRolesAndProfiles = async (
     throw new NotFoundError("Account not found");
   }
 
-  const roles: ("PLAYER" | "OWNER" | "ADMIN")[] = [];
+  const roles: JwtPayload["roles"] = [];
   const profileData: JwtPayload["profiles"] = {};
 
   if (profiles.player) {

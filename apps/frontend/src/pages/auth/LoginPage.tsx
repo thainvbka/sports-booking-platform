@@ -31,12 +31,12 @@ export function LoginPage() {
 
       if (user?.roles.includes("ADMIN")) {
         navigate("/admin");
-      } else if (user?.roles.includes("OWNER")) {
-        // TODO: Fetch owner profile here if needed, or rely on backend to return it in login response if modified
-        // For now, we might need a separate call to get owner details if they aren't in the user object
-        // Assuming user object has what we need or we fetch it later.
-        // Let's just navigate for now.
-        navigate("/owner");
+        // } else if (user?.roles.includes("OWNER")) {
+        //   // TODO: Fetch owner profile here if needed, or rely on backend to return it in login response if modified
+        //   // For now, we might need a separate call to get owner details if they aren't in the user object
+        //   // Assuming user object has what we need or we fetch it later.
+        //   // Let's just navigate for now.
+        //   navigate("/owner");
       } else {
         navigate("/");
       }

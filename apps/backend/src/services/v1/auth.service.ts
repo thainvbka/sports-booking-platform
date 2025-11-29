@@ -120,6 +120,7 @@ export const signUp = async (userData: registerInput) => {
     user: {
       ...newUser,
       roles,
+      profiles,
     },
     accessToken,
     refreshToken,
@@ -170,6 +171,7 @@ export const logIn = async (email: string, password: string) => {
       phone_number: user.phone_number,
       avatar: user.avatar,
       roles,
+      profiles,
     },
     accessToken,
     refreshToken,
