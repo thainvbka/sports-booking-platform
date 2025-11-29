@@ -25,8 +25,11 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sports-booking-platform/validation": [
+        "../../packages/validation/index.ts"
+      ]
     }
   },
-  "include": ["src"]
+  "include": ["src", "../../packages/validation/index.ts"]
 }
