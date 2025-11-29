@@ -22,7 +22,14 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@sports-booking-platform/validation": [
+        "../../packages/validation/index.ts"
+      ]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../../packages/validation/index.ts"]
 }
