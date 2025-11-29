@@ -41,7 +41,7 @@ export function DashboardLayout() {
           to="/"
           className="text-xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent"
         >
-          SportBook {isAdmin ? "Admin" : "Owner"}
+          T-Sport {isAdmin ? "Admin" : "Owner"}
         </Link>
       </div>
 

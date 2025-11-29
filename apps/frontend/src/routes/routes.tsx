@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
-// import { MainLayout } from "./layouts/MainLayout";
+import { MainLayout } from "@/layouts/MainLayout";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-// import { HomePage } from "./pages/HomePage";
+import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
 // import { SearchPage } from "./pages/player/SearchPage";
@@ -16,28 +16,28 @@ import { RegisterPage } from "../pages/auth/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
-  // {
-  //   path: "/",
-  //   element: <MainLayout />,
-  //   children: [
-  //     {
-  //       index: true,
-  //       element: <HomePage />,
-  //     },
-  //     {
-  //       path: "search",
-  //       element: <SearchPage />,
-  //     },
-  //     {
-  //       path: "complex/:id",
-  //       element: <PlayerComplexDetailPage />,
-  //     },
-  //     {
-  //       path: "about",
-  //       element: <div>About Us (Placeholder)</div>,
-  //     },
-  //   ],
-  // },
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+      //     {
+      //       path: "search",
+      //       element: <SearchPage />,
+      //     },
+      //     {
+      //       path: "complex/:id",
+      //       element: <PlayerComplexDetailPage />,
+      //     },
+      //     {
+      //       path: "about",
+      //       element: <div>About Us (Placeholder)</div>,
+      //     },
+    ],
+  },
   {
     path: "/auth",
     element: <AuthLayout />,

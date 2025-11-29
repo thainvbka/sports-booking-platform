@@ -5,53 +5,34 @@ import { SportType, ComplexStatus } from "@/types";
 const generatePricingRules = (subFieldId: string): PricingRule[] => {
   const rules: PricingRule[] = [];
 
-  // Weekday pricing (Monday-Friday)
-  for (let day = 1; day <= 5; day++) {
-    rules.push({
-      id: `${subFieldId}-${day}-morning`,
-      sub_field_id: subFieldId,
-      day_of_week: day,
-      start_time: "06:00",
-      end_time: "12:00",
-      base_price: 200000,
-    });
-    rules.push({
-      id: `${subFieldId}-${day}-afternoon`,
-      sub_field_id: subFieldId,
-      day_of_week: day,
-      start_time: "12:00",
-      end_time: "18:00",
-      base_price: 300000,
-    });
-    rules.push({
-      id: `${subFieldId}-${day}-evening`,
-      sub_field_id: subFieldId,
-      day_of_week: day,
-      start_time: "18:00",
-      end_time: "22:00",
-      base_price: 400000,
-    });
-  }
+  // Generate 1-hour slots from 6:00 to 22:00 for each day
+  for (let day = 0; day <= 6; day++) {
+    for (let hour = 6; hour < 22; hour++) {
+      const startTime = `${hour.toString().padStart(2, "0")}:00`;
+      const endTime = `${(hour + 1).toString().padStart(2, "0")}:00`;
 
-  // Weekend pricing (Saturday-Sunday)
-  for (let day = 0; day <= 0; day++) {
-    rules.push({
-      id: `${subFieldId}-${day}-allday`,
-      sub_field_id: subFieldId,
-      day_of_week: day,
-      start_time: "06:00",
-      end_time: "22:00",
-      base_price: 500000,
-    });
+      let price = 200000; // Default morning price
+
+      // Weekend surcharge
+      if (day === 0 || day === 6) {
+        price += 50000;
+      }
+
+      // Peak hours (17:00 - 21:00)
+      if (hour >= 17 && hour <= 20) {
+        price += 100000;
+      }
+
+      rules.push({
+        id: `${subFieldId}-${day}-${hour}`,
+        sub_field_id: subFieldId,
+        day_of_week: day,
+        start_time: startTime,
+        end_time: endTime,
+        base_price: price,
+      });
+    }
   }
-  rules.push({
-    id: `${subFieldId}-6-allday`,
-    sub_field_id: subFieldId,
-    day_of_week: 6,
-    start_time: "06:00",
-    end_time: "22:00",
-    base_price: 500000,
-  });
 
   return rules;
 };
@@ -66,6 +47,7 @@ const mockComplexes: Complex[] = [
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=2070",
+    verification_docs: [],
     sub_fields: [
       {
         id: "sf-1-1",
@@ -113,6 +95,7 @@ const mockComplexes: Complex[] = [
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070",
+    verification_docs: [],
     sub_fields: [
       {
         id: "sf-2-1",
@@ -160,6 +143,7 @@ const mockComplexes: Complex[] = [
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=2070",
+    verification_docs: [],
     sub_fields: [
       {
         id: "sf-3-1",
@@ -226,6 +210,50 @@ export const searchComplexes = (filters: SearchFilters): Complex[] => {
   return results;
 };
 
+export const getAllSubFields = (): (SubField & {
+  complex_name: string;
+  complex_address: string;
+})[] => {
+  const allSubFields: (SubField & {
+    complex_name: string;
+    complex_address: string;
+  })[] = [];
+  mockComplexes.forEach((complex) => {
+    if (complex.status === ComplexStatus.ACTIVE) {
+      complex.sub_fields.forEach((sf) => {
+        allSubFields.push({
+          ...sf,
+          complex_name: complex.complex_name,
+          complex_address: complex.complex_address,
+        });
+      });
+    }
+  });
+  return allSubFields;
+};
+
+export const searchSubFields = (
+  filters: SearchFilters
+): (SubField & { complex_name: string; complex_address: string })[] => {
+  let results = getAllSubFields();
+
+  if (filters.location) {
+    const searchTerm = filters.location.toLowerCase();
+    results = results.filter(
+      (sf) =>
+        sf.complex_name.toLowerCase().includes(searchTerm) ||
+        sf.complex_address.toLowerCase().includes(searchTerm) ||
+        sf.sub_field_name.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  if (filters.sport_type) {
+    results = results.filter((sf) => sf.sport_type === filters.sport_type);
+  }
+
+  return results;
+};
+
 export const getSportTypeLabel = (sportType: SportType): string => {
   const labels: Record<SportType, string> = {
     [SportType.FOOTBALL]: "Bóng đá",
@@ -253,4 +281,99 @@ export const formatPrice = (price: number): string => {
     style: "currency",
     currency: "VND",
   }).format(price);
+};
+
+// Mock Bookings
+import { BookingStatus } from "@/types";
+import type { Booking } from "@/types";
+
+const mockBookings: Booking[] = [
+  {
+    id: "b-1",
+    start_time: "2023-12-01T08:00:00Z",
+    end_time: "2023-12-01T09:00:00Z",
+    total_price: 200000,
+    status: BookingStatus.COMPLETED,
+    player_id: "player-1",
+    sub_field_id: "sf-1-1",
+    created_at: "2023-11-25T10:00:00Z",
+    expires_at: "2023-11-25T10:15:00Z",
+    paid_at: "2023-11-25T10:05:00Z",
+  },
+  {
+    id: "b-2",
+    start_time: "2023-12-05T18:00:00Z",
+    end_time: "2023-12-05T20:00:00Z",
+    total_price: 600000,
+    status: BookingStatus.CONFIRMED,
+    player_id: "player-1",
+    sub_field_id: "sf-2-2",
+    created_at: "2023-12-01T14:00:00Z",
+    expires_at: "2023-12-01T14:15:00Z",
+    paid_at: "2023-12-01T14:05:00Z",
+  },
+  {
+    id: "b-3",
+    start_time: "2023-12-10T07:00:00Z",
+    end_time: "2023-12-10T09:00:00Z",
+    total_price: 400000,
+    status: BookingStatus.PENDING,
+    player_id: "player-1",
+    sub_field_id: "sf-3-1",
+    created_at: "2023-12-09T08:00:00Z",
+    expires_at: "2023-12-09T08:15:00Z",
+  },
+  {
+    id: "b-4",
+    start_time: "2023-12-12T19:00:00Z",
+    end_time: "2023-12-12T20:00:00Z",
+    total_price: 300000,
+    status: BookingStatus.CANCELED,
+    player_id: "player-1",
+    sub_field_id: "sf-1-2",
+    created_at: "2023-12-08T09:00:00Z",
+    expires_at: "2023-12-08T09:15:00Z",
+  },
+];
+
+export const getPlayerBookings = (
+  playerId: string
+): (Booking & {
+  sub_field: SubField & { complex_name: string; complex_address: string };
+})[] => {
+  const allSubFields = getAllSubFields();
+  return mockBookings
+    .filter((b) => b.player_id === playerId)
+    .map((b) => {
+      const subField = allSubFields.find((sf) => sf.id === b.sub_field_id);
+      if (!subField) throw new Error(`SubField ${b.sub_field_id} not found`);
+      return { ...b, sub_field: subField };
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+};
+
+export const getOwnerBookings = (
+  ownerId: string
+): (Booking & { sub_field: SubField & { complex_name: string } })[] => {
+  const ownerComplexes = mockComplexes.filter((c) => c.owner_id === ownerId);
+  const ownerSubFieldIds = ownerComplexes.flatMap((c) =>
+    c.sub_fields.map((sf) => sf.id)
+  );
+
+  const allSubFields = getAllSubFields();
+
+  return mockBookings
+    .filter((b) => ownerSubFieldIds.includes(b.sub_field_id))
+    .map((b) => {
+      const subField = allSubFields.find((sf) => sf.id === b.sub_field_id);
+      if (!subField) throw new Error(`SubField ${b.sub_field_id} not found`);
+      return { ...b, sub_field: subField };
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+    );
 };

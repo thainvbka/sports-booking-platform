@@ -10,9 +10,9 @@ export function AuthLayout() {
       >
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative z-10 text-center">
-          <h1 className="text-4xl font-bold mb-4">Welcome to SportBook</h1>
+          <h1 className="text-4xl font-bold mb-4">Chào mừng đến với T-Sport</h1>
           <p className="text-lg text-gray-200">
-            The easiest way to find and book sports fields near you.
+            Cách dễ nhất để tìm và đặt sân thể thao gần bạn.
           </p>
         </div>
       </div>
