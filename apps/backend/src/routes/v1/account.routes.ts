@@ -7,9 +7,12 @@ import { accountSchema } from "@sports-booking-platform/validation/account.schem
 
 const router = Router();
 
-router.use(authenticate);
-
 // Endpoint để thêm một vai trò mới vào tài khoản hiện tại
-router.post("/roles", validate(accountSchema), asyncHandler(addRoleController));
+router.post(
+  "/roles",
+  authenticate,
+  validate(accountSchema),
+  asyncHandler(addRoleController)
+);
 
 export default router;

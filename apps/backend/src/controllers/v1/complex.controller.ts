@@ -12,7 +12,7 @@ import {
   getAllComplexesAdmin,
   getOwnerComplexById,
 } from "../../services/v1/complex.service";
-import { uploadComplexImages } from "../../helpers";
+import { BadRequestError } from "../../utils/error.response";
 
 //owner controllers
 
@@ -23,7 +23,21 @@ export const createComplexController = async (req: Request, res: Response) => {
   //req.files : { complex_image: [file], verification_docs: [file, file, ...]
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-  // 3. Tạo Complex
+  if (!files || Object.keys(files).length === 0) {
+    throw new BadRequestError("No files uploaded");
+  }
+
+  // Check specifically for complex_image
+  if (!files.complex_image || files.complex_image.length === 0) {
+    throw new BadRequestError("Complex image is required");
+  }
+
+  // Check specifically for verification_docs
+  if (!files.verification_docs || files.verification_docs.length === 0) {
+    throw new BadRequestError("At least one verification document is required");
+  }
+
+  // Tạo Complex
   const newComplex = await createComplex(ownerId, {
     complex_name: complex_name,
     complex_address: complex_address,
@@ -85,7 +99,7 @@ export const deleteComplexController = async (req: Request, res: Response) => {
 
   return new SuccessResponse({
     message: "Complex deleted successfully",
-    data: null,
+    data: {},
   }).send(res);
 };
 

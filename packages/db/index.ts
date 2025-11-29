@@ -13,3 +13,4 @@ if (process.env.NODE_ENV !== "production") {
 
 // Re-export types/models để dùng chung
 export * from "./generated/prisma-client/client";
+export * from "./generated/prisma-client/enums";

@@ -20,6 +20,12 @@ import {
   suspendComplexController,
   getAllComplexesAdminController,
 } from "../../controllers/v1/complex.controller";
+import {
+  createSubfieldController,
+  getOwnerSubfieldsController,
+} from "../../controllers/v1/subfield.controller";
+
+import { createSubfieldSchema } from "@sports-booking-platform/validation/subfield.schema";
 
 const router = Router();
 
@@ -75,6 +81,24 @@ router.post(
   ]),
   validate(createComplexSchema),
   asyncHandler(createComplexController)
+);
+
+// Subfield Routes
+
+router.post(
+  "/:id/sub-fields",
+  authenticate,
+  authorize(["OWNER"]),
+  upload.fields([{ name: "subfield_image", maxCount: 1 }]),
+  validate(createSubfieldSchema),
+  asyncHandler(createSubfieldController)
+);
+
+router.get(
+  "/:id/sub-fields",
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(getOwnerSubfieldsController)
 );
 
 router.get(
