@@ -1,60 +1,63 @@
 import { create } from "zustand";
-import type { Complex, SubField, PricingRule, Owner } from "@/types";
+import type { ComplexDetail, ComplexListItem } from "@/types";
+import { ownerService } from "@/services/owner.service";
 
 interface OwnerState {
-  owner: Owner | null;
-  complexes: Complex[];
-  selectedComplex: Complex | null;
-  setOwner: (owner: Owner) => void;
-  setComplexes: (complexes: Complex[]) => void;
-  setSelectedComplex: (complex: Complex | null) => void;
-  addComplex: (complex: Complex) => void;
-  updateComplex: (id: string, data: Partial<Complex>) => void;
-  addSubField: (complexId: string, subField: SubField) => void;
-  addPricingRule: (subFieldId: string, rule: PricingRule) => void;
+  complexes: ComplexListItem[];
+  selectedComplex: ComplexDetail | null;
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  fetchComplexes: () => Promise<void>;
+  fetchComplexById: (id: string) => Promise<void>;
+  createComplex: (formData: FormData) => Promise<void>;
 }
 
 export const useOwnerStore = create<OwnerState>((set) => ({
-  owner: null,
   complexes: [],
   selectedComplex: null,
+  isLoading: false,
+  error: null,
 
-  setOwner: (owner) => set({ owner }),
-
-  setComplexes: (complexes) => set({ complexes }),
-
-  setSelectedComplex: (complex) => set({ selectedComplex: complex }),
-
-  addComplex: (complex) =>
-    set((state) => ({
-      complexes: [...state.complexes, complex],
-    })),
-
-  updateComplex: (id, data) =>
-    set((state) => ({
-      complexes: state.complexes.map((c) =>
-        c.id === id ? { ...c, ...data } : c
-      ),
-    })),
-
-  addSubField: (complexId, subField) =>
-    set((state) => ({
-      complexes: state.complexes.map((c) =>
-        c.id === complexId
-          ? { ...c, sub_fields: [...c.sub_fields, subField] }
-          : c
-      ),
-    })),
-
-  addPricingRule: (subFieldId, rule) =>
-    set((state) => ({
-      complexes: state.complexes.map((c) => ({
-        ...c,
-        sub_fields: c.sub_fields.map((sf) =>
-          sf.id === subFieldId
-            ? { ...sf, pricing_rules: [...sf.pricing_rules, rule] }
-            : sf
-        ),
-      })),
-    })),
+  fetchComplexes: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await ownerService.getComplexes();
+      set({ complexes: res.data.complexes, isLoading: false });
+      console.log("Fetched complexes:", res.data.complexes);
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch complexes",
+        isLoading: false,
+      });
+    }
+  },
+  fetchComplexById: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await ownerService.getComplexById(id);
+      set({ selectedComplex: res.data.complex, isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch complex details",
+        isLoading: false,
+      });
+    }
+  },
+  createComplex: async (formData: FormData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await ownerService.createComplex(formData);
+      set((state) => ({
+        complexes: [res.data.complex, ...state.complexes],
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to create complex",
+        isLoading: false,
+      });
+    }
+  },
 }));

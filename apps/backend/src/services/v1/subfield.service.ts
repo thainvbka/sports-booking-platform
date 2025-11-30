@@ -98,7 +98,12 @@ export const getOwnerSubfieldById = async (
 ) => {
   //check subfield thuộc owner
   const subfield = await prisma.subField.findUnique({
-    where: { id: subfieldId },
+    where: {
+      id: subfieldId,
+      complex: {
+        status: "ACTIVE",
+      },
+    },
     select: {
       complex: {
         select: { owner_id: true },
@@ -199,12 +204,13 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
     );
   }
 
-  await prisma.subField.delete({
+  await prisma.subField.update({
     where: { id: subfieldId },
+    data: { isDelete: true },
   });
 };
-// GET	/api/v1/public/complexes/:id/sub-fields	Xem danh sách sân con	❌	- Player
-// GET	/api/v1/public/sub-fields/:id/available-slots	Xem khung giờ còn trống	❌	-player
+// GET	/api/v1/public/complexes/:id/sub-fields	Xem danh sách sân con
+// GET	/api/v1/public/sub-fields/:id/available-slots	Xem khung giờ còn trống
 export const getAllSubfield = async () => {
   const subfields = await prisma.subField.findMany();
   return subfields;

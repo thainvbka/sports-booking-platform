@@ -10,8 +10,10 @@ import {
   Users,
   CheckCircle,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function DashboardLayout() {
   const { user, logout } = useAuthStore();
@@ -35,17 +37,24 @@ export function DashboardLayout() {
   const menuItems = isAdmin ? adminMenuItems : ownerMenuItems;
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b">
-        <Link
-          to="/"
-          className="text-xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent"
-        >
-          T-Sport {isAdmin ? "Admin" : "Owner"}
+    <div className="flex flex-col h-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="p-6">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+            S
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            SportBook
+          </span>
         </Link>
+        <div className="mt-2 px-1">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            {isAdmin ? "Admin Portal" : "Owner Portal"}
+          </span>
+        </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 px-4 py-2 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -53,13 +62,20 @@ export function DashboardLayout() {
           return (
             <Link key={item.path} to={item.path}>
               <Button
-                variant={isActive ? "default" : "ghost"}
+                variant="ghost"
                 className={cn(
-                  "w-full justify-start",
-                  isActive && "bg-primary text-primary-foreground"
+                  "w-full justify-start mb-1 transition-all duration-200",
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium hover:bg-primary/15"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                <Icon className="mr-2 h-4 w-4" />
+                <Icon
+                  className={cn(
+                    "mr-3 h-4 w-4",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
                 {item.label}
               </Button>
             </Link>
@@ -67,19 +83,29 @@ export function DashboardLayout() {
         })}
       </nav>
 
-      <div className="p-4 border-t mt-auto">
-        <div className="flex items-center gap-3 mb-4 px-2">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-            {user?.full_name?.[0] || "U"}
-          </div>
+      <div className="p-4 border-t bg-muted/20">
+        <div className="flex items-center gap-3 mb-4 p-2 rounded-lg bg-background border shadow-sm">
+          <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
+            <AvatarImage
+              src={`https://ui-avatars.com/api/?name=${user?.full_name}&background=random`}
+            />
+            <AvatarFallback>{user?.full_name?.[0] || "U"}</AvatarFallback>
+          </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate">{user?.full_name}</p>
+            <p className="text-sm font-medium truncate text-foreground">
+              {user?.full_name}
+            </p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
             </p>
           </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={logout}>
+        <Button
+          variant="outline"
+          className="w-full text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/5 transition-colors"
+          onClick={logout}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
           Đăng xuất
         </Button>
       </div>
@@ -87,30 +113,32 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen flex bg-muted/20">
+    <div className="min-h-screen flex bg-gray-50/50 dark:bg-gray-900/50">
       {/* Desktop Sidebar */}
-      <aside className="w-64 bg-background border-r hidden md:flex flex-col">
+      <aside className="w-72 bg-background border-r hidden md:flex flex-col sticky top-0 h-screen shadow-sm z-20">
         <SidebarContent />
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b bg-background px-6 flex items-center justify-between md:hidden">
+        <header className="h-16 border-b bg-background/80 backdrop-blur-sm px-6 flex items-center justify-between md:hidden sticky top-0 z-10">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72">
+            <SheetContent side="left" className="p-0 w-72 border-r">
               <SidebarContent />
             </SheetContent>
           </Sheet>
-          <span className="font-bold">Menu</span>
-          <div className="w-9" /> {/* Spacer for centering title */}
+          <span className="font-bold text-lg">SportBook</span>
+          <div className="w-9" />
         </header>
-        <div className="flex-1 p-6 overflow-auto">
-          <Outlet />
+        <div className="flex-1 p-6 md:p-8 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

@@ -40,6 +40,51 @@ export const RecurringStatus = {
 export type RecurringStatus =
   (typeof RecurringStatus)[keyof typeof RecurringStatus];
 
+// --- Interfaces ---
+
+// 1. Base Interface (Những trường luôn có)
+export interface ComplexBase {
+  id: string;
+  complex_name: string;
+  complex_address: string;
+  complex_image?: string;
+  status: ComplexStatus;
+  _count: {
+    sub_fields: number;
+  };
+}
+
+// 2. Dùng cho danh sách (Get All)
+export interface ComplexListItem extends ComplexBase {
+  // Backend trả về created_at là string (ISO), không phải Date
+  // created_at?: string;
+}
+
+// 3. Dùng cho chi tiết (Get Detail)
+export interface ComplexDetail extends ComplexBase {
+  sub_fields: SubField[];
+  // created_at: string;
+  // updated_at: string;
+}
+
+// 4. SubField
+export interface SubField {
+  id: string;
+  sub_field_name: string;
+  capacity: number;
+  sub_field_image?: string;
+  sport_type: SportType;
+  // pricing_rules: PricingRule[]; // Backend hiện tại chưa trả về cái này trong getOwnerComplexById
+}
+
+// 5. API Response Wrapper (Quan trọng)
+export interface ApiResponse<T> {
+  message: string;
+  status: number;
+  reason: string;
+  data: T;
+}
+
 // Interfaces
 export interface PricingRule {
   id: string;
@@ -48,18 +93,6 @@ export interface PricingRule {
   start_time: string; // "HH:MM"
   end_time: string; // "HH:MM"
   base_price: number;
-}
-
-export interface SubField {
-  id: string;
-  complex_id: string;
-  sub_field_name: string;
-  capacity: number;
-  sub_field_image?: string;
-  sport_type: SportType;
-  pricing_rules: PricingRule[];
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Owner {

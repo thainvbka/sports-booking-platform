@@ -7,8 +7,8 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
 // import { SearchPage } from "./pages/player/SearchPage";
 // import { ComplexDetailPage as PlayerComplexDetailPage } from "./pages/player/ComplexDetailPage";
-// import { OwnerDashboardPage } from "./pages/owner/DashboardPage";
-// import { ComplexesPage } from "./pages/owner/ComplexesPage";
+import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
+import { ComplexesPage } from "@/pages/owner/ComplexPage";
 // import { ComplexDetailPage as OwnerComplexDetailPage } from "./pages/owner/ComplexDetailPage";
 // import { AdminDashboardPage } from "./pages/admin/DashboardPage";
 // import { ComplexVerificationPage } from "./pages/admin/ComplexVerificationPage";
@@ -59,20 +59,20 @@ export const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    // children: [
-    //   {
-    //     index: true,
-    //     element: <OwnerDashboardPage />,
-    //   },
-    //   {
-    //     path: "complexes",
-    //     element: <ComplexesPage />,
-    //   },
-    //   {
-    //     path: "complexes/:id",
-    //     element: <OwnerComplexDetailPage />,
-    //   },
-    // ],
+    children: [
+      {
+        index: true,
+        element: <OwnerDashboardPage />,
+      },
+      {
+        path: "complexes",
+        element: <ComplexesPage />,
+      },
+      //   {
+      //     path: "complexes/:id",
+      //     element: <OwnerComplexDetailPage />,
+      //   },
+    ],
   },
   // {
   //   path: "/admin",

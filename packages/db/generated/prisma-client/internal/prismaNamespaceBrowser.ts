@@ -171,6 +171,7 @@ export const SubFieldScalarFieldEnum = {
   capacity: 'capacity',
   sub_field_image: 'sub_field_image',
   sport_type: 'sport_type',
+  isDelete: 'isDelete',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const

@@ -40,6 +40,7 @@ export type SubFieldMinAggregateOutputType = {
   capacity: number | null
   sub_field_image: string | null
   sport_type: $Enums.SportType | null
+  isDelete: boolean | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -51,6 +52,7 @@ export type SubFieldMaxAggregateOutputType = {
   capacity: number | null
   sub_field_image: string | null
   sport_type: $Enums.SportType | null
+  isDelete: boolean | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -62,6 +64,7 @@ export type SubFieldCountAggregateOutputType = {
   capacity: number
   sub_field_image: number
   sport_type: number
+  isDelete: number
   created_at: number
   updated_at: number
   _all: number
@@ -83,6 +86,7 @@ export type SubFieldMinAggregateInputType = {
   capacity?: true
   sub_field_image?: true
   sport_type?: true
+  isDelete?: true
   created_at?: true
   updated_at?: true
 }
@@ -94,6 +98,7 @@ export type SubFieldMaxAggregateInputType = {
   capacity?: true
   sub_field_image?: true
   sport_type?: true
+  isDelete?: true
   created_at?: true
   updated_at?: true
 }
@@ -105,6 +110,7 @@ export type SubFieldCountAggregateInputType = {
   capacity?: true
   sub_field_image?: true
   sport_type?: true
+  isDelete?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -203,6 +209,7 @@ export type SubFieldGroupByOutputType = {
   capacity: number
   sub_field_image: string | null
   sport_type: $Enums.SportType
+  isDelete: boolean
   created_at: Date
   updated_at: Date
   _count: SubFieldCountAggregateOutputType | null
@@ -237,6 +244,7 @@ export type SubFieldWhereInput = {
   capacity?: Prisma.IntFilter<"SubField"> | number
   sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
   sport_type?: Prisma.EnumSportTypeFilter<"SubField"> | $Enums.SportType
+  isDelete?: Prisma.BoolFilter<"SubField"> | boolean
   created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   complex?: Prisma.XOR<Prisma.ComplexScalarRelationFilter, Prisma.ComplexWhereInput>
@@ -252,6 +260,7 @@ export type SubFieldOrderByWithRelationInput = {
   capacity?: Prisma.SortOrder
   sub_field_image?: Prisma.SortOrderInput | Prisma.SortOrder
   sport_type?: Prisma.SortOrder
+  isDelete?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   complex?: Prisma.ComplexOrderByWithRelationInput
@@ -271,6 +280,7 @@ export type SubFieldWhereUniqueInput = Prisma.AtLeast<{
   capacity?: Prisma.IntFilter<"SubField"> | number
   sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
   sport_type?: Prisma.EnumSportTypeFilter<"SubField"> | $Enums.SportType
+  isDelete?: Prisma.BoolFilter<"SubField"> | boolean
   created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   complex?: Prisma.XOR<Prisma.ComplexScalarRelationFilter, Prisma.ComplexWhereInput>
@@ -286,6 +296,7 @@ export type SubFieldOrderByWithAggregationInput = {
   capacity?: Prisma.SortOrder
   sub_field_image?: Prisma.SortOrderInput | Prisma.SortOrder
   sport_type?: Prisma.SortOrder
+  isDelete?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.SubFieldCountOrderByAggregateInput
@@ -305,6 +316,7 @@ export type SubFieldScalarWhereWithAggregatesInput = {
   capacity?: Prisma.IntWithAggregatesFilter<"SubField"> | number
   sub_field_image?: Prisma.StringNullableWithAggregatesFilter<"SubField"> | string | null
   sport_type?: Prisma.EnumSportTypeWithAggregatesFilter<"SubField"> | $Enums.SportType
+  isDelete?: Prisma.BoolWithAggregatesFilter<"SubField"> | boolean
   created_at?: Prisma.DateTimeWithAggregatesFilter<"SubField"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"SubField"> | Date | string
 }
@@ -315,6 +327,7 @@ export type SubFieldCreateInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
@@ -330,6 +343,7 @@ export type SubFieldUncheckedCreateInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedCreateNestedManyWithoutSub_fieldInput
@@ -343,6 +357,7 @@ export type SubFieldUpdateInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
@@ -358,6 +373,7 @@ export type SubFieldUncheckedUpdateInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedUpdateManyWithoutSub_fieldNestedInput
@@ -372,6 +388,7 @@ export type SubFieldCreateManyInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -382,6 +399,7 @@ export type SubFieldUpdateManyMutationInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -393,6 +411,7 @@ export type SubFieldUncheckedUpdateManyInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -419,6 +438,7 @@ export type SubFieldCountOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   sub_field_image?: Prisma.SortOrder
   sport_type?: Prisma.SortOrder
+  isDelete?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -434,6 +454,7 @@ export type SubFieldMaxOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   sub_field_image?: Prisma.SortOrder
   sport_type?: Prisma.SortOrder
+  isDelete?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -445,6 +466,7 @@ export type SubFieldMinOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
   sub_field_image?: Prisma.SortOrder
   sport_type?: Prisma.SortOrder
+  isDelete?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -560,6 +582,7 @@ export type SubFieldCreateWithoutComplexInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   recurringBookings?: Prisma.RecurringBookingCreateNestedManyWithoutSub_fieldInput
@@ -573,6 +596,7 @@ export type SubFieldUncheckedCreateWithoutComplexInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedCreateNestedManyWithoutSub_fieldInput
@@ -616,6 +640,7 @@ export type SubFieldScalarWhereInput = {
   capacity?: Prisma.IntFilter<"SubField"> | number
   sub_field_image?: Prisma.StringNullableFilter<"SubField"> | string | null
   sport_type?: Prisma.EnumSportTypeFilter<"SubField"> | $Enums.SportType
+  isDelete?: Prisma.BoolFilter<"SubField"> | boolean
   created_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SubField"> | Date | string
 }
@@ -626,6 +651,7 @@ export type SubFieldCreateWithoutPricing_rulesInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
@@ -640,6 +666,7 @@ export type SubFieldUncheckedCreateWithoutPricing_rulesInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedCreateNestedManyWithoutSub_fieldInput
@@ -668,6 +695,7 @@ export type SubFieldUpdateWithoutPricing_rulesInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
@@ -682,6 +710,7 @@ export type SubFieldUncheckedUpdateWithoutPricing_rulesInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedUpdateManyWithoutSub_fieldNestedInput
@@ -694,6 +723,7 @@ export type SubFieldCreateWithoutRecurringBookingsInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
@@ -708,6 +738,7 @@ export type SubFieldUncheckedCreateWithoutRecurringBookingsInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutSub_fieldInput
@@ -736,6 +767,7 @@ export type SubFieldUpdateWithoutRecurringBookingsInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
@@ -750,6 +782,7 @@ export type SubFieldUncheckedUpdateWithoutRecurringBookingsInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutSub_fieldNestedInput
@@ -762,6 +795,7 @@ export type SubFieldCreateWithoutBookingsInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   complex: Prisma.ComplexCreateNestedOneWithoutSub_fieldsInput
@@ -776,6 +810,7 @@ export type SubFieldUncheckedCreateWithoutBookingsInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedCreateNestedManyWithoutSub_fieldInput
@@ -804,6 +839,7 @@ export type SubFieldUpdateWithoutBookingsInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   complex?: Prisma.ComplexUpdateOneRequiredWithoutSub_fieldsNestedInput
@@ -818,6 +854,7 @@ export type SubFieldUncheckedUpdateWithoutBookingsInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedUpdateManyWithoutSub_fieldNestedInput
@@ -830,6 +867,7 @@ export type SubFieldCreateManyComplexInput = {
   capacity: number
   sub_field_image?: string | null
   sport_type: $Enums.SportType
+  isDelete?: boolean
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -840,6 +878,7 @@ export type SubFieldUpdateWithoutComplexInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recurringBookings?: Prisma.RecurringBookingUpdateManyWithoutSub_fieldNestedInput
@@ -853,6 +892,7 @@ export type SubFieldUncheckedUpdateWithoutComplexInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   recurringBookings?: Prisma.RecurringBookingUncheckedUpdateManyWithoutSub_fieldNestedInput
@@ -866,6 +906,7 @@ export type SubFieldUncheckedUpdateManyWithoutComplexInput = {
   capacity?: Prisma.IntFieldUpdateOperationsInput | number
   sub_field_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sport_type?: Prisma.EnumSportTypeFieldUpdateOperationsInput | $Enums.SportType
+  isDelete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -926,6 +967,7 @@ export type SubFieldSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   capacity?: boolean
   sub_field_image?: boolean
   sport_type?: boolean
+  isDelete?: boolean
   created_at?: boolean
   updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
@@ -942,6 +984,7 @@ export type SubFieldSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   capacity?: boolean
   sub_field_image?: boolean
   sport_type?: boolean
+  isDelete?: boolean
   created_at?: boolean
   updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
@@ -954,6 +997,7 @@ export type SubFieldSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   capacity?: boolean
   sub_field_image?: boolean
   sport_type?: boolean
+  isDelete?: boolean
   created_at?: boolean
   updated_at?: boolean
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
@@ -966,11 +1010,12 @@ export type SubFieldSelectScalar = {
   capacity?: boolean
   sub_field_image?: boolean
   sport_type?: boolean
+  isDelete?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type SubFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "complex_id" | "sub_field_name" | "capacity" | "sub_field_image" | "sport_type" | "created_at" | "updated_at", ExtArgs["result"]["subField"]>
+export type SubFieldOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "complex_id" | "sub_field_name" | "capacity" | "sub_field_image" | "sport_type" | "isDelete" | "created_at" | "updated_at", ExtArgs["result"]["subField"]>
 export type SubFieldInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   complex?: boolean | Prisma.ComplexDefaultArgs<ExtArgs>
   recurringBookings?: boolean | Prisma.SubField$recurringBookingsArgs<ExtArgs>
@@ -1000,6 +1045,7 @@ export type $SubFieldPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     capacity: number
     sub_field_image: string | null
     sport_type: $Enums.SportType
+    isDelete: boolean
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["subField"]>
@@ -1435,6 +1481,7 @@ export interface SubFieldFieldRefs {
   readonly capacity: Prisma.FieldRef<"SubField", 'Int'>
   readonly sub_field_image: Prisma.FieldRef<"SubField", 'String'>
   readonly sport_type: Prisma.FieldRef<"SubField", 'SportType'>
+  readonly isDelete: Prisma.FieldRef<"SubField", 'Boolean'>
   readonly created_at: Prisma.FieldRef<"SubField", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"SubField", 'DateTime'>
 }

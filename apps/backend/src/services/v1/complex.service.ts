@@ -98,6 +98,11 @@ export const getOwnerComplexes = async (ownerId: string) => {
       complex_address: true,
       complex_image: true,
       status: true,
+      _count: {
+        select: {
+          sub_fields: true,
+        },
+      },
     },
   });
 
@@ -117,7 +122,15 @@ export const getOwnerComplexById = async (
       complex_address: true,
       complex_image: true,
       status: true,
-      //select sub_fields if needed
+      sub_fields: {
+        select: {
+          id: true,
+          sub_field_name: true,
+          sport_type: true,
+          sub_field_image: true,
+          capacity: true,
+        },
+      },
     },
   });
   if (!complex) {
@@ -166,9 +179,19 @@ export const deleteComplex = async (complexId: string, ownerId: string) => {
     throw new NotFoundError("Complex not found");
   }
 
-  await prisma.complex.delete({
+  await prisma.complex.update({
     where: { id: complexId },
+    data: { status: "INACTIVE" },
   });
+
+  await prisma.subField.updateMany({
+    where: { complex_id: complexId },
+    data: {
+      isDelete: true,
+    },
+  });
+
+  return { message: "Complex and its subfields have been deactivated" };
 };
 
 /**

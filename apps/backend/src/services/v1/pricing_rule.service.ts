@@ -1,0 +1,300 @@
+`sequenceDiagram
+    participant O as Chủ sân
+    participant F as Frontend (Web-Owner)
+    participant B as Backend (Node.js API)
+    participant DB as Database (Prisma)
+
+    O->>F: 1. Chọn Sân con, nhập (Thứ 7, 18:00-20:00, 300k)
+    F->>B: 2. POST /api/pricing-rules (gửi DTO: sub_field_id, day_of_week, start_time, end_time, price)
+    activate B
+    
+    B->>DB: 3. Lấy thông tin SubField (để kiểm tra quyền sở hữu của Owner)
+    activate DB
+    DB-->>B: 4. Thông tin SubField (gồm complex.owner_id)
+    deactivate DB
+    
+    B->>B: 5. Xác thực Owner này sở hữu SubField (qua complex.owner_id)
+    
+    B->>DB: 6. Kiểm tra xem có luật giá nào bị trùng (overlap) không (Dùng logic truy vấn phức tạp)
+    activate DB
+    DB-->>B: 7. Không tìm thấy (null)
+    deactivate DB
+    
+    B->>DB: 8. INSERT INTO 'pricing_rules' (tạo luật giá mới)
+    activate DB
+    DB-->>B: 9. Trả về Rule mới
+    deactivate DB
+    
+    B-->>F: 10. 201 Created (Tạo luật giá thành công)
+    deactivate B`;
+
+`sequenceDiagram
+    participant O as Chủ sân
+    participant F as Frontend (UI Chọn nhiều ngày)
+    participant B as Backend
+    participant DB as Database
+
+    O->>F: 1. Chọn: T2, T3, T4 | 17:00 - 19:00 | 300k
+    F->>B: 2. POST /api/pricing-rules/bulk (days: [1,2,3], ...)
+    activate B
+    
+    B->>DB: 3. Lấy Rules hiện tại của T2, T3, T4
+    DB-->>B: 4. Trả về danh sách Rules
+    
+    loop Kiểm tra từng ngày
+        B->>B: 5. Check Overlap (StartA < EndB && EndA > StartB)
+        opt Nếu trùng
+            B-->>F: Trả lỗi "Bị trùng giờ vào ngày Thứ 2..."
+        end
+    end
+
+    B->>DB: 6. Transaction: Tạo 3 dòng PricingRule
+    DB-->>B: 7. Success
+    
+    B-->>F: 8. 201 Created
+    deactivate B`;
+
+import { prisma } from "@sports-booking-platform/db";
+import {
+  CreatePricingRuleInput,
+  UpdatePricingRuleInput,
+} from "@sports-booking-platform/validation/pricing_rule.schema";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../utils/error.response";
+import { parseTime } from "../../helpers";
+
+export const createPricingRule = async (
+  ownerId: string,
+  data: CreatePricingRuleInput
+) => {
+  //check owner
+  const owner = await prisma.owner.findUnique({
+    where: { id: ownerId },
+  });
+  if (!owner) {
+    throw new ForbiddenError("Only owners can create pricing rules");
+  }
+  // Kiểm tra quyền sở hữu SubField
+  const subField = await prisma.subField.findUnique({
+    where: { id: data.sub_field_id },
+    include: {
+      complex: true,
+    },
+  });
+
+  if (!subField) {
+    throw new NotFoundError("Sub-field not found");
+  }
+
+  if (subField.complex.owner_id !== ownerId) {
+    throw new ForbiddenError(
+      "You do not have permission to manage this sub-field"
+    );
+  }
+
+  //danh sách rule hợp lệ
+  const rulesToCreate = [];
+
+  //duyet tung ngay duoc chon
+  for (const day of data.day_of_week) {
+    //duyet tung khung gio duoc chon
+    for (const slot of data.time_slots) {
+      const startTime = parseTime(slot.start_time);
+      const endTime = parseTime(slot.end_time);
+
+      if (startTime >= endTime) {
+        throw new BadRequestError("Start time must be before end time");
+      }
+
+      // Kiểm tra trùng lặp với các luật giá hiện có
+      const overlappingRule = await prisma.pricingRule.findFirst({
+        where: {
+          sub_field_id: data.sub_field_id,
+          day_of_week: day,
+          AND: [
+            {
+              start_time: { lt: endTime },
+            },
+            {
+              end_time: { gt: startTime },
+            },
+          ],
+        },
+      });
+
+      if (overlappingRule) {
+        throw new BadRequestError(
+          `Pricing rule overlaps with existing rule on day ${day} from ${overlappingRule.start_time} to ${overlappingRule.end_time}`
+        );
+      }
+
+      // Thêm luật giá hợp lệ vào danh sách
+      rulesToCreate.push({
+        sub_field_id: data.sub_field_id,
+        day_of_week: day,
+        start_time: startTime,
+        end_time: endTime,
+        base_price: data.base_price,
+      });
+    }
+  }
+
+  // Tạo luật giá mới
+  if (rulesToCreate.length === 0) {
+    throw new BadRequestError("No valid pricing rules to create");
+  }
+
+  const createdRules = await prisma.$transaction(
+    rulesToCreate.map((rule) =>
+      prisma.pricingRule.create({
+        data: rule,
+      })
+    )
+  );
+
+  return createdRules;
+};
+
+export const getOwnerPricingRulesByDay = async (
+  ownerId: string,
+  subFieldId: string,
+  dayOfWeek: number
+) => {
+  const pricingRules = await prisma.pricingRule.findMany({
+    where: {
+      sub_field_id: subFieldId,
+      sub_field: {
+        complex: {
+          owner_id: ownerId,
+        },
+      },
+      day_of_week: dayOfWeek,
+    },
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      base_price: true,
+    },
+    orderBy: { start_time: "asc" },
+  });
+
+  return pricingRules;
+};
+
+export const updatePricingRule = async (
+  ownerId: string,
+  pricingRuleId: string,
+  data: UpdatePricingRuleInput
+) => {
+  // lấy rule hiện tại
+  const existingRule = await prisma.pricingRule.findUnique({
+    where: { id: pricingRuleId, day_of_week: data.day_of_week },
+    include: {
+      sub_field: {
+        include: {
+          complex: {
+            select: { owner_id: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!existingRule) {
+    throw new NotFoundError("Pricing rule not found");
+  }
+
+  //check quyền sở hữu
+  if (existingRule.sub_field.complex.owner_id !== ownerId) {
+    throw new ForbiddenError("You do not have permission to update this rule");
+  }
+
+  // chuẩn bị dữ liệu để validate
+  const nextStartTime = data.start_time
+    ? parseTime(data.start_time)
+    : existingRule.start_time;
+
+  const nextEndTime = data.end_time
+    ? parseTime(data.end_time)
+    : existingRule.end_time;
+
+  // logic thời gian
+  if (nextStartTime >= nextEndTime) {
+    throw new BadRequestError("Start time must be before end time");
+  }
+
+  // check trùng lặp (Chỉ check nếu có thay đổi về giờ hoặc ngày)
+  const isTimeChanged = data.start_time || data.end_time;
+
+  if (isTimeChanged) {
+    const overlappingRule = await prisma.pricingRule.findFirst({
+      where: {
+        sub_field_id: data.sub_field_id,
+        day_of_week: data.day_of_week,
+        AND: [
+          { start_time: { lt: nextEndTime } },
+          { end_time: { gt: nextStartTime } },
+        ],
+        id: { not: pricingRuleId },
+      },
+    });
+
+    if (overlappingRule) {
+      throw new BadRequestError(
+        `Update failed: Overlaps with existing rule on day ${data.day_of_week} from ${overlappingRule.start_time} to ${overlappingRule.end_time}`
+      );
+    }
+  }
+
+  // update vào DB
+  const updatedPricingRule = await prisma.pricingRule.update({
+    where: { id: pricingRuleId },
+    data: {
+      // chỉ update những trường có gửi lên (undefined Prisma sẽ bỏ qua)
+      day_of_week: data.day_of_week,
+      start_time: data.start_time ? nextStartTime : undefined,
+      end_time: data.end_time ? nextEndTime : undefined,
+      base_price: data.base_price,
+    },
+  });
+
+  return updatedPricingRule;
+};
+
+export const deletePricingRule = async (
+  ownerId: string,
+  pricingRuleId: string
+) => {
+  // Kiểm tra quyền sở hữu PricingRule qua SubField -> Complex -> Owner
+  const pricingRule = await prisma.pricingRule.findUnique({
+    where: { id: pricingRuleId },
+    include: {
+      sub_field: {
+        include: {
+          complex: {
+            select: { owner_id: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!pricingRule) {
+    throw new NotFoundError("Pricing rule not found");
+  }
+
+  if (pricingRule.sub_field.complex.owner_id !== ownerId) {
+    throw new ForbiddenError(
+      "You do not have permission to manage this pricing rule"
+    );
+  }
+
+  // Xoá luật giá
+  await prisma.pricingRule.delete({
+    where: { id: pricingRuleId },
+  });
+};
