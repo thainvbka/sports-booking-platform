@@ -1,5 +1,12 @@
 import { api } from "@/lib/axios";
-import type { ComplexListItem, ComplexDetail, ApiResponse } from "@/types";
+import type {
+  ComplexListItem,
+  ComplexDetail,
+  ApiResponse,
+  // SubField,
+  SubfieldDetail,
+  PricingRule,
+} from "@/types";
 
 //payload and response types
 interface GetOwnerComplexesResponse {
@@ -12,6 +19,18 @@ interface GetOwnerComplexByIdResponse {
 
 interface CreateComplexResponse {
   complex: ComplexListItem;
+}
+
+// interface GetOwnerSubfieldsResponse {
+//   subfields: SubField[];
+// }
+
+interface GetOwnerSubfieldByIdResponse {
+  subfield: SubfieldDetail;
+}
+
+interface GetOwnerPricingRulesResponse {
+  pricingRules: PricingRule[];
 }
 
 export const ownerService = {
@@ -37,6 +56,36 @@ export const ownerService = {
           "Content-Type": "multipart/form-data",
         },
       }
+    );
+    return response.data;
+  },
+  // getSubfields: async (complexId: string) => {
+  //   const response = await api.get<ApiResponse<GetOwnerSubfieldsResponse>>(
+  //     `/complexes/${complexId}/sub-fields`
+  //   );
+  //   return response.data;
+  // },
+  getSubfieldById: async (id: string) => {
+    const response = await api.get<ApiResponse<GetOwnerSubfieldByIdResponse>>(
+      `/sub-fields/${id}`
+    );
+    return response.data;
+  },
+  getPricingRules: async (subFieldId: string, dayOfWeek: number) => {
+    const response = await api.get<ApiResponse<GetOwnerPricingRulesResponse>>(
+      `/pricing-rules?subFieldId=${subFieldId}&dayOfWeek=${dayOfWeek}`
+    );
+    return response.data;
+  },
+  createPricingRules: async (payload: {
+    subFieldId: string;
+    dayOfWeek: number;
+    timeSlots: { start_time: string; end_time: string }[];
+    basePrice: number;
+  }) => {
+    const response = await api.post<ApiResponse<GetOwnerPricingRulesResponse>>(
+      `/pricing-rules`,
+      payload
     );
     return response.data;
   },

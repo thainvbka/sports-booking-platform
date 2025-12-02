@@ -62,9 +62,12 @@ export interface ComplexListItem extends ComplexBase {
 
 // 3. Dùng cho chi tiết (Get Detail)
 export interface ComplexDetail extends ComplexBase {
-  sub_fields: SubField[];
+  _count: {
+    sub_fields: number;
+  };
   // created_at: string;
   // updated_at: string;
+  sub_fields: SubField[];
 }
 
 // 4. SubField
@@ -74,7 +77,8 @@ export interface SubField {
   capacity: number;
   sub_field_image?: string;
   sport_type: SportType;
-  // pricing_rules: PricingRule[]; // Backend hiện tại chưa trả về cái này trong getOwnerComplexById
+  min_price?: number;
+  pricing_rules: PricingRule[];
 }
 
 // 5. API Response Wrapper (Quan trọng)
@@ -88,11 +92,15 @@ export interface ApiResponse<T> {
 // Interfaces
 export interface PricingRule {
   id: string;
-  sub_field_id: string;
+  // sub_field_id: string;
   day_of_week: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
-  start_time: string; // "HH:MM"
-  end_time: string; // "HH:MM"
+  start_time: Date; // "HH:MM"
+  end_time: Date; // "HH:MM"
   base_price: number;
+}
+
+export interface SubfieldDetail extends SubField {
+  pricing_rules: PricingRule[];
 }
 
 export interface Owner {

@@ -21,7 +21,7 @@ export const createSubfield = async (
 ) => {
   //check complex thuộc owner
   const complex = await prisma.complex.findUnique({
-    where: { id: complexId },
+    where: { id: complexId, status: "ACTIVE" },
     select: { owner_id: true },
   });
   if (!complex) {
@@ -63,34 +63,47 @@ export const createSubfield = async (
   return newSubfield;
 };
 
-export const getOwnerSubfields = async (ownerId: string, complexId: string) => {
-  //check complex thuộc owner
-  const complex = await prisma.complex.findUnique({
-    where: { id: complexId },
-    select: { owner_id: true },
-  });
-  if (!complex) {
-    throw new NotFoundError("Complex not found");
-  }
-  if (complex.owner_id !== ownerId) {
-    throw new ForbiddenError(
-      "You do not have permission to manage this complex"
-    );
-  }
+// export const getOwnerSubfields = async (ownerId: string, complexId: string) => {
+//   //check complex thuộc owner
+//   const complex = await prisma.complex.findUnique({
+//     where: { id: complexId },
+//     select: { owner_id: true },
+//   });
+//   if (!complex) {
+//     throw new NotFoundError("Complex not found");
+//   }
+//   if (complex.owner_id !== ownerId) {
+//     throw new ForbiddenError(
+//       "You do not have permission to manage this complex"
+//     );
+//   }
 
-  const subfields = await prisma.subField.findMany({
-    where: { complex_id: complexId },
-    select: {
-      id: true,
-      sub_field_name: true,
-      sport_type: true,
-      sub_field_image: true,
-      capacity: true,
-    },
-  });
+//   const subfields = await prisma.subField.findMany({
+//     where: { complex_id: complexId },
+//     select: {
+//       id: true,
+//       sub_field_name: true,
+//       sport_type: true,
+//       sub_field_image: true,
+//       capacity: true,
+//       pricing_rules: {
+//         select: { base_price: true },
+//         orderBy: { base_price: "asc" },
+//         take: 1,
+//       },
+//     },
+//   });
 
-  return subfields;
-};
+//   return subfields.map((sf) => ({
+//     id: sf.id,
+//     sub_field_name: sf.sub_field_name,
+//     sport_type: sf.sport_type,
+//     sub_field_image: sf.sub_field_image,
+//     capacity: sf.capacity,
+//     min_price: sf.pricing_rules[0]?.base_price || 0,
+//     pricing_rules: [],
+//   }));
+// };
 
 export const getOwnerSubfieldById = async (
   ownerId: string,
@@ -127,6 +140,15 @@ export const getOwnerSubfieldById = async (
       sport_type: true,
       sub_field_image: true,
       capacity: true,
+      pricing_rules: {
+        select: {
+          id: true,
+          day_of_week: true,
+          start_time: true,
+          end_time: true,
+          base_price: true,
+        },
+      },
     },
   });
   return subfieldDetails;

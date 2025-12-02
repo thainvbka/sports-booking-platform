@@ -22,7 +22,7 @@ import {
 } from "../../controllers/v1/complex.controller";
 import {
   createSubfieldController,
-  getOwnerSubfieldsController,
+  // getOwnerSubfieldsController,
 } from "../../controllers/v1/subfield.controller";
 
 import { createSubfieldSchema } from "@sports-booking-platform/validation/subfield.schema";
@@ -94,12 +94,12 @@ router.post(
   asyncHandler(createSubfieldController)
 );
 
-router.get(
-  "/:id/sub-fields",
-  authenticate,
-  authorize(["OWNER"]),
-  asyncHandler(getOwnerSubfieldsController)
-);
+// router.get(
+//   "/:id/sub-fields",
+//   authenticate,
+//   authorize(["OWNER"]),
+//   asyncHandler(getOwnerSubfieldsController)
+// );
 
 router.get(
   "/",

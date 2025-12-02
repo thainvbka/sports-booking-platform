@@ -69,7 +69,7 @@ export function SubFieldCard({
         )}
 
         {/* Amenities (Mock) */}
-        <div className="flex flex-wrap gap-2 mb-3 mt-auto">
+        {/* <div className="flex flex-wrap gap-2 mb-3 mt-auto">
           <Badge variant="secondary" className="text-xs font-normal">
             Wifi
           </Badge>
@@ -79,7 +79,7 @@ export function SubFieldCard({
           <Badge variant="secondary" className="text-xs font-normal">
             Nước uống
           </Badge>
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-between pt-3 border-t mt-2">
           <div>

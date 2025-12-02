@@ -44,7 +44,7 @@ export function DashboardLayout() {
             S
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            SportBook
+            T-Sport
           </span>
         </Link>
         <div className="mt-2 px-1">
@@ -132,7 +132,7 @@ export function DashboardLayout() {
               <SidebarContent />
             </SheetContent>
           </Sheet>
-          <span className="font-bold text-lg">SportBook</span>
+          <span className="font-bold text-lg">T-Sport</span>
           <div className="w-9" />
         </header>
         <div className="flex-1 p-6 md:p-8 overflow-auto">

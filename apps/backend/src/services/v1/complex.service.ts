@@ -122,6 +122,11 @@ export const getOwnerComplexById = async (
       complex_address: true,
       complex_image: true,
       status: true,
+      _count: {
+        select: {
+          sub_fields: true,
+        },
+      },
       sub_fields: {
         select: {
           id: true,
@@ -129,6 +134,11 @@ export const getOwnerComplexById = async (
           sport_type: true,
           sub_field_image: true,
           capacity: true,
+          pricing_rules: {
+            select: { base_price: true },
+            orderBy: { base_price: "asc" },
+            take: 1,
+          },
         },
       },
     },
@@ -136,7 +146,20 @@ export const getOwnerComplexById = async (
   if (!complex) {
     throw new NotFoundError("Complex not found");
   }
-  return complex;
+
+  const formatComplex = {
+    ...complex,
+    sub_fields: complex.sub_fields.map((sf) => ({
+      id: sf.id,
+      sub_field_name: sf.sub_field_name,
+      sport_type: sf.sport_type,
+      sub_field_image: sf.sub_field_image,
+      capacity: sf.capacity,
+      min_price: sf.pricing_rules[0]?.base_price || 0,
+      pricing_rules: [],
+    })),
+  };
+  return formatComplex;
 };
 
 //update complex

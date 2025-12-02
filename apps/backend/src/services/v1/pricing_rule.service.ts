@@ -175,6 +175,7 @@ export const getOwnerPricingRulesByDay = async (
     },
     select: {
       id: true,
+      day_of_week: true,
       start_time: true,
       end_time: true,
       base_price: true,

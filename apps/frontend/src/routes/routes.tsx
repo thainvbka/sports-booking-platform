@@ -14,6 +14,7 @@ import { ComplexesPage } from "@/pages/owner/ComplexPage";
 // import { ComplexVerificationPage } from "./pages/admin/ComplexVerificationPage";
 // import { UsersPage } from "./pages/admin/UsersPage";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -68,10 +69,10 @@ export const router = createBrowserRouter([
         path: "complexes",
         element: <ComplexesPage />,
       },
-      //   {
-      //     path: "complexes/:id",
-      //     element: <OwnerComplexDetailPage />,
-      //   },
+      {
+        path: "complexes/:id",
+        element: <ComplexDetailPage />,
+      },
     ],
   },
   // {

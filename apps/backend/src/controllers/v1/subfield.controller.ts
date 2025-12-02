@@ -3,7 +3,7 @@ import { SuccessResponse } from "../../utils/success.response";
 import { BadRequestError } from "../../utils/error.response";
 import {
   createSubfield,
-  getOwnerSubfields,
+  // getOwnerSubfields,
   getOwnerSubfieldById,
   updateSubfield,
   deleteSubfield,
@@ -38,20 +38,20 @@ export const createSubfieldController = async (req: Request, res: Response) => {
   }).send(res);
 };
 
-export const getOwnerSubfieldsController = async (
-  req: Request,
-  res: Response
-) => {
-  const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.id;
+// export const getOwnerSubfieldsController = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   const ownerId = req.user?.profiles.ownerId as string;
+//   const complexId = req.params.id;
 
-  const subfields = await getOwnerSubfields(ownerId, complexId);
+//   const subfields = await getOwnerSubfields(ownerId, complexId);
 
-  return new SuccessResponse({
-    message: "Owner subfields retrieved successfully",
-    data: { subfields },
-  }).send(res);
-};
+//   return new SuccessResponse({
+//     message: "Owner subfields retrieved successfully",
+//     data: { subfields },
+//   }).send(res);
+// };
 
 export const getOwnerSubfieldByIdController = async (
   req: Request,
