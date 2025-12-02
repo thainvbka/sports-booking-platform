@@ -10,7 +10,6 @@ import {
   Clock,
   ArrowUpRight,
   Plus,
-  MapPin,
   MoreHorizontal,
   // Wallet,
 } from "lucide-react";
@@ -26,7 +25,6 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 
 export function OwnerDashboardPage() {
   const { complexes, fetchComplexes, isLoading, error } = useOwnerStore();

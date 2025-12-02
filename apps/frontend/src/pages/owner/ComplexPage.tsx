@@ -1,16 +1,13 @@
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
 
 export function ComplexesPage() {
   const { complexes, fetchComplexes } = useOwnerStore();
-  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchComplexes();
@@ -29,19 +26,6 @@ export function ComplexesPage() {
         </div>
         <ComplexFormDialog />
       </div>
-
-      {/* {!user?.stripe_onboarding_complete && (
-        <Alert
-          variant="destructive"
-          className="bg-red-50 border-red-200 text-red-900"
-        >
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Bạn cần kết nối Stripe trước khi tạo khu phức hợp. Vui lòng vào
-            Dashboard để kết nối.
-          </AlertDescription>
-        </Alert>
-      )} */}
 
       {/* Search and Filter Bar */}
       <div className="flex items-center gap-3">

@@ -9,7 +9,6 @@ import { ComplexStatus } from "@/types";
 import { ArrowLeft, MapPin, Plus, Edit, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import type { ComplexDetail } from "@/types";
 
 export function ComplexDetailPage() {
