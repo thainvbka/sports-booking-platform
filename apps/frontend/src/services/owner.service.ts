@@ -89,4 +89,16 @@ export const ownerService = {
     );
     return response.data;
   },
+  createSubfield: async (complexId: string, formData: FormData) => {
+    const response = await api.post<ApiResponse<{ subfield: SubfieldDetail }>>(
+      `/complexes/${complexId}/sub-fields`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
 };

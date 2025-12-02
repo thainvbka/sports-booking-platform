@@ -49,7 +49,7 @@ export interface ComplexBase {
   complex_address: string;
   complex_image?: string;
   status: ComplexStatus;
-  _count: {
+  _count?: {
     sub_fields: number;
   };
 }

@@ -73,6 +73,11 @@ export const createComplex = async (
       complex_image: true,
       complex_address: true,
       status: true,
+      _count: {
+        select: {
+          sub_fields: true,
+        },
+      },
     },
   });
 

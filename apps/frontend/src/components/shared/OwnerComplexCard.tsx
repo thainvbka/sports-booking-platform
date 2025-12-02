@@ -68,7 +68,7 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
 
           <div className="pt-2 border-t flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              {complex._count.sub_fields} sân con
+              {complex._count?.sub_fields ?? 0} sân con
             </span>
             {complex.status === ComplexStatus.ACTIVE && (
               <Badge

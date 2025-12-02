@@ -2,25 +2,14 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Button } from "@/components/ui/button";
-// import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
+import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
+import { SubFieldCard } from "@/components/shared/SubFieldCar";
 // import { PricingManagementDialog } from "@/components/shared/PricingRuleFormDialog";
 import { ComplexStatus } from "@/types";
-import { getSportTypeLabel } from "@/services/mockData";
-import { formatPrice } from "@/utils/formatPrice";
-import {
-  ArrowLeft,
-  MapPin,
-  Users,
-  Plus,
-  Edit,
-  Trash2,
-  DollarSign,
-} from "lucide-react";
+import { ArrowLeft, MapPin, Plus, Edit, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import type { ComplexDetail } from "@/types";
 
 export function ComplexDetailPage() {
@@ -104,14 +93,8 @@ export function ComplexDetailPage() {
         >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Khu phức hợp này đang ở trạng thái{" "}
-            <Badge
-              variant="outline"
-              className="ml-1 border-red-300 text-red-800"
-            >
-              {complex.status}
-            </Badge>
-            . Bạn chỉ có thể thêm sân con khi trạng thái là "Đang hoạt động".
+            Khu phức hợp hiện đang chờ phê duyệt, bạn sẽ có thể thêm sân con khi
+            quản trị viên duyệt yêu cầu này.
           </AlertDescription>
         </Alert>
       )}
@@ -127,7 +110,7 @@ export function ComplexDetailPage() {
               Quản lý các sân và giá thuê trong khu phức hợp
             </p>
           </div>
-          {/* <SubFieldFormDialog
+          <SubFieldFormDialog
             complexId={complex.id}
             trigger={
               <Button disabled={!canAddSubField} className="shadow-md">
@@ -135,89 +118,19 @@ export function ComplexDetailPage() {
                 Thêm sân con
               </Button>
             }
-          /> */}
+          />
         </div>
 
-        {subfields && subfields.length > 0 ? ( // Sửa điều kiện check độ dài
+        {subfields && subfields.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {subfields.map((subField) => {
-              // Tạm thời để giá 0 hoặc lấy từ props nếu backend trả về min_price
-              // Không nên fetch chi tiết từng sân ở đây để lấy giá, sẽ rất nặng
-              const min = subField.min_price || 0;
-
-              return (
-                <Card
-                  key={subField.id}
-                  className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 group"
-                >
-                  <CardHeader className="bg-muted/30 pb-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {subField.sub_field_name}
-                        </CardTitle>
-                        <Badge variant="secondary" className="mt-2 font-normal">
-                          {getSportTypeLabel(subField.sport_type)}
-                        </Badge>
-                      </div>
-                      <div className="h-8 w-8 rounded-full bg-white shadow-sm flex items-center justify-center text-primary">
-                        <Users className="w-4 h-4" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 pt-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-muted-foreground">
-                        Sức chứa
-                      </span>
-                      <span className="font-medium">
-                        {subField.capacity} người
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-muted-foreground">
-                        Giá khởi điểm
-                      </span>
-                      <span className="font-bold text-primary text-lg">
-                        {/* Hiển thị "Liên hệ" hoặc giá nếu có */}
-                        {min > 0 ? formatPrice(min) : "Chưa thiết lập"}
-                      </span>
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-muted-foreground" />
-                          Bảng giá
-                        </span>
-                        {/* <PricingManagementDialog
-                          complexId={complex.id}
-                          subFieldId={subField.id}
-                          subFieldName={subField.sub_field_name}
-                        /> */}
-                      </div>
-
-                      {/* <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                        {subField.pricing_rules.length > 0 ? (
-                          <div className="flex items-center justify-between text-muted-foreground">
-                            <span>Đã thiết lập</span>
-                            <Badge variant="outline" className="bg-background">
-                              {subField.pricing_rules.length} khung giờ
-                            </Badge>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground italic">
-                            Chưa có khung giờ giá nào
-                          </span>
-                        )}
-                      </div> */}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {subfields.map((subField) => (
+              <SubFieldCard
+                key={subField.id}
+                subField={subField}
+                mode="owner"
+                showComplexInfo={false}
+              />
+            ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl bg-muted/10">
@@ -229,12 +142,12 @@ export function ComplexDetailPage() {
               Khu phức hợp này chưa có sân con nào. Hãy thêm sân con để bắt đầu
               nhận lịch đặt.
             </p>
-            {/* <SubFieldFormDialog
+            <SubFieldFormDialog
               complexId={complex.id}
               trigger={
                 <Button disabled={!canAddSubField}>Thêm sân con ngay</Button>
               }
-            /> */}
+            />
           </div>
         )}
       </div>

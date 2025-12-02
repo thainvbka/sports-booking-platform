@@ -22,6 +22,7 @@ interface OwnerState {
   fetchComplexes: () => Promise<void>;
   fetchComplexById: (id: string) => Promise<void>;
   createComplex: (formData: FormData) => Promise<void>;
+  createSubfield: (complexId: string, formData: FormData) => Promise<void>;
   fetchSubfieldById: (id: string) => Promise<void>;
   fetchPricingRules: (subFieldId: string, dayOfWeek: number) => Promise<void>;
   addPricingRule: (
@@ -120,7 +121,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         timeSlots: [{ start_time: data.start_time, end_time: data.end_time }],
         basePrice: data.base_price,
       };
-      const res = await ownerService.createPricingRules(payload);
+      await ownerService.createPricingRules(payload);
       // Refresh pricing rules after adding
       await get().fetchPricingRules(subFieldId, dayOfWeek);
     } catch (error: any) {
@@ -128,6 +129,24 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         error: error.message || "Failed to add pricing rule",
         isLoading: false,
       });
+    }
+  },
+
+  createSubfield: async (complexId: string, formData: FormData) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.createSubfield(complexId, formData);
+      // Refresh the complex to get updated subfields list
+      await get().fetchComplexById(complexId);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create subfield";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
     }
   },
 }));

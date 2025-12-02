@@ -9,17 +9,23 @@ import {
   getPriceRange,
 } from "@/services/mockData";
 import type { SubField } from "@/types";
+import { Link } from "react-router-dom";
 
 interface SubFieldCardProps {
   subField: SubField & { complex_name?: string; complex_address?: string };
   showComplexInfo?: boolean;
+  mode?: "player" | "owner";
 }
 
 export function SubFieldCard({
   subField,
   showComplexInfo = false,
+  mode = "player",
 }: SubFieldCardProps) {
-  const { min } = getPriceRange(subField);
+  // Use min_price from backend if available, otherwise try to get from pricing_rules
+  const minPrice =
+    subField.min_price ||
+    (subField.pricing_rules.length > 0 ? getPriceRange(subField).min : 0);
 
   return (
     <Card className="group overflow-hidden flex flex-col h-full border hover:shadow-xl transition-shadow cursor-pointer bg-card">
@@ -85,26 +91,34 @@ export function SubFieldCard({
           <div>
             <p className="text-xs text-muted-foreground">Giá từ</p>
             <p className="text-blue-600 font-bold">
-              {subField.pricing_rules.length > 0 ? (
+              {minPrice > 0 ? (
                 <span>
-                  {formatPrice(min)}
+                  {formatPrice(minPrice)}
                   <span className="text-xs font-normal text-muted-foreground">
                     /h
                   </span>
                 </span>
               ) : (
-                "Liên hệ"
+                "Chưa có giá"
               )}
             </p>
           </div>
-          <BookingModal
-            subField={subField}
-            trigger={
-              <Button size="sm" className="h-8 text-xs">
-                Xem chi tiết
+          {mode === "player" ? (
+            <BookingModal
+              subField={subField}
+              trigger={
+                <Button size="sm" className="h-8 text-xs">
+                  Xem chi tiết
+                </Button>
+              }
+            />
+          ) : (
+            <Link to={`/owner/sub-fields/${subField.id}`}>
+              <Button size="sm" variant="outline" className="h-8 text-xs">
+                Quản lý
               </Button>
-            }
-          />
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>

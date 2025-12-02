@@ -22,13 +22,12 @@ import { Label } from "@/components/ui/label";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { SportType } from "@/types";
 import { getSportTypeLabel } from "@/services/mockData";
-import { Plus } from "lucide-react";
+import { Plus, Upload, X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SubFieldFormData {
-  sub_field_name: string;
+  subfield_name: string;
   capacity: number;
-  sport_type: SportType;
-  sub_field_image?: string;
 }
 
 interface SubFieldFormDialogProps {
@@ -40,10 +39,12 @@ export function SubFieldFormDialog({
   complexId,
   trigger,
 }: SubFieldFormDialogProps) {
-  const addSubField = useOwnerStore((state) => state.addSubField);
-  const [isLoading, setIsLoading] = useState(false);
+  const { createSubfield, isLoading } = useOwnerStore();
   const [open, setOpen] = useState(false);
   const [sportType, setSportType] = useState<SportType | "">("");
+  const [subfieldImage, setSubfieldImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -52,29 +53,55 @@ export function SubFieldFormDialog({
     reset,
   } = useForm<SubFieldFormData>();
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSubfieldImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSubfieldImage(null);
+    setImagePreview(null);
+  };
+
   const onSubmit = async (data: SubFieldFormData) => {
-    if (!sportType) return;
+    setError(null);
 
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    if (!sportType) {
+      setError("Vui lòng chọn loại sân");
+      return;
+    }
 
-    const newSubField = {
-      id: Math.random().toString(36).substring(7),
-      complex_id: complexId,
-      sub_field_name: data.sub_field_name,
-      capacity: data.capacity,
-      sport_type: sportType as SportType,
-      sub_field_image: data.sub_field_image,
-      pricing_rules: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    if (!subfieldImage) {
+      setError("Vui lòng tải lên hình ảnh sân");
+      return;
+    }
 
-    addSubField(complexId, newSubField);
-    setIsLoading(false);
-    setOpen(false);
-    reset();
-    setSportType("");
+    try {
+      const formData = new FormData();
+      formData.append("subfield_name", data.subfield_name);
+      formData.append("capacity", data.capacity.toString());
+      formData.append("sport_type", sportType);
+      formData.append("subfield_image", subfieldImage);
+
+      await createSubfield(complexId, formData);
+
+      // Reset form
+      reset();
+      setSportType("");
+      setSubfieldImage(null);
+      setImagePreview(null);
+      setError(null);
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+    }
   };
 
   return (
@@ -87,7 +114,7 @@ export function SubFieldFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm sân con mới</DialogTitle>
           <DialogDescription>
@@ -96,24 +123,34 @@ export function SubFieldFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 py-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="grid gap-2">
-              <Label htmlFor="sub_field_name">Tên sân con</Label>
+              <Label htmlFor="subfield_name">
+                Tên sân con <span className="text-destructive">*</span>
+              </Label>
               <Input
-                id="sub_field_name"
+                id="subfield_name"
                 placeholder="Ví dụ: Sân bóng đá 5v5"
-                {...register("sub_field_name", {
+                {...register("subfield_name", {
                   required: "Tên sân là bắt buộc",
                 })}
               />
-              {errors.sub_field_name && (
+              {errors.subfield_name && (
                 <p className="text-sm text-destructive">
-                  {errors.sub_field_name.message}
+                  {errors.subfield_name.message}
                 </p>
               )}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="capacity">Sức chứa (số người)</Label>
+              <Label htmlFor="capacity">
+                Sức chứa (số người) <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="capacity"
                 type="number"
@@ -132,7 +169,9 @@ export function SubFieldFormDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="sport_type">Loại sân</Label>
+              <Label htmlFor="sport_type">
+                Loại sân <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={sportType}
                 onValueChange={(value) => setSportType(value as SportType)}
@@ -148,23 +187,57 @@ export function SubFieldFormDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {!sportType && (
-                <p className="text-sm text-destructive">Loại sân là bắt buộc</p>
-              )}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="sub_field_image">URL hình ảnh (tùy chọn)</Label>
-              <Input
-                id="sub_field_image"
-                placeholder="https://example.com/image.jpg"
-                {...register("sub_field_image")}
-              />
+              <Label htmlFor="subfield_image">
+                Hình ảnh sân <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex flex-col gap-2">
+                {imagePreview ? (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="subfield_image"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Nhấp để tải lên hình ảnh
+                    </span>
+                  </label>
+                )}
+                <Input
+                  id="subfield_image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isLoading || !sportType}>
+            <Button
+              type="submit"
+              disabled={isLoading || !sportType || !subfieldImage}
+            >
               {isLoading ? "Đang tạo..." : "Tạo sân con"}
             </Button>
           </DialogFooter>
