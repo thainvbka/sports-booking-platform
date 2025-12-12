@@ -115,7 +115,7 @@ export function OwnerDashboardPage() {
           <Link to="/owner/complexes">
             <Button className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
               <Plus className="w-4 h-4 mr-2" />
-              Thêm cơ sở mới
+              Thêm khu phức hợp mới
             </Button>
           </Link>
         </div>
@@ -168,7 +168,7 @@ export function OwnerDashboardPage() {
         <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tổng Cơ Sở
+              Tổng khu phức hợp
             </CardTitle>
             <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-orange-600" />
@@ -386,7 +386,7 @@ export function OwnerDashboardPage() {
           {/* Complexes List */}
           {/* <Card className="border-none shadow-md">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Cơ Sở Của Bạn</CardTitle>
+              <CardTitle className="text-lg">khu phức hợp Của Bạn</CardTitle>
               <Link
                 to="/owner/complexes"
                 className="text-xs text-primary hover:underline"
@@ -406,7 +406,7 @@ export function OwnerDashboardPage() {
                 {complexes.length === 0 && (
                   <div className="text-center py-6">
                     <p className="text-sm text-muted-foreground mb-3">
-                      Chưa có cơ sở nào
+                      Chưa có khu phức hợp nào
                     </p>
                     <Link to="/owner/complexes">
                       <Button
@@ -414,7 +414,7 @@ export function OwnerDashboardPage() {
                         variant="outline"
                         className="w-full border-dashed"
                       >
-                        <Plus className="w-4 h-4 mr-2" /> Thêm cơ sở
+                        <Plus className="w-4 h-4 mr-2" /> Thêm khu phức hợp
                       </Button>
                     </Link>
                   </div>
@@ -426,7 +426,7 @@ export function OwnerDashboardPage() {
                       variant="ghost"
                       className="w-full text-xs text-muted-foreground mt-2"
                     >
-                      Xem thêm {Math.max(0, complexes.length - 3)} cơ sở khác
+                      Xem thêm {Math.max(0, complexes.length - 3)} khu phức hợp khác
                     </Button>
                   </Link>
                 )}

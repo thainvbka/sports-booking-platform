@@ -42,8 +42,8 @@ const mockComplexes: Complex[] = [
   {
     id: "1",
     owner_id: "owner-1",
-    complex_name: "Sân Thể Thao Bình Thạnh",
-    complex_address: "123 Đường Phan Văn Trị, Phường 5, Bình Thạnh, TP.HCM",
+    complex_name: "Khu Phức Hợp Thể Thao Bách Khoa",
+    complex_address: "số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=2070",
@@ -90,8 +90,8 @@ const mockComplexes: Complex[] = [
   {
     id: "2",
     owner_id: "owner-2",
-    complex_name: "Khu Liên Hợp Thể Thao Quận 1",
-    complex_address: "456 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM",
+    complex_name: "Khu Phức Hợp Thể Thao Bách Khoa",
+    complex_address: "số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội ",
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2070",
@@ -138,8 +138,8 @@ const mockComplexes: Complex[] = [
   {
     id: "3",
     owner_id: "owner-3",
-    complex_name: "Sân Thể Thao Tân Phú",
-    complex_address: "789 Tân Kỳ Tân Quý, Tân Phú, TP.HCM",
+    complex_name: "Khu Phức Hợp Thể Thao Bách Khoa",
+    complex_address: "số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
     status: ComplexStatus.ACTIVE,
     complex_image:
       "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=2070",

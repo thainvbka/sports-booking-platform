@@ -24,7 +24,7 @@ export function Footer() {
               T-Sport
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Nền tảng đặt sân thể thao hàng đầu Việt Nam. Kết nối đam mê, nâng
+              Nền tảng đặt sân thể thao số 1 Đại Cồ Việt. Kết nối đam mê, nâng
               tầm sức khỏe.
             </p>
             <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>123 Đường Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh</span>
+                <span>số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 shrink-0" />

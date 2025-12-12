@@ -145,7 +145,7 @@ export function ComplexFormDialog() {
               </Label>
               <Input
                 id="complex_address"
-                placeholder="Ví dụ: 123 Đường ABC, Quận XYZ, TP.HCM"
+                placeholder="Ví dụ:  số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội"
                 {...register("complex_address", {
                   required: "Địa chỉ là bắt buộc",
                 })}

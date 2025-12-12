@@ -143,7 +143,7 @@ export function RegisterPage() {
 
         {role === "OWNER" && (
           <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-            <Label htmlFor="company_name">Tên công ty / Cơ sở</Label>
+            <Label htmlFor="company_name">Tên công ty / khu phức hợp</Label>
             <Input
               id="company_name"
               placeholder="Khu Thể Thao ABC"

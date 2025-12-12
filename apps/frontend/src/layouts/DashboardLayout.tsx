@@ -22,7 +22,11 @@ export function DashboardLayout() {
 
   const ownerMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/owner" },
-    { icon: Building2, label: "Quản lý Cơ sở", path: "/owner/complexes" },
+    {
+      icon: Building2,
+      label: "Quản lý khu phức hợp",
+      path: "/owner/complexes",
+    },
     { icon: Calendar, label: "Lịch Đặt Sân", path: "/owner/schedule" },
     { icon: Settings, label: "Cài đặt", path: "/owner/settings" },
   ];

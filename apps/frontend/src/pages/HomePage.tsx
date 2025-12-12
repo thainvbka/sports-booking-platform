@@ -23,7 +23,7 @@ export function HomePage() {
           <div className="max-w-3xl mx-auto text-center mb-10">
             <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight leading-tight">
               Nền tảng đặt sân thể thao <br />
-              <span className="text-blue-400">hàng đầu Việt Nam</span>
+              <span className="text-blue-400">số 1 Đại Cồ Việt</span>
             </h1>
             <p className="text-xl md:text-2xl mb-10 text-blue-100 font-light">
               Kết nối đam mê, đặt sân dễ dàng. Tìm kiếm và đặt lịch ngay cho
