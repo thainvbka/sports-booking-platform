@@ -85,7 +85,18 @@ export const createComplex = async (
 };
 
 //get owner's complexes
-export const getOwnerComplexes = async (ownerId: string) => {
+export const getOwnerComplexes = async (
+  ownerId: string,
+  {
+    page = 1,
+    limit = 10,
+    search = "",
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }
+) => {
   //check owner
   const owner = await prisma.owner.findUnique({
     where: { id: ownerId },
@@ -94,24 +105,49 @@ export const getOwnerComplexes = async (ownerId: string) => {
     throw new ForbiddenError("Owner not found");
   }
 
-  const complexes = await prisma.complex.findMany({
-    where: { owner_id: ownerId },
-    orderBy: { created_at: "desc" },
-    select: {
-      id: true,
-      complex_name: true,
-      complex_address: true,
-      complex_image: true,
-      status: true,
-      _count: {
-        select: {
-          sub_fields: true,
+  const skip = (page - 1) * limit;
+
+  const whereCondition: any = {
+    owner_id: ownerId,
+    ...(search && {
+      complex_name: {
+        contains: search,
+        mode: "insensitive", // khong phân biệt hoa thường
+      },
+    }),
+  };
+
+  const [total, complexes] = await prisma.$transaction([
+    prisma.complex.count({ where: whereCondition }),
+    prisma.complex.findMany({
+      where: whereCondition,
+      orderBy: { created_at: "desc" },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        complex_name: true,
+        complex_address: true,
+        complex_image: true,
+        status: true,
+        _count: {
+          select: {
+            sub_fields: true,
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
-  return complexes;
+  return {
+    complexes,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const getOwnerComplexById = async (

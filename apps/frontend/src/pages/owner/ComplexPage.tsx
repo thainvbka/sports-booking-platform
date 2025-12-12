@@ -1,17 +1,33 @@
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
-import { AlertCircle, Search, Filter } from "lucide-react";
+import {
+  AlertCircle,
+  Search,
+  Filter,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function ComplexesPage() {
-  const { complexes, fetchComplexes } = useOwnerStore();
+  const { complexes, fetchComplexes, pagination, setPage, setSearch } =
+    useOwnerStore();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Debounce search input để không gọi API liên tục khi gõ
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, setSearch]);
 
   useEffect(() => {
     fetchComplexes();
-  }, [fetchComplexes]);
+  }, []); // Chỉ chạy lần đầu khi component mount, cac lan sau do fetch duoc goi khi thay doi page hoac search
 
   return (
     <div className="space-y-8 pb-8">
@@ -35,6 +51,8 @@ export function ComplexesPage() {
             type="search"
             placeholder="Tìm kiếm khu phức hợp..."
             className="pl-9 bg-background"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button variant="outline" size="icon">
@@ -42,12 +60,41 @@ export function ComplexesPage() {
         </Button>
       </div>
 
+      {/* Complex List */}
       {complexes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {complexes.map((complex) => (
-            <OwnerComplexCard key={complex.id} complex={complex} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {complexes.map((complex) => (
+              <OwnerComplexCard key={complex.id} complex={complex} />
+            ))}
+          </div>
+          {/* Pagination Controls */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Trước
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Trang {pagination.page} / {pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages}
+              >
+                Sau
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl bg-muted/30">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

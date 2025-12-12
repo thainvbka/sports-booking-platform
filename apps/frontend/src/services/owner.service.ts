@@ -6,11 +6,13 @@ import type {
   // SubField,
   SubfieldDetail,
   PricingRule,
+  PaginationMeta,
 } from "@/types";
 
 //payload and response types
 interface GetOwnerComplexesResponse {
   complexes: ComplexListItem[];
+  pagination: PaginationMeta;
 }
 
 interface GetOwnerComplexByIdResponse {
@@ -35,10 +37,16 @@ interface GetOwnerPricingRulesResponse {
 
 export const ownerService = {
   //complexes
-  getComplexes: async () => {
+  getComplexes: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) => {
     const response = await api.get<ApiResponse<GetOwnerComplexesResponse>>(
-      "/complexes"
+      "/complexes",
+      { params }
     );
+    //response : { data : { message, status, reason, data: { complexes, pagination } } }
     return response.data;
   },
   getComplexById: async (id: string) => {

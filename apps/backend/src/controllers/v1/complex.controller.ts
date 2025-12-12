@@ -56,11 +56,15 @@ export const getOwnerComplexesController = async (
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
 
-  const complexes = await getOwnerComplexes(ownerId);
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const search = (req.query.search as string) || "";
+
+  const result = await getOwnerComplexes(ownerId, { page, limit, search });
 
   return new SuccessResponse({
     message: "Owner complexes retrieved successfully",
-    data: { complexes },
+    data: result,
   }).send(res);
 };
 

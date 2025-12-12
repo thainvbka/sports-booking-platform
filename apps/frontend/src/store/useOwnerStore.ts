@@ -5,12 +5,19 @@ import type {
   SubField,
   SubfieldDetail,
   PricingRule,
+  PaginationMeta,
 } from "@/types";
 import { ownerService } from "@/services/owner.service";
 
 interface OwnerState {
   complexes: ComplexListItem[];
   selectedComplex: ComplexDetail | null;
+  pagination: PaginationMeta | null;
+  queryParams: {
+    page: number;
+    limit: number;
+    search: string;
+  };
   isLoading: boolean;
   error: string | null;
   subfields: SubField[];
@@ -20,6 +27,8 @@ interface OwnerState {
 
   // Actions
   fetchComplexes: () => Promise<void>;
+  setPage: (page: number) => void;
+  setSearch: (search: string) => void;
   fetchComplexById: (id: string) => Promise<void>;
   createComplex: (formData: FormData) => Promise<void>;
   createSubfield: (complexId: string, formData: FormData) => Promise<void>;
@@ -41,12 +50,37 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   selectedSubfield: null,
   pricingRules: [],
   dayOfWeek: null,
+  pagination: null,
+  queryParams: {
+    page: 1,
+    limit: 9,
+    search: "",
+  },
+
+  setPage: (page: number) => {
+    set((state) => ({
+      queryParams: { ...state.queryParams, page },
+    }));
+    get().fetchComplexes();
+  },
+
+  setSearch: (search: string) => {
+    set((state) => ({
+      queryParams: { ...state.queryParams, search, page: 1 },
+    }));
+    get().fetchComplexes();
+  },
 
   fetchComplexes: async () => {
     set({ isLoading: true, error: null });
+    const { queryParams } = get();
     try {
-      const res = await ownerService.getComplexes();
-      set({ complexes: res.data.complexes, isLoading: false });
+      const res = await ownerService.getComplexes(queryParams);
+      set({
+        complexes: res.data.complexes,
+        pagination: res.data.pagination,
+        isLoading: false,
+      });
       console.log("Fetched complexes:", res.data.complexes);
     } catch (error: any) {
       set({

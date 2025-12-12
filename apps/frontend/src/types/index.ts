@@ -164,3 +164,11 @@ export interface SearchFilters {
   start_time?: string;
   end_time?: string;
 }
+
+// Pagination metadata
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
