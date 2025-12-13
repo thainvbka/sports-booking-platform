@@ -29,6 +29,11 @@ interface OwnerState {
   fetchComplexes: () => Promise<void>;
   setPage: (page: number) => void;
   setSearch: (search: string) => void;
+  setParams: (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) => void;
   fetchComplexById: (id: string) => Promise<void>;
   createComplex: (formData: FormData) => Promise<void>;
   createSubfield: (complexId: string, formData: FormData) => Promise<void>;
@@ -53,8 +58,15 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   pagination: null,
   queryParams: {
     page: 1,
-    limit: 9,
+    limit: 6,
     search: "",
+  },
+
+  setParams: (params) => {
+    set((state) => ({
+      queryParams: { ...state.queryParams, ...params },
+    }));
+    get().fetchComplexes();
   },
 
   setPage: (page: number) => {
@@ -65,6 +77,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   },
 
   setSearch: (search: string) => {
+    const { queryParams } = get();
+    if (queryParams.search === search) return; // tránh gọi lại nếu search không đổi
     set((state) => ({
       queryParams: { ...state.queryParams, search, page: 1 },
     }));
@@ -108,11 +122,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   createComplex: async (formData: FormData) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await ownerService.createComplex(formData);
+      await ownerService.createComplex(formData);
+      //reset ve trang dau va tai lai danh sach
       set((state) => ({
-        complexes: [res.data.complex, ...state.complexes],
-        isLoading: false,
+        queryParams: { ...state.queryParams, page: 1, search: "" },
       }));
+      await get().fetchComplexes();
     } catch (error: any) {
       set({
         error: error.message || "Failed to create complex",

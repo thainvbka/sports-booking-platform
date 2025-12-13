@@ -89,7 +89,7 @@ export const getOwnerComplexes = async (
   ownerId: string,
   {
     page = 1,
-    limit = 10,
+    limit = 6,
     search = "",
   }: {
     page?: number;

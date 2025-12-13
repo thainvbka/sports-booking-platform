@@ -11,11 +11,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { set } from "zod";
 
 export function ComplexesPage() {
-  const { complexes, fetchComplexes, pagination, setPage, setSearch } =
-    useOwnerStore();
-  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    complexes,
+    fetchComplexes,
+    pagination,
+    setPage,
+    setSearch,
+    queryParams,
+    setParams,
+  } = useOwnerStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  //lay gia tri ban dau tu URL neu co
+  const initialSearch = searchParams.get("search") || "";
+  const initialPage = parseInt(searchParams.get("page") || "1");
+
+  //khoi tao state search tu URL
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
 
   // Debounce search input để không gọi API liên tục khi gõ
   useEffect(() => {
@@ -25,9 +41,22 @@ export function ComplexesPage() {
     return () => clearTimeout(timer);
   }, [searchTerm, setSearch]);
 
+  //khoi tao store khi trang load lan dau
   useEffect(() => {
-    fetchComplexes();
-  }, []); // Chỉ chạy lần đầu khi component mount, cac lan sau do fetch duoc goi khi thay doi page hoac search
+    setParams({ page: initialPage, search: initialSearch });
+  }, []); //chi chay 1 lan khi component mount
+
+  // Cập nhật URL khi searchTerm hoặc page thay đổi
+  useEffect(() => {
+    const params: any = {};
+    if (queryParams.page > 1) {
+      params.page = queryParams.page.toString();
+    }
+    if (queryParams.search) {
+      params.search = queryParams.search;
+    }
+    setSearchParams(params);
+  }, [queryParams.page, queryParams.search, setSearchParams]);
 
   return (
     <div className="space-y-8 pb-8">
