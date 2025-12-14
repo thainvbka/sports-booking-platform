@@ -177,7 +177,8 @@ model SubField {
   bookings          Booking[]
   pricing_rules     PricingRule[]
 
-  @@unique([complex_id, sub_field_name]) // tên sân con là duy nhất trong 1 khu
+  // Partial unique index: tên sân con là duy nhất trong 1 khu chỉ khi chưa bị xóa
+  @@unique([complex_id, sub_field_name, isDelete], map: "SubField_complex_id_sub_field_name_key")
   @@index([complex_id])
 }
 

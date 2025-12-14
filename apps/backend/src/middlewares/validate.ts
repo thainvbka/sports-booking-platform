@@ -7,7 +7,9 @@ export const validate =
   (schema: ZodTypeAny) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("req.body", req.body);
+      console.log("=== VALIDATION DEBUG ===");
+      console.log("req.body:", req.body);
+      console.log("req.params:", req.params);
 
       // Parse và xác thực request body, params, và query
       const parsed = await schema.parseAsync({
@@ -20,7 +22,12 @@ export const validate =
       if ((parsed as any).params) req.params = (parsed as any).params as any;
       return next();
     } catch (error) {
-      if (error instanceof ZodError) return next(error);
+      if (error instanceof ZodError) {
+        console.error("=== VALIDATION ERROR ===");
+        console.error("Errors:", JSON.stringify(error.errors, null, 2));
+        return next(error);
+      }
+      console.error("=== VALIDATION UNEXPECTED ERROR ===", error);
       next(error as any);
     }
   };

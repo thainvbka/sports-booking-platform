@@ -271,7 +271,7 @@ export type SubFieldOrderByWithRelationInput = {
 
 export type SubFieldWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  complex_id_sub_field_name?: Prisma.SubFieldComplex_idSub_field_nameCompoundUniqueInput
+  complex_id_sub_field_name_isDelete?: Prisma.SubFieldComplex_idSub_field_nameIsDeleteCompoundUniqueInput
   AND?: Prisma.SubFieldWhereInput | Prisma.SubFieldWhereInput[]
   OR?: Prisma.SubFieldWhereInput[]
   NOT?: Prisma.SubFieldWhereInput | Prisma.SubFieldWhereInput[]
@@ -287,7 +287,7 @@ export type SubFieldWhereUniqueInput = Prisma.AtLeast<{
   recurringBookings?: Prisma.RecurringBookingListRelationFilter
   bookings?: Prisma.BookingListRelationFilter
   pricing_rules?: Prisma.PricingRuleListRelationFilter
-}, "id" | "complex_id_sub_field_name">
+}, "id" | "complex_id_sub_field_name_isDelete">
 
 export type SubFieldOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -426,9 +426,10 @@ export type SubFieldOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type SubFieldComplex_idSub_field_nameCompoundUniqueInput = {
+export type SubFieldComplex_idSub_field_nameIsDeleteCompoundUniqueInput = {
   complex_id: string
   sub_field_name: string
+  isDelete: boolean
 }
 
 export type SubFieldCountOrderByAggregateInput = {

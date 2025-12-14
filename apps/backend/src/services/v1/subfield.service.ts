@@ -32,6 +32,7 @@ export const createSubfield = async (
       "You do not have permission to manage this complex"
     );
   }
+  // Check if active subfield with same name exists (deleted ones are OK due to unique constraint including isDelete)
   const subfieldExists = await prisma.subField.findFirst({
     where: {
       complex_id: complexId,
@@ -39,6 +40,7 @@ export const createSubfield = async (
         equals: data.subfield_name,
         mode: "insensitive",
       },
+      isDelete: false,
     },
   });
 
@@ -113,13 +115,11 @@ export const getOwnerSubfieldById = async (
   const subfield = await prisma.subField.findUnique({
     where: {
       id: subfieldId,
-      complex: {
-        status: "ACTIVE",
-      },
+      isDelete: false,
     },
     select: {
       complex: {
-        select: { owner_id: true },
+        select: { owner_id: true, status: true },
       },
     },
   });
@@ -131,24 +131,19 @@ export const getOwnerSubfieldById = async (
       "You do not have permission to manage this subfield"
     );
   }
+  if (subfield.complex.status !== "ACTIVE") {
+    throw new ForbiddenError("Cannot access subfield of inactive complex");
+  }
 
   const subfieldDetails = await prisma.subField.findUnique({
-    where: { id: subfieldId },
+    where: { id: subfieldId, isDelete: false },
     select: {
       id: true,
+      complex_id: true,
       sub_field_name: true,
       sport_type: true,
       sub_field_image: true,
       capacity: true,
-      pricing_rules: {
-        select: {
-          id: true,
-          day_of_week: true,
-          start_time: true,
-          end_time: true,
-          base_price: true,
-        },
-      },
     },
   });
   return subfieldDetails;
@@ -161,7 +156,7 @@ export const updateSubfield = async (
 ) => {
   //check subfield thuộc owner
   const subfield = await prisma.subField.findUnique({
-    where: { id: subfieldId },
+    where: { id: subfieldId, isDelete: false },
     select: {
       complex: {
         select: { owner_id: true },
@@ -178,6 +173,7 @@ export const updateSubfield = async (
     );
   }
 
+  // Check if active subfield with same name exists (deleted ones are OK)
   const duplicateSubfield = await prisma.subField.findFirst({
     where: {
       complex_id: subfield.complex_id,
@@ -186,6 +182,7 @@ export const updateSubfield = async (
         mode: "insensitive",
       },
       id: { not: subfieldId },
+      isDelete: false,
     },
   });
 
@@ -210,7 +207,7 @@ export const updateSubfield = async (
 export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
   //check subfield thuộc owner
   const subfield = await prisma.subField.findUnique({
-    where: { id: subfieldId },
+    where: { id: subfieldId, isDelete: false },
     select: {
       complex: {
         select: { owner_id: true },
