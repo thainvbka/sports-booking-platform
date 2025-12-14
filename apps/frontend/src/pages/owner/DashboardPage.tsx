@@ -27,13 +27,13 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
 export function OwnerDashboardPage() {
-  const { complexes, fetchComplexes, isLoading, error } = useOwnerStore();
+  const { complexes, isLoading, error } = useOwnerStore();
   const { user: owner } = useAuthStore();
 
-  //fetch dữ liệu khi component được mount
-  useEffect(() => {
-    fetchComplexes();
-  }, [fetchComplexes]);
+  // //fetch dữ liệu khi component được mount
+  // useEffect(() => {
+  //   fetchComplexes();
+  // }, [fetchComplexes]);
 
   const stats = {
     totalComplexes: complexes.length,

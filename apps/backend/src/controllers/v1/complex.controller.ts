@@ -75,11 +75,19 @@ export const getOwnerComplexByIdController = async (
   const ownerId = req.user?.profiles.ownerId as string;
   const complexId = req.params.id;
 
-  const complex = await getOwnerComplexById(ownerId, complexId);
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 6;
+  const search = (req.query.search as string) || "";
+
+  const result = await getOwnerComplexById(ownerId, complexId, {
+    page,
+    limit,
+    search,
+  });
 
   return new SuccessResponse({
     message: "Owner complex retrieved successfully",
-    data: { complex },
+    data: result,
   }).send(res);
 };
 

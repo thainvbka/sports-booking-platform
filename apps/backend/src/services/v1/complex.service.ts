@@ -152,11 +152,20 @@ export const getOwnerComplexes = async (
 
 export const getOwnerComplexById = async (
   ownerId: string,
-  complexId: string
+  complexId: string,
+  {
+    page = 1,
+    limit = 6,
+    search = "",
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }
 ) => {
+  //check complex thuộc owner
   const complex = await prisma.complex.findFirst({
     where: { id: complexId, owner_id: ownerId },
-
     select: {
       id: true,
       complex_name: true,
@@ -168,29 +177,51 @@ export const getOwnerComplexById = async (
           sub_fields: true,
         },
       },
-      sub_fields: {
-        select: {
-          id: true,
-          sub_field_name: true,
-          sport_type: true,
-          sub_field_image: true,
-          capacity: true,
-          pricing_rules: {
-            select: { base_price: true },
-            orderBy: { base_price: "asc" },
-            take: 1,
-          },
-        },
-      },
     },
   });
+
   if (!complex) {
     throw new NotFoundError("Complex not found");
   }
 
+  const skip = (page - 1) * limit;
+
+  const whereCondition: any = {
+    complex_id: complexId,
+    isDelete: false,
+    ...(search && {
+      sub_field_name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    }),
+  };
+
+  const [total, subFields] = await prisma.$transaction([
+    prisma.subField.count({ where: whereCondition }),
+    prisma.subField.findMany({
+      where: whereCondition,
+      orderBy: { created_at: "desc" },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        sub_field_name: true,
+        sport_type: true,
+        sub_field_image: true,
+        capacity: true,
+        pricing_rules: {
+          select: { base_price: true },
+          orderBy: { base_price: "asc" },
+          take: 1,
+        },
+      },
+    }),
+  ]);
+
   const formatComplex = {
     ...complex,
-    sub_fields: complex.sub_fields.map((sf) => ({
+    sub_fields: subFields.map((sf) => ({
       id: sf.id,
       sub_field_name: sf.sub_field_name,
       sport_type: sf.sport_type,
@@ -200,7 +231,15 @@ export const getOwnerComplexById = async (
       pricing_rules: [],
     })),
   };
-  return formatComplex;
+  return {
+    complex: formatComplex,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 //update complex

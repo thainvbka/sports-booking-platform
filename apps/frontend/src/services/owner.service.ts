@@ -17,6 +17,7 @@ interface GetOwnerComplexesResponse {
 
 interface GetOwnerComplexByIdResponse {
   complex: ComplexDetail;
+  pagination: PaginationMeta;
 }
 
 interface CreateComplexResponse {
@@ -49,9 +50,13 @@ export const ownerService = {
     //response : { data : { message, status, reason, data: { complexes, pagination } } }
     return response.data;
   },
-  getComplexById: async (id: string) => {
+  getComplexById: async (
+    id: string,
+    params?: { page?: number; limit?: number; search?: string }
+  ) => {
     const response = await api.get<ApiResponse<GetOwnerComplexByIdResponse>>(
-      `/complexes/${id}`
+      `/complexes/${id}`,
+      { params }
     );
     return response.data;
   },

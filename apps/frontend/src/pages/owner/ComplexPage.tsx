@@ -12,12 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { set } from "zod";
 
 export function ComplexesPage() {
   const {
     complexes,
-    fetchComplexes,
+    // fetchComplexes,
     pagination,
     setPage,
     setSearch,

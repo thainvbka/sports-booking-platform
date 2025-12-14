@@ -1,27 +1,80 @@
-import { useParams, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Button } from "@/components/ui/button";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { SubFieldCard } from "@/components/shared/SubFieldCar";
 // import { PricingManagementDialog } from "@/components/shared/PricingRuleFormDialog";
 import { ComplexStatus } from "@/types";
-import { ArrowLeft, MapPin, Plus, Edit, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import type { ComplexDetail } from "@/types";
 
 export function ComplexDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { selectedComplex, isLoading, error, subfields, fetchComplexById } =
-    useOwnerStore();
 
-  // 1. Chỉ fetch Complex và Subfields khi ID trên URL thay đổi
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialPage = parseInt(searchParams.get("page") || "1");
+  const initialSearch = searchParams.get("search") || "";
+
+  const {
+    selectedComplex,
+    isLoading,
+    error,
+    subfields,
+    fetchComplexById,
+    setSubfieldParams,
+    setSubfieldPage,
+    setSubfieldSearch,
+    subfieldQueryParams,
+    subfieldPagination,
+  } = useOwnerStore();
+
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+  // Debounce search input để không gọi API liên tục khi gõ
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSubfieldSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, setSubfieldSearch]);
+
+  //init param tu url
+  useEffect(() => {
+    if (id) {
+      setSubfieldParams({ page: initialPage, search: initialSearch });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once
+
+  // fetch Complex và Subfields khi ID trên URL thay đổi va khi param thay doi
   useEffect(() => {
     if (id) {
       fetchComplexById(id);
     }
-  }, [id]);
+  }, [id, fetchComplexById]);
+
+  // Sync URL
+  useEffect(() => {
+    const params: Record<string, string> = {};
+    if (subfieldQueryParams.page > 1)
+      params.page = subfieldQueryParams.page.toString();
+    if (subfieldQueryParams.search) params.search = subfieldQueryParams.search;
+    setSearchParams(params);
+  }, [subfieldQueryParams.page, subfieldQueryParams.search, setSearchParams]);
 
   // 1. Xử lý Loading
   if (isLoading) {
@@ -120,17 +173,62 @@ export function ComplexDetailPage() {
           />
         </div>
 
-        {subfields && subfields.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {subfields.map((subField) => (
-              <SubFieldCard
-                key={subField.id}
-                subField={subField}
-                mode="owner"
-                showComplexInfo={false}
-              />
-            ))}
+        {/* Search Bar */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Tìm kiếm sân con..."
+              className="pl-9 bg-background"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+        </div>
+
+        {subfields && subfields.length > 0 ? (
+          <>
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {subfields.map((subField) => (
+                <SubFieldCard
+                  key={subField.id}
+                  subField={subField}
+                  mode="owner"
+                  showComplexInfo={false}
+                />
+              ))}
+            </div>
+            {/* Pagination Controls */}
+            {subfieldPagination && subfieldPagination.totalPages > 1 && (
+              <div className="flex items-center justify-end gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubfieldPage(subfieldPagination.page - 1)}
+                  disabled={subfieldPagination.page <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Trước
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Trang {subfieldPagination.page} /{" "}
+                  {subfieldPagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubfieldPage(subfieldPagination.page + 1)}
+                  disabled={
+                    subfieldPagination.page >= subfieldPagination.totalPages
+                  }
+                >
+                  Sau
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl bg-muted/10">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">

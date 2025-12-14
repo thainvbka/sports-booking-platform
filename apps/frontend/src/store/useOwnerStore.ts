@@ -20,10 +20,21 @@ interface OwnerState {
   };
   isLoading: boolean;
   error: string | null;
-  subfields: SubField[];
-  selectedSubfield: SubfieldDetail | null;
   pricingRules: PricingRule[];
   dayOfWeek: number | null;
+
+  //state subfields
+
+  subfields: SubField[];
+  selectedSubfield: SubfieldDetail | null;
+  //luu thong tin phan trang
+  subfieldPagination: PaginationMeta | null;
+  //luu thong tin query param
+  subfieldQueryParams: {
+    page: number;
+    limit: number;
+    search: string;
+  };
 
   // Actions
   fetchComplexes: () => Promise<void>;
@@ -44,6 +55,18 @@ interface OwnerState {
     dayOfWeek: number,
     data: any
   ) => Promise<void>;
+
+  //action subfields
+  //set param subfield khi load lai trang
+  setSubfieldParams: (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) => void;
+  //chuyển trang subfield
+  setSubfieldPage: (page: number) => void;
+  //tìm kiếm subfield
+  setSubfieldSearch: (search: string) => void;
 }
 
 export const useOwnerStore = create<OwnerState>((set, get) => ({
@@ -57,6 +80,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   dayOfWeek: null,
   pagination: null,
   queryParams: {
+    page: 1,
+    limit: 6,
+    search: "",
+  },
+  subfieldPagination: null,
+  subfieldQueryParams: {
     page: 1,
     limit: 6,
     search: "",
@@ -85,6 +114,36 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     get().fetchComplexes();
   },
 
+  setSubfieldPage: (page: number) => {
+    set((state) => ({
+      subfieldQueryParams: { ...state.subfieldQueryParams, page },
+    }));
+    const { selectedComplex } = get();
+    if (selectedComplex) {
+      get().fetchComplexById(selectedComplex.id);
+    }
+  },
+
+  setSubfieldSearch: (search: string) => {
+    const { subfieldQueryParams, selectedComplex } = get();
+    if (subfieldQueryParams.search === search) return; // tránh gọi lại nếu search không đổi
+    set((state) => ({
+      subfieldQueryParams: { ...state.subfieldQueryParams, search, page: 1 },
+    }));
+    if (selectedComplex) {
+      get().fetchComplexById(selectedComplex.id);
+    }
+  },
+  setSubfieldParams: (params) => {
+    set((state) => ({
+      subfieldQueryParams: { ...state.subfieldQueryParams, ...params },
+    }));
+    const { selectedComplex } = get();
+    if (selectedComplex) {
+      get().fetchComplexById(selectedComplex.id);
+    }
+  },
+
   fetchComplexes: async () => {
     set({ isLoading: true, error: null });
     const { queryParams } = get();
@@ -105,12 +164,14 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   },
   fetchComplexById: async (id: string) => {
     set({ isLoading: true, error: null });
+    const { subfieldQueryParams } = get();
     try {
-      const res = await ownerService.getComplexById(id);
+      const res = await ownerService.getComplexById(id, subfieldQueryParams);
       set({
         selectedComplex: res.data.complex,
         isLoading: false,
         subfields: res.data.complex.sub_fields,
+        subfieldPagination: res.data.pagination,
       });
     } catch (error: any) {
       set({
