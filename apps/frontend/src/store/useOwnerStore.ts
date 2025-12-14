@@ -52,6 +52,7 @@ interface OwnerState {
     data: { complex_name?: string; complex_address?: string }
   ) => Promise<void>;
   deleteComplex: (complexId: string) => Promise<void>;
+  reactivateComplex: (complexId: string) => Promise<void>;
   fetchPricingRules: (subFieldId: string, dayOfWeek: number) => Promise<void>;
   addPricingRule: (
     subFieldId: string,
