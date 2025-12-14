@@ -73,6 +73,7 @@ export interface ComplexDetail extends ComplexBase {
 // 4. SubField
 export interface SubField {
   id: string;
+  complex_id?: string;
   sub_field_name: string;
   capacity: number;
   sub_field_image?: string;
@@ -99,8 +100,13 @@ export interface PricingRule {
   base_price: number;
 }
 
-export interface SubfieldDetail extends SubField {
-  pricing_rules: PricingRule[];
+export interface SubfieldDetail {
+  id: string;
+  complex_id: string;
+  sub_field_name: string;
+  sport_type: SportType;
+  sub_field_image?: string;
+  capacity: number;
 }
 
 export interface Owner {

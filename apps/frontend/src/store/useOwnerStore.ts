@@ -47,8 +47,6 @@ interface OwnerState {
   }) => void;
   fetchComplexById: (id: string) => Promise<void>;
   createComplex: (formData: FormData) => Promise<void>;
-  createSubfield: (complexId: string, formData: FormData) => Promise<void>;
-  fetchSubfieldById: (id: string) => Promise<void>;
   fetchPricingRules: (subFieldId: string, dayOfWeek: number) => Promise<void>;
   addPricingRule: (
     subFieldId: string,
@@ -58,6 +56,13 @@ interface OwnerState {
 
   //action subfields
   //set param subfield khi load lai trang
+  createSubfield: (complexId: string, formData: FormData) => Promise<void>;
+  updateSubfield: (
+    subfieldId: string,
+    data: { subfield_name: string; sport_type: string; capacity: number }
+  ) => Promise<void>;
+  deleteSubfield: (subfieldId: string) => Promise<void>;
+  fetchSubfieldById: (id: string) => Promise<void>;
   setSubfieldParams: (params: {
     page?: number;
     limit?: number;
@@ -214,7 +219,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await ownerService.getPricingRules(subFieldId, dayOfWeek);
-      set({ pricingRules: res.data.pricingRules, isLoading: false });
+      set({ pricingRules: res.data, isLoading: false });
     } catch (error: any) {
       set({
         error: error.message || "Failed to fetch pricing rules",
@@ -260,6 +265,53 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to create subfield";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  updateSubfield: async (
+    subfieldId: string,
+    data: { subfield_name: string; sport_type: string; capacity: number }
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.updateSubfield(subfieldId, data);
+      // Refresh subfield details after update
+      const updatedSubfield = await ownerService.getSubfieldById(subfieldId);
+      set({
+        selectedSubfield: updatedSubfield.data.subfield,
+        isLoading: false,
+      });
+
+      // Also refresh parent complex data if it's currently loaded
+      const { selectedComplex } = get();
+      if (
+        selectedComplex &&
+        updatedSubfield.data.subfield.complex_id === selectedComplex.id
+      ) {
+        await get().fetchComplexById(selectedComplex.id);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update subfield";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  deleteSubfield: async (subfieldId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.deleteSubfield(subfieldId);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete subfield";
       set({
         error: errorMessage,
         isLoading: false,

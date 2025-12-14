@@ -15,6 +15,12 @@ export const createSubfieldController = async (req: Request, res: Response) => {
   const complexId = req.params.id;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
+  console.log("=== CREATE SUBFIELD DEBUG ===");
+  console.log("Body:", req.body);
+  console.log("Files:", files);
+  console.log("Owner ID:", req.user?.profiles.ownerId);
+  console.log("Complex ID:", complexId);
+
   if (
     !files ||
     !files["subfield_image"] ||

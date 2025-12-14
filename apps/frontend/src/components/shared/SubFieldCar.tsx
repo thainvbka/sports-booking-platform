@@ -113,7 +113,10 @@ export function SubFieldCard({
               }
             />
           ) : (
-            <Link to={`/owner/sub-fields/${subField.id}`}>
+            <Link
+              to={`/owner/sub-fields/${subField.id}`}
+              onClick={(e) => e.stopPropagation()}
+            >
               <Button size="sm" variant="outline" className="h-8 text-xs">
                 Quản lý
               </Button>

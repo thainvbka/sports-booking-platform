@@ -75,7 +75,11 @@ export const createComplex = async (
       status: true,
       _count: {
         select: {
-          sub_fields: true,
+          sub_fields: {
+            where: {
+              isDelete: false,
+            },
+          },
         },
       },
     },
@@ -132,7 +136,11 @@ export const getOwnerComplexes = async (
         status: true,
         _count: {
           select: {
-            sub_fields: true,
+            sub_fields: {
+              where: {
+                isDelete: false,
+              },
+            },
           },
         },
       },
@@ -174,7 +182,11 @@ export const getOwnerComplexById = async (
       status: true,
       _count: {
         select: {
-          sub_fields: true,
+          sub_fields: {
+            where: {
+              isDelete: false,
+            },
+          },
         },
       },
     },

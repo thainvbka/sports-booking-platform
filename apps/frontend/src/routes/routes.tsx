@@ -15,6 +15,7 @@ import { ComplexesPage } from "@/pages/owner/ComplexPage";
 // import { UsersPage } from "./pages/admin/UsersPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
+import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
       {
         path: "complexes/:id",
         element: <ComplexDetailPage />,
+      },
+      {
+        path: "sub-fields/:id",
+        element: <SubFieldDetailPage />,
       },
     ],
   },

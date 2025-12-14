@@ -28,10 +28,6 @@ interface CreateComplexResponse {
 //   subfields: SubField[];
 // }
 
-interface GetOwnerSubfieldByIdResponse {
-  subfield: SubfieldDetail;
-}
-
 interface GetOwnerPricingRulesResponse {
   pricingRules: PricingRule[];
 }
@@ -79,14 +75,14 @@ export const ownerService = {
   //   return response.data;
   // },
   getSubfieldById: async (id: string) => {
-    const response = await api.get<ApiResponse<GetOwnerSubfieldByIdResponse>>(
+    const response = await api.get<ApiResponse<{ subfield: SubfieldDetail }>>(
       `/sub-fields/${id}`
     );
     return response.data;
   },
   getPricingRules: async (subFieldId: string, dayOfWeek: number) => {
-    const response = await api.get<ApiResponse<GetOwnerPricingRulesResponse>>(
-      `/pricing-rules?subFieldId=${subFieldId}&dayOfWeek=${dayOfWeek}`
+    const response = await api.get<ApiResponse<PricingRule[]>>(
+      `/pricing-rules?sub_field_id=${subFieldId}&day_of_week=${dayOfWeek}`
     );
     return response.data;
   },
@@ -111,6 +107,26 @@ export const ownerService = {
           "Content-Type": "multipart/form-data",
         },
       }
+    );
+    return response.data;
+  },
+  updateSubfield: async (
+    subfieldId: string,
+    data: {
+      subfield_name: string;
+      sport_type: string;
+      capacity: number;
+    }
+  ) => {
+    const response = await api.patch<ApiResponse<{ subfield: SubfieldDetail }>>(
+      `/sub-fields/${subfieldId}`,
+      data
+    );
+    return response.data;
+  },
+  deleteSubfield: async (subfieldId: string) => {
+    const response = await api.delete<ApiResponse<Record<string, never>>>(
+      `/sub-fields/${subfieldId}`
     );
     return response.data;
   },
