@@ -189,6 +189,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         queryParams: { ...state.queryParams, page: 1, search: "" },
       }));
       await get().fetchComplexes();
+      set({ isLoading: false });
     } catch (error: any) {
       set({
         error: error.message || "Failed to create complex",
@@ -246,7 +247,14 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await ownerService.createSubfield(complexId, formData);
-      // Refresh the complex to get updated subfields list
+      //reset ve trang dau va tai lai danh sach
+      set((state) => ({
+        subfieldQueryParams: {
+          ...state.subfieldQueryParams,
+          page: 1,
+          search: "",
+        },
+      }));
       await get().fetchComplexById(complexId);
       set({ isLoading: false });
     } catch (error: unknown) {
