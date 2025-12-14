@@ -169,7 +169,7 @@ export function SubFieldDetailPage() {
               Chỉnh sửa
             </Button>
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
