@@ -309,6 +309,39 @@ export const deleteComplex = async (complexId: string, ownerId: string) => {
   return { message: "Complex and its subfields have been deactivated" };
 };
 
+//reactivate complex (owner)
+export const reactivateComplex = async (complexId: string, ownerId: string) => {
+  //check complex exists and belongs to owner
+  const complex = await prisma.complex.findUnique({
+    where: { id: complexId },
+  });
+  if (!complex) {
+    throw new NotFoundError("Complex not found");
+  }
+  if (complex.owner_id !== ownerId) {
+    throw new ForbiddenError(
+      "You don't have permission to reactivate this complex"
+    );
+  }
+  if (complex.status !== "INACTIVE") {
+    throw new BadRequestError("Only INACTIVE complexes can be reactivated");
+  }
+
+  //reactivate complex and all its subfields
+  await prisma.$transaction([
+    prisma.complex.update({
+      where: { id: complexId },
+      data: { status: "ACTIVE" },
+    }),
+    prisma.subField.updateMany({
+      where: { complex_id: complexId },
+      data: { isDelete: false },
+    }),
+  ]);
+
+  return { message: "Complex and its subfields have been reactivated" };
+};
+
 /**
  * ADMIN SERVICES
  */

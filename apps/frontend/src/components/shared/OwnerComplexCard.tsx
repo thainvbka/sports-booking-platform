@@ -13,22 +13,27 @@ const statusConfig = {
   [ComplexStatus.PENDING]: {
     label: "Chờ duyệt",
     variant: "default" as const,
+    className: "bg-yellow-100 text-yellow-800 border-yellow-200",
   },
   [ComplexStatus.ACTIVE]: {
     label: "Hoạt động",
     variant: "default" as const,
+    className: "bg-green-100 text-green-800 border-green-200",
   },
   [ComplexStatus.REJECTED]: {
     label: "Bị từ chối",
     variant: "destructive" as const,
+    className: "bg-red-100 text-red-800 border-red-200",
   },
   [ComplexStatus.DRAFT]: {
     label: "Nháp",
     variant: "secondary" as const,
+    className: "bg-gray-100 text-gray-800 border-gray-200",
   },
   [ComplexStatus.INACTIVE]: {
-    label: "Không hoạt động",
+    label: "Đã ngừng hoạt động",
     variant: "secondary" as const,
+    className: "bg-orange-100 text-orange-800 border-orange-200",
   },
 };
 
@@ -56,7 +61,10 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
             <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
               {complex.complex_name}
             </h3>
-            <Badge variant={status.variant} className="shrink-0">
+            <Badge
+              variant={status.variant}
+              className={`shrink-0 ${status.className}`}
+            >
               {status.label}
             </Badge>
           </div>

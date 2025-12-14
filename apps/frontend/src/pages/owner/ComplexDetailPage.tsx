@@ -1,10 +1,17 @@
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import {
+  useParams,
+  Link,
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Button } from "@/components/ui/button";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { SubFieldCard } from "@/components/shared/SubFieldCar";
-// import { PricingManagementDialog } from "@/components/shared/PricingRuleFormDialog";
+import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
+import { DeleteComplexDialog } from "@/components/owner/DeleteComplexDialog";
+import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";
 import { ComplexStatus } from "@/types";
 import {
   ArrowLeft,
@@ -23,6 +30,7 @@ import type { ComplexDetail } from "@/types";
 
 export function ComplexDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -40,9 +48,15 @@ export function ComplexDetailPage() {
     setSubfieldSearch,
     subfieldQueryParams,
     subfieldPagination,
+    updateComplex,
+    deleteComplex,
+    reactivateComplex,
   } = useOwnerStore();
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isReactivateDialogOpen, setIsReactivateDialogOpen] = useState(false);
 
   // Debounce search input để không gọi API liên tục khi gõ
   useEffect(() => {
@@ -75,6 +89,47 @@ export function ComplexDetailPage() {
     if (subfieldQueryParams.search) params.search = subfieldQueryParams.search;
     setSearchParams(params);
   }, [subfieldQueryParams.page, subfieldQueryParams.search, setSearchParams]);
+
+  const handleUpdateComplex = async (data: {
+    complex_name?: string;
+    complex_address?: string;
+  }) => {
+    if (!id) return;
+    try {
+      await updateComplex(id, data);
+      console.log(
+        "Cập nhật thành công: Thông tin khu phức hợp đã được cập nhật."
+      );
+    } catch {
+      console.error(
+        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin khu phức hợp."
+      );
+    }
+  };
+
+  const handleDeleteComplex = async () => {
+    if (!id) return;
+    try {
+      await deleteComplex(id);
+      console.log("Xóa thành công: Khu phức hợp đã được xóa.");
+      // Navigate back to complexes list
+      navigate("/owner/complexes", { replace: true });
+    } catch {
+      console.error("Xóa thất bại: Có lỗi xảy ra khi xóa khu phức hợp.");
+    }
+  };
+
+  const handleReactivateComplex = async () => {
+    if (!id) return;
+    try {
+      await reactivateComplex(id);
+      console.log("Kích hoạt thành công: Khu phức hợp đã được kích hoạt lại.");
+    } catch {
+      console.error(
+        "Kích hoạt thất bại: Có lỗi xảy ra khi kích hoạt khu phức hợp."
+      );
+    }
+  };
 
   // 1. Xử lý Loading
   if (isLoading) {
@@ -126,27 +181,75 @@ export function ComplexDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm">
-              <Edit className="w-4 h-4 mr-2" />
-              Chỉnh sửa
-            </Button>
-            <Button variant="destructive" size="sm">
-              <Trash2 className="w-4 h-4 mr-2" />
-              Xóa
-            </Button>
+            {complex.status === ComplexStatus.INACTIVE ? (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setIsReactivateDialogOpen(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Kích hoạt lại
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditDialogOpen(true)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Chỉnh sửa
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Ngừng hoạt động
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {complex.status !== ComplexStatus.ACTIVE && (
+      {complex.status === ComplexStatus.PENDING && (
+        <Alert
+          variant="default"
+          className="bg-yellow-50 border-yellow-200 text-yellow-900"
+        >
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription>
+            Khu phức hợp hiện đang chờ phê duyệt, bạn sẽ có thể thêm sân con khi
+            quản trị viên duyệt yêu cầu này.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {complex.status === ComplexStatus.INACTIVE && (
+        <Alert
+          variant="default"
+          className="bg-orange-50 border-orange-200 text-orange-900"
+        >
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription>
+            Khu phức hợp đã ngừng hoạt động. Khách hàng không thể xem hoặc đặt
+            lịch. Bạn có thể kích hoạt lại bất cứ lúc nào.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {complex.status === ComplexStatus.REJECTED && (
         <Alert
           variant="destructive"
           className="bg-red-50 border-red-200 text-red-900"
         >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Khu phức hợp hiện đang chờ phê duyệt, bạn sẽ có thể thêm sân con khi
-            quản trị viên duyệt yêu cầu này.
+            Khu phức hợp đã bị từ chối. Vui lòng liên hệ quản trị viên để biết
+            thêm chi tiết.
           </AlertDescription>
         </Alert>
       )}
@@ -248,6 +351,30 @@ export function ComplexDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Dialogs */}
+      {selectedComplex && (
+        <>
+          <EditComplexDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            complex={complex}
+            onSubmit={handleUpdateComplex}
+          />
+          <DeleteComplexDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            complexName={complex.complex_name}
+            onConfirm={handleDeleteComplex}
+          />
+          <ReactivateComplexDialog
+            open={isReactivateDialogOpen}
+            onOpenChange={setIsReactivateDialogOpen}
+            complexName={complex.complex_name}
+            onConfirm={handleReactivateComplex}
+          />
+        </>
+      )}
     </div>
   );
 }

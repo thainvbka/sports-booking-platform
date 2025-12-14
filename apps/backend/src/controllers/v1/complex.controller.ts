@@ -6,6 +6,7 @@ import {
   getOwnerComplexes,
   getPendingComplexes,
   deleteComplex,
+  reactivateComplex,
   approveComplex,
   rejectComplex,
   suspendComplex,
@@ -111,6 +112,21 @@ export const deleteComplexController = async (req: Request, res: Response) => {
 
   return new SuccessResponse({
     message: "Complex deleted successfully",
+    data: {},
+  }).send(res);
+};
+
+export const reactivateComplexController = async (
+  req: Request,
+  res: Response
+) => {
+  const ownerId = req.user?.profiles.ownerId as string;
+  const complexId = req.params.id;
+
+  await reactivateComplex(complexId, ownerId);
+
+  return new SuccessResponse({
+    message: "Complex reactivated successfully",
     data: {},
   }).send(res);
 };

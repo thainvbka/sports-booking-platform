@@ -14,6 +14,7 @@ import {
   getOwnerComplexByIdController,
   updateComplexController,
   deleteComplexController,
+  reactivateComplexController,
   getPendingComplexesController,
   approveComplexController,
   rejectComplexController,
@@ -128,6 +129,13 @@ router.delete(
   authenticate,
   authorize(["OWNER"]),
   asyncHandler(deleteComplexController)
+);
+
+router.post(
+  "/:id/reactivate",
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(reactivateComplexController)
 );
 
 export default router;

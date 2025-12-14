@@ -130,4 +130,29 @@ export const ownerService = {
     );
     return response.data;
   },
+  updateComplex: async (
+    complexId: string,
+    data: {
+      complex_name?: string;
+      complex_address?: string;
+    }
+  ) => {
+    const response = await api.patch<ApiResponse<{ complex: ComplexDetail }>>(
+      `/complexes/${complexId}`,
+      data
+    );
+    return response.data;
+  },
+  deleteComplex: async (complexId: string) => {
+    const response = await api.delete<ApiResponse<Record<string, never>>>(
+      `/complexes/${complexId}`
+    );
+    return response.data;
+  },
+  reactivateComplex: async (complexId: string) => {
+    const response = await api.post<ApiResponse<Record<string, never>>>(
+      `/complexes/${complexId}/reactivate`
+    );
+    return response.data;
+  },
 };

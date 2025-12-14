@@ -47,6 +47,11 @@ interface OwnerState {
   }) => void;
   fetchComplexById: (id: string) => Promise<void>;
   createComplex: (formData: FormData) => Promise<void>;
+  updateComplex: (
+    complexId: string,
+    data: { complex_name?: string; complex_address?: string }
+  ) => Promise<void>;
+  deleteComplex: (complexId: string) => Promise<void>;
   fetchPricingRules: (subFieldId: string, dayOfWeek: number) => Promise<void>;
   addPricingRule: (
     subFieldId: string,
@@ -312,6 +317,58 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to delete subfield";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  updateComplex: async (
+    complexId: string,
+    data: { complex_name?: string; complex_address?: string }
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.updateComplex(complexId, data);
+      // Refresh complex details after update
+      await get().fetchComplexById(complexId);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update complex";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  deleteComplex: async (complexId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.deleteComplex(complexId);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete complex";
+      set({
+        error: errorMessage,
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  reactivateComplex: async (complexId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.reactivateComplex(complexId);
+      // Refresh complex details after reactivation
+      await get().fetchComplexById(complexId);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to reactivate complex";
       set({
         error: errorMessage,
         isLoading: false,
