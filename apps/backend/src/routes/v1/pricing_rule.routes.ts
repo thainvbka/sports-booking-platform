@@ -14,6 +14,8 @@ import {
   getOwnerPricingRulesByDayController,
   updatePricingRuleController,
   deletePricingRuleController,
+  bulkDeletePricingRulesController,
+  copyPricingRulesController,
 } from "../../controllers/v1/pricing_rule.controller";
 
 const router = Router();
@@ -43,6 +45,20 @@ router.delete(
   authenticate,
   authorize(["OWNER"]),
   asyncHandler(deletePricingRuleController)
+);
+
+router.post(
+  "/bulk-delete",
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(bulkDeletePricingRulesController)
+);
+
+router.post(
+  "/copy",
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(copyPricingRulesController)
 );
 
 export default router;

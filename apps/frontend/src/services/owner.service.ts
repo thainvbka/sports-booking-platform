@@ -87,15 +87,62 @@ export const ownerService = {
     return response.data;
   },
   createPricingRules: async (payload: {
-    subFieldId: string;
-    dayOfWeek: number;
-    timeSlots: { start_time: string; end_time: string }[];
-    basePrice: number;
+    sub_field_id: string;
+    day_of_week: number[];
+    time_slots: { start_time: string; end_time: string }[];
+    base_price: number;
   }) => {
     const response = await api.post<ApiResponse<GetOwnerPricingRulesResponse>>(
       `/pricing-rules`,
       payload
     );
+    return response.data;
+  },
+  updatePricingRule: async (
+    ruleId: string,
+    data: {
+      sub_field_id: string;
+      day_of_week?: number;
+      start_time?: string;
+      end_time?: string;
+      base_price?: number;
+    }
+  ) => {
+    const response = await api.patch<ApiResponse<{ pricingRule: PricingRule }>>(
+      `/pricing-rules/${ruleId}`,
+      data
+    );
+    return response.data;
+  },
+  deletePricingRule: async (ruleId: string) => {
+    const response = await api.delete<ApiResponse<Record<string, never>>>(
+      `/pricing-rules/${ruleId}`
+    );
+    return response.data;
+  },
+  bulkDeletePricingRules: async (pricingRuleIds: string[]) => {
+    const response = await api.post<ApiResponse<{ deletedCount: number }>>(
+      `/pricing-rules/bulk-delete`,
+      { pricingRuleIds }
+    );
+    return response.data;
+  },
+  copyPricingRules: async (
+    subFieldId: string,
+    sourceDay: number,
+    targetDays: number[]
+  ) => {
+    const response = await api.post<
+      ApiResponse<{
+        copiedFrom: number;
+        copiedTo: number[];
+        rulesCreated: number;
+      }>
+    >(`/pricing-rules/copy`, {
+      sub_field_id: subFieldId,
+      source_day: sourceDay,
+      target_days: targetDays,
+    });
     return response.data;
   },
   createSubfield: async (complexId: string, formData: FormData) => {

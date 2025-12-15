@@ -299,3 +299,145 @@ export const deletePricingRule = async (
     where: { id: pricingRuleId },
   });
 };
+
+// Bulk delete pricing rules
+export const bulkDeletePricingRules = async (
+  ownerId: string,
+  pricingRuleIds: string[]
+) => {
+  if (!pricingRuleIds || pricingRuleIds.length === 0) {
+    throw new BadRequestError("No pricing rule IDs provided");
+  }
+
+  // Lấy tất cả pricing rules và check ownership
+  const pricingRules = await prisma.pricingRule.findMany({
+    where: {
+      id: { in: pricingRuleIds },
+    },
+    include: {
+      sub_field: {
+        include: {
+          complex: {
+            select: { owner_id: true },
+          },
+        },
+      },
+    },
+  });
+
+  // Check nếu không tìm thấy rules
+  if (pricingRules.length === 0) {
+    throw new NotFoundError("No pricing rules found");
+  }
+
+  // Check ownership cho tất cả rules
+  const unauthorizedRules = pricingRules.filter(
+    (rule) => rule.sub_field.complex.owner_id !== ownerId
+  );
+
+  if (unauthorizedRules.length > 0) {
+    throw new ForbiddenError(
+      "You do not have permission to delete some of these pricing rules"
+    );
+  }
+
+  // Xóa tất cả pricing rules
+  await prisma.pricingRule.deleteMany({
+    where: {
+      id: { in: pricingRuleIds },
+    },
+  });
+
+  return { deletedCount: pricingRules.length };
+};
+
+// Copy pricing rules from one day to another
+export const copyPricingRules = async (
+  ownerId: string,
+  subFieldId: string,
+  sourceDayOfWeek: number,
+  targetDaysOfWeek: number[]
+) => {
+  // Validate days
+  if (sourceDayOfWeek < 0 || sourceDayOfWeek > 6) {
+    throw new BadRequestError("Invalid source day of week (0-6)");
+  }
+
+  if (
+    !targetDaysOfWeek ||
+    targetDaysOfWeek.length === 0 ||
+    targetDaysOfWeek.some((day) => day < 0 || day > 6)
+  ) {
+    throw new BadRequestError("Invalid target days of week (0-6)");
+  }
+
+  // Check ownership
+  const subField = await prisma.subField.findUnique({
+    where: { id: subFieldId },
+    include: {
+      complex: true,
+    },
+  });
+
+  if (!subField) {
+    throw new NotFoundError("Sub-field not found");
+  }
+
+  if (subField.complex.owner_id !== ownerId) {
+    throw new ForbiddenError(
+      "You do not have permission to manage this sub-field"
+    );
+  }
+
+  // Lấy pricing rules từ ngày nguồn
+  const sourceRules = await prisma.pricingRule.findMany({
+    where: {
+      sub_field_id: subFieldId,
+      day_of_week: sourceDayOfWeek,
+    },
+    select: {
+      start_time: true,
+      end_time: true,
+      base_price: true,
+    },
+  });
+
+  if (sourceRules.length === 0) {
+    throw new NotFoundError(
+      `No pricing rules found for source day ${sourceDayOfWeek}`
+    );
+  }
+
+  // Xóa các rules cũ ở target days (nếu có)
+  await prisma.pricingRule.deleteMany({
+    where: {
+      sub_field_id: subFieldId,
+      day_of_week: { in: targetDaysOfWeek },
+    },
+  });
+
+  // Tạo rules mới cho target days
+  const newRules = targetDaysOfWeek.flatMap((targetDay) =>
+    sourceRules.map((rule) => ({
+      sub_field_id: subFieldId,
+      day_of_week: targetDay,
+      start_time: rule.start_time,
+      end_time: rule.end_time,
+      base_price: rule.base_price,
+    }))
+  );
+
+  const createdRules = await prisma.$transaction(
+    newRules.map((rule) =>
+      prisma.pricingRule.create({
+        data: rule,
+      })
+    )
+  );
+
+  return {
+    copiedFrom: sourceDayOfWeek,
+    copiedTo: targetDaysOfWeek,
+    rulesCreated: createdRules.length,
+  };
+};

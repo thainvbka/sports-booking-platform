@@ -6,6 +6,8 @@ import {
   getOwnerPricingRulesByDay,
   updatePricingRule,
   deletePricingRule,
+  bulkDeletePricingRules,
+  copyPricingRules,
 } from "../../services/v1/pricing_rule.service";
 
 export const createPricingRuleController = async (
@@ -76,5 +78,44 @@ export const deletePricingRuleController = async (
   return new SuccessResponse({
     message: "Pricing rule deleted successfully",
     data: {},
+  }).send(res);
+};
+
+export const bulkDeletePricingRulesController = async (
+  req: Request,
+  res: Response
+) => {
+  const ownerId = req.user?.profiles.ownerId as string;
+  const { pricingRuleIds } = req.body as { pricingRuleIds: string[] };
+
+  const result = await bulkDeletePricingRules(ownerId, pricingRuleIds);
+
+  return new SuccessResponse({
+    message: `${result.deletedCount} pricing rules deleted successfully`,
+    data: result,
+  }).send(res);
+};
+
+export const copyPricingRulesController = async (
+  req: Request,
+  res: Response
+) => {
+  const ownerId = req.user?.profiles.ownerId as string;
+  const { sub_field_id, source_day, target_days } = req.body as {
+    sub_field_id: string;
+    source_day: number;
+    target_days: number[];
+  };
+
+  const result = await copyPricingRules(
+    ownerId,
+    sub_field_id,
+    source_day,
+    target_days
+  );
+
+  return new SuccessResponse({
+    message: "Pricing rules copied successfully",
+    data: result,
   }).send(res);
 };

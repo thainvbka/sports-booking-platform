@@ -56,8 +56,34 @@ interface OwnerState {
   fetchPricingRules: (subFieldId: string, dayOfWeek: number) => Promise<void>;
   addPricingRule: (
     subFieldId: string,
+    daysOfWeek: number[],
+    data: { start_time: string; end_time: string; base_price: number }
+  ) => Promise<void>;
+  updatePricingRule: (
+    ruleId: string,
+    subFieldId: string,
     dayOfWeek: number,
-    data: any
+    data: {
+      day_of_week?: number;
+      start_time?: string;
+      end_time?: string;
+      base_price?: number;
+    }
+  ) => Promise<void>;
+  deletePricingRule: (
+    ruleId: string,
+    subFieldId: string,
+    dayOfWeek: number
+  ) => Promise<void>;
+  bulkDeletePricingRules: (
+    ruleIds: string[],
+    subFieldId: string,
+    dayOfWeek: number
+  ) => Promise<void>;
+  copyPricingRules: (
+    subFieldId: string,
+    sourceDay: number,
+    targetDays: number[]
   ) => Promise<void>;
 
   //action subfields
@@ -234,23 +260,114 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       });
     }
   },
-  addPricingRule: async (subFieldId: string, dayOfWeek: number, data: any) => {
+  addPricingRule: async (
+    subFieldId: string,
+    daysOfWeek: number[],
+    data: { start_time: string; end_time: string; base_price: number }
+  ) => {
     set({ isLoading: true, error: null });
     try {
       const payload = {
-        subFieldId: subFieldId,
-        dayOfWeek: dayOfWeek,
-        timeSlots: [{ start_time: data.start_time, end_time: data.end_time }],
-        basePrice: data.base_price,
+        sub_field_id: subFieldId,
+        day_of_week: daysOfWeek,
+        time_slots: [{ start_time: data.start_time, end_time: data.end_time }],
+        base_price: data.base_price,
       };
       await ownerService.createPricingRules(payload);
-      // Refresh pricing rules after adding
-      await get().fetchPricingRules(subFieldId, dayOfWeek);
+      set({ isLoading: false });
     } catch (error: any) {
       set({
         error: error.message || "Failed to add pricing rule",
         isLoading: false,
       });
+      throw error;
+    }
+  },
+
+  updatePricingRule: async (
+    ruleId: string,
+    subFieldId: string,
+    dayOfWeek: number,
+    data: {
+      day_of_week?: number;
+      start_time?: string;
+      end_time?: string;
+      base_price?: number;
+    }
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.updatePricingRule(ruleId, {
+        sub_field_id: subFieldId,
+        ...data,
+      });
+      // Refresh pricing rules after update
+      await get().fetchPricingRules(subFieldId, dayOfWeek);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to update pricing rule",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  deletePricingRule: async (
+    ruleId: string,
+    subFieldId: string,
+    dayOfWeek: number
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.deletePricingRule(ruleId);
+      // Refresh pricing rules after delete
+      await get().fetchPricingRules(subFieldId, dayOfWeek);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to delete pricing rule",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  bulkDeletePricingRules: async (
+    ruleIds: string[],
+    subFieldId: string,
+    dayOfWeek: number
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.bulkDeletePricingRules(ruleIds);
+      // Refresh pricing rules after bulk delete
+      await get().fetchPricingRules(subFieldId, dayOfWeek);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to bulk delete pricing rules",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  copyPricingRules: async (
+    subFieldId: string,
+    sourceDay: number,
+    targetDays: number[]
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      await ownerService.copyPricingRules(subFieldId, sourceDay, targetDays);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to copy pricing rules",
+        isLoading: false,
+      });
+      throw error;
     }
   },
 
