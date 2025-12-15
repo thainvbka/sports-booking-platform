@@ -41,8 +41,7 @@ import type { PricingRule } from "@/types";
 
 interface PricingRuleFormData {
   days: number[];
-  start_time: string;
-  end_time: string;
+  time_slots: { start_time: string; end_time: string }[];
   base_price: number;
 }
 
@@ -184,8 +183,7 @@ export function SubFieldDetailPage() {
     if (!id) return;
     try {
       await addPricingRule(id, data.days, {
-        start_time: data.start_time,
-        end_time: data.end_time,
+        time_slots: data.time_slots,
         base_price: data.base_price,
       });
       await fetchPricingRules(id, date.getDay());
@@ -204,9 +202,11 @@ export function SubFieldDetailPage() {
   const handleEditPricingRule = async (data: PricingRuleFormData) => {
     if (!id || !editingRule) return;
     try {
+      // For edit mode, we only support single time slot
+      const timeSlot = data.time_slots[0];
       await updatePricingRule(editingRule.id, id, date.getDay(), {
-        start_time: data.start_time,
-        end_time: data.end_time,
+        start_time: timeSlot.start_time,
+        end_time: timeSlot.end_time,
         base_price: data.base_price,
       });
       toast({ title: "Thành công", description: "Đã cập nhật khung giờ" });

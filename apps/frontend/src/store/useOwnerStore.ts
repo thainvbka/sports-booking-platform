@@ -57,7 +57,10 @@ interface OwnerState {
   addPricingRule: (
     subFieldId: string,
     daysOfWeek: number[],
-    data: { start_time: string; end_time: string; base_price: number }
+    data: {
+      time_slots: { start_time: string; end_time: string }[];
+      base_price: number;
+    }
   ) => Promise<void>;
   updatePricingRule: (
     ruleId: string,
@@ -263,14 +266,17 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   addPricingRule: async (
     subFieldId: string,
     daysOfWeek: number[],
-    data: { start_time: string; end_time: string; base_price: number }
+    data: {
+      time_slots: { start_time: string; end_time: string }[];
+      base_price: number;
+    }
   ) => {
     set({ isLoading: true, error: null });
     try {
       const payload = {
         sub_field_id: subFieldId,
         day_of_week: daysOfWeek,
-        time_slots: [{ start_time: data.start_time, end_time: data.end_time }],
+        time_slots: data.time_slots,
         base_price: data.base_price,
       };
       await ownerService.createPricingRules(payload);
