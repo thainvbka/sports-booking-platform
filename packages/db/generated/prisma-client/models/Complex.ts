@@ -19,8 +19,22 @@ export type ComplexModel = runtime.Types.Result.DefaultSelection<Prisma.$Complex
 
 export type AggregateComplex = {
   _count: ComplexCountAggregateOutputType | null
+  _avg: ComplexAvgAggregateOutputType | null
+  _sum: ComplexSumAggregateOutputType | null
   _min: ComplexMinAggregateOutputType | null
   _max: ComplexMaxAggregateOutputType | null
+}
+
+export type ComplexAvgAggregateOutputType = {
+  min_price: number | null
+  max_price: number | null
+  total_subfields: number | null
+}
+
+export type ComplexSumAggregateOutputType = {
+  min_price: number | null
+  max_price: number | null
+  total_subfields: number | null
 }
 
 export type ComplexMinAggregateOutputType = {
@@ -30,6 +44,9 @@ export type ComplexMinAggregateOutputType = {
   complex_address: string | null
   status: $Enums.ComplexStatus | null
   complex_image: string | null
+  min_price: number | null
+  max_price: number | null
+  total_subfields: number | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -41,6 +58,9 @@ export type ComplexMaxAggregateOutputType = {
   complex_address: string | null
   status: $Enums.ComplexStatus | null
   complex_image: string | null
+  min_price: number | null
+  max_price: number | null
+  total_subfields: number | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -53,11 +73,27 @@ export type ComplexCountAggregateOutputType = {
   status: number
   verification_docs: number
   complex_image: number
+  min_price: number
+  max_price: number
+  total_subfields: number
+  sport_types: number
   created_at: number
   updated_at: number
   _all: number
 }
 
+
+export type ComplexAvgAggregateInputType = {
+  min_price?: true
+  max_price?: true
+  total_subfields?: true
+}
+
+export type ComplexSumAggregateInputType = {
+  min_price?: true
+  max_price?: true
+  total_subfields?: true
+}
 
 export type ComplexMinAggregateInputType = {
   id?: true
@@ -66,6 +102,9 @@ export type ComplexMinAggregateInputType = {
   complex_address?: true
   status?: true
   complex_image?: true
+  min_price?: true
+  max_price?: true
+  total_subfields?: true
   created_at?: true
   updated_at?: true
 }
@@ -77,6 +116,9 @@ export type ComplexMaxAggregateInputType = {
   complex_address?: true
   status?: true
   complex_image?: true
+  min_price?: true
+  max_price?: true
+  total_subfields?: true
   created_at?: true
   updated_at?: true
 }
@@ -89,6 +131,10 @@ export type ComplexCountAggregateInputType = {
   status?: true
   verification_docs?: true
   complex_image?: true
+  min_price?: true
+  max_price?: true
+  total_subfields?: true
+  sport_types?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -132,6 +178,18 @@ export type ComplexAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ComplexAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ComplexSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ComplexMinAggregateInputType
@@ -162,6 +220,8 @@ export type ComplexGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: ComplexCountAggregateInputType | true
+  _avg?: ComplexAvgAggregateInputType
+  _sum?: ComplexSumAggregateInputType
   _min?: ComplexMinAggregateInputType
   _max?: ComplexMaxAggregateInputType
 }
@@ -174,9 +234,15 @@ export type ComplexGroupByOutputType = {
   status: $Enums.ComplexStatus
   verification_docs: runtime.JsonValue
   complex_image: string | null
+  min_price: number | null
+  max_price: number | null
+  total_subfields: number
+  sport_types: string[]
   created_at: Date
   updated_at: Date
   _count: ComplexCountAggregateOutputType | null
+  _avg: ComplexAvgAggregateOutputType | null
+  _sum: ComplexSumAggregateOutputType | null
   _min: ComplexMinAggregateOutputType | null
   _max: ComplexMaxAggregateOutputType | null
 }
@@ -207,6 +273,10 @@ export type ComplexWhereInput = {
   status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
+  min_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  max_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  total_subfields?: Prisma.IntFilter<"Complex"> | number
+  sport_types?: Prisma.StringNullableListFilter<"Complex">
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   owner?: Prisma.XOR<Prisma.OwnerScalarRelationFilter, Prisma.OwnerWhereInput>
@@ -221,6 +291,10 @@ export type ComplexOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrderInput | Prisma.SortOrder
+  min_price?: Prisma.SortOrderInput | Prisma.SortOrder
+  max_price?: Prisma.SortOrderInput | Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
+  sport_types?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   owner?: Prisma.OwnerOrderByWithRelationInput
@@ -238,6 +312,10 @@ export type ComplexWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
+  min_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  max_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  total_subfields?: Prisma.IntFilter<"Complex"> | number
+  sport_types?: Prisma.StringNullableListFilter<"Complex">
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   owner?: Prisma.XOR<Prisma.OwnerScalarRelationFilter, Prisma.OwnerWhereInput>
@@ -252,11 +330,17 @@ export type ComplexOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrderInput | Prisma.SortOrder
+  min_price?: Prisma.SortOrderInput | Prisma.SortOrder
+  max_price?: Prisma.SortOrderInput | Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
+  sport_types?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.ComplexCountOrderByAggregateInput
+  _avg?: Prisma.ComplexAvgOrderByAggregateInput
   _max?: Prisma.ComplexMaxOrderByAggregateInput
   _min?: Prisma.ComplexMinOrderByAggregateInput
+  _sum?: Prisma.ComplexSumOrderByAggregateInput
 }
 
 export type ComplexScalarWhereWithAggregatesInput = {
@@ -270,6 +354,10 @@ export type ComplexScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumComplexStatusWithAggregatesFilter<"Complex"> | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonWithAggregatesFilter<"Complex">
   complex_image?: Prisma.StringNullableWithAggregatesFilter<"Complex"> | string | null
+  min_price?: Prisma.IntNullableWithAggregatesFilter<"Complex"> | number | null
+  max_price?: Prisma.IntNullableWithAggregatesFilter<"Complex"> | number | null
+  total_subfields?: Prisma.IntWithAggregatesFilter<"Complex"> | number
+  sport_types?: Prisma.StringNullableListFilter<"Complex">
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Complex"> | Date | string
 }
@@ -281,6 +369,10 @@ export type ComplexCreateInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
   owner: Prisma.OwnerCreateNestedOneWithoutComplexesInput
@@ -295,6 +387,10 @@ export type ComplexUncheckedCreateInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
   sub_fields?: Prisma.SubFieldUncheckedCreateNestedManyWithoutComplexInput
@@ -307,6 +403,10 @@ export type ComplexUpdateInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.OwnerUpdateOneRequiredWithoutComplexesNestedInput
@@ -321,6 +421,10 @@ export type ComplexUncheckedUpdateInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sub_fields?: Prisma.SubFieldUncheckedUpdateManyWithoutComplexNestedInput
@@ -334,6 +438,10 @@ export type ComplexCreateManyInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -345,6 +453,10 @@ export type ComplexUpdateManyMutationInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -357,6 +469,10 @@ export type ComplexUncheckedUpdateManyInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -371,6 +487,14 @@ export type ComplexOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type ComplexCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   owner_id?: Prisma.SortOrder
@@ -379,8 +503,18 @@ export type ComplexCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   verification_docs?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
+  min_price?: Prisma.SortOrder
+  max_price?: Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
+  sport_types?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+}
+
+export type ComplexAvgOrderByAggregateInput = {
+  min_price?: Prisma.SortOrder
+  max_price?: Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
 }
 
 export type ComplexMaxOrderByAggregateInput = {
@@ -390,6 +524,9 @@ export type ComplexMaxOrderByAggregateInput = {
   complex_address?: Prisma.SortOrder
   status?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
+  min_price?: Prisma.SortOrder
+  max_price?: Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -401,8 +538,17 @@ export type ComplexMinOrderByAggregateInput = {
   complex_address?: Prisma.SortOrder
   status?: Prisma.SortOrder
   complex_image?: Prisma.SortOrder
+  min_price?: Prisma.SortOrder
+  max_price?: Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+}
+
+export type ComplexSumOrderByAggregateInput = {
+  min_price?: Prisma.SortOrder
+  max_price?: Prisma.SortOrder
+  total_subfields?: Prisma.SortOrder
 }
 
 export type ComplexScalarRelationFilter = {
@@ -452,8 +598,33 @@ export type ComplexUncheckedUpdateManyWithoutOwnerNestedInput = {
   deleteMany?: Prisma.ComplexScalarWhereInput | Prisma.ComplexScalarWhereInput[]
 }
 
+export type ComplexCreatesport_typesInput = {
+  set: string[]
+}
+
 export type EnumComplexStatusFieldUpdateOperationsInput = {
   set?: $Enums.ComplexStatus
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type ComplexUpdatesport_typesInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type ComplexCreateNestedOneWithoutSub_fieldsInput = {
@@ -477,6 +648,10 @@ export type ComplexCreateWithoutOwnerInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
   sub_fields?: Prisma.SubFieldCreateNestedManyWithoutComplexInput
@@ -489,6 +664,10 @@ export type ComplexUncheckedCreateWithoutOwnerInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
   sub_fields?: Prisma.SubFieldUncheckedCreateNestedManyWithoutComplexInput
@@ -531,6 +710,10 @@ export type ComplexScalarWhereInput = {
   status?: Prisma.EnumComplexStatusFilter<"Complex"> | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonFilter<"Complex">
   complex_image?: Prisma.StringNullableFilter<"Complex"> | string | null
+  min_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  max_price?: Prisma.IntNullableFilter<"Complex"> | number | null
+  total_subfields?: Prisma.IntFilter<"Complex"> | number
+  sport_types?: Prisma.StringNullableListFilter<"Complex">
   created_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Complex"> | Date | string
 }
@@ -542,6 +725,10 @@ export type ComplexCreateWithoutSub_fieldsInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
   owner: Prisma.OwnerCreateNestedOneWithoutComplexesInput
@@ -555,6 +742,10 @@ export type ComplexUncheckedCreateWithoutSub_fieldsInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -582,6 +773,10 @@ export type ComplexUpdateWithoutSub_fieldsInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.OwnerUpdateOneRequiredWithoutComplexesNestedInput
@@ -595,6 +790,10 @@ export type ComplexUncheckedUpdateWithoutSub_fieldsInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -606,6 +805,10 @@ export type ComplexCreateManyOwnerInput = {
   status: $Enums.ComplexStatus
   verification_docs: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: string | null
+  min_price?: number | null
+  max_price?: number | null
+  total_subfields?: number
+  sport_types?: Prisma.ComplexCreatesport_typesInput | string[]
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -617,6 +820,10 @@ export type ComplexUpdateWithoutOwnerInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sub_fields?: Prisma.SubFieldUpdateManyWithoutComplexNestedInput
@@ -629,6 +836,10 @@ export type ComplexUncheckedUpdateWithoutOwnerInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sub_fields?: Prisma.SubFieldUncheckedUpdateManyWithoutComplexNestedInput
@@ -641,6 +852,10 @@ export type ComplexUncheckedUpdateManyWithoutOwnerInput = {
   status?: Prisma.EnumComplexStatusFieldUpdateOperationsInput | $Enums.ComplexStatus
   verification_docs?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   complex_image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  min_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  max_price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  total_subfields?: Prisma.IntFieldUpdateOperationsInput | number
+  sport_types?: Prisma.ComplexUpdatesport_typesInput | string[]
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -684,6 +899,10 @@ export type ComplexSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   status?: boolean
   verification_docs?: boolean
   complex_image?: boolean
+  min_price?: boolean
+  max_price?: boolean
+  total_subfields?: boolean
+  sport_types?: boolean
   created_at?: boolean
   updated_at?: boolean
   owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
@@ -699,6 +918,10 @@ export type ComplexSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   status?: boolean
   verification_docs?: boolean
   complex_image?: boolean
+  min_price?: boolean
+  max_price?: boolean
+  total_subfields?: boolean
+  sport_types?: boolean
   created_at?: boolean
   updated_at?: boolean
   owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
@@ -712,6 +935,10 @@ export type ComplexSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   status?: boolean
   verification_docs?: boolean
   complex_image?: boolean
+  min_price?: boolean
+  max_price?: boolean
+  total_subfields?: boolean
+  sport_types?: boolean
   created_at?: boolean
   updated_at?: boolean
   owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
@@ -725,11 +952,15 @@ export type ComplexSelectScalar = {
   status?: boolean
   verification_docs?: boolean
   complex_image?: boolean
+  min_price?: boolean
+  max_price?: boolean
+  total_subfields?: boolean
+  sport_types?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type ComplexOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "owner_id" | "complex_name" | "complex_address" | "status" | "verification_docs" | "complex_image" | "created_at" | "updated_at", ExtArgs["result"]["complex"]>
+export type ComplexOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "owner_id" | "complex_name" | "complex_address" | "status" | "verification_docs" | "complex_image" | "min_price" | "max_price" | "total_subfields" | "sport_types" | "created_at" | "updated_at", ExtArgs["result"]["complex"]>
 export type ComplexInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.OwnerDefaultArgs<ExtArgs>
   sub_fields?: boolean | Prisma.Complex$sub_fieldsArgs<ExtArgs>
@@ -756,6 +987,10 @@ export type $ComplexPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     status: $Enums.ComplexStatus
     verification_docs: runtime.JsonValue
     complex_image: string | null
+    min_price: number | null
+    max_price: number | null
+    total_subfields: number
+    sport_types: string[]
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["complex"]>
@@ -1190,6 +1425,10 @@ export interface ComplexFieldRefs {
   readonly status: Prisma.FieldRef<"Complex", 'ComplexStatus'>
   readonly verification_docs: Prisma.FieldRef<"Complex", 'Json'>
   readonly complex_image: Prisma.FieldRef<"Complex", 'String'>
+  readonly min_price: Prisma.FieldRef<"Complex", 'Int'>
+  readonly max_price: Prisma.FieldRef<"Complex", 'Int'>
+  readonly total_subfields: Prisma.FieldRef<"Complex", 'Int'>
+  readonly sport_types: Prisma.FieldRef<"Complex", 'String[]'>
   readonly created_at: Prisma.FieldRef<"Complex", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Complex", 'DateTime'>
 }

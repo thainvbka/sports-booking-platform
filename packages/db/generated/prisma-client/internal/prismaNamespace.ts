@@ -1499,6 +1499,10 @@ export const ComplexScalarFieldEnum = {
   status: 'status',
   verification_docs: 'verification_docs',
   complex_image: 'complex_image',
+  min_price: 'min_price',
+  max_price: 'max_price',
+  total_subfields: 'total_subfields',
+  sport_types: 'sport_types',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const

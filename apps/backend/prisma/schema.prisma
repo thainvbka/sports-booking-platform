@@ -155,11 +155,17 @@ model Complex {
   status            ComplexStatus
   verification_docs Json          @db.Json
   complex_image     String?       @db.Text
+  min_price         Int?          @db.Integer // Cached minimum price across all subfields
+  max_price         Int?          @db.Integer // Cached maximum price across all subfields
+  total_subfields   Int           @default(0) @db.SmallInt // Cached count of active subfields
+  sport_types       String[]      @default([]) @db.VarChar(50) // Cached array of available sport types
   created_at        DateTime      @default(now()) @db.Timestamptz(0)
   updated_at        DateTime      @updatedAt @db.Timestamptz(0)
   sub_fields        SubField[]
 
   @@index([owner_id])
+  @@index([min_price]) // For filtering by price range
+  @@index([status]) // For filtering active complexes
 }
 
 model SubField {
