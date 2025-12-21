@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Complex } from "@/types";
+import type { Complex, SportType } from "@/types";
 import { getSportTypeLabel, formatPrice } from "@/services/mockData";
 import { MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,20 +10,40 @@ interface ComplexCardProps {
 }
 
 export function ComplexCard({ complex }: ComplexCardProps) {
-  const sportTypes = [
-    ...new Set(complex.sub_fields.map((sf) => sf.sport_type)),
-  ];
+  // Use cached data if available (for public API), otherwise calculate from sub_fields
+  const useCached = "_cached" in complex && complex._cached;
 
-  // Get price range across all sub-fields
-  const allPrices = complex.sub_fields.flatMap((sf) =>
-    sf.pricing_rules.map((pr) => pr.base_price)
-  );
-  const minPrice = Math.min(...allPrices);
-  const maxPrice = Math.max(...allPrices);
+  let sportTypes: SportType[];
+  let minPrice: number | null;
+  let maxPrice: number | null;
+  let hasValidPrices: boolean;
+  let subfieldCount: number;
+
+  if (useCached) {
+    // Use pre-calculated cached data from backend
+    const cached = (complex as any)._cached;
+    sportTypes = (cached.sport_types || []) as SportType[];
+    minPrice = cached.min_price;
+    maxPrice = cached.max_price;
+    hasValidPrices = minPrice !== null && maxPrice !== null;
+    subfieldCount = cached.total_subfields || 0;
+  } else {
+    // Calculate from sub_fields (for owner API)
+    sportTypes = [...new Set(complex.sub_fields.map((sf) => sf.sport_type))];
+
+    const allPrices = complex.sub_fields
+      .flatMap((sf) => sf.pricing_rules.map((pr) => pr.base_price))
+      .filter((price) => price > 0);
+
+    minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
+    maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : null;
+    hasValidPrices = minPrice !== null && maxPrice !== null;
+    subfieldCount = complex.sub_fields.length;
+  }
 
   return (
-    <Link to={`/complex/${complex.id}`} className="block group">
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Link to={`/complex/${complex.id}`} className="block group h-full">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
         <div className="aspect-video overflow-hidden bg-muted">
           {complex.complex_image ? (
             <img
@@ -37,7 +57,7 @@ export function ComplexCard({ complex }: ComplexCardProps) {
             </div>
           )}
         </div>
-        <CardContent className="p-3 space-y-2">
+        <CardContent className="p-3 space-y-2 flex-1 flex flex-col">
           <div>
             <h3 className="font-semibold text-base group-hover:text-primary transition-colors line-clamp-1">
               {complex.complex_name}
@@ -48,26 +68,42 @@ export function ComplexCard({ complex }: ComplexCardProps) {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            {sportTypes.map((type) => (
-              <Badge
-                key={type}
-                variant="secondary"
-                className="text-xs px-1.5 py-0"
-              >
-                {getSportTypeLabel(type)}
-              </Badge>
-            ))}
-          </div>
+          {sportTypes.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {sportTypes.map((type) => (
+                <Badge
+                  key={type}
+                  variant="secondary"
+                  className="text-xs px-1.5 py-0"
+                >
+                  {getSportTypeLabel(type)}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-2">
+              <span className="text-xs text-muted-foreground italic">
+                Chưa có sân
+              </span>
+            </div>
+          )}
 
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t mt-auto">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
-                {complex.sub_fields.length} sân
+                {subfieldCount} sân
               </span>
-              <span className="font-semibold text-primary text-sm">
-                {formatPrice(minPrice)} - {formatPrice(maxPrice)}
-              </span>
+              {hasValidPrices ? (
+                <span className="font-semibold text-primary text-sm">
+                  {minPrice === maxPrice
+                    ? formatPrice(minPrice!)
+                    : `${formatPrice(minPrice!)} - ${formatPrice(maxPrice!)}`}
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground italic">
+                  Chưa có giá
+                </span>
+              )}
             </div>
           </div>
         </CardContent>

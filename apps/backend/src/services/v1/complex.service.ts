@@ -9,6 +9,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { uploadComplexImages } from "../../helpers";
+import { updateComplexCache } from "../../helpers/complexCache";
 
 interface CreateComplexData extends CreateComplexInput {
   files: { [fieldname: string]: Express.Multer.File[] };
@@ -469,24 +470,105 @@ export const getAllComplexesAdmin = async () => {
 /**
  * PUBLIC SERVICES
  */
-export const getComplexActive = async () => {
-  const complexes = await prisma.complex.findMany({
-    where: { status: "ACTIVE" },
-    orderBy: { created_at: "desc" },
+export const getPublicComplexActive = async ({
+  page = 1,
+  limit = 6,
+  search = "",
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
+  const skip = (page - 1) * limit;
+
+  const whereCondition: any = {
+    status: "ACTIVE",
+    ...(search && {
+      complex_name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    }),
+  };
+
+  const [total, complexes] = await prisma.$transaction([
+    prisma.complex.count({ where: whereCondition }),
+    prisma.complex.findMany({
+      where: whereCondition,
+      orderBy: [
+        { min_price: "asc" }, // Sort by price (complexes with prices first)
+        { created_at: "desc" },
+      ],
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        complex_name: true,
+        complex_address: true,
+        complex_image: true,
+        min_price: true,
+        max_price: true,
+        total_subfields: true,
+        sport_types: true,
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  // Format response with cached data
+  const formattedComplexes = complexes.map((complex) => ({
+    id: complex.id,
+    complex_name: complex.complex_name,
+    complex_address: complex.complex_address,
+    complex_image: complex.complex_image,
+    sub_fields: [], // Empty array, we use cached stats instead
+    // Add cached statistics for easy frontend access
+    _cached: {
+      min_price: complex.min_price,
+      max_price: complex.max_price,
+      total_subfields: complex.total_subfields,
+      sport_types: complex.sport_types,
+    },
+  }));
+
+  return {
+    complexes: formattedComplexes,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+export const getPublicComplexById = async (
+  complexId: string,
+  {
+    page = 1,
+    limit = 6,
+    search = "",
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }
+) => {
+  //check complex thuộc owner
+  const complex = await prisma.complex.findFirst({
+    where: { id: complexId, status: "ACTIVE" },
     select: {
       id: true,
       complex_name: true,
       complex_address: true,
       complex_image: true,
       status: true,
-      owner: {
+      _count: {
         select: {
-          id: true,
-          account: {
-            select: {
-              email: true,
-              full_name: true,
-              phone_number: true,
+          sub_fields: {
+            where: {
+              isDelete: false,
             },
           },
         },
@@ -494,5 +576,64 @@ export const getComplexActive = async () => {
     },
   });
 
-  return complexes;
+  if (!complex) {
+    throw new NotFoundError("Complex not found");
+  }
+
+  const skip = (page - 1) * limit;
+
+  const whereCondition: any = {
+    complex_id: complexId,
+    isDelete: false,
+    ...(search && {
+      sub_field_name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    }),
+  };
+
+  const [total, subFields] = await prisma.$transaction([
+    prisma.subField.count({ where: whereCondition }),
+    prisma.subField.findMany({
+      where: whereCondition,
+      orderBy: { created_at: "desc" },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        sub_field_name: true,
+        sport_type: true,
+        sub_field_image: true,
+        capacity: true,
+        pricing_rules: {
+          select: { base_price: true },
+          orderBy: { base_price: "asc" },
+          take: 1,
+        },
+      },
+    }),
+  ]);
+
+  const formatComplex = {
+    ...complex,
+    sub_fields: subFields.map((sf) => ({
+      id: sf.id,
+      sub_field_name: sf.sub_field_name,
+      sport_type: sf.sport_type,
+      sub_field_image: sf.sub_field_image,
+      capacity: sf.capacity,
+      min_price: sf.pricing_rules[0]?.base_price || 0,
+      pricing_rules: [],
+    })),
+  };
+  return {
+    complex: formatComplex,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };

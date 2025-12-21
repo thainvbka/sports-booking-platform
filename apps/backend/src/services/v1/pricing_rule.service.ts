@@ -1,59 +1,3 @@
-`sequenceDiagram
-    participant O as Chủ sân
-    participant F as Frontend (Web-Owner)
-    participant B as Backend (Node.js API)
-    participant DB as Database (Prisma)
-
-    O->>F: 1. Chọn Sân con, nhập (Thứ 7, 18:00-20:00, 300k)
-    F->>B: 2. POST /api/pricing-rules (gửi DTO: sub_field_id, day_of_week, start_time, end_time, price)
-    activate B
-    
-    B->>DB: 3. Lấy thông tin SubField (để kiểm tra quyền sở hữu của Owner)
-    activate DB
-    DB-->>B: 4. Thông tin SubField (gồm complex.owner_id)
-    deactivate DB
-    
-    B->>B: 5. Xác thực Owner này sở hữu SubField (qua complex.owner_id)
-    
-    B->>DB: 6. Kiểm tra xem có luật giá nào bị trùng (overlap) không (Dùng logic truy vấn phức tạp)
-    activate DB
-    DB-->>B: 7. Không tìm thấy (null)
-    deactivate DB
-    
-    B->>DB: 8. INSERT INTO 'pricing_rules' (tạo luật giá mới)
-    activate DB
-    DB-->>B: 9. Trả về Rule mới
-    deactivate DB
-    
-    B-->>F: 10. 201 Created (Tạo luật giá thành công)
-    deactivate B`;
-
-`sequenceDiagram
-    participant O as Chủ sân
-    participant F as Frontend (UI Chọn nhiều ngày)
-    participant B as Backend
-    participant DB as Database
-
-    O->>F: 1. Chọn: T2, T3, T4 | 17:00 - 19:00 | 300k
-    F->>B: 2. POST /api/pricing-rules/bulk (days: [1,2,3], ...)
-    activate B
-    
-    B->>DB: 3. Lấy Rules hiện tại của T2, T3, T4
-    DB-->>B: 4. Trả về danh sách Rules
-    
-    loop Kiểm tra từng ngày
-        B->>B: 5. Check Overlap (StartA < EndB && EndA > StartB)
-        opt Nếu trùng
-            B-->>F: Trả lỗi "Bị trùng giờ vào ngày Thứ 2..."
-        end
-    end
-
-    B->>DB: 6. Transaction: Tạo 3 dòng PricingRule
-    DB-->>B: 7. Success
-    
-    B-->>F: 8. 201 Created
-    deactivate B`;
-
 import { prisma } from "@sports-booking-platform/db";
 import {
   CreatePricingRuleInput,
@@ -65,6 +9,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { parseTime } from "../../helpers";
+import { updateComplexCache } from "../../helpers/complexCache";
 
 export const createPricingRule = async (
   ownerId: string,
@@ -155,6 +100,10 @@ export const createPricingRule = async (
     )
   );
 
+  // Update complex cache after creating pricing rules
+  const complexId = subField.complex.id;
+  await updateComplexCache(complexId);
+
   return createdRules;
 };
 
@@ -198,7 +147,7 @@ export const updatePricingRule = async (
       sub_field: {
         include: {
           complex: {
-            select: { owner_id: true },
+            select: { id: true, owner_id: true },
           },
         },
       },
@@ -263,6 +212,10 @@ export const updatePricingRule = async (
     },
   });
 
+  // Update complex cache after updating pricing rule
+  const complexId = existingRule.sub_field.complex.id;
+  await updateComplexCache(complexId);
+
   return updatedPricingRule;
 };
 
@@ -277,7 +230,7 @@ export const deletePricingRule = async (
       sub_field: {
         include: {
           complex: {
-            select: { owner_id: true },
+            select: { id: true, owner_id: true },
           },
         },
       },
@@ -298,6 +251,10 @@ export const deletePricingRule = async (
   await prisma.pricingRule.delete({
     where: { id: pricingRuleId },
   });
+
+  // Update complex cache after deleting pricing rule
+  const complexId = pricingRule.sub_field.complex.id;
+  await updateComplexCache(complexId);
 };
 
 // Bulk delete pricing rules
@@ -318,7 +275,7 @@ export const bulkDeletePricingRules = async (
       sub_field: {
         include: {
           complex: {
-            select: { owner_id: true },
+            select: { id: true, owner_id: true },
           },
         },
       },
@@ -347,6 +304,14 @@ export const bulkDeletePricingRules = async (
       id: { in: pricingRuleIds },
     },
   });
+
+  // Update complex cache for affected complexes (get unique complex IDs)
+  const affectedComplexIds = [
+    ...new Set(pricingRules.map((rule) => rule.sub_field.complex.id)),
+  ];
+  await Promise.all(
+    affectedComplexIds.map((complexId) => updateComplexCache(complexId))
+  );
 
   return { deletedCount: pricingRules.length };
 };
@@ -434,6 +399,10 @@ export const copyPricingRules = async (
       })
     )
   );
+
+  // Update complex cache after copying pricing rules
+  const complexId = subField.complex.id;
+  await updateComplexCache(complexId);
 
   return {
     copiedFrom: sourceDayOfWeek,

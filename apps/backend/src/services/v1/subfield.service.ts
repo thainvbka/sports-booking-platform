@@ -9,6 +9,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { uploadSubfieldImage } from "../../helpers/upload";
+import { updateComplexCache } from "../../helpers/complexCache";
 
 interface CreateSubfieldData extends CreateSubfieldInput {
   files: { [fieldname: string]: Express.Multer.File[] };
@@ -61,6 +62,9 @@ export const createSubfield = async (
       capacity: data.capacity,
     },
   });
+
+  // Update complex cache after creating subfield
+  await updateComplexCache(complexId);
 
   return newSubfield;
 };
@@ -201,6 +205,9 @@ export const updateSubfield = async (
     },
   });
 
+  // Update complex cache after updating subfield (especially if sport_type changed)
+  await updateComplexCache(subfield.complex_id);
+
   return updatedSubfield;
 };
 
@@ -212,6 +219,7 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
       complex: {
         select: { owner_id: true },
       },
+      complex_id: true,
     },
   });
   if (!subfield) {
@@ -227,10 +235,85 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
     where: { id: subfieldId },
     data: { isDelete: true },
   });
+
+  // Update complex cache after deleting subfield
+  await updateComplexCache(subfield.complex_id);
 };
-// GET	/api/v1/public/complexes/:id/sub-fields	Xem danh sách sân con
-// GET	/api/v1/public/sub-fields/:id/available-slots	Xem khung giờ còn trống
-export const getAllSubfield = async () => {
-  const subfields = await prisma.subField.findMany();
-  return subfields;
+
+/**
+ Public service
+ */
+export const getAllPublicSubfields = async ({
+  page = 1,
+  limit = 6,
+  search = "",
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) => {
+  const skip = (page - 1) * limit;
+
+  const whereCondition = {
+    isDelete: false,
+    sub_field_name: {
+      contains: search,
+      mode: "insensitive" as const,
+    },
+    complex: {
+      status: "ACTIVE" as const,
+    },
+  };
+
+  const [total, subfields] = await prisma.$transaction([
+    prisma.subField.count({ where: whereCondition }),
+    prisma.subField.findMany({
+      where: whereCondition,
+      select: {
+        id: true,
+        sub_field_name: true,
+        sport_type: true,
+        sub_field_image: true,
+        capacity: true,
+        pricing_rules: {
+          select: { base_price: true },
+          orderBy: { base_price: "asc" },
+          take: 1,
+        },
+        complex: {
+          select: {
+            complex_name: true,
+            complex_address: true,
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { created_at: "desc" },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  const formattedSubfields = subfields.map((sf) => ({
+    id: sf.id,
+    sub_field_name: sf.sub_field_name,
+    sport_type: sf.sport_type,
+    sub_field_image: sf.sub_field_image,
+    capacity: sf.capacity,
+    min_price: sf.pricing_rules[0]?.base_price || 0,
+    pricing_rules: [],
+    complex_name: sf.complex.complex_name,
+    complex_address: sf.complex.complex_address,
+  }));
+
+  return {
+    subfields: formattedSubfields,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
 };

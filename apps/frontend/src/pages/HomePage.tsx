@@ -3,13 +3,45 @@ import { SearchBar } from "@/components/shared/SearchBar";
 import { ComplexCard } from "@/components/shared/ComplexCard";
 import { SubFieldCard } from "@/components/shared/SubFieldCar";
 import { Card, CardContent } from "@/components/ui/card";
-import { getComplexes, getAllSubFields } from "@/services/mockData";
 import { Button } from "@/components/ui/button";
 import { heroBg } from "@/assets";
+import { useEffect, useState } from "react";
+import { publicService } from "@/services/public.service";
+import type { Complex, SubField } from "@/types";
 
 export function HomePage() {
-  const featuredComplexes = getComplexes().slice(0, 3);
-  const featuredSubFields = getAllSubFields().slice(0, 6);
+  const [featuredComplexes, setFeaturedComplexes] = useState<Complex[]>([]);
+  const [featuredSubFields, setFeaturedSubFields] = useState<
+    (SubField & { complex_name?: string; complex_address?: string })[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [complexesRes, subfieldsRes] = await Promise.all([
+          publicService.getComplexes({ page: 1, limit: 4 }),
+          publicService.getSubfields({ page: 1, limit: 6 }),
+        ]);
+        console.log("Complexes response:", complexesRes);
+        console.log("Subfields response:", subfieldsRes);
+
+        // Ensure we always set arrays
+        setFeaturedComplexes(complexesRes.data?.complexes || []);
+        setFeaturedSubFields(subfieldsRes.data?.subfields || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Reset to empty arrays on error
+        setFeaturedComplexes([]);
+        setFeaturedSubFields([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -75,11 +107,22 @@ export function HomePage() {
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {featuredComplexes.map((complex) => (
-              <ComplexCard key={complex.id} complex={complex} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 bg-gray-200 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {featuredComplexes.map((complex) => (
+                <ComplexCard key={complex.id} complex={complex} />
+              ))}
+            </div>
+          )}
           <div className="mt-8 text-center sm:hidden">
             <Link to="/search?type=complex">
               <Button variant="outline" className="w-full">
@@ -108,13 +151,28 @@ export function HomePage() {
               </Button>
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredSubFields.map((subField) => (
-              <div key={subField.id} className="h-full">
-                <SubFieldCard subField={subField} showComplexInfo />
-              </div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="h-96 bg-gray-200 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredSubFields.map((subField) => (
+                <div key={subField.id} className="h-full">
+                  <SubFieldCard
+                    subField={subField}
+                    showComplexInfo
+                    mode="player"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="mt-8 text-center sm:hidden">
             <Link to="/search?type=subfield">
               <Button variant="outline" className="w-full">
