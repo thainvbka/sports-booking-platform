@@ -89,50 +89,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Featured Complexes Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">
-                Khu phức hợp nổi bật
-              </h2>
-              <p className="text-muted-foreground mt-2 text-lg">
-                Các địa điểm thể thao được đánh giá cao nhất
-              </p>
-            </div>
-            <Link to="/search?type=complex">
-              <Button variant="outline" className="hidden sm:flex">
-                Xem tất cả
-              </Button>
-            </Link>
-          </div>
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-64 bg-gray-200 animate-pulse rounded-lg"
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {featuredComplexes.map((complex) => (
-                <ComplexCard key={complex.id} complex={complex} />
-              ))}
-            </div>
-          )}
-          <div className="mt-8 text-center sm:hidden">
-            <Link to="/search?type=complex">
-              <Button variant="outline" className="w-full">
-                Xem tất cả
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Available Sub-fields Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
@@ -175,6 +131,50 @@ export function HomePage() {
           )}
           <div className="mt-8 text-center sm:hidden">
             <Link to="/search?type=subfield">
+              <Button variant="outline" className="w-full">
+                Xem tất cả
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Complexes Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Khu phức hợp nổi bật
+              </h2>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Các địa điểm thể thao được đánh giá cao nhất
+              </p>
+            </div>
+            <Link to="/search?type=complex">
+              <Button variant="outline" className="hidden sm:flex">
+                Xem tất cả
+              </Button>
+            </Link>
+          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 bg-gray-200 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {featuredComplexes.map((complex) => (
+                <ComplexCard key={complex.id} complex={complex} />
+              ))}
+            </div>
+          )}
+          <div className="mt-8 text-center sm:hidden">
+            <Link to="/search?type=complex">
               <Button variant="outline" className="w-full">
                 Xem tất cả
               </Button>
