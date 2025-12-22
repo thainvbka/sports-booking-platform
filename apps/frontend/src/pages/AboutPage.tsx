@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Users, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
+import { teamPlaySport } from "@/assets";
 
 export function AboutPage() {
   return (
@@ -34,10 +35,10 @@ export function AboutPage() {
               <div className="text-4xl font-bold text-blue-600 mb-2">100k+</div>
               <div className="text-gray-600">Lượt đặt sân</div>
             </div>
-            {/* <div>
+            <div>
               <div className="text-4xl font-bold text-blue-600 mb-2">4.8/5</div>
               <div className="text-gray-600">Đánh giá trung bình</div>
-            </div> */}
+            </div>
           </div>
         </div>
       </section>
@@ -72,7 +73,7 @@ export function AboutPage() {
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=2070"
+                src={teamPlaySport}
                 alt="Team playing sports"
                 className="w-full h-full object-cover"
               />
