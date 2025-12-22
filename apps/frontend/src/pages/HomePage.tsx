@@ -48,7 +48,7 @@ export function HomePage() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-24 overflow-hidden">
         <div
-          className="absolute inset-0  bg-cover bg-center opacity-10 mix-blend-overlay"
+          className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${heroBg})` }}
         ></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -62,7 +62,7 @@ export function HomePage() {
               trận đấu tiếp theo của bạn.
             </p>
           </div>
-          <div className="max-w-4xl mx-auto shadow-2xl rounded-lg overflow-hidden">
+          <div className="max-w-4xl mx-auto shadow-2xl rounded-lg overflow-hidden relative z-20">
             <SearchBar />
           </div>
         </div>
@@ -101,7 +101,7 @@ export function HomePage() {
                 Đặt ngay các sân sẵn sàng phục vụ trong khung giờ tới
               </p>
             </div>
-            <Link to="/search?type=subfield">
+            <Link to="/search?tab=subfields">
               <Button variant="outline" className="hidden sm:flex">
                 Xem tất cả
               </Button>
@@ -130,7 +130,7 @@ export function HomePage() {
             </div>
           )}
           <div className="mt-8 text-center sm:hidden">
-            <Link to="/search?type=subfield">
+            <Link to="/search?tab=subfields">
               <Button variant="outline" className="w-full">
                 Xem tất cả
               </Button>
@@ -151,7 +151,7 @@ export function HomePage() {
                 Các địa điểm thể thao được đánh giá cao nhất
               </p>
             </div>
-            <Link to="/search?type=complex">
+            <Link to="/search?tab=complexes">
               <Button variant="outline" className="hidden sm:flex">
                 Xem tất cả
               </Button>
@@ -174,7 +174,7 @@ export function HomePage() {
             </div>
           )}
           <div className="mt-8 text-center sm:hidden">
-            <Link to="/search?type=complex">
+            <Link to="/search?tab=complexes">
               <Button variant="outline" className="w-full">
                 Xem tất cả
               </Button>

@@ -474,19 +474,51 @@ export const getPublicComplexActive = async ({
   page = 1,
   limit = 6,
   search = "",
+  sport_types,
+  minPrice,
+  maxPrice,
 }: {
   page?: number;
   limit?: number;
   search?: string;
+  sport_types?: string[];
+  minPrice?: number;
+  maxPrice?: number;
 }) => {
   const skip = (page - 1) * limit;
 
   const whereCondition: any = {
     status: "ACTIVE",
     ...(search && {
-      complex_name: {
-        contains: search,
-        mode: "insensitive",
+      OR: [
+        {
+          complex_name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          complex_address: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ],
+    }),
+    ...(sport_types &&
+      sport_types.length > 0 && {
+        sport_types: {
+          hasSome: sport_types,
+        },
+      }),
+    ...(minPrice !== undefined && {
+      min_price: {
+        gte: minPrice,
+      },
+    }),
+    ...(maxPrice !== undefined && {
+      max_price: {
+        lte: maxPrice,
       },
     }),
   };

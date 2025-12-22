@@ -6,6 +6,15 @@ import {
 } from "../../services/v1/complex.service";
 import { getAllPublicSubfields } from "../../services/v1/subfield.service";
 
+// Helper function to parse string array from query params
+const parseStringArray = (value: unknown): string[] | undefined => {
+  if (!value) return undefined;
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  return typeof value === "string" ? [value] : undefined;
+};
+
 //complex public controllers
 export const getPublicComplexActiveController = async (
   req: Request,
@@ -14,7 +23,27 @@ export const getPublicComplexActiveController = async (
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 4;
   const search = (req.query.search as string) || "";
-  const result = await getPublicComplexActive({ page, limit, search });
+
+  // Parse sport_types as array
+  const sport_types = parseStringArray(req.query.sport_types);
+
+  // Parse price filters
+  const minPrice = req.query.minPrice
+    ? parseInt(req.query.minPrice as string)
+    : undefined;
+  const maxPrice = req.query.maxPrice
+    ? parseInt(req.query.maxPrice as string)
+    : undefined;
+
+  const result = await getPublicComplexActive({
+    page,
+    limit,
+    search,
+    sport_types,
+    minPrice,
+    maxPrice,
+  });
+
   return new SuccessResponse({
     message: "Get public active complexes successfully",
     data: result,
@@ -52,7 +81,35 @@ export const getAllPublicSubfieldsController = async (
   const limit = parseInt(req.query.limit as string) || 6;
   const search = (req.query.search as string) || "";
 
-  const result = await getAllPublicSubfields({ page, limit, search });
+  // Parse sport_types as array
+  const sport_types = parseStringArray(req.query.sport_types);
+
+  // Parse capacity filters
+  const minCapacity = req.query.minCapacity
+    ? parseInt(req.query.minCapacity as string)
+    : undefined;
+  const maxCapacity = req.query.maxCapacity
+    ? parseInt(req.query.maxCapacity as string)
+    : undefined;
+
+  // Parse price filters
+  const minPrice = req.query.minPrice
+    ? parseInt(req.query.minPrice as string)
+    : undefined;
+  const maxPrice = req.query.maxPrice
+    ? parseInt(req.query.maxPrice as string)
+    : undefined;
+
+  const result = await getAllPublicSubfields({
+    page,
+    limit,
+    search,
+    sport_types,
+    minCapacity,
+    maxCapacity,
+    minPrice,
+    maxPrice,
+  });
 
   return new SuccessResponse({
     message: "Get all public subfields successfully",

@@ -166,6 +166,11 @@ export interface Booking {
 export interface SearchFilters {
   location?: string;
   sport_type?: SportType;
+  sport_types?: SportType[];
+  minPrice?: number;
+  maxPrice?: number;
+  minCapacity?: number;
+  maxCapacity?: number;
   date?: string;
   start_time?: string;
   end_time?: string;

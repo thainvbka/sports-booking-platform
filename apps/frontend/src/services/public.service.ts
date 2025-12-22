@@ -22,6 +22,9 @@ export const publicService = {
     page?: number;
     limit?: number;
     search?: string;
+    sport_types?: string[];
+    minPrice?: number;
+    maxPrice?: number;
   }) => {
     const response = await api.get<ApiResponse<GetPublicComplexesResponse>>(
       "/public/complexes",
@@ -45,6 +48,11 @@ export const publicService = {
     page?: number;
     limit?: number;
     search?: string;
+    sport_types?: string[];
+    minCapacity?: number;
+    maxCapacity?: number;
+    minPrice?: number;
+    maxPrice?: number;
   }) => {
     const response = await api.get<ApiResponse<GetPublicSubfieldsResponse>>(
       "/public/subfields",

@@ -8,6 +8,9 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  paramsSerializer: {
+    indexes: null, // Send arrays as ?sport_types=TENNIS&sport_types=FOOTBALL instead of ?sport_types[0]=TENNIS
+  },
 });
 
 api.interceptors.request.use(

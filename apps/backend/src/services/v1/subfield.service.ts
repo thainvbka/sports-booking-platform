@@ -247,19 +247,104 @@ export const getAllPublicSubfields = async ({
   page = 1,
   limit = 6,
   search = "",
+  sport_types,
+  minCapacity,
+  maxCapacity,
+  minPrice,
+  maxPrice,
 }: {
   page?: number;
   limit?: number;
   search?: string;
+  sport_types?: string[];
+  minCapacity?: number;
+  maxCapacity?: number;
+  minPrice?: number;
+  maxPrice?: number;
 }) => {
   const skip = (page - 1) * limit;
 
-  const whereCondition = {
+  // Build capacity filter
+  let capacityFilter: any = {};
+  if (minCapacity !== undefined && maxCapacity !== undefined) {
+    capacityFilter = { capacity: { gte: minCapacity, lte: maxCapacity } };
+  } else if (minCapacity !== undefined) {
+    capacityFilter = { capacity: { gte: minCapacity } };
+  } else if (maxCapacity !== undefined) {
+    capacityFilter = { capacity: { lte: maxCapacity } };
+  }
+
+  // Build price filter (filter on pricing_rules)
+  let priceFilter: any = {};
+  if (minPrice !== undefined && maxPrice !== undefined) {
+    priceFilter = {
+      pricing_rules: {
+        some: {
+          base_price: {
+            gte: minPrice,
+            lte: maxPrice,
+          },
+        },
+      },
+    };
+  } else if (minPrice !== undefined) {
+    priceFilter = {
+      pricing_rules: {
+        some: {
+          base_price: {
+            gte: minPrice,
+          },
+        },
+      },
+    };
+  } else if (maxPrice !== undefined) {
+    priceFilter = {
+      pricing_rules: {
+        some: {
+          base_price: {
+            lte: maxPrice,
+          },
+        },
+      },
+    };
+  }
+
+  const whereCondition: any = {
     isDelete: false,
-    sub_field_name: {
-      contains: search,
-      mode: "insensitive" as const,
-    },
+    ...(search && {
+      OR: [
+        {
+          sub_field_name: {
+            contains: search,
+            mode: "insensitive" as const,
+          },
+        },
+        {
+          complex: {
+            complex_name: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+        },
+        {
+          complex: {
+            complex_address: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+        },
+      ],
+    }),
+    ...(sport_types &&
+      sport_types.length > 0 && {
+        sport_type: {
+          in: sport_types,
+        },
+      }),
+    ...capacityFilter,
+    ...priceFilter,
     complex: {
       status: "ACTIVE" as const,
     },
