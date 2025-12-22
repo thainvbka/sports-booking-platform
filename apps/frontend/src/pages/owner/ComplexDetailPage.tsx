@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Button } from "@/components/ui/button";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
-import { SubFieldCard } from "@/components/shared/SubFieldCar";
+import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { DeleteComplexDialog } from "@/components/owner/DeleteComplexDialog";
 import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";

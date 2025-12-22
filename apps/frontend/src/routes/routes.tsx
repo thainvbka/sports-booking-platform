@@ -5,7 +5,6 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
-// import { SearchPage } from "./pages/player/SearchPage";
 // import { ComplexDetailPage as PlayerComplexDetailPage } from "./pages/player/ComplexDetailPage";
 import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
 import { ComplexesPage } from "@/pages/owner/ComplexPage";
@@ -18,6 +17,8 @@ import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ContactPage } from "@/pages/ContactPage";
+import { PlayerBookingsPage } from "@/pages/player/BookingPage";
+import { SearchPage } from "@/pages/SearchPage";
 
 export const router = createBrowserRouter([
   {
@@ -28,14 +29,22 @@ export const router = createBrowserRouter([
         index: true,
         element: <HomePage />,
       },
-      //     {
-      //       path: "search",
-      //       element: <SearchPage />,
-      //     },
+      {
+        path: "search",
+        element: <SearchPage />,
+      },
       //     {
       //       path: "complex/:id",
       //       element: <PlayerComplexDetailPage />,
       //     },
+      {
+        path: "bookings",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <PlayerBookingsPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "about",
         element: <AboutPage />,
