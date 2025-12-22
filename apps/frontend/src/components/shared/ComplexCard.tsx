@@ -42,7 +42,7 @@ export function ComplexCard({ complex }: ComplexCardProps) {
   }
 
   return (
-    <Link to={`/complex/${complex.id}`} className="block group h-full">
+    <Link to={`/complexes/${complex.id}`} className="block group h-full">
       <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
         <div className="aspect-video overflow-hidden bg-muted">
           {complex.complex_image ? (

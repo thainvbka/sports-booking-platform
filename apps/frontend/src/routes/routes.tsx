@@ -5,13 +5,9 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
-// import { ComplexDetailPage as PlayerComplexDetailPage } from "./pages/player/ComplexDetailPage";
+import { PublicComplexDetailPage } from "@/pages/public/PublicComplexDetailPage";
 import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
 import { ComplexesPage } from "@/pages/owner/ComplexPage";
-// import { ComplexDetailPage as OwnerComplexDetailPage } from "./pages/owner/ComplexDetailPage";
-// import { AdminDashboardPage } from "./pages/admin/DashboardPage";
-// import { ComplexVerificationPage } from "./pages/admin/ComplexVerificationPage";
-// import { UsersPage } from "./pages/admin/UsersPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
@@ -33,10 +29,10 @@ export const router = createBrowserRouter([
         path: "search",
         element: <SearchPage />,
       },
-      //     {
-      //       path: "complex/:id",
-      //       element: <PlayerComplexDetailPage />,
-      //     },
+      {
+        path: "complexes/:id",
+        element: <PublicComplexDetailPage />,
+      },
       {
         path: "bookings",
         element: (
