@@ -17,6 +17,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 import { AboutPage } from "@/pages/AboutPage";
+import { ContactPage } from "@/pages/ContactPage";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: "about",
         element: <AboutPage />,
+      },
+      {
+        path: "contact",
+        element: <ContactPage />,
       },
     ],
   },
