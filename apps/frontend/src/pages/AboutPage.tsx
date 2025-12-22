@@ -9,7 +9,7 @@ export function AboutPage() {
       {/* Hero Section */}
       <section className="bg-blue-900 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Về SportBook</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Về T-Sport</h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
             Sứ mệnh của chúng tôi là kết nối cộng đồng thể thao và đơn giản hóa
             việc đặt sân, giúp mọi người dễ dàng tiếp cận với lối sống năng
@@ -34,10 +34,10 @@ export function AboutPage() {
               <div className="text-4xl font-bold text-blue-600 mb-2">100k+</div>
               <div className="text-gray-600">Lượt đặt sân</div>
             </div>
-            <div>
+            {/* <div>
               <div className="text-4xl font-bold text-blue-600 mb-2">4.8/5</div>
               <div className="text-gray-600">Đánh giá trung bình</div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
@@ -52,8 +52,8 @@ export function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  SportBook được thành lập vào năm 2024 với một mục tiêu đơn
-                  giản: giải quyết nỗi đau đầu của việc tìm và đặt sân thể thao.
+                  T-Sport được thành lập vào năm 2025 với một mục tiêu đơn giản:
+                  giải quyết nỗi đau đầu của việc tìm và đặt sân thể thao.
                 </p>
                 <p>
                   Chúng tôi nhận thấy rằng trong khi nhu cầu chơi thể thao ngày
@@ -63,10 +63,10 @@ export function AboutPage() {
                   để check sân trống.
                 </p>
                 <p>
-                  Vì vậy, chúng tôi đã xây dựng SportBook - một nền tảng toàn
-                  diện kết nối chủ sân và người chơi. Chúng tôi không chỉ cung
-                  cấp công cụ đặt sân, mà còn xây dựng một hệ sinh thái giúp
-                  phát triển phong trào thể thao cộng đồng.
+                  Vì vậy, chúng tôi đã xây dựng T-Sport - một nền tảng toàn diện
+                  kết nối chủ sân và người chơi. Chúng tôi không chỉ cung cấp
+                  công cụ đặt sân, mà còn xây dựng một hệ sinh thái giúp phát
+                  triển phong trào thể thao cộng đồng.
                 </p>
               </div>
             </div>
@@ -115,7 +115,7 @@ export function AboutPage() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-6">Tham gia cùng chúng tôi</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Dù bạn là người chơi đam mê hay chủ sân tâm huyết, SportBook luôn có
+            Dù bạn là người chơi đam mê hay chủ sân tâm huyết, T-Sport luôn có
             giải pháp dành cho bạn.
           </p>
           <div className="flex justify-center gap-4">
