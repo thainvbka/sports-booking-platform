@@ -11,3 +11,5 @@ out/
 .cache/
 .tmp/
 *.tsbuildinfo
+
+COMPLEX_CACHE.md
