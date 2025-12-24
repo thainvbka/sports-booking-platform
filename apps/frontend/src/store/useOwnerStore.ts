@@ -288,7 +288,10 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       set({ isLoading: false });
     } catch (error: any) {
       set({
-        error: error.message || "Failed to add pricing rule",
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to add pricing rule",
         isLoading: false,
       });
       throw error;
