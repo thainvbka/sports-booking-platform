@@ -69,6 +69,10 @@ const pricingRuleSchema = z.object({
           end_time: z
             .string()
             .regex(/^([0-1]\d|2[0-3]):([0-5]\d)$/, "Giờ chưa hợp lệ"),
+          base_price: z
+            .number()
+            .min(0, "Giá phải lớn hơn hoặc bằng 0")
+            .max(100000000, "Giá không được vượt quá 100 triệu"),
         })
         .refine((data) => data.start_time < data.end_time, {
           message: "Giờ bắt đầu phải trước giờ kết thúc",
@@ -76,10 +80,6 @@ const pricingRuleSchema = z.object({
         })
     )
     .min(1, "Phải có ít nhất 1 khung giờ"),
-  base_price: z
-    .number()
-    .min(0, "Giá phải lớn hơn hoặc bằng 0")
-    .max(100000000, "Giá không được vượt quá 100 triệu"),
 });
 
 type PricingRuleFormData = z.infer<typeof pricingRuleSchema>;
@@ -94,7 +94,7 @@ interface PricingRuleFormDialogProps {
     day_of_week?: number;
     start_time?: string;
     end_time?: string;
-    base_price: number;
+    base_price?: number;
   };
   onSubmit: (data: PricingRuleFormData) => Promise<void>;
 }
@@ -121,8 +121,7 @@ export function PricingRuleFormDialog({
     resolver: zodResolver(pricingRuleSchema),
     defaultValues: {
       days: currentDay !== undefined ? [currentDay] : [],
-      time_slots: [{ start_time: "", end_time: "" }],
-      base_price: initialData?.base_price || 0,
+      time_slots: [{ start_time: "", end_time: "", base_price: 0 }],
     },
   });
 
@@ -133,8 +132,7 @@ export function PricingRuleFormDialog({
       if (mode === "create" && currentDay !== undefined) {
         reset({
           days: [currentDay],
-          time_slots: [{ start_time: "", end_time: "" }],
-          base_price: 0,
+          time_slots: [{ start_time: "", end_time: "", base_price: 0 }],
         });
         setApplyToAll(false);
       } else if (mode === "edit" && initialData) {
@@ -149,10 +147,10 @@ export function PricingRuleFormDialog({
                   {
                     start_time: formatTimeFromBackend(initialData.start_time),
                     end_time: formatTimeFromBackend(initialData.end_time),
+                    base_price: initialData.base_price || 0,
                   },
                 ]
-              : [{ start_time: "", end_time: "" }],
-          base_price: initialData.base_price,
+              : [{ start_time: "", end_time: "", base_price: 0 }],
         });
         setApplyToAll(false);
       }
@@ -275,7 +273,7 @@ export function PricingRuleFormDialog({
                   const currentSlots = watch("time_slots") || [];
                   setValue("time_slots", [
                     ...currentSlots,
-                    { start_time: "", end_time: "" },
+                    { start_time: "", end_time: "", base_price: 0 },
                   ]);
                 }}
               >
@@ -289,41 +287,81 @@ export function PricingRuleFormDialog({
               {watch("time_slots")?.map((_, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 rounded border bg-muted/30"
+                  className="flex items-start gap-2 p-3 rounded border bg-muted/30"
                 >
                   <div className="flex items-center justify-center w-6 h-10 text-xs font-medium text-muted-foreground">
                     {index + 1}
                   </div>
 
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    <div>
-                      <TimeInput
-                        id={`time_slots.${index}.start_time`}
-                        value={watch(`time_slots.${index}.start_time`)}
-                        onChange={(value) =>
-                          setValue(`time_slots.${index}.start_time`, value)
-                        }
-                        className="h-9"
-                      />
-                      {errors.time_slots?.[index]?.start_time && (
-                        <p className="text-xs text-red-600 mt-0.5">
-                          {errors.time_slots[index]?.start_time?.message}
-                        </p>
-                      )}
+                  <div className="flex-1 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">
+                          Giờ bắt đầu
+                        </Label>
+                        <TimeInput
+                          id={`time_slots.${index}.start_time`}
+                          value={watch(`time_slots.${index}.start_time`)}
+                          onChange={(value) =>
+                            setValue(`time_slots.${index}.start_time`, value)
+                          }
+                          className="h-9"
+                        />
+                        {errors.time_slots?.[index]?.start_time && (
+                          <p className="text-xs text-red-600 mt-0.5">
+                            {errors.time_slots[index]?.start_time?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">
+                          Giờ kết thúc
+                        </Label>
+                        <TimeInput
+                          id={`time_slots.${index}.end_time`}
+                          value={watch(`time_slots.${index}.end_time`)}
+                          onChange={(value) =>
+                            setValue(`time_slots.${index}.end_time`, value)
+                          }
+                          className="h-9"
+                        />
+                        {errors.time_slots?.[index]?.end_time && (
+                          <p className="text-xs text-red-600 mt-0.5">
+                            {errors.time_slots[index]?.end_time?.message}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div>
-                      <TimeInput
-                        id={`time_slots.${index}.end_time`}
-                        value={watch(`time_slots.${index}.end_time`)}
-                        onChange={(value) =>
-                          setValue(`time_slots.${index}.end_time`, value)
-                        }
+                      <Label className="text-xs text-muted-foreground">
+                        Giá/giờ (VNĐ)
+                        <span className="text-xs font-normal text-muted-foreground/70 ml-1">
+                          • Player sẽ trả theo số giờ đặt
+                        </span>
+                      </Label>
+                      <Input
+                        id={`time_slots.${index}.base_price`}
+                        type="number"
+                        min="0"
+                        step="1000"
+                        {...register(`time_slots.${index}.base_price`, {
+                          valueAsNumber: true,
+                        })}
+                        placeholder="300000"
                         className="h-9"
                       />
-                      {errors.time_slots?.[index]?.end_time && (
+                      {errors.time_slots?.[index]?.base_price && (
                         <p className="text-xs text-red-600 mt-0.5">
-                          {errors.time_slots[index]?.end_time?.message}
+                          {errors.time_slots[index]?.base_price?.message}
+                        </p>
+                      )}
+                      {watch(`time_slots.${index}.base_price`) > 0 && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          ≈{" "}
+                          {formatPrice(watch(`time_slots.${index}.base_price`))}
+                          /giờ
                         </p>
                       )}
                     </div>
@@ -356,29 +394,6 @@ export function PricingRuleFormDialog({
                   {errors.time_slots.message}
                 </p>
               )}
-          </div>
-
-          {/* Price */}
-          <div className="space-y-2">
-            <Label htmlFor="base_price">Giá (VNĐ)</Label>
-            <Input
-              id="base_price"
-              type="number"
-              min="0"
-              step="1000"
-              {...register("base_price", { valueAsNumber: true })}
-              placeholder="300000"
-            />
-            {errors.base_price && (
-              <p className="text-sm text-red-600">
-                {errors.base_price.message}
-              </p>
-            )}
-            {watch("base_price") > 0 && (
-              <p className="text-sm text-muted-foreground">
-                ≈ {formatPrice(watch("base_price"))}
-              </p>
-            )}
           </div>
 
           <DialogFooter>

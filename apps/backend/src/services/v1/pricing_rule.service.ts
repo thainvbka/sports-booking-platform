@@ -82,7 +82,7 @@ export const createPricingRule = async (
         day_of_week: day,
         start_time: startTime,
         end_time: endTime,
-        base_price: data.base_price,
+        base_price: slot.base_price,
       });
     }
   }

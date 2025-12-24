@@ -89,8 +89,7 @@ export const ownerService = {
   createPricingRules: async (payload: {
     sub_field_id: string;
     day_of_week: number[];
-    time_slots: { start_time: string; end_time: string }[];
-    base_price: number;
+    time_slots: { start_time: string; end_time: string; base_price: number }[];
   }) => {
     const response = await api.post<ApiResponse<GetOwnerPricingRulesResponse>>(
       `/pricing-rules`,
