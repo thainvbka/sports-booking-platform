@@ -7,7 +7,7 @@ import { updateComplexCache } from "../helpers/complexCache";
  */
 async function populateAllComplexCache() {
   try {
-    console.log("🚀 Starting to populate complex cache...");
+    console.log("Starting to populate complex cache...");
 
     // Get all complexes
     const complexes = await prisma.complex.findMany({
@@ -17,7 +17,7 @@ async function populateAllComplexCache() {
       },
     });
 
-    console.log(`📊 Found ${complexes.length} complexes to update`);
+    console.log(`Found ${complexes.length} complexes to update`);
 
     // Update cache for each complex
     let successCount = 0;
@@ -27,24 +27,24 @@ async function populateAllComplexCache() {
       try {
         await updateComplexCache(complex.id);
         successCount++;
-        console.log(`✅ Updated cache for: ${complex.complex_name}`);
+        console.log(`Updated cache for: ${complex.complex_name}`);
       } catch (error) {
         errorCount++;
         console.error(
-          `❌ Failed to update cache for: ${complex.complex_name}`,
+          `Failed to update cache for: ${complex.complex_name}`,
           error
         );
       }
     }
 
-    console.log("\n📈 Summary:");
-    console.log(`✅ Successfully updated: ${successCount}`);
-    console.log(`❌ Failed: ${errorCount}`);
-    console.log("🎉 Cache population completed!");
+    console.log("\nSummary:");
+    console.log(`Successfully updated: ${successCount}`);
+    console.log(`Failed: ${errorCount}`);
+    console.log("Cache population completed!");
 
     process.exit(0);
   } catch (error) {
-    console.error("💥 Fatal error:", error);
+    console.error("Fatal error:", error);
     process.exit(1);
   }
 }
