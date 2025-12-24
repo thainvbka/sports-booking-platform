@@ -1,6 +1,6 @@
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ComplexDetailView } from "@/components/complex/ComplexDetailView";
+import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
 import { publicService } from "@/services/public.service";
 import type { ComplexDetail, SubField, PaginationMeta } from "@/types";
 import { toast } from "sonner";

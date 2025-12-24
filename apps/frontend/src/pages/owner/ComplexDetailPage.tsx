@@ -6,7 +6,7 @@ import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { DeleteComplexDialog } from "@/components/owner/DeleteComplexDialog";
 import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";
-import { ComplexDetailView } from "@/components/complex/ComplexDetailView";
+import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
 import { ComplexStatus } from "@/types";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
