@@ -4,7 +4,7 @@ import { SuccessResponse } from "../../utils/success.response";
 
 export const addRoleController = async (req: Request, res: Response) => {
   // Lấy accountId từ middleware authenticate
-  const accountId = req.accountId;
+  const accountId = req.user?.accountId;
   const roleData = req.body;
 
   const result = await addRoleToAccount(accountId!, roleData);
