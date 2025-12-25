@@ -3,6 +3,7 @@ import { SuccessResponse } from "../../utils/success.response";
 import {
   createBooking,
   reviewBooking,
+  updateBooking,
 } from "../../services/v1/booking.service";
 
 export const createBookingController = async (req: Request, res: Response) => {
@@ -27,6 +28,20 @@ export const reviewBookingController = async (req: Request, res: Response) => {
   );
   return new SuccessResponse({
     message: "Booking reviewed successfully",
+    data: { booking },
+  }).send(res);
+};
+
+export const updateBookingController = async (req: Request, res: Response) => {
+  const booking_id = req.params.id;
+  const data = req.body;
+  const booking = await updateBooking(
+    req.user?.profiles.playerId as string,
+    data,
+    booking_id
+  );
+  return new SuccessResponse({
+    message: "Booking updated successfully",
     data: { booking },
   }).send(res);
 };

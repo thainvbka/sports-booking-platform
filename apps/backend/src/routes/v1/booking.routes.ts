@@ -7,6 +7,7 @@ import { createBookingSchema } from "@sports-booking-platform/validation";
 import {
   createBookingController,
   reviewBookingController,
+  updateBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -17,7 +18,7 @@ const router = Router();
 router.post(
   "/:id", //subfieldId
   authenticate,
-  authorize(["PLAYER", "ADMIN"]),
+  authorize(["PLAYER"]),
   validate(createBookingSchema),
   asyncHandler(createBookingController)
 );
@@ -25,7 +26,16 @@ router.post(
 router.get(
   "/review/:id", //bookingId
   authenticate,
-  authorize(["PLAYER", "ADMIN"]),
+  authorize(["PLAYER"]),
   asyncHandler(reviewBookingController)
 );
+
+router.put(
+  "/:id", //bookingId
+  authenticate,
+  authorize(["PLAYER"]),
+  validate(createBookingSchema),
+  asyncHandler(updateBookingController)
+);
+
 export default router;
