@@ -5,6 +5,7 @@ import complexRouter from "./complex.routes";
 import subfieldRouter from "./subfield.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
 import publicRouter from "./public.routes";
+import bookingRouter from "./booking.routes";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/account", accountRouter);
 router.use("/complexes", complexRouter);
 router.use("/sub-fields", subfieldRouter);
 router.use("/pricing-rules", pricingRuleRouter);
+router.use("/bookings", bookingRouter);
 
 export default router;
