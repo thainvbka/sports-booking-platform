@@ -8,6 +8,7 @@ import {
   createBookingController,
   reviewBookingController,
   updateBookingController,
+  cancelBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -36,6 +37,13 @@ router.put(
   authorize(["PLAYER"]),
   validate(createBookingSchema),
   asyncHandler(updateBookingController)
+);
+
+router.delete(
+  "/:id", //bookingId
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(cancelBookingController)
 );
 
 export default router;

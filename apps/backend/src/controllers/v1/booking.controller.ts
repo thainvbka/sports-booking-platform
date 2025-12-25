@@ -4,6 +4,7 @@ import {
   createBooking,
   reviewBooking,
   updateBooking,
+  cancelBooking,
 } from "../../services/v1/booking.service";
 
 export const createBookingController = async (req: Request, res: Response) => {
@@ -43,5 +44,14 @@ export const updateBookingController = async (req: Request, res: Response) => {
   return new SuccessResponse({
     message: "Booking updated successfully",
     data: { booking },
+  }).send(res);
+};
+
+export const cancelBookingController = async (req: Request, res: Response) => {
+  const booking_id = req.params.id;
+  await cancelBooking(booking_id, req.user?.profiles.playerId as string);
+  return new SuccessResponse({
+    message: "Booking canceled successfully",
+    data: {},
   }).send(res);
 };

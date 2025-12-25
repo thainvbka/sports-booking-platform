@@ -343,3 +343,24 @@ export const updateBooking = async (
     expires_at: booking.expires_at,
   };
 };
+
+export const cancelBooking = async (booking_id: string, player_id: string) => {
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: booking_id,
+      player_id: player_id,
+      status: "PENDING",
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundError("Booking not found or cannot be canceled");
+  }
+
+  const canceledBooking = await prisma.booking.update({
+    where: { id: booking_id },
+    data: { status: "CANCELED" },
+  });
+
+  return canceledBooking;
+};
