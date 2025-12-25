@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { SportType } from "@sports-booking-platform/db";
+
+export const SportType = {
+  FOOTBALL: "FOOTBALL",
+  BASKETBALL: "BASKETBALL",
+  TENNIS: "TENNIS",
+  BADMINTON: "BADMINTON",
+  VOLLEYBALL: "VOLLEYBALL",
+  PICKLEBALL: "PICKLEBALL",
+} as const;
 
 export const createSubfieldSchema = z.object({
   body: z.object({
