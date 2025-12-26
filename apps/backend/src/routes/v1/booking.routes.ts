@@ -3,12 +3,16 @@ import asyncHandler from "../../utils/asyncHandler";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
-import { createBookingSchema } from "@sports-booking-platform/validation";
+import {
+  createBookingSchema,
+  createRecurringBookingSchema,
+} from "@sports-booking-platform/validation";
 import {
   createBookingController,
   reviewBookingController,
   updateBookingController,
   cancelBookingController,
+  createRecurringBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -44,6 +48,15 @@ router.delete(
   authenticate,
   authorize(["PLAYER"]),
   asyncHandler(cancelBookingController)
+);
+
+//recurring booking routes
+router.post(
+  "/recurring/:id", //subfieldId
+  authenticate,
+  authorize(["PLAYER"]),
+  validate(createRecurringBookingSchema),
+  asyncHandler(createRecurringBookingController)
 );
 
 export default router;

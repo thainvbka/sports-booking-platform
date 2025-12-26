@@ -4,3 +4,4 @@ export * from "./complex.schema";
 export * from "./pricing_rule.schema";
 export * from "./booking.schema";
 export * from "./subfield.schema";
+export * from "./recurring_booking.schema";
