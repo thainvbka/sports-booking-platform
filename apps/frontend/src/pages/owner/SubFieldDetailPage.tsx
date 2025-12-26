@@ -183,8 +183,10 @@ export function SubFieldDetailPage() {
     if (!id) return;
     try {
       await addPricingRule(id, data.days, {
-        time_slots: data.time_slots,
-        base_price: data.base_price,
+        time_slots: data.time_slots.map((slot) => ({
+          ...slot,
+          base_price: data.base_price,
+        })),
       });
       await fetchPricingRules(id, date.getDay());
       toast({ title: "Thành công", description: "Đã tạo khung giờ mới" });
@@ -632,8 +634,16 @@ export function SubFieldDetailPage() {
             }
             onSubmit={
               pricingFormMode === "create"
-                ? handleCreatePricingRule
-                : handleEditPricingRule
+                ? (data) =>
+                    handleCreatePricingRule({
+                      ...data,
+                      base_price: data.time_slots[0]?.base_price ?? 0,
+                    })
+                : (data) =>
+                    handleEditPricingRule({
+                      ...data,
+                      base_price: data.time_slots[0]?.base_price ?? 0,
+                    })
             }
           />
 
