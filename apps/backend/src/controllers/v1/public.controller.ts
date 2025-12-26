@@ -4,7 +4,10 @@ import {
   getPublicComplexActive,
   getPublicComplexById,
 } from "../../services/v1/complex.service";
-import { getAllPublicSubfields } from "../../services/v1/subfield.service";
+import {
+  getAllPublicSubfields,
+  getPublicSubfieldById,
+} from "../../services/v1/subfield.service";
 
 // Helper function to parse string array from query params
 const parseStringArray = (value: unknown): string[] | undefined => {
@@ -113,6 +116,18 @@ export const getAllPublicSubfieldsController = async (
 
   return new SuccessResponse({
     message: "Get all public subfields successfully",
+    data: result,
+  }).send(res);
+};
+
+export const getPublicSubfieldByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  const subfieldId = req.params.id;
+  const result = await getPublicSubfieldById(subfieldId);
+  return new SuccessResponse({
+    message: "Get public subfield detail successfully",
     data: result,
   }).send(res);
 };

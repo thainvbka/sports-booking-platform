@@ -4,6 +4,7 @@ import {
   getPublicComplexActiveController,
   getPublicComplexByIdController,
   getAllPublicSubfieldsController,
+  getPublicSubfieldByIdController,
 } from "../../controllers/v1/public.controller";
 
 const router = Router();
@@ -11,5 +12,6 @@ const router = Router();
 router.get("/complexes", asyncHandler(getPublicComplexActiveController));
 router.get("/complexes/:id", asyncHandler(getPublicComplexByIdController));
 router.get("/subfields", asyncHandler(getAllPublicSubfieldsController));
+router.get("/subfields/:id", asyncHandler(getPublicSubfieldByIdController));
 
 export default router;

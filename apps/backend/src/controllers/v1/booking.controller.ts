@@ -7,7 +7,10 @@ import {
   cancelBooking,
 } from "../../services/v1/booking.service";
 
-import { createRecurringBookingService } from "../../services/v1/recurring_booking.service";
+import {
+  createRecurringBookingService,
+  reviewRecurringBookingService,
+} from "../../services/v1/recurring_booking.service";
 
 export const createBookingController = async (req: Request, res: Response) => {
   const data = req.body; // { base_price, start_time, end_time,}
@@ -73,5 +76,20 @@ export const createRecurringBookingController = async (
   return new SuccessResponse({
     message: "Recurring booking created successfully",
     data: { recurringBooking },
+  }).send(res);
+};
+
+export const reviewRecurringBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const booking_id = req.params.id; // recurringBookingId
+  const result = await reviewRecurringBookingService(
+    booking_id,
+    req.user?.profiles.playerId as string
+  );
+  return new SuccessResponse({
+    message: "Recurring booking reviewed successfully",
+    data: result,
   }).send(res);
 };

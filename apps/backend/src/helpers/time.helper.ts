@@ -28,6 +28,10 @@ export const getVietnamDayOfWeek = (date: Date): number => {
 /**
  *  Hàm lấy số phút thô từ Date object (theo giờ UTC)
  */
+/**
+ *  Hàm lấy số phút thô từ Date object (theo giờ UTC)
+ *  Sử dụng UTC để đảm bảo lấy đúng "face value" của giờ lưu trong DB.
+ */
 export const getRawMinutes = (date: Date): number => {
-  return date.getHours() * 60 + date.getMinutes();
+  return date.getUTCHours() * 60 + date.getUTCMinutes();
 };

@@ -402,3 +402,42 @@ export const getAllPublicSubfields = async ({
     },
   };
 };
+
+export const getPublicSubfieldById = async (subfieldId: string) => {
+  const subfield = await prisma.subField.findUnique({
+    where: {
+      id: subfieldId,
+      isDelete: false,
+      complex: { status: "ACTIVE" },
+    },
+    select: {
+      id: true,
+      sub_field_name: true,
+      sport_type: true,
+      sub_field_image: true,
+      capacity: true,
+      pricing_rules: {
+        select: {
+          id: true,
+          day_of_week: true,
+          start_time: true,
+          end_time: true,
+          base_price: true,
+        },
+      },
+      complex: {
+        select: {
+          id: true,
+          complex_name: true,
+          complex_address: true,
+        },
+      },
+    },
+  });
+
+  if (!subfield) {
+     throw new NotFoundError("Subfield not found");
+  }
+
+  return subfield;
+};

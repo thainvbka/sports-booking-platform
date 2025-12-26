@@ -60,4 +60,11 @@ export const publicService = {
     );
     return response.data;
   },
+
+  getSubfieldById: async (id: string) => {
+    const response = await api.get<ApiResponse<SubField & { complex_name: string; complex_address: string }>>(
+      `/public/subfields/${id}`
+    );
+    return response.data;
+  },
 };

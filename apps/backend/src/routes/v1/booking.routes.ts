@@ -13,6 +13,7 @@ import {
   updateBookingController,
   cancelBookingController,
   createRecurringBookingController,
+  reviewRecurringBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -57,6 +58,13 @@ router.post(
   authorize(["PLAYER"]),
   validate(createRecurringBookingSchema),
   asyncHandler(createRecurringBookingController)
+);
+
+router.get(
+  "/recurring/review/:id", // recurringBookingId
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(reviewRecurringBookingController)
 );
 
 export default router;

@@ -205,7 +205,16 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
     );
   }
 
-  return booking;
+  return {
+    id: booking.id,
+    start_time: booking.start_time,
+    end_time: booking.end_time,
+    total_price: booking.total_price,
+    complex_name: booking.sub_field.complex.complex_name,
+    complex_address: booking.sub_field.complex.complex_address,
+    sprot_type: booking.sub_field.sport_type,
+    sub_field_name: booking.sub_field.sub_field_name,
+  }
 };
 
 export const updateBooking = async (

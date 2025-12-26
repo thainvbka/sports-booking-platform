@@ -15,6 +15,8 @@ import { AboutPage } from "@/pages/AboutPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { PlayerBookingsPage } from "@/pages/player/BookingPage";
 import { SearchPage } from "@/pages/SearchPage";
+import BookingReviewPage from "@/pages/booking/BookingReviewPage";
+import RecurringBookingReviewPage from "@/pages/booking/RecurringBookingReviewPage";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +40,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["PLAYER"]}>
             <PlayerBookingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "booking-review/:id",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <BookingReviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "booking-review/recurring/:id",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <RecurringBookingReviewPage />
           </ProtectedRoute>
         ),
       },
