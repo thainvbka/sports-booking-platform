@@ -140,10 +140,13 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         navigate(`/booking-review/recurring/${response.recurring_booking_id}`);
       }
     } catch (error: any) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi tạo lịch đặt sân"
-      );
+      console.error("Booking Error Details:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Có lỗi xảy ra khi tạo lịch đặt sân";
+        
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
