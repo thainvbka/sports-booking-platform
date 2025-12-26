@@ -39,7 +39,8 @@ export interface RecurringBookingReviewResponse {
   total_slots: number;
   total_price: number;
   slots: {
-    date: string;
+    startTime: string;
+    endTime: string;
     price: number;
   }[];
   expires_at: string;

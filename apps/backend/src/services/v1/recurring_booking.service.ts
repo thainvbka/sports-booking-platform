@@ -431,7 +431,8 @@ export const reviewRecurringBookingService = async (
 
     // Danh sách chi tiết các buổi (để user review lại ngày giờ)
     slots: recurringBooking.bookings.map((b) => ({
-      date: b.start_time, // Frontend format lại ngày giờ
+      startTime: b.start_time,
+      endTime: b.end_time,
       price: b.total_price,
     })),
 
