@@ -41,7 +41,7 @@ export { Prisma }
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-linux-musl-openssl-3.0.x.so.node")
-path.join(process.cwd(), "../../packages/db/generated/prisma-client/libquery_engine-linux-musl-openssl-3.0.x.so.node")
+path.join(process.cwd(), "packages/db/generated/prisma-client/libquery_engine-linux-musl-openssl-3.0.x.so.node")
 
 /**
  * Model Account
