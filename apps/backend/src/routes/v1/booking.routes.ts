@@ -14,6 +14,7 @@ import {
   cancelBookingController,
   createRecurringBookingController,
   reviewRecurringBookingController,
+  getPlayerBookingsController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -27,6 +28,13 @@ router.post(
   authorize(["PLAYER"]),
   validate(createBookingSchema),
   asyncHandler(createBookingController)
+);
+
+router.get(
+  "/", //get all bookings of the player
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(getPlayerBookingsController)
 );
 
 router.get(

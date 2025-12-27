@@ -5,6 +5,7 @@ import {
   reviewBooking,
   updateBooking,
   cancelBooking,
+  getPlayerBookings,
 } from "../../services/v1/booking.service";
 
 import {
@@ -91,5 +92,17 @@ export const reviewRecurringBookingController = async (
   return new SuccessResponse({
     message: "Recurring booking reviewed successfully",
     data: result,
+  }).send(res);
+};
+
+export const getPlayerBookingsController = async (
+  req: Request,
+  res: Response
+) => {
+  const playerId = req.user?.profiles.playerId as string;
+  const bookings = await getPlayerBookings(playerId);
+  return new SuccessResponse({
+    message: "Player bookings retrieved successfully",
+    data: { bookings },
   }).send(res);
 };

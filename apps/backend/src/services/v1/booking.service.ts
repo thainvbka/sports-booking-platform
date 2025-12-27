@@ -393,3 +393,56 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
 
   return canceledBooking;
 };
+
+//get player bookings
+export const getPlayerBookings = async (player_id: string) => {
+  //check player exists
+  const player = await prisma.player.findUnique({
+    where: { id: player_id, status: "ACTIVE" },
+  });
+  if (!player) {
+    throw new ForbiddenError("You are not allowed to view bookings");
+  }
+
+  const bookings = await prisma.booking.findMany({
+    where: { player_id: player_id },
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      total_price: true,
+      status: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { created_at: "desc" },
+  });
+
+  if (!bookings || bookings.length === 0) {
+    return [];
+  }
+
+  const formattedBookings = bookings.map((booking) => ({
+    id: booking.id,
+    start_time: booking.start_time,
+    end_time: booking.end_time,
+    total_price: booking.total_price,
+    status: booking.status,
+    complex_name: booking.sub_field.complex.complex_name,
+    complex_address: booking.sub_field.complex.complex_address,
+    sport_type: booking.sub_field.sport_type,
+    sub_field_name: booking.sub_field.sub_field_name,
+  }));
+
+  return formattedBookings;
+};
