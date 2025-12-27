@@ -55,6 +55,45 @@ export const createRecurringBookingService = async (
   });
   if (!subField) throw new NotFoundError("Sub field not found");
 
+  // Kiểm tra xem user này có đang pending một yêu cầu y hệt không? Nếu có thì không tạo mới, mà gia hạn thời gian giữ chỗ
+  const existingRecurring = await prisma.recurringBooking.findFirst({
+    where: {
+      player_id,
+      sub_field_id,
+      recurrence_type: data.recurring_type,
+      // So sánh ngày bắt đầu/kết thúc
+      start_date: new Date(data.start_date),
+      end_date: new Date(data.end_date),
+      status: "PENDING", // Chỉ tìm những cái chưa thanh toán
+    },
+    include: {
+      bookings: true, // Lấy booking con để tính lại tổng tiền
+    },
+  });
+
+  if (existingRecurring) {
+    // A. Nếu tìm thấy -> Gia hạn thời gian giữ chỗ cho tất cả booking con
+    // (Cho thêm 15 phút nữa để thanh toán)
+    await prisma.booking.updateMany({
+      where: { recurring_booking_id: existingRecurring.id },
+      data: { expires_at: new Date(Date.now() + 15 * 60 * 1000) },
+    });
+
+    // B. Tính lại tổng tiền (để trả về FE hiển thị)
+    const totalPrice = existingRecurring.bookings.reduce(
+      (sum, b) => sum + Number(b.total_price),
+      0
+    );
+
+    // C. Trả về luôn (Không tạo mới nữa)
+    return {
+      message: "Resumed existing recurring booking session",
+      recurring_booking_id: existingRecurring.id,
+      total_slots: existingRecurring.bookings.length,
+      total_price: totalPrice,
+    };
+  }
+
   // 2. Tạo danh sách các ngày cần đặt (Booking Slots)
   const bookingSlots: { start: Date; end: Date }[] = [];
 
@@ -108,8 +147,10 @@ export const createRecurringBookingService = async (
     const overlappingBooking = await prisma.booking.findFirst({
       where: {
         sub_field_id: sub_field_id,
-        status: { in: ["PENDING", "CONFIRMED"] }, // Kiểm tra cả pending và confirmed
-        // Logic trùng giờ: (StartA < EndB) && (EndA > StartB)
+        OR: [
+          { status: "PENDING", expires_at: { gt: new Date() } }, // Chỉ tính các booking pending còn hạn
+          { status: "CONFIRMED" },
+        ],
         AND: [
           { start_time: { lt: slot.end } },
           { end_time: { gt: slot.start } },
@@ -180,7 +221,7 @@ export const createRecurringBookingService = async (
         recurrence_type: data.recurring_type,
         start_date: data.start_date,
         end_date: data.end_date,
-        status: "ACTIVE",
+        status: "PENDING",
         recurrence_detail: {
           day_of_week: getVietnamDayOfWeek(data.start_time),
           start_time: `${startHour}:${startMinute}`,

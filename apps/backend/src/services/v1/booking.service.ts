@@ -52,7 +52,27 @@ export const createBooking = async (
     },
   });
 
+  //neu nguoi dung quay lai va sau do lai dat lai thi se khong thong bao loi ma booking do van la cua chinh nguoi do
+
   if (overlappingBooking) {
+    if (overlappingBooking.player_id === player_id) {
+      //gia hạn thời gian giữ chỗ
+      const updatedBooking = await prisma.booking.update({
+        where: { id: overlappingBooking.id },
+        data: { expires_at: new Date(Date.now() + 3 * 60 * 1000) }, // 3 minutes from now
+      });
+
+      //trả về thông tin booking đã được gia hạn
+      return {
+        booking_id: updatedBooking.id,
+        start_time: updatedBooking.start_time,
+        end_time: updatedBooking.end_time,
+        total_price: updatedBooking.total_price,
+        status: updatedBooking.status,
+        expires_at: updatedBooking.expires_at,
+      };
+    }
+    //nếu không phải của người dùng hiện tại thì báo lỗi đã có người đặt
     throw new BadRequestError("The selected time slot is already booked");
   }
 
@@ -214,7 +234,7 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
     complex_address: booking.sub_field.complex.complex_address,
     sprot_type: booking.sub_field.sport_type,
     sub_field_name: booking.sub_field.sub_field_name,
-  }
+  };
 };
 
 export const updateBooking = async (
