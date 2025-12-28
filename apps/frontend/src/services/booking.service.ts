@@ -95,4 +95,9 @@ export const bookingService = {
     const response = await axiosInstance.get(`/bookings`);
     return response.data.data.bookings as BookingResponse[];
   },
+
+  cancleBooking: async (bookingId: string) => {
+    const response = await axiosInstance.delete(`/bookings/${bookingId}`);
+    return response.data.data;
+  },
 };
