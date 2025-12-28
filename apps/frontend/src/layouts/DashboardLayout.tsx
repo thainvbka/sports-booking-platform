@@ -62,8 +62,18 @@ export function DashboardLayout() {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
-
-          return (
+          const isDisabled = item.path === "/owner/settings";
+          return isDisabled ? (
+            <Button
+              key={item.path}
+              variant="ghost"
+              disabled
+              className="w-full justify-start mb-1 opacity-50 cursor-not-allowed"
+            >
+              <Icon className="mr-3 h-4 w-4 text-muted-foreground" />
+              {item.label}
+            </Button>
+          ) : (
             <Link key={item.path} to={item.path}>
               <Button
                 variant="ghost"
@@ -88,7 +98,7 @@ export function DashboardLayout() {
       </nav>
 
       <div className="p-4 border-t bg-muted/20">
-        <div className="flex items-center gap-3 mb-4 p-2 rounded-lg bg-background border shadow-sm">
+        <div className="flex items-center gap-3 mb-4 p-2 rounded-lg bg-background border shadow-sm ">
           <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
             <AvatarImage
               src={`https://ui-avatars.com/api/?name=${user?.full_name}&background=random`}

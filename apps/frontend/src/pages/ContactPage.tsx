@@ -16,9 +16,9 @@ export function ContactPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-12 items-stretch">
           {/* Contact Info */}
-          <div className="space-y-8">
+          <div className="space-y-8 h-full flex flex-col">
             <Card className="bg-blue-50 border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-blue-900">
@@ -32,8 +32,10 @@ export function ContactPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Email</p>
-                    <p className="text-gray-600">support@thainvbka.com</p>
-                    <p className="text-gray-600">contact@thainvbka.com</p>
+                    <p className="text-gray-600">nvthai2904@gmail.com</p>
+                    <p className="text-gray-600">
+                      thai.nv225394@sis.hust.edu.vn
+                    </p>
                   </div>
                 </div>
 
@@ -43,7 +45,7 @@ export function ContactPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Hotline</p>
-                    <p className="text-gray-600">1900 1234 (8:00 - 22:00)</p>
+                    <p className="text-gray-600">0862821861 (8:00 - 22:00)</p>
                   </div>
                 </div>
 
@@ -63,7 +65,7 @@ export function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-50 border-none shadow-sm">
+            <Card className="bg-gray-50 border-none shadow-sm flex-1 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-xl font-bold">
                   Câu hỏi thường gặp
@@ -82,7 +84,7 @@ export function ContactPage() {
           </div>
 
           {/* Contact Form */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg h-full">
             <CardHeader>
               <CardTitle className="text-2xl font-bold">Gửi tin nhắn</CardTitle>
             </CardHeader>

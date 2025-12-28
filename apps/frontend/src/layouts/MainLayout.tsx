@@ -106,7 +106,7 @@ export function MainLayout() {
                         {user.full_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium hidden sm:inline-block line-clamp-1 max-w-[100px]">
+                    <span className="text-sm font-medium hidden sm:inline-block line-clamp-1 w-fit">
                       {user.full_name}
                     </span>
                     <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
@@ -137,7 +137,7 @@ export function MainLayout() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
+                    <Link to="" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       Hồ sơ cá nhân
                     </Link>

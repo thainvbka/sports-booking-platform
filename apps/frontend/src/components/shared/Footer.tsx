@@ -1,12 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { Facebook, Instagram, Github, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -28,27 +21,47 @@ export function Footer() {
               tầm sức khỏe.
             </p>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-blue-600 hover:bg-blue-50"
+              <a
+                href="https://www.facebook.com/thainvbka"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Facebook className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-pink-600 hover:bg-pink-50"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:text-blue-600 hover:bg-blue-50"
+                >
+                  <Facebook className="w-5 h-5" />
+                </Button>
+              </a>
+
+              <a
+                href="https://www.instagram.com/thai_ngw"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Instagram className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:text-sky-500 hover:bg-sky-50"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:text-pink-600 hover:bg-pink-50"
+                >
+                  <Instagram className="w-5 h-5" />
+                </Button>
+              </a>
+
+              <a
+                href="https://github.com/thainvbka"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Twitter className="w-5 h-5" />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:text-sky-500 hover:bg-sky-50"
+                >
+                  <Github className="w-5 h-5" />
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -137,10 +150,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  to="/owner/register"
+                  to="/auth/register"
                   className="hover:text-primary transition-colors"
                 >
-                  Đăng ký chủ sân
+                  Trở thành đối tác
                 </Link>
               </li>
             </ul>
@@ -156,11 +169,11 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 shrink-0" />
-                <span>(028) 1234 5678</span>
+                <span>0862821861</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 shrink-0" />
-                <span>support@T-Sport.vn</span>
+                <span>nvthai2904@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -179,12 +192,6 @@ export function Footer() {
             </Link>
             <Link to="/terms" className="hover:text-primary transition-colors">
               Terms of Service
-            </Link>
-            <Link
-              to="/cookies"
-              className="hover:text-primary transition-colors"
-            >
-              Cookie Settings
             </Link>
           </div>
         </div>

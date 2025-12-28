@@ -18,6 +18,8 @@ import { SearchPage } from "@/pages/SearchPage";
 import BookingReviewPage from "@/pages/booking/BookingReviewPage";
 import RecurringBookingReviewPage from "@/pages/booking/RecurringBookingReviewPage";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
+import { TermsPage } from "@/pages/legal/TermsPage";
+import { PrivacyPage } from "@/pages/legal/PrivacyPage";
 
 export const router = createBrowserRouter([
   {
@@ -67,6 +69,14 @@ export const router = createBrowserRouter([
       {
         path: "contact",
         element: <ContactPage />,
+      },
+      {
+        path: "terms",
+        element: <TermsPage />,
+      },
+      {
+        path: "privacy",
+        element: <PrivacyPage />,
       },
     ],
   },
