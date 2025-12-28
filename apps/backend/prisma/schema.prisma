@@ -64,6 +64,7 @@ enum RecurringStatus {
   ACTIVE
   PENDING
   CANCELED
+  COMPLETED
 }
 
 enum ComplexStatus {
