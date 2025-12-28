@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   signUp,
+  verifyEmail,
   logIn,
   logOut,
   handlerRefreshToken,
@@ -12,14 +13,34 @@ export const signupController = async (req: Request, res: Response) => {
   const userData = req.body;
   const data = await signUp(userData);
 
+  // res.cookie("refreshToken", data.refreshToken, {
+  //   httpOnly: true,
+  //   secure: config.NODE_ENV === "production",
+  //   sameSite: "strict",
+  // });
+
+  return new Created({
+    message: "User created successfully",
+    data: {
+      // user: data.user,
+      // accessToken: data.accessToken,
+      needVerify: data.needVerify,
+    },
+  }).send(res);
+};
+
+export const verifyEmailController = async (req: Request, res: Response) => {
+  const { token } = req.query as { token: string };
+  const data = await verifyEmail(token);
+
   res.cookie("refreshToken", data.refreshToken, {
     httpOnly: true,
     secure: config.NODE_ENV === "production",
     sameSite: "strict",
   });
 
-  return new Created({
-    message: "User created successfully",
+  return new SuccessResponse({
+    message: "Email verified successfully",
     data: {
       user: data.user,
       accessToken: data.accessToken,

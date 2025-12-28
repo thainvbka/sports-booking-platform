@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   signupController,
+  verifyEmailController,
   loginController,
   logoutController,
   refreshTokenController,
@@ -20,6 +21,8 @@ router.post(
   validate(registerSchema),
   asyncHandler(signupController)
 );
+
+router.post("/verify-email", asyncHandler(verifyEmailController));
 
 router.post("/login", validate(loginSchema), asyncHandler(loginController));
 

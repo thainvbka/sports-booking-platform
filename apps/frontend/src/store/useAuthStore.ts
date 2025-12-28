@@ -32,6 +32,7 @@ interface AuthState {
   register: (data: registerInput) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
+  verifyEmail: (token: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -69,8 +70,22 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
         } catch (error: any) {
+          let message = "Login failed";
+          if (error.response) {
+            if (error.response.status === 401) {
+              message =
+                error.response.data?.message ||
+                "Tài khoản chưa được kích hoạt hoặc thông tin không đúng";
+            } else if (error.response.status === 429) {
+              message =
+                "Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau.";
+            } else {
+              message =
+                error.response.data?.message || "Đã xảy ra lỗi khi đăng nhập";
+            }
+          }
           set({
-            error: error.response?.data?.message || "Login failed",
+            error: message,
             isLoading: false,
           });
           throw error;
@@ -88,13 +103,50 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await authService.register(data);
-          const { user, accessToken } = response.data;
-          localStorage.setItem("accessToken", accessToken);
-          set({ user, isAuthenticated: true, isLoading: false });
+          await authService.register(data);
+
+          // localStorage.setItem("accessToken", accessToken);
+          // set({ user, isAuthenticated: true, isLoading: false });
+          set({ isLoading: false });
+
+          // return response;
         } catch (error: any) {
           set({
             error: error.response?.data?.message || "Registration failed",
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+
+      verifyEmail: async (token: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authService.verifyEmail(token);
+          const { user, accessToken } = response.data;
+
+          // Lưu token và set state user
+          localStorage.setItem("accessToken", accessToken);
+
+          // Logic sắp xếp role (copy từ hàm login)
+          const sortedRoles = user.roles.sort((a: string, b: string) => {
+            const pA = ROLE_PRIORITY[a as keyof typeof ROLE_PRIORITY] || 0;
+            const pB = ROLE_PRIORITY[b as keyof typeof ROLE_PRIORITY] || 0;
+            return pB - pA;
+          });
+          const defaultRole = sortedRoles[0] || "PLAYER";
+
+          set({
+            user,
+            isAuthenticated: true,
+            currentRole: defaultRole,
+            isLoading: false,
+          });
+
+          return user;
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || "Verification failed",
             isLoading: false,
           });
           throw error;

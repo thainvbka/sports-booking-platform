@@ -31,6 +31,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Nếu là lỗi 401 và message là "Account has not been activated..." thì trả về cho UI xử lý
+    if (
+      error.response?.status === 401 &&
+      error.response?.data?.message ===
+        "Account has not been activated. Please check your email."
+    ) {
+      return Promise.reject(error);
+    }
+
     // Prevent infinite loop
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

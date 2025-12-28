@@ -76,22 +76,24 @@ enum ComplexStatus {
 }
 
 model Account {
-  id              String          @id @default(uuid()) @db.Uuid
-  email           String          @unique @db.VarChar(50)
-  password        String          @db.Text
-  full_name       String          @db.VarChar(100)
-  phone_number    String          @unique @db.VarChar(15)
-  avatar          String?         @db.Text
-  email_verified  Boolean         @default(false)
-  phone_verified  Boolean         @default(false)
-  created_at      DateTime        @default(now()) @db.Timestamptz(0)
-  updated_at      DateTime        @updatedAt @db.Timestamptz(0)
-  social_accounts SocialAccount[]
-  refresh_tokens  RefreshToken[]
-  notifications   Notification[]
-  admin           Admin?
-  owner           Owner?
-  player          Player?
+  id                      String          @id @default(uuid()) @db.Uuid
+  email                   String          @unique @db.VarChar(50)
+  password                String          @db.Text
+  full_name               String          @db.VarChar(100)
+  phone_number            String          @unique @db.VarChar(15)
+  avatar                  String?         @db.Text
+  email_verified          Boolean         @default(false)
+  phone_verified          Boolean         @default(false)
+  created_at              DateTime        @default(now()) @db.Timestamptz(0)
+  updated_at              DateTime        @updatedAt @db.Timestamptz(0)
+  verification_token      String?         @unique @db.Text // Token duy nhất để verify
+  verification_expires_at DateTime?       @db.Timestamptz(0) // Thời gian hết hạn của link
+  social_accounts         SocialAccount[]
+  refresh_tokens          RefreshToken[]
+  notifications           Notification[]
+  admin                   Admin?
+  owner                   Owner?
+  player                  Player?
 }
 
 model Admin {

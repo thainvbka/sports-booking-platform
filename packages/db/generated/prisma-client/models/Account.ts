@@ -34,6 +34,8 @@ export type AccountMinAggregateOutputType = {
   phone_verified: boolean | null
   created_at: Date | null
   updated_at: Date | null
+  verification_token: string | null
+  verification_expires_at: Date | null
 }
 
 export type AccountMaxAggregateOutputType = {
@@ -47,6 +49,8 @@ export type AccountMaxAggregateOutputType = {
   phone_verified: boolean | null
   created_at: Date | null
   updated_at: Date | null
+  verification_token: string | null
+  verification_expires_at: Date | null
 }
 
 export type AccountCountAggregateOutputType = {
@@ -60,6 +64,8 @@ export type AccountCountAggregateOutputType = {
   phone_verified: number
   created_at: number
   updated_at: number
+  verification_token: number
+  verification_expires_at: number
   _all: number
 }
 
@@ -75,6 +81,8 @@ export type AccountMinAggregateInputType = {
   phone_verified?: true
   created_at?: true
   updated_at?: true
+  verification_token?: true
+  verification_expires_at?: true
 }
 
 export type AccountMaxAggregateInputType = {
@@ -88,6 +96,8 @@ export type AccountMaxAggregateInputType = {
   phone_verified?: true
   created_at?: true
   updated_at?: true
+  verification_token?: true
+  verification_expires_at?: true
 }
 
 export type AccountCountAggregateInputType = {
@@ -101,6 +111,8 @@ export type AccountCountAggregateInputType = {
   phone_verified?: true
   created_at?: true
   updated_at?: true
+  verification_token?: true
+  verification_expires_at?: true
   _all?: true
 }
 
@@ -187,6 +199,8 @@ export type AccountGroupByOutputType = {
   phone_verified: boolean
   created_at: Date
   updated_at: Date
+  verification_token: string | null
+  verification_expires_at: Date | null
   _count: AccountCountAggregateOutputType | null
   _min: AccountMinAggregateOutputType | null
   _max: AccountMaxAggregateOutputType | null
@@ -221,6 +235,8 @@ export type AccountWhereInput = {
   phone_verified?: Prisma.BoolFilter<"Account"> | boolean
   created_at?: Prisma.DateTimeFilter<"Account"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Account"> | Date | string
+  verification_token?: Prisma.StringNullableFilter<"Account"> | string | null
+  verification_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
   social_accounts?: Prisma.SocialAccountListRelationFilter
   refresh_tokens?: Prisma.RefreshTokenListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
@@ -240,6 +256,8 @@ export type AccountOrderByWithRelationInput = {
   phone_verified?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  verification_token?: Prisma.SortOrderInput | Prisma.SortOrder
+  verification_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
   social_accounts?: Prisma.SocialAccountOrderByRelationAggregateInput
   refresh_tokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
@@ -252,6 +270,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
   phone_number?: string
+  verification_token?: string
   AND?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   OR?: Prisma.AccountWhereInput[]
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
@@ -262,13 +281,14 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   phone_verified?: Prisma.BoolFilter<"Account"> | boolean
   created_at?: Prisma.DateTimeFilter<"Account"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Account"> | Date | string
+  verification_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
   social_accounts?: Prisma.SocialAccountListRelationFilter
   refresh_tokens?: Prisma.RefreshTokenListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   admin?: Prisma.XOR<Prisma.AdminNullableScalarRelationFilter, Prisma.AdminWhereInput> | null
   owner?: Prisma.XOR<Prisma.OwnerNullableScalarRelationFilter, Prisma.OwnerWhereInput> | null
   player?: Prisma.XOR<Prisma.PlayerNullableScalarRelationFilter, Prisma.PlayerWhereInput> | null
-}, "id" | "email" | "phone_number">
+}, "id" | "email" | "phone_number" | "verification_token">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -281,6 +301,8 @@ export type AccountOrderByWithAggregationInput = {
   phone_verified?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  verification_token?: Prisma.SortOrderInput | Prisma.SortOrder
+  verification_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountCountOrderByAggregateInput
   _max?: Prisma.AccountMaxOrderByAggregateInput
   _min?: Prisma.AccountMinOrderByAggregateInput
@@ -300,6 +322,8 @@ export type AccountScalarWhereWithAggregatesInput = {
   phone_verified?: Prisma.BoolWithAggregatesFilter<"Account"> | boolean
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
+  verification_token?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  verification_expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
 }
 
 export type AccountCreateInput = {
@@ -313,6 +337,8 @@ export type AccountCreateInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -332,6 +358,8 @@ export type AccountUncheckedCreateInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -351,6 +379,8 @@ export type AccountUpdateInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -370,6 +400,8 @@ export type AccountUncheckedUpdateInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -389,6 +421,8 @@ export type AccountCreateManyInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
 }
 
 export type AccountUpdateManyMutationInput = {
@@ -402,6 +436,8 @@ export type AccountUpdateManyMutationInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountUncheckedUpdateManyInput = {
@@ -415,6 +451,8 @@ export type AccountUncheckedUpdateManyInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountCountOrderByAggregateInput = {
@@ -428,6 +466,8 @@ export type AccountCountOrderByAggregateInput = {
   phone_verified?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  verification_token?: Prisma.SortOrder
+  verification_expires_at?: Prisma.SortOrder
 }
 
 export type AccountMaxOrderByAggregateInput = {
@@ -441,6 +481,8 @@ export type AccountMaxOrderByAggregateInput = {
   phone_verified?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  verification_token?: Prisma.SortOrder
+  verification_expires_at?: Prisma.SortOrder
 }
 
 export type AccountMinOrderByAggregateInput = {
@@ -454,6 +496,8 @@ export type AccountMinOrderByAggregateInput = {
   phone_verified?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  verification_token?: Prisma.SortOrder
+  verification_expires_at?: Prisma.SortOrder
 }
 
 export type AccountScalarRelationFilter = {
@@ -475,6 +519,10 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type AccountCreateNestedOneWithoutAdminInput = {
@@ -572,6 +620,8 @@ export type AccountCreateWithoutAdminInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -590,6 +640,8 @@ export type AccountUncheckedCreateWithoutAdminInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -624,6 +676,8 @@ export type AccountUpdateWithoutAdminInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -642,6 +696,8 @@ export type AccountUncheckedUpdateWithoutAdminInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -660,6 +716,8 @@ export type AccountCreateWithoutOwnerInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -678,6 +736,8 @@ export type AccountUncheckedCreateWithoutOwnerInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -712,6 +772,8 @@ export type AccountUpdateWithoutOwnerInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -730,6 +792,8 @@ export type AccountUncheckedUpdateWithoutOwnerInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -748,6 +812,8 @@ export type AccountCreateWithoutPlayerInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -766,6 +832,8 @@ export type AccountUncheckedCreateWithoutPlayerInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -800,6 +868,8 @@ export type AccountUpdateWithoutPlayerInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -818,6 +888,8 @@ export type AccountUncheckedUpdateWithoutPlayerInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -836,6 +908,8 @@ export type AccountCreateWithoutRefresh_tokensInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -854,6 +928,8 @@ export type AccountUncheckedCreateWithoutRefresh_tokensInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -888,6 +964,8 @@ export type AccountUpdateWithoutRefresh_tokensInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -906,6 +984,8 @@ export type AccountUncheckedUpdateWithoutRefresh_tokensInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -924,6 +1004,8 @@ export type AccountCreateWithoutSocial_accountsInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -942,6 +1024,8 @@ export type AccountUncheckedCreateWithoutSocial_accountsInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -976,6 +1060,8 @@ export type AccountUpdateWithoutSocial_accountsInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -994,6 +1080,8 @@ export type AccountUncheckedUpdateWithoutSocial_accountsInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -1012,6 +1100,8 @@ export type AccountCreateWithoutNotificationsInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -1030,6 +1120,8 @@ export type AccountUncheckedCreateWithoutNotificationsInput = {
   phone_verified?: boolean
   created_at?: Date | string
   updated_at?: Date | string
+  verification_token?: string | null
+  verification_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -1064,6 +1156,8 @@ export type AccountUpdateWithoutNotificationsInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -1082,6 +1176,8 @@ export type AccountUncheckedUpdateWithoutNotificationsInput = {
   phone_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -1149,6 +1245,8 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   phone_verified?: boolean
   created_at?: boolean
   updated_at?: boolean
+  verification_token?: boolean
+  verification_expires_at?: boolean
   social_accounts?: boolean | Prisma.Account$social_accountsArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.Account$refresh_tokensArgs<ExtArgs>
   notifications?: boolean | Prisma.Account$notificationsArgs<ExtArgs>
@@ -1169,6 +1267,8 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phone_verified?: boolean
   created_at?: boolean
   updated_at?: boolean
+  verification_token?: boolean
+  verification_expires_at?: boolean
 }, ExtArgs["result"]["account"]>
 
 export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1182,6 +1282,8 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   phone_verified?: boolean
   created_at?: boolean
   updated_at?: boolean
+  verification_token?: boolean
+  verification_expires_at?: boolean
 }, ExtArgs["result"]["account"]>
 
 export type AccountSelectScalar = {
@@ -1195,9 +1297,11 @@ export type AccountSelectScalar = {
   phone_verified?: boolean
   created_at?: boolean
   updated_at?: boolean
+  verification_token?: boolean
+  verification_expires_at?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at" | "verification_token" | "verification_expires_at", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   social_accounts?: boolean | Prisma.Account$social_accountsArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.Account$refresh_tokensArgs<ExtArgs>
@@ -1231,6 +1335,8 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     phone_verified: boolean
     created_at: Date
     updated_at: Date
+    verification_token: string | null
+    verification_expires_at: Date | null
   }, ExtArgs["result"]["account"]>
   composites: {}
 }
@@ -1670,6 +1776,8 @@ export interface AccountFieldRefs {
   readonly phone_verified: Prisma.FieldRef<"Account", 'Boolean'>
   readonly created_at: Prisma.FieldRef<"Account", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Account", 'DateTime'>
+  readonly verification_token: Prisma.FieldRef<"Account", 'String'>
+  readonly verification_expires_at: Prisma.FieldRef<"Account", 'DateTime'>
 }
     
 

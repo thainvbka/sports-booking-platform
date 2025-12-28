@@ -638,10 +638,6 @@ export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type BookingCreateNestedOneWithoutPaymentInput = {
   create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
   connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput

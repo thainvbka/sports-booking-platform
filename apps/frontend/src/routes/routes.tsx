@@ -17,6 +17,7 @@ import { PlayerBookingsPage } from "@/pages/player/BookingPage";
 import { SearchPage } from "@/pages/SearchPage";
 import BookingReviewPage from "@/pages/booking/BookingReviewPage";
 import RecurringBookingReviewPage from "@/pages/booking/RecurringBookingReviewPage";
+import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
 
 export const router = createBrowserRouter([
   {
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
       {
         path: "register",
         element: <RegisterPage />,
+      },
+      {
+        path: "verify-email",
+        element: <VerifyEmailPage />,
       },
     ],
   },

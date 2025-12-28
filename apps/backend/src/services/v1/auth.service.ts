@@ -11,6 +11,8 @@ import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
 import { registerInput } from "@sports-booking-platform/validation/access.schema";
 import { addRoleInput } from "@sports-booking-platform/validation/account.schema";
 import { getUserRolesAndProfiles } from "../../helpers";
+import { sendActivationEmail } from "../../libs/mailer";
+import crypto from "crypto";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
@@ -63,6 +65,10 @@ export const signUp = async (userData: registerInput) => {
 
   const hashPassword = await bcrypt.hash(userData.password, 10);
 
+  //tạo mã xác thực email
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // Hết hạn sau 24h
+
   //transaction tạo account và role account
   const newUser = await prisma.$transaction(async (tx) => {
     const account = await tx.account.create({
@@ -72,14 +78,17 @@ export const signUp = async (userData: registerInput) => {
         full_name: userData.full_name,
         phone_number: userData.phone_number,
         avatar: userData.avatar,
+        email_verified: false,
+        verification_token: verificationToken,
+        verification_expires_at: tokenExpiry,
       },
-      select: {
-        id: true,
-        email: true,
-        full_name: true,
-        phone_number: true,
-        avatar: true,
-      },
+      // select: {
+      //   id: true,
+      //   email: true,
+      //   full_name: true,
+      //   phone_number: true,
+      //   avatar: true,
+      // },
     });
 
     const createRoleAccount = roleCreationStrategy[userData.role];
@@ -95,30 +104,101 @@ export const signUp = async (userData: registerInput) => {
     return account;
   });
 
+  //gửi email xác thực
+  sendActivationEmail(newUser.email, verificationToken).catch((error) => {
+    console.error(
+      `Failed to send activation email to ${newUser.email}: `,
+      error
+    );
+  });
+
   //fetch roles và profiles
-  const { roles, profiles } = await getUserRolesAndProfiles(newUser.id);
+  // const { roles, profiles } = await getUserRolesAndProfiles(newUser.id);
 
   //tạo payload cho jwt
+  // const jwtPayload: JwtPayload = {
+  //   accountId: newUser.id,
+  //   roles,
+  //   profiles,
+  // };
+
+  // const accessToken = generateAccessToken(jwtPayload);
+  // const refreshToken = generateRefreshToken(newUser.id);
+
+  // await prisma.refreshToken.create({
+  //   data: {
+  //     token: refreshToken,
+  //     account_id: newUser.id,
+  //     expires_at: getRefreshExpiryDate(),
+  //   },
+  // });
+
+  return {
+    needVerify: true,
+    // user: {
+    //   ...newUser,
+    //   roles,
+    //   profiles,
+    // },
+  };
+};
+
+export const verifyEmail = async (token: string) => {
+  const account = await prisma.account.findFirst({
+    where: {
+      verification_token: token,
+      verification_expires_at: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!account) {
+    throw new ConflictRequestError("Invalid or expired verification token");
+  }
+
+  const updatedAccount = await prisma.account.update({
+    where: {
+      id: account.id,
+    },
+    data: {
+      email_verified: true,
+      verification_token: null,
+      verification_expires_at: null,
+    },
+    select: {
+      id: true,
+      email: true,
+      full_name: true,
+      phone_number: true,
+      avatar: true,
+    },
+  });
+
+  //fetch roles và profiles
+  const { roles, profiles } = await getUserRolesAndProfiles(updatedAccount.id);
+
+  // tạo payload cho jwt
   const jwtPayload: JwtPayload = {
-    accountId: newUser.id,
+    accountId: updatedAccount.id,
     roles,
     profiles,
   };
 
   const accessToken = generateAccessToken(jwtPayload);
-  const refreshToken = generateRefreshToken(newUser.id);
+  const refreshToken = generateRefreshToken(updatedAccount.id);
 
   await prisma.refreshToken.create({
     data: {
       token: refreshToken,
-      account_id: newUser.id,
+      account_id: updatedAccount.id,
       expires_at: getRefreshExpiryDate(),
     },
   });
 
   return {
     user: {
-      ...newUser,
+      ...updatedAccount,
       roles,
       profiles,
     },
@@ -140,6 +220,12 @@ export const logIn = async (email: string, password: string) => {
 
   if (!isPasswordValid) {
     throw new ConflictRequestError("Invalid email or password");
+  }
+
+  if (!user.email_verified) {
+    throw new UnauthorizedError(
+      "Account has not been activated. Please check your email."
+    );
   }
 
   //fetch roles và profiles

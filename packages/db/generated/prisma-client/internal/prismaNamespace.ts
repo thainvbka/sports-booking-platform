@@ -1431,7 +1431,9 @@ export const AccountScalarFieldEnum = {
   email_verified: 'email_verified',
   phone_verified: 'phone_verified',
   created_at: 'created_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  verification_token: 'verification_token',
+  verification_expires_at: 'verification_expires_at'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]

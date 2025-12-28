@@ -17,6 +17,10 @@ const config = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  MAIL_HOST: process.env.MAIL_HOST,
+  MAIL_PORT: process.env.MAIL_PORT,
+  MAIL_USER: process.env.MAIL_USER,
+  MAIL_PASS: process.env.MAIL_PASS,
 };
 
 export default config;

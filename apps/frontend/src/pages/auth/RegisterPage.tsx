@@ -11,12 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Loader2 } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register: registerUser, isLoading, error } = useAuthStore();
   const [role, setRole] = useState<"PLAYER" | "OWNER">("PLAYER");
+
+  // State để quản lý việc hiện thông báo thành công
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [emailSent, setEmailSent] = useState("");
 
   const {
     register,
@@ -46,16 +50,38 @@ export function RegisterPage() {
     try {
       await registerUser(data);
 
-      if (data.role === "OWNER") {
-        navigate("/owner");
-      } else {
-        navigate("/");
-      }
+      //nếu thành công thì set state để thông báo
+      setEmailSent(data.email);
+      setIsSuccess(true);
     } catch (err) {
       // Error is handled in store
       console.error("Registration failed", err);
     }
   };
+
+  // trang hiện thông báo đăng ký thành công
+  if (isSuccess) {
+    return (
+      <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-full">
+            <MailCheck className="w-12 h-12 text-green-600 dark:text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold">Kiểm tra email của bạn</h2>
+          <p className="text-muted-foreground max-w-sm mx-auto">
+            Chúng tôi đã gửi link kích hoạt đến <strong>{emailSent}</strong>.
+            <br />
+            Vui lòng kiểm tra hòm thư (kể cả mục Spam) để hoàn tất đăng ký.
+          </p>
+          <div className="pt-4">
+            <Link to="/auth/login">
+              <Button variant="outline">Quay lại đăng nhập</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
