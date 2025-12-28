@@ -5,6 +5,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import stripe from "../../libs/stripe";
+import { config } from "../../configs";
 
 // Tạo Stripe Connect Account cho Owner
 export const createConnectAccount = async (ownerId: string) => {
@@ -51,8 +52,8 @@ export const createConnectAccount = async (ownerId: string) => {
 
   const accountLink = await stripe.accountLinks.create({
     account: account.id,
-    refresh_url: `${process.env.CORS_ORIGIN}/owner`,
-    return_url: `${process.env.CORS_ORIGIN}/owner/payment-setup-success`, //goi Api de update onboarding complete
+    refresh_url: `${config.CORS_ORIGIN}/owner`,
+    return_url: `${config.CORS_ORIGIN}/owner/payment-setup-success`, //goi Api de update onboarding complete
     type: "account_onboarding",
   });
 

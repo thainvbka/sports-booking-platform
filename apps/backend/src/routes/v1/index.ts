@@ -6,6 +6,7 @@ import subfieldRouter from "./subfield.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
 import publicRouter from "./public.routes";
 import bookingRouter from "./booking.routes";
+import { authLimiter, apiLimiter } from "../../libs/rate_limit";
 
 const router = Router();
 
@@ -13,12 +14,12 @@ router.get("/", (_req, res) => {
   res.json({ message: "API v1 is running" });
 });
 
-router.use("/public", publicRouter);
-router.use("/auth", authRouter);
-router.use("/account", accountRouter);
-router.use("/complexes", complexRouter);
-router.use("/sub-fields", subfieldRouter);
-router.use("/pricing-rules", pricingRuleRouter);
-router.use("/bookings", bookingRouter);
+router.use("/public", apiLimiter, publicRouter);
+router.use("/auth", authLimiter, authRouter);
+router.use("/account", apiLimiter, accountRouter);
+router.use("/complexes", apiLimiter, complexRouter);
+router.use("/sub-fields", apiLimiter, subfieldRouter);
+router.use("/pricing-rules", apiLimiter, pricingRuleRouter);
+router.use("/bookings", apiLimiter, bookingRouter);
 
 export default router;
