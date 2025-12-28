@@ -1,4 +1,5 @@
 import { api as axiosInstance } from "@/lib/axios";
+import { BookingStatus } from "@/types";
 
 // Types based on the backend schemas/responses
 export interface CreateBookingData {
@@ -25,6 +26,10 @@ export interface BookingReviewResponse {
   complex_address: string;
   sport_type: string;
   sub_field_name: string;
+}
+
+export interface BookingResponse extends BookingReviewResponse {
+  status: BookingStatus;
 }
 
 export interface RecurringBookingReviewResponse {
@@ -84,5 +89,10 @@ export const bookingService = {
     );
 
     return response.data.data;
+  },
+
+  getAllBookings: async () => {
+    const response = await axiosInstance.get(`/bookings`);
+    return response.data.data.bookings as BookingResponse[];
   },
 };

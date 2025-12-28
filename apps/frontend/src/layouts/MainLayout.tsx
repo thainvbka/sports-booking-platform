@@ -23,6 +23,7 @@ export function MainLayout() {
   const NavItems = ({ mobile = false }: { mobile?: boolean }) => {
     const items = [
       { label: "Tìm sân", href: "/search" },
+      { label: "Lịch đặt sân", href: "/bookings" },
       { label: "Về chúng tôi", href: "/about" },
       { label: "Liên hệ", href: "/contact" },
     ];

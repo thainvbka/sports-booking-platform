@@ -1,14 +1,24 @@
-import { getPlayerBookings, formatPrice } from "@/services/mockData";
+import { formatPrice } from "@/services/mockData";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { BookingStatus } from "@/types";
+import { bookingService } from "@/services/booking.service";
+import { useEffect, useState } from "react";
+import type { BookingResponse } from "@/services/booking.service";
 
 export function PlayerBookingsPage() {
-  // Mock player ID for now, in real app use user.id
-  const bookings = getPlayerBookings("player-1");
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    bookingService.getAllBookings().then((data) => {
+      setBookings(data);
+      setLoading(false);
+    });
+  }, []);
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -43,16 +53,18 @@ export function PlayerBookingsPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Lịch sử đặt sân</h1>
 
-      {bookings.length > 0 ? (
+      {loading ? (
+        <div className="text-center py-16">Đang tải...</div>
+      ) : bookings.length > 0 ? (
         <div className="space-y-4">
           {bookings.map((booking) => (
             <Card key={booking.id} className="overflow-hidden">
               <CardHeader className="bg-muted/30 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    {booking.sub_field.complex_name}
+                    {booking.complex_name}
                     <span className="text-muted-foreground font-normal text-sm">
-                      - {booking.sub_field.sub_field_name}
+                      - {booking.sub_field_name}
                     </span>
                   </CardTitle>
                   <Badge className={getStatusColor(booking.status)}>
@@ -78,11 +90,8 @@ export function PlayerBookingsPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span
-                    className="truncate"
-                    title={booking.sub_field.complex_address}
-                  >
-                    {booking.sub_field.complex_address}
+                  <span className="truncate" title={booking.complex_address}>
+                    {booking.complex_address}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-semibold">
