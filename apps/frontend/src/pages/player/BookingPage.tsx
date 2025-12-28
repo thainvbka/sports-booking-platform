@@ -7,6 +7,8 @@ import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { BookingStatus } from "@/types";
 import { bookingService } from "@/services/booking.service";
 import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import type { BookingResponse } from "@/services/booking.service";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -19,13 +21,28 @@ export function PlayerBookingsPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null
   );
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  // Lấy page từ URL khi load lần đầu
   useEffect(() => {
-    bookingService.getAllBookings().then((data) => {
-      setBookings(data);
+    const urlPage = parseInt(searchParams.get("page") || "1");
+    setPage(urlPage);
+  }, []);
+
+  // Fetch bookings khi page thay đổi
+  useEffect(() => {
+    setLoading(true);
+    bookingService.getAllBookings(page).then((res) => {
+      setBookings(res.bookings || []);
+      setTotalPages(res.pagination?.totalPages || 1);
       setLoading(false);
     });
-  }, []);
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", String(page));
+    setSearchParams(params);
+  }, [page]);
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -82,7 +99,7 @@ export function PlayerBookingsPage() {
 
   const handleCancel = async () => {
     if (!selectedBookingId) return;
-    await bookingService.cancleBooking(selectedBookingId);
+    await bookingService.cancelBooking(selectedBookingId);
     setBookings((prev) =>
       prev.map((booking) =>
         booking.id === selectedBookingId
@@ -101,85 +118,116 @@ export function PlayerBookingsPage() {
       {loading ? (
         <div className="text-center py-16">Đang tải...</div>
       ) : bookings.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {bookings.map((booking) => (
-            <Card
-              key={booking.id}
-              className="overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
-            >
-              <CardHeader className="bg-muted/40 pb-2 px-6 pt-5 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    {booking.complex_name}
-                  </CardTitle>
-                  <Badge className={getStatusColor(booking.status)}>
-                    {getStatusLabel(booking.status)}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
-                  <span>{booking.sub_field_name}</span>
-                  <span className="mx-1">•</span>
-                  <span>{getSportTypeLabel(booking.sport_type)}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 pt-3 pb-5 flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span>
-                      {format(
-                        new Date(booking.start_time),
-                        "EEEE, dd/MM/yyyy",
-                        { locale: vi }
-                      )}
-                    </span>
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {bookings.map((booking) => (
+              <Card
+                key={booking.id}
+                className="overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
+              >
+                <CardHeader className="bg-muted/40 pb-2 px-6 pt-5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      {booking.complex_name}
+                    </CardTitle>
+                    <Badge className={getStatusColor(booking.status)}>
+                      {getStatusLabel(booking.status)}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span>
-                      {format(new Date(booking.start_time), "HH:mm")} -{" "}
-                      {format(new Date(booking.end_time), "HH:mm")}
-                    </span>
+                  <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
+                    <span>{booking.sub_field_name}</span>
+                    <span className="mx-1">•</span>
+                    <span>{getSportTypeLabel(booking.sport_type)}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span className="truncate" title={booking.complex_address}>
-                      {booking.complex_address}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-2 text-base font-semibold">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                    <span className="text-lg">
-                      {formatPrice(booking.total_price)}
-                    </span>
-                  </div>
-                  {booking.status === BookingStatus.PENDING && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="px-4 py-2 text-sm"
-                        onClick={() => {
-                          setSelectedBookingId(booking.id);
-                          setDeleteDialogOpen(true);
-                        }}
-                      >
-                        Hủy đặt sân
-                      </Button>
-                      <Button
-                        className="px-4 py-2 text-sm font-bold"
-                        onClick={handlePayment}
-                      >
-                        Thanh toán
-                      </Button>
+                </CardHeader>
+                <CardContent className="px-6 pt-3 pb-5 flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span>
+                        {format(
+                          new Date(booking.start_time),
+                          "EEEE, dd/MM/yyyy",
+                          { locale: vi }
+                        )}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span>
+                        {format(new Date(booking.start_time), "HH:mm")} -{" "}
+                        {format(new Date(booking.end_time), "HH:mm")}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span
+                        className="truncate"
+                        title={booking.complex_address}
+                      >
+                        {booking.complex_address}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2 text-base font-semibold">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <span className="text-lg">
+                        {formatPrice(booking.total_price)}
+                      </span>
+                    </div>
+                    {booking.status === BookingStatus.PENDING && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="px-4 py-2 text-sm"
+                          onClick={() => {
+                            setSelectedBookingId(booking.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          Hủy đặt sân
+                        </Button>
+                        <Button
+                          className="px-4 py-2 text-sm font-bold"
+                          onClick={handlePayment}
+                        >
+                          Thanh toán
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Trước
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Trang {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages}
+              >
+                Sau
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-16 border rounded-lg bg-muted/10">
           <p className="text-muted-foreground">Bạn chưa có lịch đặt sân nào.</p>

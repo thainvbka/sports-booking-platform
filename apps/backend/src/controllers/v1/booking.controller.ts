@@ -100,9 +100,11 @@ export const getPlayerBookingsController = async (
   res: Response
 ) => {
   const playerId = req.user?.profiles.playerId as string;
-  const bookings = await getPlayerBookings(playerId);
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 6;
+  const result = await getPlayerBookings(playerId, page, limit);
   return new SuccessResponse({
     message: "Player bookings retrieved successfully",
-    data: { bookings },
+    data: result,
   }).send(res);
 };

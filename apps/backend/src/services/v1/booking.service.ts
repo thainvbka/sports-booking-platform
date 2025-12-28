@@ -395,7 +395,11 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
 };
 
 //get player bookings
-export const getPlayerBookings = async (player_id: string) => {
+export const getPlayerBookings = async (
+  player_id: string,
+  page = 1,
+  limit = 6
+) => {
   //check player exists
   const player = await prisma.player.findUnique({
     where: { id: player_id, status: "ACTIVE" },
@@ -404,32 +408,51 @@ export const getPlayerBookings = async (player_id: string) => {
     throw new ForbiddenError("You are not allowed to view bookings");
   }
 
-  const bookings = await prisma.booking.findMany({
-    where: { player_id: player_id },
-    select: {
-      id: true,
-      start_time: true,
-      end_time: true,
-      total_price: true,
-      status: true,
-      sub_field: {
-        select: {
-          sub_field_name: true,
-          sport_type: true,
-          complex: {
-            select: {
-              complex_name: true,
-              complex_address: true,
+  const skip = (page - 1) * limit;
+
+  const [total, bookings] = await prisma.$transaction([
+    prisma.booking.count({
+      where: { player_id: player_id },
+    }),
+    prisma.booking.findMany({
+      where: { player_id: player_id },
+      select: {
+        id: true,
+        start_time: true,
+        end_time: true,
+        total_price: true,
+        status: true,
+        sub_field: {
+          select: {
+            sub_field_name: true,
+            sport_type: true,
+            complex: {
+              select: {
+                complex_name: true,
+                complex_address: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: { created_at: "desc" },
-  });
+      orderBy: { created_at: "desc" },
+      skip,
+      take: limit,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
 
   if (!bookings || bookings.length === 0) {
-    return [];
+    return {
+      bookings: [],
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 
   const formattedBookings = bookings.map((booking) => ({
@@ -444,5 +467,13 @@ export const getPlayerBookings = async (player_id: string) => {
     sub_field_name: booking.sub_field.sub_field_name,
   }));
 
-  return formattedBookings;
+  return {
+    bookings: formattedBookings,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
 };
