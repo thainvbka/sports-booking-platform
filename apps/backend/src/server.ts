@@ -7,6 +7,7 @@ import routesV1 from "./routes/v1";
 import compression from "compression";
 import errorHandler from "./middlewares/errorHandler";
 import cookieParser from "cookie-parser";
+import { startCronJobs } from "./services/v1/cron.service";
 
 const app = express();
 
@@ -50,3 +51,6 @@ app.use(errorHandler);
 app.listen(config.SERVER_PORT, () => {
   console.log(`Server is running on http://localhost:${config.SERVER_PORT}`);
 });
+
+// Start cron jobs
+startCronJobs();
