@@ -1564,6 +1564,7 @@ export const BookingScalarFieldEnum = {
   paid_at: 'paid_at',
   player_id: 'player_id',
   sub_field_id: 'sub_field_id',
+  payment_id: 'payment_id',
   recurring_booking_id: 'recurring_booking_id',
   expires_at: 'expires_at'
 } as const
@@ -1573,7 +1574,6 @@ export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeo
 
 export const PaymentScalarFieldEnum = {
   id: 'id',
-  booking_id: 'booking_id',
   amount: 'amount',
   provider: 'provider',
   transaction_code: 'transaction_code',

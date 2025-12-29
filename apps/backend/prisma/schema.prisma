@@ -240,7 +240,8 @@ model Booking {
   player               Player            @relation(fields: [player_id], references: [id], onDelete: Restrict)
   sub_field_id         String            @db.Uuid
   sub_field            SubField          @relation(fields: [sub_field_id], references: [id], onDelete: Restrict)
-  payment              Payment?
+  payment_id           String?            @db.Uuid
+  payment              Payment?          @relation(fields: [payment_id], references: [id])
   recurring_booking_id String?           @db.Uuid
   recurringBooking     RecurringBooking? @relation(fields: [recurring_booking_id], references: [id])
   expires_at           DateTime          @db.Timestamptz(0)
@@ -251,12 +252,11 @@ model Booking {
 
 model Payment {
   id               String          @id @default(uuid()) @db.Uuid
-  booking_id       String          @unique @db.Uuid
-  booking          Booking         @relation(fields: [booking_id], references: [id], onDelete: Restrict)
   amount           Decimal         @db.Decimal(10, 2)
   provider         PaymentProvider
   transaction_code String          @unique
   status           PaymentStatus
+  bookings         Booking[]         
   created_at       DateTime        @default(now()) @db.Timestamptz(0)
 }
 

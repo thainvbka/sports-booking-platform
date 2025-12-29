@@ -43,6 +43,7 @@ export type BookingMinAggregateOutputType = {
   paid_at: Date | null
   player_id: string | null
   sub_field_id: string | null
+  payment_id: string | null
   recurring_booking_id: string | null
   expires_at: Date | null
 }
@@ -57,6 +58,7 @@ export type BookingMaxAggregateOutputType = {
   paid_at: Date | null
   player_id: string | null
   sub_field_id: string | null
+  payment_id: string | null
   recurring_booking_id: string | null
   expires_at: Date | null
 }
@@ -71,6 +73,7 @@ export type BookingCountAggregateOutputType = {
   paid_at: number
   player_id: number
   sub_field_id: number
+  payment_id: number
   recurring_booking_id: number
   expires_at: number
   _all: number
@@ -95,6 +98,7 @@ export type BookingMinAggregateInputType = {
   paid_at?: true
   player_id?: true
   sub_field_id?: true
+  payment_id?: true
   recurring_booking_id?: true
   expires_at?: true
 }
@@ -109,6 +113,7 @@ export type BookingMaxAggregateInputType = {
   paid_at?: true
   player_id?: true
   sub_field_id?: true
+  payment_id?: true
   recurring_booking_id?: true
   expires_at?: true
 }
@@ -123,6 +128,7 @@ export type BookingCountAggregateInputType = {
   paid_at?: true
   player_id?: true
   sub_field_id?: true
+  payment_id?: true
   recurring_booking_id?: true
   expires_at?: true
   _all?: true
@@ -224,6 +230,7 @@ export type BookingGroupByOutputType = {
   paid_at: Date | null
   player_id: string
   sub_field_id: string
+  payment_id: string | null
   recurring_booking_id: string | null
   expires_at: Date
   _count: BookingCountAggregateOutputType | null
@@ -261,6 +268,7 @@ export type BookingWhereInput = {
   paid_at?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   player_id?: Prisma.UuidFilter<"Booking"> | string
   sub_field_id?: Prisma.UuidFilter<"Booking"> | string
+  payment_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   recurring_booking_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   expires_at?: Prisma.DateTimeFilter<"Booking"> | Date | string
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -279,6 +287,7 @@ export type BookingOrderByWithRelationInput = {
   paid_at?: Prisma.SortOrderInput | Prisma.SortOrder
   player_id?: Prisma.SortOrder
   sub_field_id?: Prisma.SortOrder
+  payment_id?: Prisma.SortOrderInput | Prisma.SortOrder
   recurring_booking_id?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrder
   player?: Prisma.PlayerOrderByWithRelationInput
@@ -300,6 +309,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   paid_at?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   player_id?: Prisma.UuidFilter<"Booking"> | string
   sub_field_id?: Prisma.UuidFilter<"Booking"> | string
+  payment_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   recurring_booking_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   expires_at?: Prisma.DateTimeFilter<"Booking"> | Date | string
   player?: Prisma.XOR<Prisma.PlayerScalarRelationFilter, Prisma.PlayerWhereInput>
@@ -318,6 +328,7 @@ export type BookingOrderByWithAggregationInput = {
   paid_at?: Prisma.SortOrderInput | Prisma.SortOrder
   player_id?: Prisma.SortOrder
   sub_field_id?: Prisma.SortOrder
+  payment_id?: Prisma.SortOrderInput | Prisma.SortOrder
   recurring_booking_id?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrder
   _count?: Prisma.BookingCountOrderByAggregateInput
@@ -340,6 +351,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   paid_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   player_id?: Prisma.UuidWithAggregatesFilter<"Booking"> | string
   sub_field_id?: Prisma.UuidWithAggregatesFilter<"Booking"> | string
+  payment_id?: Prisma.UuidNullableWithAggregatesFilter<"Booking"> | string | null
   recurring_booking_id?: Prisma.UuidNullableWithAggregatesFilter<"Booking"> | string | null
   expires_at?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
 }
@@ -355,7 +367,7 @@ export type BookingCreateInput = {
   expires_at: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutBookingsInput
   sub_field: Prisma.SubFieldCreateNestedOneWithoutBookingsInput
-  payment?: Prisma.PaymentCreateNestedOneWithoutBookingInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutBookingsInput
   recurringBooking?: Prisma.RecurringBookingCreateNestedOneWithoutBookingsInput
 }
 
@@ -369,9 +381,9 @@ export type BookingUncheckedCreateInput = {
   paid_at?: Date | string | null
   player_id: string
   sub_field_id: string
+  payment_id?: string | null
   recurring_booking_id?: string | null
   expires_at: Date | string
-  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBookingInput
 }
 
 export type BookingUpdateInput = {
@@ -385,7 +397,7 @@ export type BookingUpdateInput = {
   expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   player?: Prisma.PlayerUpdateOneRequiredWithoutBookingsNestedInput
   sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutBookingsNestedInput
-  payment?: Prisma.PaymentUpdateOneWithoutBookingNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutBookingsNestedInput
   recurringBooking?: Prisma.RecurringBookingUpdateOneWithoutBookingsNestedInput
 }
 
@@ -399,9 +411,9 @@ export type BookingUncheckedUpdateInput = {
   paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   player_id?: Prisma.StringFieldUpdateOperationsInput | string
   sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  payment?: Prisma.PaymentUncheckedUpdateOneWithoutBookingNestedInput
 }
 
 export type BookingCreateManyInput = {
@@ -414,6 +426,7 @@ export type BookingCreateManyInput = {
   paid_at?: Date | string | null
   player_id: string
   sub_field_id: string
+  payment_id?: string | null
   recurring_booking_id?: string | null
   expires_at: Date | string
 }
@@ -439,6 +452,7 @@ export type BookingUncheckedUpdateManyInput = {
   paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   player_id?: Prisma.StringFieldUpdateOperationsInput | string
   sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -463,6 +477,7 @@ export type BookingCountOrderByAggregateInput = {
   paid_at?: Prisma.SortOrder
   player_id?: Prisma.SortOrder
   sub_field_id?: Prisma.SortOrder
+  payment_id?: Prisma.SortOrder
   recurring_booking_id?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
 }
@@ -481,6 +496,7 @@ export type BookingMaxOrderByAggregateInput = {
   paid_at?: Prisma.SortOrder
   player_id?: Prisma.SortOrder
   sub_field_id?: Prisma.SortOrder
+  payment_id?: Prisma.SortOrder
   recurring_booking_id?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
 }
@@ -495,17 +511,13 @@ export type BookingMinOrderByAggregateInput = {
   paid_at?: Prisma.SortOrder
   player_id?: Prisma.SortOrder
   sub_field_id?: Prisma.SortOrder
+  payment_id?: Prisma.SortOrder
   recurring_booking_id?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
 }
 
 export type BookingSumOrderByAggregateInput = {
   total_price?: Prisma.SortOrder
-}
-
-export type BookingScalarRelationFilter = {
-  is?: Prisma.BookingWhereInput
-  isNot?: Prisma.BookingWhereInput
 }
 
 export type BookingCreateNestedManyWithoutPlayerInput = {
@@ -638,18 +650,46 @@ export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
 
-export type BookingCreateNestedOneWithoutPaymentInput = {
-  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
-  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput
-  connect?: Prisma.BookingWhereUniqueInput
+export type BookingCreateNestedManyWithoutPaymentInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput> | Prisma.BookingCreateWithoutPaymentInput[] | Prisma.BookingUncheckedCreateWithoutPaymentInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput | Prisma.BookingCreateOrConnectWithoutPaymentInput[]
+  createMany?: Prisma.BookingCreateManyPaymentInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
 }
 
-export type BookingUpdateOneRequiredWithoutPaymentNestedInput = {
-  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
-  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput
-  upsert?: Prisma.BookingUpsertWithoutPaymentInput
-  connect?: Prisma.BookingWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutPaymentInput, Prisma.BookingUpdateWithoutPaymentInput>, Prisma.BookingUncheckedUpdateWithoutPaymentInput>
+export type BookingUncheckedCreateNestedManyWithoutPaymentInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput> | Prisma.BookingCreateWithoutPaymentInput[] | Prisma.BookingUncheckedCreateWithoutPaymentInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput | Prisma.BookingCreateOrConnectWithoutPaymentInput[]
+  createMany?: Prisma.BookingCreateManyPaymentInputEnvelope
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+}
+
+export type BookingUpdateManyWithoutPaymentNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput> | Prisma.BookingCreateWithoutPaymentInput[] | Prisma.BookingUncheckedCreateWithoutPaymentInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput | Prisma.BookingCreateOrConnectWithoutPaymentInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutPaymentInput | Prisma.BookingUpsertWithWhereUniqueWithoutPaymentInput[]
+  createMany?: Prisma.BookingCreateManyPaymentInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutPaymentInput | Prisma.BookingUpdateWithWhereUniqueWithoutPaymentInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutPaymentInput | Prisma.BookingUpdateManyWithWhereWithoutPaymentInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
+}
+
+export type BookingUncheckedUpdateManyWithoutPaymentNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput> | Prisma.BookingCreateWithoutPaymentInput[] | Prisma.BookingUncheckedCreateWithoutPaymentInput[]
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutPaymentInput | Prisma.BookingCreateOrConnectWithoutPaymentInput[]
+  upsert?: Prisma.BookingUpsertWithWhereUniqueWithoutPaymentInput | Prisma.BookingUpsertWithWhereUniqueWithoutPaymentInput[]
+  createMany?: Prisma.BookingCreateManyPaymentInputEnvelope
+  set?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  disconnect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  delete?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  connect?: Prisma.BookingWhereUniqueInput | Prisma.BookingWhereUniqueInput[]
+  update?: Prisma.BookingUpdateWithWhereUniqueWithoutPaymentInput | Prisma.BookingUpdateWithWhereUniqueWithoutPaymentInput[]
+  updateMany?: Prisma.BookingUpdateManyWithWhereWithoutPaymentInput | Prisma.BookingUpdateManyWithWhereWithoutPaymentInput[]
+  deleteMany?: Prisma.BookingScalarWhereInput | Prisma.BookingScalarWhereInput[]
 }
 
 export type BookingCreateWithoutPlayerInput = {
@@ -662,7 +702,7 @@ export type BookingCreateWithoutPlayerInput = {
   paid_at?: Date | string | null
   expires_at: Date | string
   sub_field: Prisma.SubFieldCreateNestedOneWithoutBookingsInput
-  payment?: Prisma.PaymentCreateNestedOneWithoutBookingInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutBookingsInput
   recurringBooking?: Prisma.RecurringBookingCreateNestedOneWithoutBookingsInput
 }
 
@@ -675,9 +715,9 @@ export type BookingUncheckedCreateWithoutPlayerInput = {
   created_at?: Date | string
   paid_at?: Date | string | null
   sub_field_id: string
+  payment_id?: string | null
   recurring_booking_id?: string | null
   expires_at: Date | string
-  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutPlayerInput = {
@@ -719,6 +759,7 @@ export type BookingScalarWhereInput = {
   paid_at?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   player_id?: Prisma.UuidFilter<"Booking"> | string
   sub_field_id?: Prisma.UuidFilter<"Booking"> | string
+  payment_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   recurring_booking_id?: Prisma.UuidNullableFilter<"Booking"> | string | null
   expires_at?: Prisma.DateTimeFilter<"Booking"> | Date | string
 }
@@ -733,7 +774,7 @@ export type BookingCreateWithoutSub_fieldInput = {
   paid_at?: Date | string | null
   expires_at: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutBookingsInput
-  payment?: Prisma.PaymentCreateNestedOneWithoutBookingInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutBookingsInput
   recurringBooking?: Prisma.RecurringBookingCreateNestedOneWithoutBookingsInput
 }
 
@@ -746,9 +787,9 @@ export type BookingUncheckedCreateWithoutSub_fieldInput = {
   created_at?: Date | string
   paid_at?: Date | string | null
   player_id: string
+  payment_id?: string | null
   recurring_booking_id?: string | null
   expires_at: Date | string
-  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutSub_fieldInput = {
@@ -788,7 +829,7 @@ export type BookingCreateWithoutRecurringBookingInput = {
   expires_at: Date | string
   player: Prisma.PlayerCreateNestedOneWithoutBookingsInput
   sub_field: Prisma.SubFieldCreateNestedOneWithoutBookingsInput
-  payment?: Prisma.PaymentCreateNestedOneWithoutBookingInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutBookingsInput
 }
 
 export type BookingUncheckedCreateWithoutRecurringBookingInput = {
@@ -801,8 +842,8 @@ export type BookingUncheckedCreateWithoutRecurringBookingInput = {
   paid_at?: Date | string | null
   player_id: string
   sub_field_id: string
+  payment_id?: string | null
   expires_at: Date | string
-  payment?: Prisma.PaymentUncheckedCreateNestedOneWithoutBookingInput
 }
 
 export type BookingCreateOrConnectWithoutRecurringBookingInput = {
@@ -864,15 +905,207 @@ export type BookingCreateOrConnectWithoutPaymentInput = {
   create: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
 }
 
-export type BookingUpsertWithoutPaymentInput = {
-  update: Prisma.XOR<Prisma.BookingUpdateWithoutPaymentInput, Prisma.BookingUncheckedUpdateWithoutPaymentInput>
-  create: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
-  where?: Prisma.BookingWhereInput
+export type BookingCreateManyPaymentInputEnvelope = {
+  data: Prisma.BookingCreateManyPaymentInput | Prisma.BookingCreateManyPaymentInput[]
+  skipDuplicates?: boolean
 }
 
-export type BookingUpdateToOneWithWhereWithoutPaymentInput = {
-  where?: Prisma.BookingWhereInput
+export type BookingUpsertWithWhereUniqueWithoutPaymentInput = {
+  where: Prisma.BookingWhereUniqueInput
+  update: Prisma.XOR<Prisma.BookingUpdateWithoutPaymentInput, Prisma.BookingUncheckedUpdateWithoutPaymentInput>
+  create: Prisma.XOR<Prisma.BookingCreateWithoutPaymentInput, Prisma.BookingUncheckedCreateWithoutPaymentInput>
+}
+
+export type BookingUpdateWithWhereUniqueWithoutPaymentInput = {
+  where: Prisma.BookingWhereUniqueInput
   data: Prisma.XOR<Prisma.BookingUpdateWithoutPaymentInput, Prisma.BookingUncheckedUpdateWithoutPaymentInput>
+}
+
+export type BookingUpdateManyWithWhereWithoutPaymentInput = {
+  where: Prisma.BookingScalarWhereInput
+  data: Prisma.XOR<Prisma.BookingUpdateManyMutationInput, Prisma.BookingUncheckedUpdateManyWithoutPaymentInput>
+}
+
+export type BookingCreateManyPlayerInput = {
+  id?: string
+  start_time: Date | string
+  end_time: Date | string
+  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status: $Enums.BookingStatus
+  created_at?: Date | string
+  paid_at?: Date | string | null
+  sub_field_id: string
+  payment_id?: string | null
+  recurring_booking_id?: string | null
+  expires_at: Date | string
+}
+
+export type BookingUpdateWithoutPlayerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutBookingsNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutBookingsNestedInput
+  recurringBooking?: Prisma.RecurringBookingUpdateOneWithoutBookingsNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutPlayerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingUncheckedUpdateManyWithoutPlayerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingCreateManySub_fieldInput = {
+  id?: string
+  start_time: Date | string
+  end_time: Date | string
+  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status: $Enums.BookingStatus
+  created_at?: Date | string
+  paid_at?: Date | string | null
+  player_id: string
+  payment_id?: string | null
+  recurring_booking_id?: string | null
+  expires_at: Date | string
+}
+
+export type BookingUpdateWithoutSub_fieldInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  player?: Prisma.PlayerUpdateOneRequiredWithoutBookingsNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutBookingsNestedInput
+  recurringBooking?: Prisma.RecurringBookingUpdateOneWithoutBookingsNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutSub_fieldInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  player_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingUncheckedUpdateManyWithoutSub_fieldInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  player_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingCreateManyRecurringBookingInput = {
+  id?: string
+  start_time: Date | string
+  end_time: Date | string
+  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status: $Enums.BookingStatus
+  created_at?: Date | string
+  paid_at?: Date | string | null
+  player_id: string
+  sub_field_id: string
+  payment_id?: string | null
+  expires_at: Date | string
+}
+
+export type BookingUpdateWithoutRecurringBookingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  player?: Prisma.PlayerUpdateOneRequiredWithoutBookingsNestedInput
+  sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutBookingsNestedInput
+  payment?: Prisma.PaymentUpdateOneWithoutBookingsNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutRecurringBookingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  player_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingUncheckedUpdateManyWithoutRecurringBookingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  player_id?: Prisma.StringFieldUpdateOperationsInput | string
+  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  payment_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingCreateManyPaymentInput = {
+  id?: string
+  start_time: Date | string
+  end_time: Date | string
+  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status: $Enums.BookingStatus
+  created_at?: Date | string
+  paid_at?: Date | string | null
+  player_id: string
+  sub_field_id: string
+  recurring_booking_id?: string | null
+  expires_at: Date | string
 }
 
 export type BookingUpdateWithoutPaymentInput = {
@@ -903,142 +1136,7 @@ export type BookingUncheckedUpdateWithoutPaymentInput = {
   expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type BookingCreateManyPlayerInput = {
-  id?: string
-  start_time: Date | string
-  end_time: Date | string
-  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: $Enums.BookingStatus
-  created_at?: Date | string
-  paid_at?: Date | string | null
-  sub_field_id: string
-  recurring_booking_id?: string | null
-  expires_at: Date | string
-}
-
-export type BookingUpdateWithoutPlayerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutBookingsNestedInput
-  payment?: Prisma.PaymentUpdateOneWithoutBookingNestedInput
-  recurringBooking?: Prisma.RecurringBookingUpdateOneWithoutBookingsNestedInput
-}
-
-export type BookingUncheckedUpdateWithoutPlayerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
-  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  payment?: Prisma.PaymentUncheckedUpdateOneWithoutBookingNestedInput
-}
-
-export type BookingUncheckedUpdateManyWithoutPlayerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
-  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type BookingCreateManySub_fieldInput = {
-  id?: string
-  start_time: Date | string
-  end_time: Date | string
-  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: $Enums.BookingStatus
-  created_at?: Date | string
-  paid_at?: Date | string | null
-  player_id: string
-  recurring_booking_id?: string | null
-  expires_at: Date | string
-}
-
-export type BookingUpdateWithoutSub_fieldInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  player?: Prisma.PlayerUpdateOneRequiredWithoutBookingsNestedInput
-  payment?: Prisma.PaymentUpdateOneWithoutBookingNestedInput
-  recurringBooking?: Prisma.RecurringBookingUpdateOneWithoutBookingsNestedInput
-}
-
-export type BookingUncheckedUpdateWithoutSub_fieldInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  player_id?: Prisma.StringFieldUpdateOperationsInput | string
-  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  payment?: Prisma.PaymentUncheckedUpdateOneWithoutBookingNestedInput
-}
-
-export type BookingUncheckedUpdateManyWithoutSub_fieldInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  player_id?: Prisma.StringFieldUpdateOperationsInput | string
-  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type BookingCreateManyRecurringBookingInput = {
-  id?: string
-  start_time: Date | string
-  end_time: Date | string
-  total_price: runtime.Decimal | runtime.DecimalJsLike | number | string
-  status: $Enums.BookingStatus
-  created_at?: Date | string
-  paid_at?: Date | string | null
-  player_id: string
-  sub_field_id: string
-  expires_at: Date | string
-}
-
-export type BookingUpdateWithoutRecurringBookingInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  player?: Prisma.PlayerUpdateOneRequiredWithoutBookingsNestedInput
-  sub_field?: Prisma.SubFieldUpdateOneRequiredWithoutBookingsNestedInput
-  payment?: Prisma.PaymentUpdateOneWithoutBookingNestedInput
-}
-
-export type BookingUncheckedUpdateWithoutRecurringBookingInput = {
+export type BookingUncheckedUpdateManyWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1048,20 +1146,7 @@ export type BookingUncheckedUpdateWithoutRecurringBookingInput = {
   paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   player_id?: Prisma.StringFieldUpdateOperationsInput | string
   sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
-  expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  payment?: Prisma.PaymentUncheckedUpdateOneWithoutBookingNestedInput
-}
-
-export type BookingUncheckedUpdateManyWithoutRecurringBookingInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  total_price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  paid_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  player_id?: Prisma.StringFieldUpdateOperationsInput | string
-  sub_field_id?: Prisma.StringFieldUpdateOperationsInput | string
+  recurring_booking_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expires_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1077,6 +1162,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   paid_at?: boolean
   player_id?: boolean
   sub_field_id?: boolean
+  payment_id?: boolean
   recurring_booking_id?: boolean
   expires_at?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
@@ -1095,10 +1181,12 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paid_at?: boolean
   player_id?: boolean
   sub_field_id?: boolean
+  payment_id?: boolean
   recurring_booking_id?: boolean
   expires_at?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
+  payment?: boolean | Prisma.Booking$paymentArgs<ExtArgs>
   recurringBooking?: boolean | Prisma.Booking$recurringBookingArgs<ExtArgs>
 }, ExtArgs["result"]["booking"]>
 
@@ -1112,10 +1200,12 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paid_at?: boolean
   player_id?: boolean
   sub_field_id?: boolean
+  payment_id?: boolean
   recurring_booking_id?: boolean
   expires_at?: boolean
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
+  payment?: boolean | Prisma.Booking$paymentArgs<ExtArgs>
   recurringBooking?: boolean | Prisma.Booking$recurringBookingArgs<ExtArgs>
 }, ExtArgs["result"]["booking"]>
 
@@ -1129,11 +1219,12 @@ export type BookingSelectScalar = {
   paid_at?: boolean
   player_id?: boolean
   sub_field_id?: boolean
+  payment_id?: boolean
   recurring_booking_id?: boolean
   expires_at?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "start_time" | "end_time" | "total_price" | "status" | "created_at" | "paid_at" | "player_id" | "sub_field_id" | "recurring_booking_id" | "expires_at", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "start_time" | "end_time" | "total_price" | "status" | "created_at" | "paid_at" | "player_id" | "sub_field_id" | "payment_id" | "recurring_booking_id" | "expires_at", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
@@ -1143,11 +1234,13 @@ export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type BookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
+  payment?: boolean | Prisma.Booking$paymentArgs<ExtArgs>
   recurringBooking?: boolean | Prisma.Booking$recurringBookingArgs<ExtArgs>
 }
 export type BookingIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   player?: boolean | Prisma.PlayerDefaultArgs<ExtArgs>
   sub_field?: boolean | Prisma.SubFieldDefaultArgs<ExtArgs>
+  payment?: boolean | Prisma.Booking$paymentArgs<ExtArgs>
   recurringBooking?: boolean | Prisma.Booking$recurringBookingArgs<ExtArgs>
 }
 
@@ -1169,6 +1262,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     paid_at: Date | null
     player_id: string
     sub_field_id: string
+    payment_id: string | null
     recurring_booking_id: string | null
     expires_at: Date
   }, ExtArgs["result"]["booking"]>
@@ -1607,6 +1701,7 @@ export interface BookingFieldRefs {
   readonly paid_at: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly player_id: Prisma.FieldRef<"Booking", 'String'>
   readonly sub_field_id: Prisma.FieldRef<"Booking", 'String'>
+  readonly payment_id: Prisma.FieldRef<"Booking", 'String'>
   readonly recurring_booking_id: Prisma.FieldRef<"Booking", 'String'>
   readonly expires_at: Prisma.FieldRef<"Booking", 'DateTime'>
 }
