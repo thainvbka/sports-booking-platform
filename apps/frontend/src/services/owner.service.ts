@@ -201,4 +201,18 @@ export const ownerService = {
     );
     return response.data;
   },
+  //stripe
+  createStripeLink: async () => {
+    const response = await api.post<ApiResponse<{ url: string }>>(
+      `/payments/stripe/connect-account`
+    );
+    return response.data.data;
+  },
+  getStripeStatus: async () => {
+    const response = await api.get<ApiResponse<{ isComplete: boolean }>>(
+      `/payments/stripe/check-status`
+    );
+    console.log("Stripe status response:", response.data);
+    return response.data.data;
+  },
 };

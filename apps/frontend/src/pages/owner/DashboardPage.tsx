@@ -1,6 +1,6 @@
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Calendar,
@@ -11,7 +11,9 @@ import {
   ArrowUpRight,
   Plus,
   MoreHorizontal,
-  // Wallet,
+  Wallet,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +27,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { ownerService } from "@/services/owner.service";
 
 export function OwnerDashboardPage() {
   const { complexes, isLoading, error } = useOwnerStore();
@@ -99,6 +102,25 @@ export function OwnerDashboardPage() {
     );
   }
 
+  // Trong DashboardPage.tsx
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    ownerService.getStripeStatus().then((data) => {
+      setIsConnected(data.isComplete);
+    });
+  }, []);
+  console.log("isConnected:", isConnected);
+
+  const handleConnectStripe = async () => {
+    try {
+      const data = await ownerService.createStripeLink();
+      window.location.href = data.url; // Redirect sang Stripe
+    } catch (error) {
+      console.error("Lỗi kết nối Stripe:", error);
+    }
+  };
+
   return (
     <div className="space-y-8 pb-8">
       {/* Header Section */}
@@ -112,12 +134,33 @@ export function OwnerDashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/owner/complexes">
-            <Button className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm khu phức hợp mới
+          {isConnected ? (
+            //nếu đã kết nối stripe
+            <>
+              {/* Badge trạng thái (chỉ hiện trên màn hình desktop cho đỡ chật) */}
+              <div className="hidden md:flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-full border border-green-200 text-sm font-medium animate-in fade-in">
+                <CheckCircle className="w-4 h-4" />
+                <span className="whitespace-nowrap">Ví đã kết nối</span>
+              </div>
+
+              {/* Nút Thêm sân */}
+              <Link to="/owner/complexes">
+                <Button className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Thêm khu phức hợp mới
+                </Button>
+              </Link>
+            </>
+          ) : (
+            //nếu chưa kết nối stripe
+            <Button
+              onClick={handleConnectStripe}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 transition-all"
+            >
+              <Wallet className="w-4 h-4 mr-2" />
+              Kết nối Ví thanh toán
             </Button>
-          </Link>
+          )}
         </div>
       </div>
 

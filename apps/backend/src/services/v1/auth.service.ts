@@ -13,6 +13,7 @@ import { addRoleInput } from "@sports-booking-platform/validation/account.schema
 import { getUserRolesAndProfiles } from "../../helpers";
 import { sendActivationEmail } from "../../libs/mailer";
 import crypto from "crypto";
+import { AnyNull } from "@sports-booking-platform/db/generated/prisma-client/internal/prismaNamespace";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
@@ -181,8 +182,12 @@ export const verifyEmail = async (token: string) => {
   // tạo payload cho jwt
   const jwtPayload: JwtPayload = {
     accountId: updatedAccount.id,
-    roles,
-    profiles,
+    roles: roles as any,
+    profiles: {
+      playerId: profiles.player?.id,
+      ownerId: profiles.owner?.id,
+      adminId: profiles.admin?.id,
+    },
   };
 
   const accessToken = generateAccessToken(jwtPayload);
@@ -234,8 +239,12 @@ export const logIn = async (email: string, password: string) => {
   //tạo payload cho jwt
   const jwtPayload: JwtPayload = {
     accountId: user.id,
-    roles,
-    profiles,
+    roles: roles as any,
+    profiles: {
+      playerId: profiles.player?.id,
+      ownerId: profiles.owner?.id,
+      adminId: profiles.admin?.id,
+    },
   };
 
   const accessToken = generateAccessToken(jwtPayload);
@@ -307,8 +316,12 @@ export const handlerRefreshToken = async (refreshToken: string) => {
   //tạo payload cho jwt
   const jwtPayload: JwtPayload = {
     accountId: storedToken.account_id,
-    roles,
-    profiles,
+    roles: roles as any,
+    profiles: {
+      playerId: profiles.player?.id,
+      ownerId: profiles.owner?.id,
+      adminId: profiles.admin?.id,
+    },
   };
 
   const accessToken = generateAccessToken(jwtPayload);

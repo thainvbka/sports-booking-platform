@@ -20,6 +20,8 @@ import RecurringBookingReviewPage from "@/pages/booking/RecurringBookingReviewPa
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
 import { TermsPage } from "@/pages/legal/TermsPage";
 import { PrivacyPage } from "@/pages/legal/PrivacyPage";
+import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
+import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
 
 export const router = createBrowserRouter([
   {
@@ -121,6 +123,14 @@ export const router = createBrowserRouter([
       {
         path: "sub-fields/:id",
         element: <SubFieldDetailPage />,
+      },
+      {
+        path: "stripe/return",
+        element: <StripeReturnPage />,
+      },
+      {
+        path: "stripe/refresh",
+        element: <StripeRefreshPage />,
       },
     ],
   },
