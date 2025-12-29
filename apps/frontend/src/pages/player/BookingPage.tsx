@@ -137,9 +137,6 @@ export function PlayerBookingsPage() {
                       {booking.complex_name}
                     </CardTitle>
                     <div className="flex items-center gap-1 ml-auto">
-                      <Badge className={getStatusColor(booking.status)}>
-                        {getStatusLabel(booking.status)}
-                      </Badge>
                       {booking.status === BookingStatus.PENDING &&
                         booking.expires_at && (
                           <span className="flex items-center gap-1 cursor-pointer text-orange-600 text-xs font-medium">
@@ -152,6 +149,9 @@ export function PlayerBookingsPage() {
                             </span>
                           </span>
                         )}
+                      <Badge className={getStatusColor(booking.status)}>
+                        {getStatusLabel(booking.status)}
+                      </Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
