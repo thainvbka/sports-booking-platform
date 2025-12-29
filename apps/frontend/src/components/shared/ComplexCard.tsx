@@ -97,7 +97,9 @@ export function ComplexCard({ complex }: ComplexCardProps) {
                 <span className="font-semibold text-primary text-sm">
                   {minPrice === maxPrice
                     ? formatPrice(minPrice!)
-                    : `${formatPrice(minPrice!)} - ${formatPrice(maxPrice!)}`}
+                    : `${formatPrice(minPrice!)}/h - ${formatPrice(
+                        maxPrice!
+                      )}/h`}
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground italic">

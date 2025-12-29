@@ -119,6 +119,12 @@ export function ComplexDetailView({
         </Link>
       ) : null}
 
+      {/* Temporary notice for testers */}
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded mb-4">
+        Khu phức hợp sẽ được <b>active</b> ngay khi tạo mới để tiện test các
+        chức năng khác (chưa có chức năng duyệt của admin).
+      </div>
+
       {/* Hero Image Section */}
       {complex.complex_image && (
         <div className="relative h-[350px] md:h-[450px] lg:h-[550px] -mx-4 md:-mx-8 lg:mx-0 rounded-none lg:rounded-2xl overflow-hidden shadow-xl">

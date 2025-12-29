@@ -374,7 +374,7 @@ export const getAllPublicSubfields = async ({
       },
       skip,
       take: limit,
-      orderBy: { created_at: "desc" },
+      orderBy: { updated_at: "desc" },
     }),
   ]);
 
@@ -436,7 +436,7 @@ export const getPublicSubfieldById = async (subfieldId: string) => {
   });
 
   if (!subfield) {
-     throw new NotFoundError("Subfield not found");
+    throw new NotFoundError("Subfield not found");
   }
 
   return subfield;

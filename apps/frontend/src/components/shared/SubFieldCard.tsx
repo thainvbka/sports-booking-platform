@@ -90,16 +90,16 @@ export function SubFieldCard({
         <div className="flex items-center justify-between pt-3 border-t mt-2">
           <div>
             <p className="text-xs text-muted-foreground">Giá từ</p>
-            <p className="text-blue-600 font-bold">
+            <p>
               {minPrice > 0 ? (
-                <span>
+                <span className="font-semibold text-primary text-sm">
                   {formatPrice(minPrice)}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    /h
-                  </span>
+                  <span className="font-semibold text-primary text-sm">/h</span>
                 </span>
               ) : (
-                "Chưa có giá"
+                <span className="text-xs text-muted-foreground italic">
+                  Chưa có giá
+                </span>
               )}
             </p>
           </div>

@@ -66,7 +66,8 @@ export const createComplex = async (
       complex_address: data.complex_address,
       complex_image: complex_image,
       verification_docs: verification_docs,
-      status: "PENDING",
+      // status: "PENDING",
+      status: "ACTIVE", //tạm thời cho ACTIVE để test vì chưa có chức năng duyệt của admin
     },
     select: {
       id: true,
@@ -126,7 +127,7 @@ export const getOwnerComplexes = async (
     prisma.complex.count({ where: whereCondition }),
     prisma.complex.findMany({
       where: whereCondition,
-      orderBy: { created_at: "desc" },
+      orderBy: { updated_at: "desc" },
       skip,
       take: limit,
       select: {
@@ -529,7 +530,7 @@ export const getPublicComplexActive = async ({
       where: whereCondition,
       orderBy: [
         { min_price: "asc" }, // Sort by price (complexes with prices first)
-        { created_at: "desc" },
+        { updated_at: "desc" },
       ],
       skip,
       take: limit,
