@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { any, z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Clock, Plus, Trash2 } from "lucide-react";
 import { formatPrice } from "@/services/mockData";
 import { TimeInput } from "@/components/ui/time-input";
+import { toast } from "sonner";
 
 // Format time from backend (handles both string and Date)
 // Always returns 24-hour format HH:MM for form input
@@ -188,7 +189,6 @@ export function PricingRuleFormDialog({
       await onSubmit(data);
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to submit pricing rule:", error);
     } finally {
       setIsSubmitting(false);
     }

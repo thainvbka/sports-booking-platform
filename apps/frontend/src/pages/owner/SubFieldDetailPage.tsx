@@ -36,15 +36,15 @@ import { EditSubfieldDialog } from "@/components/owner/EditSubfieldDialog";
 import { DeleteSubfieldDialog } from "@/components/owner/DeleteSubfieldDialog";
 import { PricingRuleFormDialog } from "@/components/owner/PricingRuleFormDialog";
 import { DeletePricingRuleDialog } from "@/components/owner/DeletePricingRuleDialog";
-// import { useToast } from "../../hooks/use-toast";
 import { toast } from "sonner";
 import type { PricingRule } from "@/types";
 
 interface PricingRuleFormData {
   days: number[];
-  time_slots: { start_time: string; end_time: string }[];
+  time_slots: { start_time: string; end_time: string; base_price: number }[];
   base_price: number;
 }
+
 
 // Format time from backend (handles both string and Date)
 // Always returns 24-hour format HH:MM
@@ -114,7 +114,7 @@ export function SubFieldDetailPage() {
     copyPricingRules,
   } = useOwnerStore();
 
-  // const { toast } = useToast();
+
 
   const [date, setDate] = useState<Date>(new Date());
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -195,6 +195,7 @@ export function SubFieldDetailPage() {
       const message =
         error instanceof Error ? error.message : "Không thể tạo khung giờ";
       toast.error(message);
+      throw error;
     }
   };
 
@@ -214,6 +215,7 @@ export function SubFieldDetailPage() {
       const message =
         error instanceof Error ? error.message : "Không thể cập nhật khung giờ";
       toast.error(message);
+      throw error;
     }
   };
 
@@ -285,7 +287,7 @@ export function SubFieldDetailPage() {
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <h2 className="text-2xl font-bold mb-2">Không tìm thấy sân con</h2>
         <p className="text-muted-foreground mb-6">
-          {error || "Sân con bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."}
+          Sân con bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
         </p>
         <Link to="/owner/complexes">
           <Button>Quay lại danh sách</Button>

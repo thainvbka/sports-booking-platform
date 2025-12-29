@@ -35,3 +35,13 @@ export const getVietnamDayOfWeek = (date: Date): number => {
 export const getRawMinutes = (date: Date): number => {
   return date.getUTCHours() * 60 + date.getUTCMinutes();
 };
+
+/**
+ * Format time as HH:MM for display in error messages
+ * Uses UTC to get the "face value" stored in DB
+ */
+export const formatTimeForDisplay = (date: Date): string => {
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};

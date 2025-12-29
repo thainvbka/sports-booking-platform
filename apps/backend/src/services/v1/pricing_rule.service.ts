@@ -8,7 +8,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
-import { parseTime } from "../../helpers";
+import { parseTime, formatTimeForDisplay } from "../../helpers";
 import { updateComplexCache } from "../../helpers/complexCache";
 
 export const createPricingRule = async (
@@ -71,8 +71,17 @@ export const createPricingRule = async (
       });
 
       if (overlappingRule) {
+        const dayNames = [
+          "Chủ nhật",
+          "Thứ 2",
+          "Thứ 3",
+          "Thứ 4",
+          "Thứ 5",
+          "Thứ 6",
+          "Thứ 7",
+        ];
         throw new BadRequestError(
-          `Pricing rule overlaps with existing rule on day ${day} from ${overlappingRule.start_time} to ${overlappingRule.end_time}`
+          `Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[day]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`
         );
       }
 
@@ -194,8 +203,17 @@ export const updatePricingRule = async (
     });
 
     if (overlappingRule) {
+      const dayNames = [
+        "Chủ nhật",
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4",
+        "Thứ 5",
+        "Thứ 6",
+        "Thứ 7",
+      ];
       throw new BadRequestError(
-        `Update failed: Overlaps with existing rule on day ${data.day_of_week} from ${overlappingRule.start_time} to ${overlappingRule.end_time}`
+        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`
       );
     }
   }

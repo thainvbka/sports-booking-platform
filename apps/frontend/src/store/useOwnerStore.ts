@@ -235,7 +235,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       set({ isLoading: false });
     } catch (error: any) {
       set({
-        error: error.message || "Failed to create complex",
+        // error: error.message || "Failed to create complex",
         isLoading: false,
       });
     }
@@ -287,14 +287,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await ownerService.createPricingRules(payload);
       set({ isLoading: false });
     } catch (error: any) {
-      set({
-        error:
-          error.response?.data?.message ||
-          error.message ||
-          "Failed to add pricing rule",
-        isLoading: false,
-      });
-      throw error;
+      set({ isLoading: false });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to add pricing rule";
+      throw new Error(errorMessage);
     }
   },
 
@@ -319,11 +317,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchPricingRules(subFieldId, dayOfWeek);
       set({ isLoading: false });
     } catch (error: any) {
-      set({
-        error: error.message || "Failed to update pricing rule",
-        isLoading: false,
-      });
-      throw error;
+      set({ isLoading: false });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update pricing rule";
+      throw new Error(errorMessage);
     }
   },
 
@@ -339,11 +338,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchPricingRules(subFieldId, dayOfWeek);
       set({ isLoading: false });
     } catch (error: any) {
-      set({
-        error: error.message || "Failed to delete pricing rule",
-        isLoading: false,
-      });
-      throw error;
+      set({ isLoading: false });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to delete pricing rule";
+      throw new Error(errorMessage);
     }
   },
 
@@ -359,11 +359,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchPricingRules(subFieldId, dayOfWeek);
       set({ isLoading: false });
     } catch (error: any) {
-      set({
-        error: error.message || "Failed to bulk delete pricing rules",
-        isLoading: false,
-      });
-      throw error;
+      set({ isLoading: false });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to bulk delete pricing rules";
+      throw new Error(errorMessage);
     }
   },
 
@@ -377,11 +378,12 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await ownerService.copyPricingRules(subFieldId, sourceDay, targetDays);
       set({ isLoading: false });
     } catch (error: any) {
-      set({
-        error: error.message || "Failed to copy pricing rules",
-        isLoading: false,
-      });
-      throw error;
+      set({ isLoading: false });
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to copy pricing rules";
+      throw new Error(errorMessage);
     }
   },
 
@@ -400,10 +402,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchComplexById(complexId);
       set({ isLoading: false });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to create subfield";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -432,10 +432,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         await get().fetchComplexById(selectedComplex.id);
       }
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to update subfield";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -447,10 +445,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await ownerService.deleteSubfield(subfieldId);
       set({ isLoading: false });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete subfield";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -467,10 +463,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchComplexById(complexId);
       set({ isLoading: false });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to update complex";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -482,10 +476,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await ownerService.deleteComplex(complexId);
       set({ isLoading: false });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete complex";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -499,10 +491,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       await get().fetchComplexById(complexId);
       set({ isLoading: false });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to reactivate complex";
       set({
-        error: errorMessage,
+        // error: errorMessage,
         isLoading: false,
       });
       throw error;
