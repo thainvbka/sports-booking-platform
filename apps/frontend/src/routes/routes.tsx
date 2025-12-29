@@ -22,6 +22,8 @@ import { TermsPage } from "@/pages/legal/TermsPage";
 import { PrivacyPage } from "@/pages/legal/PrivacyPage";
 import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
 import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
+import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
+import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +63,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["PLAYER"]}>
             <RecurringBookingReviewPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "bookings/success",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <PaymentSuccessPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "bookings/failed",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <PaymentFailedPage />
           </ProtectedRoute>
         ),
       },

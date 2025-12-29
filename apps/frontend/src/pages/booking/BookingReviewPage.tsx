@@ -35,10 +35,9 @@ export default function BookingReviewPage() {
     fetchBooking();
   }, [id, navigate]);
 
-  const handlePayment = () => {
-    // Integration with PayOS or Payment Gateway would go here
-    toast.success("Chuyển hướng đến cổng thanh toán...");
-    // navigate("/payment/...");
+  const handlePayment = async () => {
+    const result = await bookingService.creatCheckoutSession([booking!.id]);
+    window.location.href = result.url;
   };
 
   if (loading) {

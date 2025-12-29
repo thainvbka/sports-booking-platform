@@ -6,6 +6,7 @@ import authorize from "../../middlewares/authorize";
 import {
   createConnectAccountController,
   checkStripeAccountStatusController,
+  createCheckoutSessionController,
 } from "../../controllers/v1/payment.controller";
 
 const router = Router();
@@ -23,4 +24,12 @@ router.get(
   authorize(["OWNER"]),
   asyncHandler(checkStripeAccountStatusController)
 );
+
+router.post(
+  "/checkout-session", // Tạo checkout session
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(createCheckoutSessionController)
+);
+
 export default router;

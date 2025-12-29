@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { SuccessResponse } from "../../utils/success.response";
 
 import {
   createConnectAccount,
   checkStripeAccountStatus,
+  createCheckoutSession,
+  handleStripeWebhook,
 } from "../../services/v1/payment.service";
 
 export const createConnectAccountController = async (
@@ -28,4 +30,34 @@ export const checkStripeAccountStatusController = async (
     message: "Payment setup completed successfully",
     data: { ...result },
   }).send(res);
+};
+
+export const createCheckoutSessionController = async (
+  req: Request,
+  res: Response
+) => {
+  const playerId = req.user?.profiles.playerId as string;
+  const bookingIds: string[] = req.body;
+  const result = await createCheckoutSession(playerId, bookingIds);
+  return new SuccessResponse({
+    message: "Checkout session created successfully",
+    data: { ...result },
+  }).send(res);
+};
+
+export const handleStripeWebhookController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sig = req.headers["stripe-signature"] as string;
+    const data = req.body;
+    await handleStripeWebhook(sig, data);
+    return new SuccessResponse({
+      message: "Webhook handled successfully",
+    }).send(res);
+  } catch (error) {
+    return next(error);
+  }
 };

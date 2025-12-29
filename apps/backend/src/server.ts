@@ -8,8 +8,15 @@ import compression from "compression";
 import errorHandler from "./middlewares/errorHandler";
 import cookieParser from "cookie-parser";
 import { startCronJobs } from "./services/v1/cron.service";
+import { handleStripeWebhookController } from "./controllers/v1/payment.controller";
 
 const app = express();
+
+app.post(
+  "/api/v1/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhookController
+);
 
 const allowedOrigins = (config.CORS_ORIGIN || "http://localhost:5173")
   .split(",")

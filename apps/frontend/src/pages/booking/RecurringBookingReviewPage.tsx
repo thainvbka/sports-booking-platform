@@ -45,9 +45,11 @@ export default function RecurringBookingReviewPage() {
     fetchBooking();
   }, [id, navigate]);
 
-  const handlePayment = () => {
-    // Integration with PayOS or Payment Gateway would go here
-    toast.success("Chuyển hướng đến cổng thanh toán...");
+  const handlePayment = async () => {
+    const result = await bookingService.creatCheckoutSession([
+      ...booking!.slots.map((s) => s.id),
+    ]);
+    window.location.href = result.url;
   };
 
   if (loading) {
