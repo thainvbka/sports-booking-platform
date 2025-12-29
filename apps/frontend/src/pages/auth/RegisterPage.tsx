@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2, MailCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ export function RegisterPage() {
       setIsSuccess(true);
     } catch (err) {
       // Error is handled in store
+      toast.error("Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.");
       console.error("Registration failed", err);
     }
   };
@@ -178,10 +180,10 @@ export function RegisterPage() {
               {...register("company_name")}
             />
             {/* @ts-ignore */}
-            {errors.company_name && (
+            {(errors as any).company_name && (
               /* @ts-ignore */
               <p className="text-sm text-destructive font-medium animate-in slide-in-from-left-1">
-                {errors.company_name.message}
+                {(errors as any).company_name.message}
               </p>
             )}
           </div>

@@ -36,7 +36,11 @@ export default function BookingReviewPage() {
   }, [id, navigate]);
 
   const handlePayment = async () => {
-    const result = await bookingService.creatCheckoutSession([booking!.id]);
+    const result = await bookingService
+      .creatCheckoutSession([booking!.id])
+      .catch(() => {
+        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+      });
     window.location.href = result.url;
   };
 
@@ -149,7 +153,7 @@ export default function BookingReviewPage() {
             >
               Quay lại
             </Button>
-            <Button className="flex-1 text-lg py-6" onClick={handlePayment}>
+            <Button className="flex-1" onClick={handlePayment}>
               Thanh toán ngay
             </Button>
           </div>

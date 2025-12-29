@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Plus, Upload, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface ComplexFormData {
   complex_name: string;
@@ -93,7 +94,11 @@ export function ComplexFormDialog() {
       setVerificationDocs([]);
       setError(null);
       setOpen(false);
+      toast.success("Khu phức hợp đã được tạo và đang chờ duyệt.");
     } catch (err) {
+      toast.error(
+        "Đã có lỗi xảy ra khi tạo khu phức hợp. Vui lòng thử lại sau."
+      );
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
     }
   };

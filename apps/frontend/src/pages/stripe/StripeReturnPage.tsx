@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ownerService } from "@/services/owner.service";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function StripeReturnPage() {
   const navigate = useNavigate();
@@ -37,7 +38,9 @@ export function StripeReturnPage() {
       const data = await ownerService.createStripeLink();
       window.location.href = data.url;
     } catch (error) {
-      alert("Không thể tạo link kết nối. Vui lòng thử lại sau.");
+      toast.error(
+        "Đã có lỗi xảy ra khi tạo liên kết Stripe. Vui lòng thử lại sau."
+      );
       setStatus("incomplete");
     }
   };

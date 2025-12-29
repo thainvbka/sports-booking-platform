@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ownerService } from "@/services/owner.service";
+import { toast } from "sonner";
 
 export function OwnerDashboardPage() {
   const { complexes, isLoading, error } = useOwnerStore();
@@ -106,9 +107,17 @@ export function OwnerDashboardPage() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    ownerService.getStripeStatus().then((data) => {
-      setIsConnected(data.isComplete);
-    });
+    ownerService
+      .getStripeStatus()
+      .then((data) => {
+        setIsConnected(data.isComplete);
+      })
+      .catch((error) => {
+        toast.error(
+          "Đã có lỗi xảy ra khi kiểm tra trạng thái kết nối Stripe. Vui lòng thử lại sau."
+        );
+        console.error("Lỗi khi lấy trạng thái Stripe:", error);
+      });
   }, []);
   console.log("isConnected:", isConnected);
 
@@ -117,6 +126,9 @@ export function OwnerDashboardPage() {
       const data = await ownerService.createStripeLink();
       window.location.href = data.url; // Redirect sang Stripe
     } catch (error) {
+      toast.error(
+        "Đã có lỗi xảy ra khi kết nối với Stripe. Vui lòng thử lại sau."
+      );
       console.error("Lỗi kết nối Stripe:", error);
     }
   };

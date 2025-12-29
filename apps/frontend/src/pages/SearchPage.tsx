@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -97,6 +98,7 @@ export function SearchPage() {
           }
         );
       } catch (error) {
+        toast.error("Đã có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại sau.");
         console.error("Error fetching search results:", error);
         setComplexResults([]);
         setSubFieldResults([]);

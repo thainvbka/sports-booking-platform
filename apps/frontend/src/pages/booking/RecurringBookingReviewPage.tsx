@@ -46,9 +46,12 @@ export default function RecurringBookingReviewPage() {
   }, [id, navigate]);
 
   const handlePayment = async () => {
-    const result = await bookingService.creatCheckoutSession([
-      ...booking!.slots.map((s) => s.id),
-    ]);
+    const result = await bookingService
+      .creatCheckoutSession([...booking!.slots.map((s) => s.id)])
+      .catch(() => {
+        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+      });
+
     window.location.href = result.url;
   };
 

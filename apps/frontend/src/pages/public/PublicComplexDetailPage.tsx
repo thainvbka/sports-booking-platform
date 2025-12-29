@@ -73,7 +73,9 @@ export function PublicComplexDetailPage() {
       const errorMessage =
         err.response?.data?.message || "Không thể tải thông tin khu phức hợp";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error(
+        "Có lỗi xảy ra khi tải thông tin khu phức hợp. Vui lòng thử lại sau."
+      );
     } finally {
       setIsLoading(false);
     }

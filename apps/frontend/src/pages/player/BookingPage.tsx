@@ -2,12 +2,6 @@ import { formatPrice } from "@/services/mockData";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { BookingStatus } from "@/types";
@@ -40,11 +34,19 @@ export function PlayerBookingsPage() {
   // Fetch bookings khi page thay đổi
   useEffect(() => {
     setLoading(true);
-    bookingService.getAllBookings(page).then((res) => {
-      setBookings(res.bookings || []);
-      setTotalPages(res.pagination?.totalPages || 1);
-      setLoading(false);
-    });
+    bookingService
+      .getAllBookings(page)
+      .then((res) => {
+        setBookings(res.bookings || []);
+        setTotalPages(res.pagination?.totalPages || 1);
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
+        setBookings([]);
+        setTotalPages(1);
+      })
+      .finally(() => setLoading(false));
     const params = new URLSearchParams();
     if (page > 1) params.set("page", String(page));
     setSearchParams(params);
@@ -69,7 +71,7 @@ export function PlayerBookingsPage() {
       case BookingStatus.CONFIRMED:
         return "Đã xác nhận";
       case BookingStatus.COMPLETED:
-        return "Hoàn thành";
+        return "Đã thanh toán";
       case BookingStatus.PENDING:
         return "Chờ thanh toán";
       case BookingStatus.CANCELED:
@@ -97,15 +99,21 @@ export function PlayerBookingsPage() {
         return sportType;
     }
   };
-  const handlePayment = () => {
-    // Integration with PayOS or Payment Gateway would go here
-    toast.success("Chuyển hướng đến cổng thanh toán...");
-    // navigate("/payment/...");
+  const handlePayment = async (bookingId: string) => {
+    const result = await bookingService
+      .creatCheckoutSession([bookingId])
+      .catch(() => {
+        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+      });
+    window.location.href = result.url;
   };
 
   const handleCancel = async () => {
     if (!selectedBookingId) return;
-    await bookingService.cancelBooking(selectedBookingId);
+    await bookingService.cancelBooking(selectedBookingId).catch(() => {
+      toast.error("Đã xảy ra lỗi khi hủy đặt sân");
+      throw new Error("Cancel booking failed");
+    });
     setBookings((prev) =>
       prev.map((booking) =>
         booking.id === selectedBookingId
@@ -210,7 +218,7 @@ export function PlayerBookingsPage() {
                         </Button>
                         <Button
                           className="px-4 py-2 text-sm font-bold"
-                          onClick={handlePayment}
+                          onClick={() => handlePayment(booking.id)}
                         >
                           Thanh toán
                         </Button>

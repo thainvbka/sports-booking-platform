@@ -36,7 +36,8 @@ import { EditSubfieldDialog } from "@/components/owner/EditSubfieldDialog";
 import { DeleteSubfieldDialog } from "@/components/owner/DeleteSubfieldDialog";
 import { PricingRuleFormDialog } from "@/components/owner/PricingRuleFormDialog";
 import { DeletePricingRuleDialog } from "@/components/owner/DeletePricingRuleDialog";
-import { useToast } from "../../hooks/use-toast";
+// import { useToast } from "../../hooks/use-toast";
+import { toast } from "sonner";
 import type { PricingRule } from "@/types";
 
 interface PricingRuleFormData {
@@ -113,7 +114,7 @@ export function SubFieldDetailPage() {
     copyPricingRules,
   } = useOwnerStore();
 
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const [date, setDate] = useState<Date>(new Date());
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -154,8 +155,12 @@ export function SubFieldDetailPage() {
     if (!id) return;
     try {
       await updateSubfield(id, data);
+      toast.success("Cập nhật thành công: Thông tin sân con đã được cập nhật.");
       console.log("Cập nhật thành công: Thông tin sân con đã được cập nhật.");
     } catch {
+      toast.error(
+        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con."
+      );
       console.error(
         "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con."
       );
@@ -167,14 +172,10 @@ export function SubFieldDetailPage() {
     const complexId = selectedSubfield.complex_id;
     try {
       await deleteSubfield(id);
-      toast({ title: "Xóa thành công", description: "Sân con đã được xóa." });
+      toast.success("Sân con đã được xóa thành công.");
       navigate(`/owner/complexes/${complexId}`, { replace: true });
     } catch {
-      toast({
-        title: "Xóa thất bại",
-        description: "Có lỗi xảy ra khi xóa sân con.",
-        variant: "destructive",
-      });
+      toast.error("Đã có lỗi xảy ra khi xóa sân con. Vui lòng thử lại sau.");
     }
   };
 
@@ -188,16 +189,12 @@ export function SubFieldDetailPage() {
           base_price: data.base_price,
         })),
       });
+      toast.success("Thêm khung giờ thành công.");
       await fetchPricingRules(id, date.getDay());
-      toast({ title: "Thành công", description: "Đã tạo khung giờ mới" });
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể tạo khung giờ";
-      toast({
-        title: "Lỗi",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error(message);
     }
   };
 
@@ -211,16 +208,12 @@ export function SubFieldDetailPage() {
         end_time: timeSlot.end_time,
         base_price: data.base_price,
       });
-      toast({ title: "Thành công", description: "Đã cập nhật khung giờ" });
+      toast.success("Cập nhật khung giờ thành công.");
       setEditingRule(null);
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể cập nhật khung giờ";
-      toast({
-        title: "Lỗi",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error(message);
     }
   };
 
@@ -228,16 +221,12 @@ export function SubFieldDetailPage() {
     if (!id || !deletingRule) return;
     try {
       await deletePricingRule(deletingRule.id, id, date.getDay());
-      toast({ title: "Thành công", description: "Đã xóa khung giờ" });
+      toast.success("Xóa khung giờ thành công.");
       setDeletingRule(null);
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể xóa khung giờ";
-      toast({
-        title: "Lỗi",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error(message);
     }
   };
 
@@ -245,19 +234,12 @@ export function SubFieldDetailPage() {
     if (!id || selectedRuleIds.length === 0) return;
     try {
       await bulkDeletePricingRules(selectedRuleIds, id, date.getDay());
-      toast({
-        title: "Thành công",
-        description: `Đã xóa ${selectedRuleIds.length} khung giờ`,
-      });
+      toast.success("Xóa các khung giờ đã chọn thành công.");
       setSelectedRuleIds([]);
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể xóa khung giờ";
-      toast({
-        title: "Lỗi",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error(message);
     }
   };
 
@@ -266,18 +248,11 @@ export function SubFieldDetailPage() {
     const sourceDay = date.getDay();
     try {
       await copyPricingRules(id, sourceDay, targetDays);
-      toast({
-        title: "Thành công",
-        description: `Đã sao chép giá sang ${targetDays.length} ngày khác`,
-      });
+      toast.success("Sao chép giá thành công.");
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể sao chép giá";
-      toast({
-        title: "Lỗi",
-        description: message,
-        variant: "destructive",
-      });
+      toast.error(message);
     }
   };
 

@@ -24,6 +24,7 @@ import { SportType } from "@/types";
 import { getSportTypeLabel } from "@/services/mockData";
 import { Plus, Upload, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface SubFieldFormData {
   subfield_name: string;
@@ -99,7 +100,9 @@ export function SubFieldFormDialog({
       setImagePreview(null);
       setError(null);
       setOpen(false);
+      toast.success("Sân con đã được tạo thành công.");
     } catch (err) {
+      toast.error("Đã có lỗi xảy ra khi tạo sân con. Vui lòng thử lại sau.");
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
     }
   };

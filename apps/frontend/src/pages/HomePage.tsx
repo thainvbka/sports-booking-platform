@@ -8,6 +8,7 @@ import { heroBg } from "@/assets";
 import { useEffect, useState } from "react";
 import { publicService } from "@/services/public.service";
 import type { Complex, SubField } from "@/types";
+import { toast } from "sonner";
 
 export function HomePage() {
   const [featuredComplexes, setFeaturedComplexes] = useState<Complex[]>([]);
@@ -31,6 +32,7 @@ export function HomePage() {
         setFeaturedComplexes(complexesRes.data?.complexes || []);
         setFeaturedSubFields(subfieldsRes.data?.subfields || []);
       } catch (error) {
+        toast.error("Đã có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.");
         console.error("Error fetching data:", error);
         // Reset to empty arrays on error
         setFeaturedComplexes([]);

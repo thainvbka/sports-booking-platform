@@ -76,7 +76,7 @@ export const createRecurringBookingService = async (
     // (Cho thêm 15 phút nữa để thanh toán)
     await prisma.booking.updateMany({
       where: { recurring_booking_id: existingRecurring.id },
-      data: { expires_at: new Date(Date.now() + 15 * 60 * 1000) },
+      data: { expires_at: new Date(Date.now() + 3 * 60 * 1000) },
     });
 
     // B. Tính lại tổng tiền (để trả về FE hiển thị)
@@ -207,7 +207,7 @@ export const createRecurringBookingService = async (
       end_time: slot.end,
       total_price: slotPrice,
       status: "PENDING", // Trạng thái ban đầu
-      expires_at: new Date(Date.now() + 15 * 60 * 1000), // Cho 15 phút để thanh toán cả cụm
+      expires_at: new Date(Date.now() + 3 * 60 * 1000), // Cho 3 phút để thanh toán cả cụm
     });
   }
 

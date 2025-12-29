@@ -12,6 +12,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { ComplexDetail } from "@/types";
+import { toast } from "sonner";
 
 export function ComplexDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -76,8 +77,14 @@ export function ComplexDetailPage() {
     if (!id) return;
     try {
       await updateComplex(id, data);
+      toast.success(
+        "Cập nhật thành công: Thông tin khu phức hợp đã được cập nhật."
+      );
       console.log("Cập nhật thành công");
     } catch {
+      toast.error(
+        "Đã có lỗi xảy ra khi cập nhật thông tin khu phức hợp. Vui lòng thử lại sau."
+      );
       console.error("Cập nhật thất bại");
     }
   };
@@ -86,9 +93,13 @@ export function ComplexDetailPage() {
     if (!id) return;
     try {
       await deleteComplex(id);
+      toast.success("Ngừng hoạt động khu phức hợp thành công.");
       console.log("Xóa thành công");
       navigate("/owner/complexes", { replace: true });
     } catch {
+      toast.error(
+        "Đã có lỗi xảy ra khi ngừng hoạt động khu phức hợp. Vui lòng thử lại sau."
+      );
       console.error("Xóa thất bại");
     }
   };
@@ -97,8 +108,12 @@ export function ComplexDetailPage() {
     if (!id) return;
     try {
       await reactivateComplex(id);
+      toast.success("Kích hoạt lại khu phức hợp thành công.");
       console.log("Kích hoạt thành công");
     } catch {
+      toast.error(
+        "Đã có lỗi xảy ra khi kích hoạt lại khu phức hợp. Vui lòng thử lại sau."
+      );
       console.error("Kích hoạt thất bại");
     }
   };

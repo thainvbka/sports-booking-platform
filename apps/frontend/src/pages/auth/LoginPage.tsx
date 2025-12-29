@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/useAuthStore";
 
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -37,6 +38,9 @@ export function LoginPage() {
         navigate("/owner");
       }
     } catch (err) {
+      toast.error(
+        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại."
+      );
       // Error is handled in store
       console.error("Login failed", err);
     }
@@ -77,7 +81,8 @@ export function LoginPage() {
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Mật khẩu</Label>
             <Link
-              to="/auth/forgot-password"
+              // to="/auth/forgot-password"
+              to="#"
               className="text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
             >
               Quên mật khẩu?
