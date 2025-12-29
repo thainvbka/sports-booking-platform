@@ -257,8 +257,8 @@ export const getOwnerComplexById = async (
 
 //update complex
 export const updateComplex = async (
-  complexId: string,
   ownerId: string,
+  complexId: string,
   data: UpdateComplexInput
 ) => {
   const complex = await prisma.complex.findFirst({

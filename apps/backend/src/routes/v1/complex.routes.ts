@@ -84,6 +84,14 @@ router.post(
   asyncHandler(createComplexController)
 );
 
+router.patch(
+  "/:id",
+  authenticate,
+  authorize(["OWNER"]),
+  validate(updateComplexSchema),
+  asyncHandler(updateComplexController)
+);
+
 // Subfield Routes
 
 router.post(
@@ -114,14 +122,6 @@ router.get(
   authenticate,
   authorize(["OWNER"]),
   asyncHandler(getOwnerComplexByIdController)
-);
-
-router.patch(
-  "/:id",
-  authenticate,
-  authorize(["OWNER"]),
-  validate(updateComplexSchema),
-  asyncHandler(updateComplexController)
 );
 
 router.delete(

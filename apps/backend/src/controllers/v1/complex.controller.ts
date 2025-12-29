@@ -94,7 +94,7 @@ export const getOwnerComplexByIdController = async (
 
 export const updateComplexController = async (req: Request, res: Response) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.complexId;
+  const complexId = req.params.id;
 
   const updatedComplex = await updateComplex(ownerId, complexId, req.body);
 
