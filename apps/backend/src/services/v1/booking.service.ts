@@ -234,6 +234,7 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
     complex_address: booking.sub_field.complex.complex_address,
     sprot_type: booking.sub_field.sport_type,
     sub_field_name: booking.sub_field.sub_field_name,
+    expires_at: booking.expires_at,
   };
 };
 
@@ -422,6 +423,7 @@ export const getPlayerBookings = async (
         end_time: true,
         total_price: true,
         status: true,
+        expires_at: true,
         sub_field: {
           select: {
             sub_field_name: true,
@@ -465,6 +467,7 @@ export const getPlayerBookings = async (
     complex_address: booking.sub_field.complex.complex_address,
     sport_type: booking.sub_field.sport_type,
     sub_field_name: booking.sub_field.sub_field_name,
+    expires_at: booking.expires_at,
   }));
 
   return {

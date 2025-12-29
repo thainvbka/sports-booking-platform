@@ -134,6 +134,20 @@ export default function RecurringBookingReviewPage() {
                   </p>
                 </div>
               </div>
+              {/* Hiển thị thời gian hết hạn thanh toán (không có giây) */}
+              {booking.expires_at && (
+                <div className="flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-orange-500" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Hạn thanh toán
+                    </p>
+                    <p className="font-medium text-orange-600">
+                      {format(new Date(booking.expires_at), "HH:mm dd/MM/yyyy")}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Separator />

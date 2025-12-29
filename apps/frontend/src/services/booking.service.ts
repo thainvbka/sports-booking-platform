@@ -27,6 +27,7 @@ export interface BookingReviewResponse {
   complex_address: string;
   sport_type: string;
   sub_field_name: string;
+  expires_at: string;
 }
 
 export interface BookingResponse extends BookingReviewResponse {

@@ -2,6 +2,12 @@ import { formatPrice } from "@/services/mockData";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
 import { BookingStatus } from "@/types";
@@ -126,13 +132,27 @@ export function PlayerBookingsPage() {
                 className="overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
               >
                 <CardHeader className="bg-muted/40 pb-2 px-6 pt-5 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between w-full">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
                       {booking.complex_name}
                     </CardTitle>
-                    <Badge className={getStatusColor(booking.status)}>
-                      {getStatusLabel(booking.status)}
-                    </Badge>
+                    <div className="flex items-center gap-1 ml-auto">
+                      <Badge className={getStatusColor(booking.status)}>
+                        {getStatusLabel(booking.status)}
+                      </Badge>
+                      {booking.status === BookingStatus.PENDING &&
+                        booking.expires_at && (
+                          <span className="flex items-center gap-1 cursor-pointer text-orange-600 text-xs font-medium">
+                            <Clock className="w-4 h-4 text-orange-500" />
+                            <span>
+                              {format(
+                                new Date(booking.expires_at),
+                                "HH:mm dd/MM/yyyy"
+                              )}
+                            </span>
+                          </span>
+                        )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
                     <span>{booking.sub_field_name}</span>

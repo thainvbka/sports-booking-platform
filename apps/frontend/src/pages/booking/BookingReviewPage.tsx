@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { bookingService, type BookingReviewResponse } from "@/services/booking.service";
+import {
+  bookingService,
+  type BookingReviewResponse,
+} from "@/services/booking.service";
 import { formatPrice } from "@/services/mockData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +42,11 @@ export default function BookingReviewPage() {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Đang tải...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Đang tải...
+      </div>
+    );
   }
 
   if (!booking) return null;
@@ -48,7 +55,9 @@ export default function BookingReviewPage() {
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Xác nhận đặt sân</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            Xác nhận đặt sân
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Complex Info */}
@@ -76,28 +85,45 @@ export default function BookingReviewPage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Ngày</p>
                   <p className="font-medium">
-                    {format(new Date(booking.start_time), "EEEE, dd/MM/yyyy", { locale: vi })}
+                    {format(new Date(booking.start_time), "EEEE, dd/MM/yyyy", {
+                      locale: vi,
+                    })}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-               <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Thời gian</p>
                   <p className="font-medium">
-                    {format(new Date(booking.start_time), "HH:mm")} - {format(new Date(booking.end_time), "HH:mm")}
+                    {format(new Date(booking.start_time), "HH:mm")} -{" "}
+                    {format(new Date(booking.end_time), "HH:mm")}
                   </p>
                 </div>
               </div>
+              {/* Hiển thị thời gian hết hạn thanh toán (không có giây) */}
+              {booking.expires_at && (
+                <div className="flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-orange-500" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Hạn thanh toán
+                    </p>
+                    <p className="font-medium text-orange-600">
+                      {format(new Date(booking.expires_at), "HH:mm dd/MM/yyyy")}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -107,7 +133,9 @@ export default function BookingReviewPage() {
           <div className="space-y-2">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Tổng thanh toán</span>
-              <span className="text-primary text-xl">{formatPrice(booking.total_price)}</span>
+              <span className="text-primary text-xl">
+                {formatPrice(booking.total_price)}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground text-right italic">
               * Vui lòng kiểm tra kỹ thông tin trước khi thanh toán
@@ -115,7 +143,11 @@ export default function BookingReviewPage() {
           </div>
 
           <div className="pt-4 flex gap-3">
-             <Button variant="outline" className="flex-1" onClick={() => navigate(-1)}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => navigate(-1)}
+            >
               Quay lại
             </Button>
             <Button className="flex-1 text-lg py-6" onClick={handlePayment}>
