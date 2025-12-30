@@ -24,7 +24,7 @@ export const validate =
     } catch (error) {
       if (error instanceof ZodError) {
         console.error("=== VALIDATION ERROR ===");
-        console.error("Errors:", JSON.stringify(error.errors, null, 2));
+        console.error("Errors:", JSON.stringify(error.issues, null, 2));
         return next(error);
       }
       console.error("=== VALIDATION UNEXPECTED ERROR ===", error);
