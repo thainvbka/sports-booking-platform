@@ -25,9 +25,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy node_modules từ stage deps
+# Copy node_modules từ stage deps (npm workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
+# Copy packages (chứa db và validation)
 COPY --from=deps /app/packages ./packages
 
 # Copy source code
@@ -56,9 +56,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# Copy chỉ production dependencies
+# Copy chỉ production dependencies (npm workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
 
 # Copy built code từ builder stage
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist

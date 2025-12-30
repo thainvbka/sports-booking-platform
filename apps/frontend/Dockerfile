@@ -22,9 +22,8 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy node_modules từ stage deps
+# Copy node_modules từ stage deps (npm workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/frontend/node_modules ./apps/frontend/node_modules
 
 # Copy source code
 COPY apps/frontend ./apps/frontend
