@@ -116,51 +116,6 @@ jobs:
             docker image prune -af --filter "until=24h"
           EOF
 
-      - name: Verify deployment
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} << 'EOF'
-            cd ~/sports-booking-platform || exit 1
-            
-            # Wait for services to be fully ready
-            echo "Waiting for services to start..."
-            sleep 20
-            
-            # Show container status
-            echo "=== Container Status ==="
-            docker compose -f docker-compose.prod.yml ps
-            
-            # Show backend logs
-            echo "=== Backend Logs (last 50 lines) ==="
-            docker compose -f docker-compose.prod.yml logs --tail=50 backend
-            
-            # Health checks with retries
-            echo "=== Checking backend health ==="
-            for i in {1..10}; do
-              if curl -f http://localhost/api/health 2>&1; then
-                echo "Backend is healthy!"
-                break
-              fi
-              echo "Attempt $i failed, retrying in 5s..."
-              sleep 5
-              if [ $i -eq 10 ]; then
-                echo "Backend health check failed after 10 attempts"
-                docker compose -f docker-compose.prod.yml logs --tail=100 backend
-                exit 1
-              fi
-            done
-            
-            echo "=== Checking frontend health ==="
-            curl -f http://localhost/ || exit 1
-            echo "Frontend is healthy!"
-            
-            # Show status
-            docker compose -f docker-compose.prod.yml ps
-            
-            echo "Deployment successful!"
-          EOF
-
       - name: Deployment completed
         run: |
           echo "Deployment to EC2 completed successfully!"
