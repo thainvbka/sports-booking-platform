@@ -13,3 +13,11 @@ out/
 *.tsbuildinfo
 
 COMPLEX_CACHE.md
+DEPLOYMENT.md
+DOCKER_OPTIMIZATION.md
+QUICK_START.md
+deploy.sh
+setup-ec2.sh
+MANUAL_SETUP.md
+
+.github/workflows/backup.yml

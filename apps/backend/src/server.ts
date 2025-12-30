@@ -45,7 +45,13 @@ app.use(
 //use helmet to enhance security by settings various HTTP headers
 app.use(helmet());
 
+// Health check endpoint for Docker and load balancers
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.use("/api/v1", routesV1);
+
 
 app.use((req, res) => {
   return res
