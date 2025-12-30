@@ -73,6 +73,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
 COPY --from=builder /app/packages ./packages
 
+# Copy Prisma schema and migrations (needed for prisma migrate deploy)
+COPY apps/backend/prisma ./apps/backend/prisma
+
 # Copy package.json files (cần cho runtime)
 COPY apps/backend/package.json ./apps/backend/
 COPY package.json ./
