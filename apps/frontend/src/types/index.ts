@@ -95,8 +95,8 @@ export interface PricingRule {
   id: string;
   // sub_field_id: string;
   day_of_week: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
-  start_time: Date; // "HH:MM"
-  end_time: Date; // "HH:MM"
+  start_time: string; // "HH:MM"
+  end_time: string; // "HH:MM"
   base_price: number;
 }
 

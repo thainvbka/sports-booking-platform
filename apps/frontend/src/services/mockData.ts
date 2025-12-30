@@ -25,7 +25,6 @@ const generatePricingRules = (subFieldId: string): PricingRule[] => {
 
       rules.push({
         id: `${subFieldId}-${day}-${hour}`,
-        sub_field_id: subFieldId,
         day_of_week: day,
         start_time: startTime,
         end_time: endTime,
@@ -60,7 +59,7 @@ const mockComplexes: Complex[] = [
         pricing_rules: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      },
+      } as any,
       {
         id: "sf-1-2",
         complex_id: "1",
@@ -171,7 +170,7 @@ const mockComplexes: Complex[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
-];
+] as any;
 
 // Add pricing rules to all sub-fields
 mockComplexes.forEach((complex) => {
