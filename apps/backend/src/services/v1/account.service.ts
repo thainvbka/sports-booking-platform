@@ -4,7 +4,7 @@ import {
   InternalServerError,
 } from "../../utils/error.response";
 
-import { addRoleInput } from "@sports-booking-platform/validation/account.schema";
+import { addRoleInput } from "@sports-booking-platform/validation";
 
 import { roleCreationStrategy } from "./auth.service";
 

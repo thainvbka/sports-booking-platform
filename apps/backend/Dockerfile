@@ -39,7 +39,15 @@ COPY package.json package-lock.json* ./
 WORKDIR /app
 RUN npx prisma generate --schema=./apps/backend/prisma/schema.prisma
 
-# Build TypeScript
+# Build all packages (compile TypeScript to JavaScript)
+RUN for pkg in packages/*; do \
+      if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then \
+        echo "Building $pkg..."; \
+        cd /app/$pkg && npm run build; \
+      fi; \
+    done
+
+# Build backend TypeScript
 WORKDIR /app/apps/backend
 RUN npm run build
 

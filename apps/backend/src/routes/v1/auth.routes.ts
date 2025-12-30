@@ -12,7 +12,7 @@ import authenticate from "../../middlewares/authenticate";
 import {
   registerSchema,
   loginSchema,
-} from "@sports-booking-platform/validation/access.schema";
+} from "@sports-booking-platform/validation";
 
 const router = Router();
 

@@ -2,7 +2,7 @@ import { prisma } from "@sports-booking-platform/db";
 import {
   CreateSubfieldInput,
   UpdateSubfieldInput,
-} from "@sports-booking-platform/validation/subfield.schema";
+} from "@sports-booking-platform/validation";
 import {
   BadRequestError,
   ForbiddenError,

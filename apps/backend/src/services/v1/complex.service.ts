@@ -2,7 +2,7 @@ import { prisma } from "@sports-booking-platform/db";
 import {
   CreateComplexInput,
   UpdateComplexInput,
-} from "@sports-booking-platform/validation/complex.schema";
+} from "@sports-booking-platform/validation";
 import {
   BadRequestError,
   ForbiddenError,

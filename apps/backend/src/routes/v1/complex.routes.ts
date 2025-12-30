@@ -7,7 +7,7 @@ import { upload } from "../../middlewares/multer";
 import {
   createComplexSchema,
   updateComplexSchema,
-} from "@sports-booking-platform/validation/complex.schema";
+} from "@sports-booking-platform/validation";
 import {
   createComplexController,
   getOwnerComplexesController,
@@ -26,7 +26,7 @@ import {
   // getOwnerSubfieldsController,
 } from "../../controllers/v1/subfield.controller";
 
-import { createSubfieldSchema } from "@sports-booking-platform/validation/subfield.schema";
+import { createSubfieldSchema } from "@sports-booking-platform/validation";
 
 const router = Router();
 

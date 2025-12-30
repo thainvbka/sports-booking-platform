@@ -2,7 +2,7 @@ import { prisma } from "@sports-booking-platform/db";
 import {
   CreatePricingRuleInput,
   UpdatePricingRuleInput,
-} from "@sports-booking-platform/validation/pricing_rule.schema";
+} from "@sports-booking-platform/validation";
 import {
   BadRequestError,
   ForbiddenError,

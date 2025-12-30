@@ -10,7 +10,7 @@ import {
   updateSubfieldController,
   deleteSubfieldController,
 } from "../../controllers/v1/subfield.controller";
-import { updateSubfieldSchema } from "@sports-booking-platform/validation/subfield.schema";
+import { updateSubfieldSchema } from "@sports-booking-platform/validation";
 
 const router = Router();
 
