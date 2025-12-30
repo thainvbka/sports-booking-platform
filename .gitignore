@@ -19,5 +19,7 @@ QUICK_START.md
 deploy.sh
 setup-ec2.sh
 MANUAL_SETUP.md
+DOMAIN_SETUP.md
+GITHUB_SECRETS.md
 
 .github/workflows/backup.yml
