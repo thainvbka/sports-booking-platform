@@ -94,6 +94,13 @@ jobs:
           ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} << 'EOF'
             cd ~/sports-booking-platform || exit 1
             
+            # Check if .env.production exists
+            if [ ! -f .env.production ]; then
+              echo "ERROR: .env.production not found!"
+              echo "Please create .env.production file on EC2"
+              exit 1
+            fi
+            
             # Pull latest code
             git pull origin main || true
             
@@ -101,7 +108,7 @@ jobs:
             docker compose -f docker-compose.prod.yml --env-file .env.production pull
             
             # Stop old containers
-            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml --env-file .env.production down
             
             # Start new containers
             docker compose -f docker-compose.prod.yml --env-file .env.production up -d
@@ -109,8 +116,8 @@ jobs:
             # Wait for database
             sleep 15
             
-            # Run migrations
-            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy --schema=./apps/backend/prisma/schema.prisma
+            # Run migrations (from host, not inside container)
+            docker compose -f docker-compose.prod.yml --env-file .env.production exec -T backend sh -c "cd /app && npx prisma migrate deploy --schema=./apps/backend/prisma/schema.prisma"
             
             # Clean up old images
             docker image prune -af --filter "until=24h"
