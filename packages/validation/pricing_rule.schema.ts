@@ -11,13 +11,13 @@ export const createPricingRuleSchema = z.object({
             .string()
             .regex(
               /^([0-1]\d|2[0-3]):([0-5]\d)$/,
-              "Invalid time format (HH:mm)"
+              "Lỗi định dạng thời gian (HH:mm)"
             ),
           end_time: z
             .string()
             .regex(
               /^([0-1]\d|2[0-3]):([0-5]\d)$/,
-              "Invalid time format (HH:mm)"
+              "Lỗi định dạng thời gian (HH:mm)"
             ),
           base_price: z.coerce.number().min(0),
         })
@@ -32,12 +32,12 @@ export const updatePricingRuleSchema = z.object({
     day_of_week: z.number().min(0).max(6).optional(), // 0 (Chủ nhật) -> 6 (Thứ 7)
     start_time: z
       .string()
-      .regex(/^([0-1]\d|2[0-3]):([0-5]\d)$/, "Invalid time format (HH:mm)")
+      .regex(/^([0-1]\d|2[0-3]):([0-5]\d)$/, "Lỗi định dạng thời gian (HH:mm)")
       .optional(),
 
     end_time: z
       .string()
-      .regex(/^([0-1]\d|2[0-3]):([0-5]\d)$/, "Invalid time format (HH:mm)")
+      .regex(/^([0-1]\d|2[0-3]):([0-5]\d)$/, "Lỗi định dạng thời gian (HH:mm)")
       .optional(),
     base_price: z.coerce.number().min(0).optional(),
   }),

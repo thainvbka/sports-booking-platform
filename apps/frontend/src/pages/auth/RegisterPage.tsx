@@ -57,7 +57,7 @@ export function RegisterPage() {
     } catch (err) {
       // Error is handled in store
       toast.error("Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.");
-      console.error("Registration failed", err);
+      console.error("Đăng ký thất bại", err);
     }
   };
 

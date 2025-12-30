@@ -33,7 +33,7 @@ export const roleCreationStrategy = {
   ) => {
     // type guard để TypeScript hiểu data này có company_name
     if (data.role !== "OWNER") {
-      throw new InternalServerError("Invalid data provided for OWNER role");
+      throw new InternalServerError("Dữ liệu không hợp lệ cho vai trò OWNER");
     }
     await tx.owner.create({
       data: {
@@ -61,7 +61,7 @@ export const signUp = async (userData: registerInput) => {
   });
 
   if (existingUser) {
-    throw new ConflictRequestError("Email or phone number already exists");
+    throw new ConflictRequestError("Email hoặc số điện thoại đã được sử dụng");
   }
 
   const hashPassword = await bcrypt.hash(userData.password, 10);
@@ -97,7 +97,7 @@ export const signUp = async (userData: registerInput) => {
     if (!createRoleAccount) {
       //schema có role mới nhưng strategy chưa cập nhật
       throw new InternalServerError(
-        `Role creation for '${userData.role}' is not implemented.`
+        `Tạo vai trò cho '${userData.role}' chưa được triển khai.`
       );
     }
 
@@ -107,10 +107,7 @@ export const signUp = async (userData: registerInput) => {
 
   //gửi email xác thực
   sendActivationEmail(newUser.email, verificationToken).catch((error) => {
-    console.error(
-      `Failed to send activation email to ${newUser.email}: `,
-      error
-    );
+    console.error(`Gửi email kích hoạt đến ${newUser.email} thất bại: `, error);
   });
 
   //fetch roles và profiles
@@ -155,7 +152,7 @@ export const verifyEmail = async (token: string) => {
   });
 
   if (!account) {
-    throw new ConflictRequestError("Invalid or expired verification token");
+    throw new ConflictRequestError("Mã xác thực không hợp lệ hoặc đã hết hạn");
   }
 
   const updatedAccount = await prisma.account.update({
@@ -218,18 +215,18 @@ export const logIn = async (email: string, password: string) => {
   });
 
   if (!user) {
-    throw new ConflictRequestError("Invalid email or password");
+    throw new ConflictRequestError("Email hoặc mật khẩu không đúng");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    throw new ConflictRequestError("Invalid email or password");
+    throw new ConflictRequestError("Email hoặc mật khẩu không đúng");
   }
 
   if (!user.email_verified) {
     throw new UnauthorizedError(
-      "Account has not been activated. Please check your email."
+      "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
     );
   }
 
@@ -281,7 +278,7 @@ export const logOut = async (refreshToken: string) => {
   });
 
   if (!storedToken) {
-    throw new UnauthorizedError("Invalid refresh token");
+    throw new UnauthorizedError("Refresh token không hợp lệ");
   }
   return await prisma.refreshToken.delete({
     where: {
@@ -298,14 +295,14 @@ export const handlerRefreshToken = async (refreshToken: string) => {
   });
 
   if (!storedToken) {
-    throw new UnauthorizedError("Invalid refresh token");
+    throw new UnauthorizedError("Refresh token không hợp lệ");
   }
 
   if (storedToken.expires_at < new Date()) {
-    throw new UnauthorizedError("Refresh token has expired");
+    throw new UnauthorizedError("Refresh token đã hết hạn");
   }
   if (storedToken.revoked) {
-    throw new UnauthorizedError("Refresh token has been revoked");
+    throw new UnauthorizedError("Refresh token đã bị thu hồi");
   }
 
   //fetch roles và profiles

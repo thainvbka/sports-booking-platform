@@ -9,19 +9,19 @@ export const createRecurringBookingSchema = z
   .object({
     body: z.object({
       start_time: z.coerce.date({
-        message: "Start time must be a valid date string",
+        message: "Thời gian bắt đầu không hợp lệ",
       }),
 
       end_time: z.coerce.date({
-        message: "End time must be a valid date string",
+        message: "Thời gian kết thúc không hợp lệ",
       }),
 
       start_date: z.coerce.date({
-        message: "Start date must be a valid date string",
+        message: "Ngày bắt đầu không hợp lệ",
       }),
 
       end_date: z.coerce.date({
-        message: "End date must be a valid date string",
+        message: "Ngày kết thúc không hợp lệ",
       }),
 
       // day_of_week: z.number().min(0).max(6), // 0 (Chủ nhật) -> 6 (Thứ 7)
@@ -37,7 +37,7 @@ export const createRecurringBookingSchema = z
   })
   .refine((data) => data.body.end_time > data.body.start_time, {
     // Validate nâng cao: Giờ kết thúc phải sau giờ bắt đầu
-    message: "End time must be after start time",
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["body", "end_time"],
   });
 

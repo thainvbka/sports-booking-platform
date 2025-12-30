@@ -7,7 +7,7 @@ export const accountSchema = z.object({
     }),
     z.object({
       role: z.literal("OWNER"),
-      company_name: z.string().min(2, "Company name is required"),
+      company_name: z.string().min(2, "Tên công ty là bắt buộc"),
     }),
   ]),
 });

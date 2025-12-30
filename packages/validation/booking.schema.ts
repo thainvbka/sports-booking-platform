@@ -4,11 +4,11 @@ export const createBookingSchema = z
   .object({
     body: z.object({
       start_time: z.coerce.date({
-        message: "Start time must be a valid date string",
+        message: "Thời gian bắt đầu không hợp lệ",
       }),
 
       end_time: z.coerce.date({
-        message: "End time must be a valid date string",
+        message: "Thời gian kết thúc không hợp lệ",
       }),
 
       // Nếu có thêm type để phân biệt đặt lẻ/cố định
@@ -20,7 +20,7 @@ export const createBookingSchema = z
   })
   .refine((data) => data.body.end_time > data.body.start_time, {
     // Validate nâng cao: Giờ kết thúc phải sau giờ bắt đầu
-    message: "End time must be after start time",
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["body", "end_time"],
   });
 

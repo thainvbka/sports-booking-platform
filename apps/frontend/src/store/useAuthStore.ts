@@ -112,7 +112,7 @@ export const useAuthStore = create<AuthState>()(
           // return response;
         } catch (error: any) {
           set({
-            error: error.response?.data?.message || "Registration failed",
+            error: error.response?.data?.message || "Đăng ký thất bại",
             isLoading: false,
           });
           throw error;
@@ -146,7 +146,7 @@ export const useAuthStore = create<AuthState>()(
           return user;
         } catch (error: any) {
           set({
-            error: error.response?.data?.message || "Verification failed",
+            error: error.response?.data?.message || "Xác thực thất bại",
             isLoading: false,
           });
           throw error;
