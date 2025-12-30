@@ -27,16 +27,17 @@ WORKDIR /app
 
 # Copy node_modules từ stage deps (npm workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
-# Copy packages (chứa db và validation)
-COPY --from=deps /app/packages ./packages
 
-# Copy source code
+# Copy packages source code (cần thiết cho Prisma generate output)
+COPY packages ./packages
+
+# Copy backend source code (bao gồm prisma schema)
 COPY apps/backend ./apps/backend
 COPY package.json package-lock.json* ./
 
-# Generate Prisma Client
-WORKDIR /app/packages/db
-RUN npx prisma generate
+# Generate Prisma Client (sẽ output vào packages/db/generated/prisma-client)
+WORKDIR /app
+RUN npx prisma generate --schema=./apps/backend/prisma/schema.prisma
 
 # Build TypeScript
 WORKDIR /app/apps/backend
