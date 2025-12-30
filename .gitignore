@@ -13,14 +13,6 @@ out/
 .tmp/
 *.tsbuildinfo
 
-COMPLEX_CACHE.md
-DEPLOYMENT.md
-DOCKER_OPTIMIZATION.md
-QUICK_START.md
-deploy.sh
-setup-ec2.sh
-MANUAL_SETUP.md
-DOMAIN_SETUP.md
-GITHUB_SECRETS.md
+docs/
 
 .github/workflows/backup.yml
