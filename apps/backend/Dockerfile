@@ -43,7 +43,8 @@ RUN npx prisma generate --schema=./apps/backend/prisma/schema.prisma
 RUN for pkg in packages/*; do \
       if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then \
         echo "Building $pkg..."; \
-        (cd /app/$pkg && npm run build;) \
+        cd /app/$pkg && npm run build; \
+        cd /app; \
       fi; \
     done
 
