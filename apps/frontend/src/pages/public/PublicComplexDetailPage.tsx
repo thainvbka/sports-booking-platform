@@ -54,7 +54,7 @@ export function PublicComplexDetailPage() {
     try {
       const response = await publicService.getComplexById(id, {
         page: currentPage,
-        limit: 6,
+        limit: 8,
         search: debouncedSearch,
       });
 

@@ -101,7 +101,7 @@ export const getPlayerBookingsController = async (
 ) => {
   const playerId = req.user?.profiles.playerId as string;
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 6;
+  const limit = parseInt(req.query.limit as string) || 8;
   const result = await getPlayerBookings(playerId, page, limit);
   return new SuccessResponse({
     message: "Player bookings retrieved successfully",

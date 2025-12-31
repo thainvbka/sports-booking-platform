@@ -58,7 +58,7 @@ export const getOwnerComplexesController = async (
   const ownerId = req.user?.profiles.ownerId as string;
 
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 6;
+  const limit = parseInt(req.query.limit as string) || 8;
   const search = (req.query.search as string) || "";
 
   const result = await getOwnerComplexes(ownerId, { page, limit, search });
@@ -77,7 +77,7 @@ export const getOwnerComplexByIdController = async (
   const complexId = req.params.id;
 
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 6;
+  const limit = parseInt(req.query.limit as string) || 8;
   const search = (req.query.search as string) || "";
 
   const result = await getOwnerComplexById(ownerId, complexId, {

@@ -399,7 +399,7 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
 export const getPlayerBookings = async (
   player_id: string,
   page = 1,
-  limit = 6
+  limit = 8
 ) => {
   //check player exists
   const player = await prisma.player.findUnique({

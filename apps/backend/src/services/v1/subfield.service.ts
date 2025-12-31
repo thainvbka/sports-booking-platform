@@ -245,7 +245,7 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
  */
 export const getAllPublicSubfields = async ({
   page = 1,
-  limit = 6,
+  limit = 8,
   search = "",
   sport_types,
   minCapacity,

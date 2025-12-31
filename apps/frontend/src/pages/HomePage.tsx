@@ -23,7 +23,7 @@ export function HomePage() {
         setIsLoading(true);
         const [complexesRes, subfieldsRes] = await Promise.all([
           publicService.getComplexes({ page: 1, limit: 4 }),
-          publicService.getSubfields({ page: 1, limit: 6 }),
+          publicService.getSubfields({ page: 1, limit: 8 }),
         ]);
         console.log("Complexes response:", complexesRes);
         console.log("Subfields response:", subfieldsRes);
@@ -110,8 +110,8 @@ export function HomePage() {
             </Link>
           </div>
           {isLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div
                   key={i}
                   className="h-96 bg-gray-200 animate-pulse rounded-lg"
@@ -119,7 +119,7 @@ export function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {featuredSubFields.map((subField) => (
                 <div key={subField.id} className="h-full">
                   <SubFieldCard

@@ -95,7 +95,7 @@ export const getOwnerComplexes = async (
   ownerId: string,
   {
     page = 1,
-    limit = 6,
+    limit = 8,
     search = "",
   }: {
     page?: number;
@@ -165,7 +165,7 @@ export const getOwnerComplexById = async (
   complexId: string,
   {
     page = 1,
-    limit = 6,
+    limit = 8,
     search = "",
   }: {
     page?: number;
@@ -473,7 +473,7 @@ export const getAllComplexesAdmin = async () => {
  */
 export const getPublicComplexActive = async ({
   page = 1,
-  limit = 6,
+  limit = 8,
   search = "",
   sport_types,
   minPrice,
@@ -580,7 +580,7 @@ export const getPublicComplexById = async (
   complexId: string,
   {
     page = 1,
-    limit = 6,
+    limit = 8,
     search = "",
   }: {
     page?: number;

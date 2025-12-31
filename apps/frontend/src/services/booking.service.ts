@@ -99,7 +99,7 @@ export const bookingService = {
     return response.data.data;
   },
 
-  getAllBookings: async (page: number = 1, limit: number = 6) => {
+  getAllBookings: async (page: number = 1, limit: number = 8) => {
     const response = await axiosInstance.get(
       `/bookings?page=${page}&limit=${limit}`
     );

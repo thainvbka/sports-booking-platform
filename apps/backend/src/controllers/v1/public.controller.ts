@@ -24,7 +24,7 @@ export const getPublicComplexActiveController = async (
   res: Response
 ) => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 4;
+  const limit = parseInt(req.query.limit as string) || 8;
   const search = (req.query.search as string) || "";
 
   // Parse sport_types as array
@@ -60,7 +60,7 @@ export const getPublicComplexByIdController = async (
   const complexId = req.params.id;
 
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 6;
+  const limit = parseInt(req.query.limit as string) || 8;
   const search = (req.query.search as string) || "";
 
   const result = await getPublicComplexById(complexId, {
@@ -81,7 +81,7 @@ export const getAllPublicSubfieldsController = async (
   res: Response
 ) => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 6;
+  const limit = parseInt(req.query.limit as string) || 8;
   const search = (req.query.search as string) || "";
 
   // Parse sport_types as array

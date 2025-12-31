@@ -4,6 +4,7 @@ import { ComplexStatus } from "@/types";
 import { MapPin, Building2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface OwnerComplexCardProps {
   complex: ComplexBase;
@@ -56,36 +57,35 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
             </div>
           )}
         </div>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-              {complex.complex_name}
-            </h3>
-            <Badge
-              variant={status.variant}
-              className={`shrink-0 ${status.className}`}
-            >
-              {status.label}
-            </Badge>
+        <CardContent className="px-3 pb-3 pt-1 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-base group-hover:text-primary transition-colors line-clamp-1 flex-1 min-w-0">
+                {complex.complex_name}
+              </h3>
+              <Badge
+                variant={status.variant}
+                className={`shrink-0 ${status.className}`}
+              >
+                {status.label}
+              </Badge>
+            </div>
+
+            <div className="flex items-start gap-1 text-xs text-muted-foreground">
+              <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+              <span className="line-clamp-1">{complex.complex_address}</span>
+            </div>
           </div>
 
-          <div className="flex items-start gap-1 text-sm text-muted-foreground">
-            <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-            <span className="line-clamp-1">{complex.complex_address}</span>
-          </div>
-
-          <div className="pt-2 border-t flex items-center justify-between text-sm">
+          <div className="pt-2 border-t flex items-center justify-between text-xs mt-auto">
             <span className="text-muted-foreground">
               {complex._count?.sub_fields ?? 0} sân con
             </span>
-            {complex.status === ComplexStatus.ACTIVE && (
-              <Badge
-                variant="outline"
-                className="text-green-600 border-green-600"
-              >
-                Đang hoạt động
-              </Badge>
-            )}
+            <Link to={`/owner/complexes/${complex.id}`} onClick={(e) => e.stopPropagation()}>
+              <Button size="sm" variant="outline" className="h-7 text-xs">
+                Quản lý
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

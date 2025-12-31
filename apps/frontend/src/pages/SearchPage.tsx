@@ -20,13 +20,13 @@ export function SearchPage() {
   const [complexPagination, setComplexPagination] = useState({
     total: 0,
     page: 1,
-    limit: 12,
+    limit: 8,
     totalPages: 0,
   });
   const [subfieldPagination, setSubfieldPagination] = useState({
     total: 0,
     page: 1,
-    limit: 12,
+    limit: 8,
     totalPages: 0,
   });
 
@@ -60,7 +60,7 @@ export function SearchPage() {
         const [complexesRes, subfieldsRes] = await Promise.all([
           publicService.getComplexes({
             page: complexPage,
-            limit: 12,
+            limit: 8,
             search: location,
             sport_types,
             minPrice,
@@ -68,7 +68,7 @@ export function SearchPage() {
           }),
           publicService.getSubfields({
             page: subfieldPage,
-            limit: 12,
+            limit: 8,
             search: location,
             sport_types,
             minCapacity,
@@ -83,7 +83,7 @@ export function SearchPage() {
           complexesRes.data?.pagination || {
             total: 0,
             page: 1,
-            limit: 12,
+            limit: 8,
             totalPages: 0,
           }
         );
@@ -93,7 +93,7 @@ export function SearchPage() {
           subfieldsRes.data?.pagination || {
             total: 0,
             page: 1,
-            limit: 12,
+            limit: 8,
             totalPages: 0,
           }
         );
@@ -168,7 +168,7 @@ export function SearchPage() {
 
               {/* Pagination */}
               {complexPagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-8">
+                <div className="flex items-center justify-end gap-2 mt-4">
                   <Button
                     variant="outline"
                     size="sm"
@@ -178,6 +178,7 @@ export function SearchPage() {
                     disabled={complexPagination.page === 1}
                   >
                     <ChevronLeft className="w-4 h-4" />
+                    Trước
                   </Button>
                   <span className="text-sm text-muted-foreground">
                     Trang {complexPagination.page} /{" "}
@@ -194,6 +195,7 @@ export function SearchPage() {
                     }
                   >
                     <ChevronRight className="w-4 h-4" />
+                    Sau  
                   </Button>
                 </div>
               )}
@@ -209,7 +211,7 @@ export function SearchPage() {
 
         <TabsContent value="subfields" className="space-y-6">
           {isLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
@@ -219,7 +221,7 @@ export function SearchPage() {
             </div>
           ) : subFieldResults.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {subFieldResults.map((subField) => (
                   <div key={subField.id} className="h-full">
                     <SubFieldCard subField={subField} showComplexInfo />
@@ -229,7 +231,7 @@ export function SearchPage() {
 
               {/* Pagination */}
               {subfieldPagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-8">
+                <div className="flex items-center justify-end gap-2 mt-4">
                   <Button
                     variant="outline"
                     size="sm"
@@ -239,6 +241,7 @@ export function SearchPage() {
                     disabled={subfieldPagination.page === 1}
                   >
                     <ChevronLeft className="w-4 h-4" />
+                    Trước
                   </Button>
                   <span className="text-sm text-muted-foreground">
                     Trang {subfieldPagination.page} /{" "}
@@ -255,6 +258,7 @@ export function SearchPage() {
                     }
                   >
                     <ChevronRight className="w-4 h-4" />
+                    Sau
                   </Button>
                 </div>
               )}

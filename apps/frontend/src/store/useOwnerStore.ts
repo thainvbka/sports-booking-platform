@@ -124,13 +124,13 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   pagination: null,
   queryParams: {
     page: 1,
-    limit: 6,
+    limit: 8,
     search: "",
   },
   subfieldPagination: null,
   subfieldQueryParams: {
     page: 1,
-    limit: 6,
+    limit: 8,
     search: "",
   },
 

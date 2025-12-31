@@ -28,9 +28,9 @@ export function SubFieldCard({
     (subField.pricing_rules.length > 0 ? getPriceRange(subField).min : 0);
 
   return (
-    <Card className="group overflow-hidden flex flex-col h-full border hover:shadow-xl transition-shadow cursor-pointer bg-card">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
       {/* Image Section */}
-      <div className="relative h-48 overflow-hidden">
+      <div className="aspect-video overflow-hidden bg-muted relative">
         <img
           src={
             subField.sub_field_image ||
@@ -39,30 +39,30 @@ export function SubFieldCard({
           alt={subField.sub_field_name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <Badge className="absolute top-3 right-3 bg-white text-gray-900 hover:bg-white/90 border-none shadow-sm">
+        <Badge className="absolute top-1 right-3 bg-white text-gray-900 hover:bg-white/90 border-none shadow-sm">
           {getSportTypeLabel(subField.sport_type)}
         </Badge>
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-4 flex-1 flex flex-col">
-        <div className="flex items-start justify-between mb-2">
+      <CardContent className="p-2 flex-1 flex flex-col">
+        <div className="flex items-start justify-between gap-2">
           <h3
-            className="font-bold text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors"
+            className="font-bold text-base line-clamp-1 group-hover:text-primary transition-colors flex-1 min-w-0"
             title={subField.sub_field_name}
           >
             {subField.sub_field_name}
           </h3>
-          {/* Mock Rating */}
-          <div className="flex items-center gap-1 text-sm font-medium">
+          <div className="flex items-center gap-1 text-xs shrink-0">
             <Users className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
             <span>{subField.capacity}</span>
           </div>
         </div>
 
-        {showComplexInfo && subField.complex_name && (
-          <div className="flex items-center gap-1 text-muted-foreground mb-3 text-sm">
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
+
+        {showComplexInfo && subField.complex_name ? (
+          <div className="flex items-start gap-1 text-xs text-muted-foreground min-h-[20px]">
+            <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <span
               className="line-clamp-1"
               title={subField.complex_address || subField.complex_name}
@@ -72,7 +72,10 @@ export function SubFieldCard({
                 : subField.complex_name}
             </span>
           </div>
+        ) : (
+          <div className="min-h-[20px]" />
         )}
+
 
         {/* Amenities (Mock) */}
         {/* <div className="flex flex-wrap gap-2 mb-3 mt-auto">
@@ -87,21 +90,18 @@ export function SubFieldCard({
           </Badge>
         </div> */}
 
-        <div className="flex items-center justify-between pt-3 border-t mt-2">
+        <div className="flex items-center justify-between pt-1 border-t mt-auto">
           <div>
             <p className="text-xs text-muted-foreground">Giá từ</p>
-            <p>
-              {minPrice > 0 ? (
-                <span className="font-semibold text-primary text-sm">
-                  {formatPrice(minPrice)}
-                  <span className="font-semibold text-primary text-sm">/h</span>
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground italic">
-                  Chưa có giá
-                </span>
-              )}
-            </p>
+            {minPrice > 0 ? (
+              <span className="font-semibold text-primary text-sm">
+                {formatPrice(minPrice)}/h
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground italic">
+                Chưa có giá
+              </span>
+            )}
           </div>
           {mode === "player" ? (
             <BookingModal

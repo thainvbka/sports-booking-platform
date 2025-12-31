@@ -133,94 +133,87 @@ export function PlayerBookingsPage() {
         <div className="text-center py-16">Đang tải...</div>
       ) : bookings.length > 0 ? (
         <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {bookings.map((booking) => (
               <Card
                 key={booking.id}
-                className="overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
+                className="overflow-hidden shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200 flex flex-col"
               >
-                <CardHeader className="bg-muted/40 pb-2 px-6 pt-5 flex flex-col gap-2">
-                  <div className="flex items-center justify-between w-full">
-                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                      {booking.complex_name}
-                    </CardTitle>
-                    <div className="flex items-center gap-1 ml-auto">
-                      {booking.status === BookingStatus.PENDING &&
-                        booking.expires_at && (
-                          <span className="flex items-center gap-1 cursor-pointer text-orange-600 text-xs font-medium">
-                            <Clock className="w-4 h-4 text-orange-500" />
-                            <span>
-                              {format(
-                                new Date(booking.expires_at),
-                                "HH:mm dd/MM/yyyy"
-                              )}
-                            </span>
-                          </span>
-                        )}
-                      <Badge className={getStatusColor(booking.status)}>
-                        {getStatusLabel(booking.status)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-muted-foreground font-medium">
-                    <span>{booking.sub_field_name}</span>
-                    <span className="mx-1">•</span>
-                    <span>{getSportTypeLabel(booking.sport_type)}</span>
+                <CardHeader className="bg-gradient-to-br from-muted/40 to-muted/20 pb-3 px-4 pt-4 relative">
+                  <Badge 
+                    className={`${getStatusColor(booking.status)} absolute top-3 right-3 text-xs px-2 py-0.5`}
+                  >
+                    {getStatusLabel(booking.status)}
+                  </Badge>
+                  <CardTitle className="text-lg font-bold pr-20 leading-tight">
+                    {booking.complex_name}
+                  </CardTitle>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium mt-1">
+                    <span className="truncate">{booking.sub_field_name}</span>
+                    <span className="text-xs">•</span>
+                    <span className="text-xs">{getSportTypeLabel(booking.sport_type)}</span>
                   </div>
                 </CardHeader>
-                <CardContent className="px-6 pt-3 pb-5 flex flex-col gap-4">
+                <CardContent className="px-4 pt-3 pb-4 flex flex-col gap-3 flex-1">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>
+                      <Calendar className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs">
                         {format(
                           new Date(booking.start_time),
-                          "EEEE, dd/MM/yyyy",
+                          "EEE, dd/MM/yyyy",
                           { locale: vi }
                         )}
+                        <span className="mx-1">•</span>
+                        {format(new Date(booking.start_time), "HH:mm")} - {format(new Date(booking.end_time), "HH:mm")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span>
-                        {format(new Date(booking.start_time), "HH:mm")} -{" "}
-                        {format(new Date(booking.end_time), "HH:mm")}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <MapPin className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       <span
-                        className="truncate"
+                        className="truncate text-xs"
                         title={booking.complex_address}
                       >
                         {booking.complex_address}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-2 text-base font-semibold">
-                      <DollarSign className="w-5 h-5 text-green-600" />
-                      <span className="text-lg">
-                        {formatPrice(booking.total_price)}
+                  
+                  {booking.status === BookingStatus.PENDING && booking.expires_at && (
+                    <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-md px-2 py-1.5 mt-1">
+                      <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+                      <span className="text-xs text-orange-700 font-medium">
+                        Hết hạn: {format(new Date(booking.expires_at), "HH:mm dd/MM")}
                       </span>
                     </div>
+                  )}
+
+                  <div className="mt-auto pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <span className="text-base font-bold text-green-700">
+                          {formatPrice(booking.total_price)}
+                        </span>
+                      </div>
+                    </div>
                     {booking.status === BookingStatus.PENDING && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          className="w-full py-2 text-sm font-semibold"
+                          onClick={() => handlePayment(booking.id)}
+                        >
+                          Thanh toán ngay
+                        </Button>
                         <Button
                           variant="outline"
-                          className="px-4 py-2 text-sm"
+                          className="w-full py-2 text-sm"
                           onClick={() => {
                             setSelectedBookingId(booking.id);
                             setDeleteDialogOpen(true);
                           }}
                         >
                           Hủy đặt sân
-                        </Button>
-                        <Button
-                          className="px-4 py-2 text-sm font-bold"
-                          onClick={() => handlePayment(booking.id)}
-                        >
-                          Thanh toán
                         </Button>
                       </div>
                     )}
