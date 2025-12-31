@@ -6,7 +6,14 @@ import {
   updateBooking,
   cancelBooking,
   getPlayerBookings,
+  ownerCancelBooking,
+  ownerConfirmBooking,
+  ownerGetAllBookings,
+  ownerGetBookingById,
+  getOwnerBookingStats,
 } from "../../services/v1/booking.service";
+import type { filter } from "../../services/v1/booking.service";
+import { ownerBookingFilterSchema } from "@sports-booking-platform/validation";
 
 import {
   createRecurringBookingService,
@@ -53,6 +60,7 @@ export const updateBookingController = async (req: Request, res: Response) => {
   }).send(res);
 };
 
+//player thể hủy booking
 export const cancelBookingController = async (req: Request, res: Response) => {
   const booking_id = req.params.id;
   await cancelBooking(booking_id, req.user?.profiles.playerId as string);
@@ -108,3 +116,92 @@ export const getPlayerBookingsController = async (
     data: result,
   }).send(res);
 };
+
+//owner
+export const ownerConfirmBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const booking_id = req.params.id;
+  const ownerId = req.user?.profiles.ownerId as string;
+  const result = await ownerConfirmBooking(booking_id, ownerId);
+  return new SuccessResponse({
+    message: "Booking confirmed successfully",
+    data: result,
+  }).send(res);
+};
+
+export const ownerCancelBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const booking_id = req.params.id;
+  const ownerId = req.user?.profiles.ownerId as string;
+  const result = await ownerCancelBooking(booking_id, ownerId);
+  return new SuccessResponse({
+    message: "Booking canceled successfully",
+    data: result,
+  }).send(res);
+};
+
+export const ownerGetAllBookingsController = async (
+  req: Request,
+  res: Response
+) => {
+  const ownerId = req.user?.profiles.ownerId as string;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 8;
+
+  // Parse and validate filter using Zod schema
+  let filterParams: filter = {};
+
+  if (req.query.filter) {
+    const parsedFilter = JSON.parse(req.query.filter as string);
+    // Validate with Zod schema
+    const validatedFilter = ownerBookingFilterSchema.parse(parsedFilter);
+
+    // Convert to service filter format
+    filterParams = {
+      search: validatedFilter.search,
+      status: validatedFilter.status as any,
+      start_date: validatedFilter.start_date,
+      end_date: validatedFilter.end_date,
+      min_price: validatedFilter.min_price,
+      max_price: validatedFilter.max_price,
+    };
+  }
+
+  const result = await ownerGetAllBookings(ownerId, page, limit, filterParams);
+  return new SuccessResponse({
+    message: "Owner bookings retrieved successfully",
+    data: result,
+  }).send(res);
+};
+
+//owner get booking by id
+export const ownerGetBookingByIdController = async (
+  req: Request,
+  res: Response
+) => {
+  const owner_id = req.user?.profiles.ownerId as string;
+  const booking_id = req.params.id;
+  const booking = await ownerGetBookingById(booking_id, owner_id);
+  return new SuccessResponse({
+    message: "Owner booking retrieved successfully",
+    data: { booking },
+  }).send(res);
+};
+
+//owner get booking stats
+export const ownerGetBookingStatsController = async (
+  req: Request,
+  res: Response
+) => {
+  const owner_id = req.user?.profiles.ownerId as string;
+  const stats = await getOwnerBookingStats(owner_id);
+  return new SuccessResponse({
+    message: "Owner booking stats retrieved successfully",
+    data: stats,
+  }).send(res);
+};
+

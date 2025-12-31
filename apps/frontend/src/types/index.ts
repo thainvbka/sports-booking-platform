@@ -162,6 +162,43 @@ export interface Booking {
   expires_at: string;
 }
 
+// Owner Booking Management
+export interface OwnerBooking {
+  id: string;
+  start_time: string;
+  end_time: string;
+  total_price: number;
+  status: BookingStatus;
+  player: {
+    account: {
+      full_name: string;
+      phone_number: string;
+    };
+  };
+  sub_field: {
+    sub_field_name: string;
+    sport_type: SportType;
+    complex: {
+      complex_name: string;
+      complex_address: string;
+    };
+  };
+}
+
+export interface OwnerBookingFilter {
+  search?: string;
+  status?: BookingStatus;
+  start_date?: Date;
+  end_date?: Date;
+  min_price?: number;
+  max_price?: number;
+}
+
+export interface OwnerBookingsResponse {
+  bookings: OwnerBooking[];
+  pagination: PaginationMeta;
+}
+
 // Search filters
 export interface SearchFilters {
   location?: string;

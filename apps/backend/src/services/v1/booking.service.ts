@@ -1,5 +1,6 @@
 import { prisma } from "@sports-booking-platform/db";
 import { CreateBookingInput } from "@sports-booking-platform/validation";
+import { BookingStatus } from "@sports-booking-platform/db";
 import {
   BadRequestError,
   ForbiddenError,
@@ -11,6 +12,15 @@ import {
   getVietnamDayOfWeek,
   getRawMinutes,
 } from "../../helpers/time.helper";
+
+export interface filter {
+  search?: string;
+  status?: BookingStatus;
+  start_date?: Date;
+  end_date?: Date;
+  min_price?: number;
+  max_price?: number;
+}
 
 export const createBooking = async (
   player_id: string,
@@ -114,7 +124,7 @@ export const createBooking = async (
   console.log("bookingEndMin:::::", bookingEndMin);
 
   // Tìm rule nào "bao trùm" (cover) được khung giờ khách đặt
-  const matchedRule = potentialRules.find((rule) => {
+  const matchedRule = potentialRules.find((rule: any) => {
     const ruleStartMin = getRawMinutes(rule.start_time);
     const ruleEndMin = getRawMinutes(rule.end_time);
     console.log("ruleStartMin:::::", ruleStartMin);
@@ -374,6 +384,7 @@ export const updateBooking = async (
   };
 };
 
+//player hủy booking
 export const cancelBooking = async (booking_id: string, player_id: string) => {
   const booking = await prisma.booking.findFirst({
     where: {
@@ -393,6 +404,353 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
   });
 
   return canceledBooking;
+};
+
+//owner hủy booking
+export const ownerCancelBooking = async (
+  booking_id: string,
+  owner_id: string
+) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to cancel bookings");
+  }
+  //check booking exists and belongs to owner's complex
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: booking_id,
+      sub_field: {
+        complex: {
+          owner_id: owner_id,
+        },
+      },
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundError("Booking not found");
+  }
+
+  if (booking.status === "CANCELED") {
+    throw new BadRequestError(
+      "Booking has already been canceled and cannot be canceled again"
+    );
+  }
+
+  await prisma.booking.update({
+    where: { id: booking_id },
+    data: { status: "CANCELED" },
+  });
+
+  return { message: "Booking canceled successfully" };
+};
+
+//owner xác nhận booking
+export const ownerConfirmBooking = async (
+  booking_id: string,
+  owner_id: string
+) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to confirm bookings");
+  }
+  //check booking exists and belongs to owner's complex
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: booking_id,
+      sub_field: {
+        complex: {
+          owner_id: owner_id,
+        },
+      },
+      status: "COMPLETED",
+      payment: {
+        status: "SUCCESS",
+      },
+    },
+  });
+
+  if (!booking) {
+    throw new BadRequestError("Booking not found or cannot be confirmed");
+  }
+
+  await prisma.booking.update({
+    where: { id: booking_id },
+    data: { status: "CONFIRMED" },
+  });
+
+  return { message: "Booking confirmed successfully" };
+};
+
+//owner get all bookings of his complex
+export const ownerGetAllBookings = async (
+  owner_id: string,
+  page = 1,
+  limit = 8,
+  filter: Partial<filter> = {}
+) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to view bookings");
+  }
+
+  const skip = (page - 1) * limit;
+
+  let startDate;
+  let endDate;
+
+  if (filter.start_date) {
+    startDate = new Date(filter.start_date);
+  }
+
+  if (filter.end_date) {
+    endDate = new Date(filter.end_date);
+  }
+
+  //build where condition
+  const whereCondition: any = {
+    sub_field: {
+      complex: {
+        owner_id: owner_id,
+      },
+    },
+  };
+
+  // Add search filter if provided
+  if (filter.search && filter.search.trim() !== "") {
+    whereCondition.OR = [
+      {
+        sub_field: {
+          complex: {
+            complex_name: {
+              contains: filter.search,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+      {
+        sub_field: {
+          sub_field_name: {
+            contains: filter.search,
+            mode: "insensitive",
+          },
+        },
+      },
+    ];
+  }
+
+  // Add status filter if provided
+  if (filter.status) {
+    whereCondition.status = filter.status;
+  }
+
+  // Add price range filter if provided
+  if (filter.min_price || filter.max_price) {
+    whereCondition.total_price = {};
+    if (filter.min_price) {
+      whereCondition.total_price.gte = filter.min_price;
+    }
+    if (filter.max_price) {
+      whereCondition.total_price.lte = filter.max_price;
+    }
+  }
+
+  // Add date range filter if provided
+  if (startDate || endDate) {
+    whereCondition.start_time = {};
+    if (startDate) {
+      whereCondition.start_time.gte = startDate;
+    }
+    if (endDate) {
+      whereCondition.start_time.lte = endDate;
+    }
+  }
+
+  const [total, bookings] = await prisma.$transaction([
+    prisma.booking.count({
+      where: whereCondition,
+    }),
+    prisma.booking.findMany({
+      where: whereCondition,
+      select: {
+        id: true,
+        start_time: true,
+        end_time: true,
+        total_price: true,
+        status: true,
+        player: {
+          select: {
+            account: {
+              select: {
+                full_name: true,
+                phone_number: true,
+              },
+            },
+          },
+        },
+        sub_field: {
+          select: {
+            sub_field_name: true,
+            sport_type: true,
+            complex: {
+              select: {
+                complex_name: true,
+                complex_address: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { created_at: "desc" },
+      skip,
+      take: limit,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    bookings,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+// owner get booking by id
+export const ownerGetBookingById = async (
+  booking_id: string,
+  owner_id: string
+) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to view bookings");
+  }
+
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: booking_id,
+      sub_field: {
+        complex: {
+          owner_id: owner_id,
+        },
+      },
+    },
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      total_price: true,
+      status: true,
+      player: {
+        select: {
+          account: {
+            select: {
+              full_name: true,
+              phone_number: true,
+            },
+          },
+        },
+      },
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              owner_id: true,
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundError("Booking not found");
+  }
+  // //check owner co phai la chu so huu cua complex chua booking do
+  if (booking.sub_field.complex.owner_id !== owner_id) {
+    throw new ForbiddenError("You are not allowed to view this booking");
+  }
+
+  return booking;
+};
+
+// owner get booking stats
+export const getOwnerBookingStats = async (owner_id: string) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to view bookings");
+  }
+
+  const baseCondition = {
+    sub_field: {
+      complex: {
+        owner_id: owner_id,
+      },
+    },
+  };
+
+  // Get counts for each status in parallel
+  const [total, pending, confirmed, completed, canceled] = await Promise.all([
+    prisma.booking.count({
+      where: baseCondition,
+    }),
+    prisma.booking.count({
+      where: {
+        ...baseCondition,
+        status: "PENDING",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        ...baseCondition,
+        status: "CONFIRMED",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        ...baseCondition,
+        status: "COMPLETED",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        ...baseCondition,
+        status: "CANCELED",
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    pending,
+    confirmed,
+    completed,
+    canceled,
+  };
 };
 
 //get player bookings

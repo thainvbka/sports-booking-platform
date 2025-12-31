@@ -215,4 +215,76 @@ export const ownerService = {
     console.log("Stripe status response:", response.data);
     return response.data.data;
   },
+
+  // Owner Booking Management
+  getOwnerBookings: async (params?: {
+    page?: number;
+    limit?: number;
+    filter?: {
+      search?: string;
+      status?: string;
+      start_date?: Date;
+      end_date?: Date;
+      min_price?: number;
+      max_price?: number;
+    };
+  }) => {
+    const queryParams: Record<string, string> = {};
+    
+    if (params?.page) queryParams.page = params.page.toString();
+    if (params?.limit) queryParams.limit = params.limit.toString();
+    
+    // Stringify filter object if provided
+    if (params?.filter) {
+      const filter = {
+        ...params.filter,
+        start_date: params.filter.start_date?.toISOString(),
+        end_date: params.filter.end_date?.toISOString(),
+      };
+      queryParams.filter = JSON.stringify(filter);
+    }
+
+    const response = await api.get<
+      ApiResponse<{
+        bookings: any[];
+        pagination: PaginationMeta;
+      }>
+    >("/bookings/all", { params: queryParams });
+    
+    return response.data;
+  },
+
+  getOwnerBookingById: async (bookingId: string) => {
+    const response = await api.get<ApiResponse<{ booking: any }>>(
+      `/bookings/${bookingId}`
+    );
+    return response.data;
+  },
+
+  confirmBooking: async (bookingId: string) => {
+    const response = await api.patch<ApiResponse<{ message: string }>>(
+      `/bookings/confirm/${bookingId}`
+    );
+    return response.data;
+  },
+
+  cancelOwnerBooking: async (bookingId: string) => {
+    const response = await api.patch<ApiResponse<{ message: string }>>(
+      `/bookings/cancel/${bookingId}`
+    );
+    return response.data;
+  },
+
+  getOwnerBookingStats: async () => {
+    const response = await api.get<
+      ApiResponse<{
+        total: number;
+        pending: number;
+        confirmed: number;
+        completed: number;
+        canceled: number;
+      }>
+    >("/bookings/stats");
+    return response.data;
+  },
 };

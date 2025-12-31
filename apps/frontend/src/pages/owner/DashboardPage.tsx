@@ -270,7 +270,7 @@ export function OwnerDashboardPage() {
                   Danh sách khách hàng đặt sân trong ngày
                 </CardDescription>
               </div>
-              <Link to="/owner/schedule">
+              <Link to="/owner/bookings">
                 <Button variant="outline" size="sm" className="hidden sm:flex">
                   Xem tất cả <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>

@@ -26,6 +26,7 @@ import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
+import { OwnerBookingsPage } from "@/pages/owner/OwnerBookingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -151,6 +152,10 @@ export const router = createBrowserRouter([
       {
         path: "sub-fields/:id",
         element: <SubFieldDetailPage />,
+      },
+      {
+        path: "bookings",
+        element: <OwnerBookingsPage />,
       },
       {
         path: "stripe/return",

@@ -6,6 +6,9 @@ import { validate } from "../../middlewares/validate";
 import {
   createBookingSchema,
   createRecurringBookingSchema,
+  confirmBookingSchema,
+  ownerCancelBookingSchema,
+  ownerGetBookingsQuerySchema,
 } from "@sports-booking-platform/validation";
 import {
   createBookingController,
@@ -15,6 +18,11 @@ import {
   createRecurringBookingController,
   reviewRecurringBookingController,
   getPlayerBookingsController,
+  ownerConfirmBookingController,
+  ownerCancelBookingController,
+  ownerGetAllBookingsController,
+  ownerGetBookingByIdController,
+  ownerGetBookingStatsController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -52,7 +60,7 @@ router.put(
   asyncHandler(updateBookingController)
 );
 
-router.delete(
+router.patch(
   "/:id", //bookingId
   authenticate,
   authorize(["PLAYER"]),
@@ -73,6 +81,46 @@ router.get(
   authenticate,
   authorize(["PLAYER"]),
   asyncHandler(reviewRecurringBookingController)
+);
+
+//owner confirm booking
+router.patch(
+  "/confirm/:id", //bookingId
+  authenticate,
+  authorize(["OWNER"]),
+  validate(confirmBookingSchema),
+  asyncHandler(ownerConfirmBookingController)
+);
+//owner cancel booking
+router.patch(
+  "/cancel/:id", //bookingId
+  authenticate,
+  authorize(["OWNER"]),
+  validate(ownerCancelBookingSchema),
+  asyncHandler(ownerCancelBookingController)
+);
+//owner get booking stats
+router.get(
+  "/stats", //owner booking stats
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(ownerGetBookingStatsController)
+);
+//owner get all bookings of his complex
+router.get(
+  "/all", //owner bookings
+  authenticate,
+  authorize(["OWNER"]),
+  validate(ownerGetBookingsQuerySchema),
+  asyncHandler(ownerGetAllBookingsController)
+);
+
+//owner get booking by id
+router.get(
+  "/:id", //bookingId
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(ownerGetBookingByIdController)
 );
 
 export default router;
