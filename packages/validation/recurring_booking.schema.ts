@@ -39,7 +39,14 @@ export const createRecurringBookingSchema = z
     // Validate nâng cao: Giờ kết thúc phải sau giờ bắt đầu
     message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["body", "end_time"],
-  });
+  })
+  .refine(
+    (data) => data.body.start_date >= new Date(new Date().setHours(0, 0, 0, 0)),
+    {
+      message: "Không thể đặt lịch định kỳ cho ngày đã qua",
+      path: ["body", "start_date"],
+    }
+  );
 
 export type CreateRecurringBookingInput = z.infer<
   typeof createRecurringBookingSchema

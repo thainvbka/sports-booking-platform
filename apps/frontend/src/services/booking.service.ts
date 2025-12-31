@@ -107,7 +107,7 @@ export const bookingService = {
   },
 
   cancelBooking: async (bookingId: string) => {
-    const response = await axiosInstance.delete(`/bookings/${bookingId}`);
+    const response = await axiosInstance.patch(`/bookings/${bookingId}`);
     return response.data.data;
   },
 

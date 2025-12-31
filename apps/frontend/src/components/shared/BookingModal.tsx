@@ -167,6 +167,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   };
 
   // Filter available slots based on selected date
+  const now = new Date();
   const availableRules = (fullSubField.pricing_rules || [])
     .filter((rule) => date && rule.day_of_week === getVietnamDayOfWeek(date))
     .sort(
@@ -326,6 +327,18 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                   <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
                     {availableRules.map((rule) => {
                       const price = calculateSlotPrice(rule);
+                      // Calculate slotDate for disabling
+                      const ruleStart = new Date(rule.start_time);
+                      const slotDate = date ? new Date(date) : null;
+                      if (slotDate) {
+                        slotDate.setHours(
+                          ruleStart.getUTCHours(),
+                          ruleStart.getUTCMinutes(),
+                          0,
+                          0
+                        );
+                      }
+                      const isPast = slotDate ? slotDate < now : false;
                       return (
                         <Button
                           key={rule.id}
@@ -336,9 +349,11 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                             "flex flex-col items-center justify-center h-auto py-2 px-1",
                             selectedRule?.id === rule.id
                               ? "bg-primary text-primary-foreground"
-                              : "hover:bg-accent"
+                              : "hover:bg-accent",
+                            isPast && "opacity-50 cursor-not-allowed"
                           )}
-                          onClick={() => setSelectedRule(rule)}
+                          onClick={() => !isPast && setSelectedRule(rule)}
+                          disabled={isPast}
                         >
                           <span className="text-sm font-semibold">
                             {formatRuleTime(rule.start_time)} -{" "}

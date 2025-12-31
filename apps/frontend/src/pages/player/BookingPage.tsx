@@ -140,8 +140,10 @@ export function PlayerBookingsPage() {
                 className="overflow-hidden shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200 flex flex-col"
               >
                 <CardHeader className="bg-gradient-to-br from-muted/40 to-muted/20 pb-3 px-4 pt-4 relative">
-                  <Badge 
-                    className={`${getStatusColor(booking.status)} absolute top-3 right-3 text-xs px-2 py-0.5`}
+                  <Badge
+                    className={`${getStatusColor(
+                      booking.status
+                    )} absolute top-3 right-3 text-xs px-2 py-0.5`}
                   >
                     {getStatusLabel(booking.status)}
                   </Badge>
@@ -151,7 +153,9 @@ export function PlayerBookingsPage() {
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium mt-1">
                     <span className="truncate">{booking.sub_field_name}</span>
                     <span className="text-xs">•</span>
-                    <span className="text-xs">{getSportTypeLabel(booking.sport_type)}</span>
+                    <span className="text-xs">
+                      {getSportTypeLabel(booking.sport_type)}
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="px-4 pt-3 pb-4 flex flex-col gap-3 flex-1">
@@ -165,7 +169,8 @@ export function PlayerBookingsPage() {
                           { locale: vi }
                         )}
                         <span className="mx-1">•</span>
-                        {format(new Date(booking.start_time), "HH:mm")} - {format(new Date(booking.end_time), "HH:mm")}
+                        {format(new Date(booking.start_time), "HH:mm")} -{" "}
+                        {format(new Date(booking.end_time), "HH:mm")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
@@ -178,15 +183,17 @@ export function PlayerBookingsPage() {
                       </span>
                     </div>
                   </div>
-                  
-                  {booking.status === BookingStatus.PENDING && booking.expires_at && (
-                    <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-md px-2 py-1.5 mt-1">
-                      <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
-                      <span className="text-xs text-orange-700 font-medium">
-                        Hết hạn: {format(new Date(booking.expires_at), "HH:mm dd/MM")}
-                      </span>
-                    </div>
-                  )}
+
+                  {booking.status === BookingStatus.PENDING &&
+                    booking.expires_at && (
+                      <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-md px-2 py-1.5 mt-1">
+                        <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+                        <span className="text-xs text-orange-700 font-medium">
+                          Hết hạn:{" "}
+                          {format(new Date(booking.expires_at), "HH:mm dd/MM")}
+                        </span>
+                      </div>
+                    )}
 
                   <div className="mt-auto pt-2 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-3">
@@ -197,26 +204,38 @@ export function PlayerBookingsPage() {
                         </span>
                       </div>
                     </div>
-                    {booking.status === BookingStatus.PENDING && (
-                      <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 min-h-[80px] justify-center">
+                      {booking.status === BookingStatus.PENDING && (
                         <Button
                           className="w-full py-2 text-sm font-semibold"
                           onClick={() => handlePayment(booking.id)}
                         >
                           Thanh toán ngay
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="w-full py-2 text-sm"
-                          onClick={() => {
-                            setSelectedBookingId(booking.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                        >
-                          Hủy đặt sân
-                        </Button>
-                      </div>
-                    )}
+                      )}
+
+                      {["PENDING", "CONFIRMED", "COMPLETED"].includes(
+                        booking.status
+                      ) &&
+                        new Date(booking.start_time) > new Date() && (
+                          <Button
+                            variant="outline"
+                            className="w-full py-2 text-sm"
+                            onClick={() => {
+                              setSelectedBookingId(booking.id);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            Hủy đặt sân
+                          </Button>
+                        )}
+
+                      {booking.status === BookingStatus.CANCELED && (
+                        <div className="text-xs text-muted-foreground text-center italic">
+                          Đặt sân đã bị hủy
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

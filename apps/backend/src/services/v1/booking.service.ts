@@ -35,6 +35,11 @@ export const createBooking = async (
     throw new ForbiddenError("You are not allowed to make a booking");
   }
 
+  // Không cho phép đặt slot trong quá khứ
+  if (new Date(data.start_time) < new Date()) {
+    throw new BadRequestError("Không thể đặt sân cho thời gian đã qua.");
+  }
+
   //check sub field exists
   const subField = await prisma.subField.findFirst({
     where: { id: sub_field_id, isDelete: false },
@@ -390,20 +395,26 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
     where: {
       id: booking_id,
       player_id: player_id,
-      status: "PENDING",
+      status: { in: ["PENDING", "COMPLETED", "CONFIRMED"] },
     },
   });
 
   if (!booking) {
     throw new NotFoundError("Booking not found or cannot be canceled");
   }
+  //chi huy những booking chưa xảy ra, tức là thời gian hiện tại phải nhỏ hơn start_time
+  if (booking.start_time <= new Date()) {
+    throw new BadRequestError(
+      "Cannot cancel a booking that has already started or passed"
+    );
+  }
 
-  const canceledBooking = await prisma.booking.update({
+  await prisma.booking.update({
     where: { id: booking_id },
     data: { status: "CANCELED" },
   });
 
-  return canceledBooking;
+  return { message: "Booking canceled successfully" };
 };
 
 //owner hủy booking

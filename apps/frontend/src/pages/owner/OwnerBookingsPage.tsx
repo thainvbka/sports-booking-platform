@@ -66,7 +66,7 @@ export function OwnerBookingsPage() {
   // Stats state
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
+    canceled: 0,
     confirmed: 0,
     completed: 0,
   });
@@ -97,7 +97,7 @@ export function OwnerBookingsPage() {
       const response = await ownerService.getOwnerBookingStats();
       setStats({
         total: response.data.total,
-        pending: response.data.pending,
+        canceled: response.data.canceled,
         confirmed: response.data.confirmed,
         completed: response.data.completed,
       });
@@ -254,25 +254,12 @@ export function OwnerBookingsPage() {
         <Card className="border-none shadow-md bg-gradient-to-br from-blue-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tổng số đặt sân
+              Tổng số lượt đặt sân
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">
               {stats.total}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md bg-gradient-to-br from-yellow-50 to-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Chờ xác nhận
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-700">
-              {stats.pending}
             </div>
           </CardContent>
         </Card>
@@ -293,12 +280,25 @@ export function OwnerBookingsPage() {
         <Card className="border-none shadow-md bg-gradient-to-br from-purple-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Hoàn thành
+              Đã thanh toán
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700">
               {stats.completed}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-md bg-gradient-to-br from-red-50 to-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Đã hủy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-700">
+              {stats.canceled}
             </div>
           </CardContent>
         </Card>
@@ -375,9 +375,10 @@ export function OwnerBookingsPage() {
 
                   const canConfirm = booking.status === "COMPLETED";
                   const canCancel =
-                    booking.status === "PENDING" ||
-                    booking.status === "CONFIRMED" ||
-                    booking.status === "COMPLETED";
+                    (booking.status === "PENDING" ||
+                      booking.status === "CONFIRMED" ||
+                      booking.status === "COMPLETED") &&
+                    new Date(booking.start_time) > new Date();
 
                   return (
                     <TableRow key={booking.id}>
@@ -521,30 +522,28 @@ export function OwnerBookingsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Trang {currentPage} / {totalPages} • Tổng {total} đặt sân
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Trước
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Sau
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Trước
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Sau
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
 

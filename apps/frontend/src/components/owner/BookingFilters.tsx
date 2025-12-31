@@ -27,9 +27,9 @@ interface BookingFiltersProps {
 
 const statusList: Array<{ value: BookingStatus | "ALL"; label: string }> = [
   { value: "ALL", label: "Tất cả" },
-  { value: "PENDING", label: "Chờ xác nhận" },
+  { value: "PENDING", label: "Chưa thanh toán" },
   { value: "CONFIRMED", label: "Đã xác nhận" },
-  { value: "COMPLETED", label: "Hoàn thành" },
+  { value: "COMPLETED", label: "Đã thanh toán" },
   { value: "CANCELED", label: "Đã hủy" },
 ];
 
@@ -73,7 +73,8 @@ export function BookingFilters({
     }, 100);
   };
 
-  const currentStatusLabel = statusList.find((s) => s.value === status)?.label || "Tất cả";
+  const currentStatusLabel =
+    statusList.find((s) => s.value === status)?.label || "Tất cả";
   const hasStatusFilter = status !== "ALL";
   const hasDateFilter = !!dateRange;
   const hasPriceFilter = !!minPrice || !!maxPrice;
@@ -124,13 +125,13 @@ export function BookingFilters({
             className="h-9 gap-2"
           >
             <CalendarIcon className="h-3.5 w-3.5" />
-            {hasDateFilter && dateRange?.from ? (
-              dateRange.to
-                ? `${format(dateRange.from, "dd/MM", { locale: vi })} - ${format(dateRange.to, "dd/MM", { locale: vi })}`
+            {hasDateFilter && dateRange?.from
+              ? dateRange.to
+                ? `${format(dateRange.from, "dd/MM", {
+                    locale: vi,
+                  })} - ${format(dateRange.to, "dd/MM", { locale: vi })}`
                 : format(dateRange.from, "dd/MM", { locale: vi })
-            ) : (
-              "Thời gian"
-            )}
+              : "Thời gian"}
             <ChevronDown className="h-3.5 w-3.5 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -159,22 +160,24 @@ export function BookingFilters({
             variant={hasPriceFilter ? "default" : "outline"}
             className="h-9 gap-2"
           >
-            {hasPriceFilter ? (
-              minPrice && maxPrice
-                ? `${parseInt(minPrice) / 1000}k - ${parseInt(maxPrice) / 1000}k`
+            {hasPriceFilter
+              ? minPrice && maxPrice
+                ? `${parseInt(minPrice) / 1000}k - ${
+                    parseInt(maxPrice) / 1000
+                  }k`
                 : minPrice
                 ? `Từ ${parseInt(minPrice) / 1000}k`
                 : `Đến ${parseInt(maxPrice) / 1000}k`
-            ) : (
-              "Giá"
-            )}
+              : "Giá"}
             <ChevronDown className="h-3.5 w-3.5 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-4" align="end">
           <div className="space-y-4">
             <div>
-              <Label className="text-xs font-medium mb-2 block">Khoảng giá</Label>
+              <Label className="text-xs font-medium mb-2 block">
+                Khoảng giá
+              </Label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Input

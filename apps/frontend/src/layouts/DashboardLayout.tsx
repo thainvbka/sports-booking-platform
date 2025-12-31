@@ -27,7 +27,7 @@ export function DashboardLayout() {
       label: "Quản lý khu phức hợp",
       path: "/owner/complexes",
     },
-    { icon: Calendar, label: "Lịch Đặt Sân", path: "/owner/bookings" },
+    { icon: Calendar, label: "Quản lý lịch đặt sân", path: "/owner/bookings" },
     { icon: Settings, label: "Cài đặt", path: "/owner/settings" },
   ];
 

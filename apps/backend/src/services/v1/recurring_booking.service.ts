@@ -143,6 +143,12 @@ export const createRecurringBookingService = async (
 
   // duyệt từng slot
   for (const slot of bookingSlots) {
+    //giờ bắt đầu phải lớn hơn giờ hiện tại
+    if (slot.start < new Date()) {
+      throw new BadRequestError(
+        `Cannot create booking in the past: ${slot.start.toLocaleString()}`
+      );
+    }
     // Check Trùng Lịch
     const overlappingBooking = await prisma.booking.findFirst({
       where: {

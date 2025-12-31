@@ -60,13 +60,16 @@ export const updateBookingController = async (req: Request, res: Response) => {
   }).send(res);
 };
 
-//player thể hủy booking
+//player  hủy booking
 export const cancelBookingController = async (req: Request, res: Response) => {
   const booking_id = req.params.id;
-  await cancelBooking(booking_id, req.user?.profiles.playerId as string);
+  const result = await cancelBooking(
+    booking_id,
+    req.user?.profiles.playerId as string
+  );
   return new SuccessResponse({
     message: "Booking canceled successfully",
-    data: {},
+    data: result,
   }).send(res);
 };
 
@@ -204,4 +207,3 @@ export const ownerGetBookingStatsController = async (
     data: stats,
   }).send(res);
 };
-

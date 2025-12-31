@@ -22,6 +22,10 @@ export const createBookingSchema = z
     // Validate nâng cao: Giờ kết thúc phải sau giờ bắt đầu
     message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["body", "end_time"],
+  })
+  .refine((data) => data.body.start_time > new Date(), {
+    message: "Không thể đặt sân cho thời gian đã qua",
+    path: ["body", "start_time"],
   });
 
 // owner booking filter schema
