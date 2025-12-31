@@ -3,6 +3,7 @@ import {
   ConflictRequestError,
   UnauthorizedError,
   InternalServerError,
+  BadRequestError,
 } from "../../utils/error.response";
 import { JwtPayload } from "../../libs/jwt";
 import bcrypt from "bcrypt";
@@ -11,9 +12,8 @@ import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
 import { registerInput } from "@sports-booking-platform/validation";
 import { addRoleInput } from "@sports-booking-platform/validation";
 import { getUserRolesAndProfiles } from "../../helpers";
-import { sendActivationEmail } from "../../libs/mailer";
+import { sendActivationEmail, sendResetPasswordEmail } from "../../libs/mailer";
 import crypto from "crypto";
-import { AnyNull } from "@sports-booking-platform/db/generated/prisma-client/internal/prismaNamespace";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
@@ -346,4 +346,74 @@ export const handlerRefreshToken = async (refreshToken: string) => {
     accessToken,
     refreshToken: newRefreshToken,
   };
+};
+
+export const forgotPassword = async (email: string) => {
+  //check tồn tại email đã đăng ký
+  const account = await prisma.account.findUnique({
+    where: {
+      email,
+      email_verified: true,
+    },
+    select: {
+      email: true,
+    },
+  });
+  if (!account) {
+    throw new ConflictRequestError(
+      "Email chưa được đăng ký hoặc chưa được kích hoạt"
+    );
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // Hết hạn sau 15 phút
+
+  await prisma.account.update({
+    where: {
+      email,
+    },
+    data: {
+      reset_password_token: resetToken,
+      reset_password_expires_at: tokenExpiry,
+    },
+  });
+
+  //gửi email chứa link reset password
+  sendResetPasswordEmail(email, resetToken).catch((error) => {
+    console.error(`Gửi email đặt lại mật khẩu đến ${email} thất bại: `, error);
+  });
+
+  return { message: "Đã gửi email đặt lại mật khẩu." };
+};
+
+export const resetPassword = async (token: string, new_password: string) => {
+  const account = await prisma.account.findFirst({
+    where: {
+      reset_password_token: token,
+      reset_password_expires_at: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!account) {
+    throw new BadRequestError(
+      "Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"
+    );
+  }
+
+  const hashPassword = await bcrypt.hash(new_password, 10);
+
+  await prisma.account.update({
+    where: {
+      id: account.id,
+    },
+    data: {
+      password: hashPassword,
+      reset_password_token: null,
+      reset_password_expires_at: null,
+    },
+  });
+
+  return { message: "Đặt lại mật khẩu thành công." };
 };

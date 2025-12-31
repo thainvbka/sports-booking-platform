@@ -8,8 +8,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/library"
-import type * as $Enums from "../enums.ts"
-import type * as Prisma from "../internal/prismaNamespace.ts"
+import type * as $Enums from "../enums"
+import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Account
@@ -36,6 +36,8 @@ export type AccountMinAggregateOutputType = {
   updated_at: Date | null
   verification_token: string | null
   verification_expires_at: Date | null
+  reset_password_token: string | null
+  reset_password_expires_at: Date | null
 }
 
 export type AccountMaxAggregateOutputType = {
@@ -51,6 +53,8 @@ export type AccountMaxAggregateOutputType = {
   updated_at: Date | null
   verification_token: string | null
   verification_expires_at: Date | null
+  reset_password_token: string | null
+  reset_password_expires_at: Date | null
 }
 
 export type AccountCountAggregateOutputType = {
@@ -66,6 +70,8 @@ export type AccountCountAggregateOutputType = {
   updated_at: number
   verification_token: number
   verification_expires_at: number
+  reset_password_token: number
+  reset_password_expires_at: number
   _all: number
 }
 
@@ -83,6 +89,8 @@ export type AccountMinAggregateInputType = {
   updated_at?: true
   verification_token?: true
   verification_expires_at?: true
+  reset_password_token?: true
+  reset_password_expires_at?: true
 }
 
 export type AccountMaxAggregateInputType = {
@@ -98,6 +106,8 @@ export type AccountMaxAggregateInputType = {
   updated_at?: true
   verification_token?: true
   verification_expires_at?: true
+  reset_password_token?: true
+  reset_password_expires_at?: true
 }
 
 export type AccountCountAggregateInputType = {
@@ -113,6 +123,8 @@ export type AccountCountAggregateInputType = {
   updated_at?: true
   verification_token?: true
   verification_expires_at?: true
+  reset_password_token?: true
+  reset_password_expires_at?: true
   _all?: true
 }
 
@@ -201,6 +213,8 @@ export type AccountGroupByOutputType = {
   updated_at: Date
   verification_token: string | null
   verification_expires_at: Date | null
+  reset_password_token: string | null
+  reset_password_expires_at: Date | null
   _count: AccountCountAggregateOutputType | null
   _min: AccountMinAggregateOutputType | null
   _max: AccountMaxAggregateOutputType | null
@@ -237,6 +251,8 @@ export type AccountWhereInput = {
   updated_at?: Prisma.DateTimeFilter<"Account"> | Date | string
   verification_token?: Prisma.StringNullableFilter<"Account"> | string | null
   verification_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
+  reset_password_token?: Prisma.StringNullableFilter<"Account"> | string | null
+  reset_password_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
   social_accounts?: Prisma.SocialAccountListRelationFilter
   refresh_tokens?: Prisma.RefreshTokenListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
@@ -258,6 +274,8 @@ export type AccountOrderByWithRelationInput = {
   updated_at?: Prisma.SortOrder
   verification_token?: Prisma.SortOrderInput | Prisma.SortOrder
   verification_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  reset_password_token?: Prisma.SortOrderInput | Prisma.SortOrder
+  reset_password_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
   social_accounts?: Prisma.SocialAccountOrderByRelationAggregateInput
   refresh_tokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
@@ -271,6 +289,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   email?: string
   phone_number?: string
   verification_token?: string
+  reset_password_token?: string
   AND?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   OR?: Prisma.AccountWhereInput[]
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
@@ -282,13 +301,14 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   created_at?: Prisma.DateTimeFilter<"Account"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Account"> | Date | string
   verification_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
+  reset_password_expires_at?: Prisma.DateTimeNullableFilter<"Account"> | Date | string | null
   social_accounts?: Prisma.SocialAccountListRelationFilter
   refresh_tokens?: Prisma.RefreshTokenListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   admin?: Prisma.XOR<Prisma.AdminNullableScalarRelationFilter, Prisma.AdminWhereInput> | null
   owner?: Prisma.XOR<Prisma.OwnerNullableScalarRelationFilter, Prisma.OwnerWhereInput> | null
   player?: Prisma.XOR<Prisma.PlayerNullableScalarRelationFilter, Prisma.PlayerWhereInput> | null
-}, "id" | "email" | "phone_number" | "verification_token">
+}, "id" | "email" | "phone_number" | "verification_token" | "reset_password_token">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -303,6 +323,8 @@ export type AccountOrderByWithAggregationInput = {
   updated_at?: Prisma.SortOrder
   verification_token?: Prisma.SortOrderInput | Prisma.SortOrder
   verification_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  reset_password_token?: Prisma.SortOrderInput | Prisma.SortOrder
+  reset_password_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountCountOrderByAggregateInput
   _max?: Prisma.AccountMaxOrderByAggregateInput
   _min?: Prisma.AccountMinOrderByAggregateInput
@@ -324,6 +346,8 @@ export type AccountScalarWhereWithAggregatesInput = {
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   verification_token?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
   verification_expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
+  reset_password_token?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  reset_password_expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
 }
 
 export type AccountCreateInput = {
@@ -339,6 +363,8 @@ export type AccountCreateInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -360,6 +386,8 @@ export type AccountUncheckedCreateInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -381,6 +409,8 @@ export type AccountUpdateInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -402,6 +432,8 @@ export type AccountUncheckedUpdateInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -423,6 +455,8 @@ export type AccountCreateManyInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
 }
 
 export type AccountUpdateManyMutationInput = {
@@ -438,6 +472,8 @@ export type AccountUpdateManyMutationInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountUncheckedUpdateManyInput = {
@@ -453,6 +489,8 @@ export type AccountUncheckedUpdateManyInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountCountOrderByAggregateInput = {
@@ -468,6 +506,8 @@ export type AccountCountOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder
   verification_token?: Prisma.SortOrder
   verification_expires_at?: Prisma.SortOrder
+  reset_password_token?: Prisma.SortOrder
+  reset_password_expires_at?: Prisma.SortOrder
 }
 
 export type AccountMaxOrderByAggregateInput = {
@@ -483,6 +523,8 @@ export type AccountMaxOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder
   verification_token?: Prisma.SortOrder
   verification_expires_at?: Prisma.SortOrder
+  reset_password_token?: Prisma.SortOrder
+  reset_password_expires_at?: Prisma.SortOrder
 }
 
 export type AccountMinOrderByAggregateInput = {
@@ -498,6 +540,8 @@ export type AccountMinOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder
   verification_token?: Prisma.SortOrder
   verification_expires_at?: Prisma.SortOrder
+  reset_password_token?: Prisma.SortOrder
+  reset_password_expires_at?: Prisma.SortOrder
 }
 
 export type AccountScalarRelationFilter = {
@@ -622,6 +666,8 @@ export type AccountCreateWithoutAdminInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -642,6 +688,8 @@ export type AccountUncheckedCreateWithoutAdminInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -678,6 +726,8 @@ export type AccountUpdateWithoutAdminInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -698,6 +748,8 @@ export type AccountUncheckedUpdateWithoutAdminInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -718,6 +770,8 @@ export type AccountCreateWithoutOwnerInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -738,6 +792,8 @@ export type AccountUncheckedCreateWithoutOwnerInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -774,6 +830,8 @@ export type AccountUpdateWithoutOwnerInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -794,6 +852,8 @@ export type AccountUncheckedUpdateWithoutOwnerInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -814,6 +874,8 @@ export type AccountCreateWithoutPlayerInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
@@ -834,6 +896,8 @@ export type AccountUncheckedCreateWithoutPlayerInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
@@ -870,6 +934,8 @@ export type AccountUpdateWithoutPlayerInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
@@ -890,6 +956,8 @@ export type AccountUncheckedUpdateWithoutPlayerInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
@@ -910,6 +978,8 @@ export type AccountCreateWithoutRefresh_tokensInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -930,6 +1000,8 @@ export type AccountUncheckedCreateWithoutRefresh_tokensInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -966,6 +1038,8 @@ export type AccountUpdateWithoutRefresh_tokensInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -986,6 +1060,8 @@ export type AccountUncheckedUpdateWithoutRefresh_tokensInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -1006,6 +1082,8 @@ export type AccountCreateWithoutSocial_accountsInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -1026,6 +1104,8 @@ export type AccountUncheckedCreateWithoutSocial_accountsInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -1062,6 +1142,8 @@ export type AccountUpdateWithoutSocial_accountsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -1082,6 +1164,8 @@ export type AccountUncheckedUpdateWithoutSocial_accountsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -1102,6 +1186,8 @@ export type AccountCreateWithoutNotificationsInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminCreateNestedOneWithoutAccountInput
@@ -1122,6 +1208,8 @@ export type AccountUncheckedCreateWithoutNotificationsInput = {
   updated_at?: Date | string
   verification_token?: string | null
   verification_expires_at?: Date | string | null
+  reset_password_token?: string | null
+  reset_password_expires_at?: Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedCreateNestedManyWithoutAccountInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutAccountInput
   admin?: Prisma.AdminUncheckedCreateNestedOneWithoutAccountInput
@@ -1158,6 +1246,8 @@ export type AccountUpdateWithoutNotificationsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUpdateOneWithoutAccountNestedInput
@@ -1178,6 +1268,8 @@ export type AccountUncheckedUpdateWithoutNotificationsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   verification_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   verification_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   social_accounts?: Prisma.SocialAccountUncheckedUpdateManyWithoutAccountNestedInput
   refresh_tokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutAccountNestedInput
   admin?: Prisma.AdminUncheckedUpdateOneWithoutAccountNestedInput
@@ -1247,6 +1339,8 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updated_at?: boolean
   verification_token?: boolean
   verification_expires_at?: boolean
+  reset_password_token?: boolean
+  reset_password_expires_at?: boolean
   social_accounts?: boolean | Prisma.Account$social_accountsArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.Account$refresh_tokensArgs<ExtArgs>
   notifications?: boolean | Prisma.Account$notificationsArgs<ExtArgs>
@@ -1269,6 +1363,8 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updated_at?: boolean
   verification_token?: boolean
   verification_expires_at?: boolean
+  reset_password_token?: boolean
+  reset_password_expires_at?: boolean
 }, ExtArgs["result"]["account"]>
 
 export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1284,6 +1380,8 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updated_at?: boolean
   verification_token?: boolean
   verification_expires_at?: boolean
+  reset_password_token?: boolean
+  reset_password_expires_at?: boolean
 }, ExtArgs["result"]["account"]>
 
 export type AccountSelectScalar = {
@@ -1299,9 +1397,11 @@ export type AccountSelectScalar = {
   updated_at?: boolean
   verification_token?: boolean
   verification_expires_at?: boolean
+  reset_password_token?: boolean
+  reset_password_expires_at?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at" | "verification_token" | "verification_expires_at", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "phone_number" | "avatar" | "email_verified" | "phone_verified" | "created_at" | "updated_at" | "verification_token" | "verification_expires_at" | "reset_password_token" | "reset_password_expires_at", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   social_accounts?: boolean | Prisma.Account$social_accountsArgs<ExtArgs>
   refresh_tokens?: boolean | Prisma.Account$refresh_tokensArgs<ExtArgs>
@@ -1337,6 +1437,8 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     updated_at: Date
     verification_token: string | null
     verification_expires_at: Date | null
+    reset_password_token: string | null
+    reset_password_expires_at: Date | null
   }, ExtArgs["result"]["account"]>
   composites: {}
 }
@@ -1778,6 +1880,8 @@ export interface AccountFieldRefs {
   readonly updated_at: Prisma.FieldRef<"Account", 'DateTime'>
   readonly verification_token: Prisma.FieldRef<"Account", 'String'>
   readonly verification_expires_at: Prisma.FieldRef<"Account", 'DateTime'>
+  readonly reset_password_token: Prisma.FieldRef<"Account", 'String'>
+  readonly reset_password_expires_at: Prisma.FieldRef<"Account", 'DateTime'>
 }
     
 

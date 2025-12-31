@@ -24,6 +24,8 @@ import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
 import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
 import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
+import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 
 export const router = createBrowserRouter([
   {
@@ -113,8 +115,16 @@ export const router = createBrowserRouter([
         element: <RegisterPage />,
       },
       {
-        path: "verify-email",
+        path: "verify-email/:token",
         element: <VerifyEmailPage />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPasswordPage />,
       },
     ],
   },

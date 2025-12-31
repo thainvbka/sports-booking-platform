@@ -60,8 +60,8 @@ export const createConnectAccount = async (ownerId: string) => {
   //tạo link onboarding
   const accountLink = await stripe.accountLinks.create({
     account: striperAccountId,
-    refresh_url: `${config.CORS_ORIGIN}/owner/stripe/refresh`, //check neu hoan thanh thi redirect ve trang kiem tra hoac chua thi tao lai
-    return_url: `${config.CORS_ORIGIN}/owner/stripe/return`, //goi Api de update onboarding complete
+    refresh_url: `${config.CLIENT_URL}/owner/stripe/refresh`, //check neu hoan thanh thi redirect ve trang kiem tra hoac chua thi tao lai
+    return_url: `${config.CLIENT_URL}/owner/stripe/return`, //goi Api de update onboarding complete
     type: "account_onboarding",
   });
 
@@ -195,8 +195,8 @@ export const createCheckoutSession = async (
       bookingIds: JSON.stringify(bookingIds),
       type: "BOOKING_CHECKOUT",
     },
-    success_url: `${config.CORS_ORIGIN}/bookings/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.CORS_ORIGIN}/bookings/failed`,
+    success_url: `${config.CLIENT_URL}/bookings/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.CLIENT_URL}/bookings/failed`,
     expires_at: Math.floor(Date.now() / 1000) + 30 * 60, //30 phut
   });
 

@@ -81,8 +81,7 @@ export function LoginPage() {
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Mật khẩu</Label>
             <Link
-              // to="/auth/forgot-password"
-              to="#"
+              to="/auth/forgot-password"
               className="text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
             >
               Quên mật khẩu?

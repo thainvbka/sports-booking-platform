@@ -5,6 +5,8 @@ import {
   logIn,
   logOut,
   handlerRefreshToken,
+  forgotPassword,
+  resetPassword,
 } from "../../services/v1/auth.service";
 import { Created, SuccessResponse } from "../../utils/success.response";
 import { config } from "../../configs";
@@ -30,7 +32,7 @@ export const signupController = async (req: Request, res: Response) => {
 };
 
 export const verifyEmailController = async (req: Request, res: Response) => {
-  const { token } = req.query as { token: string };
+  const { token } = req.params as { token: string };
   const data = await verifyEmail(token);
 
   res.cookie("refreshToken", data.refreshToken, {
@@ -91,5 +93,24 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     data: {
       accessToken: data.accessToken,
     },
+  }).send(res);
+};
+
+export const forgotPasswordController = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const result = await forgotPassword(email);
+  return new SuccessResponse({
+    message: "Password reset link sent to email successfully",
+    data: result,
+  }).send(res);
+};
+
+export const resetPasswordController = async (req: Request, res: Response) => {
+  const { new_password } = req.body;
+  const { token } = req.params as { token: string };
+  const result = await resetPassword(token, new_password);
+  return new SuccessResponse({
+    message: "Password reset successfully",
+    data: result,
   }).send(res);
 };

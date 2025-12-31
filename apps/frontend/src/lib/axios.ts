@@ -35,7 +35,7 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       error.response?.data?.message ===
-        "Account has not been activated. Please check your email."
+        "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
     ) {
       return Promise.reject(error);
     }

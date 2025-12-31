@@ -35,6 +35,13 @@ export interface RegisterResponse {
   };
 }
 
+export interface ForgotPasswordResponse {
+  message: string;
+  data: {
+    message: string;
+  };
+}
+
 export const authService = {
   login: async (data: loginInput) => {
     const response = await api.post<AuthResponse>("/auth/login", data);
@@ -49,9 +56,9 @@ export const authService = {
   },
 
   verifyEmail: async (token: string) => {
-    //token gửi ở query param
+    //token gửi ở param
     const response = await api.post<AuthResponse>(
-      `/auth/verify-email?token=${token}`
+      `/auth/verify-email/${token}`
     );
     return response.data;
   },
@@ -63,6 +70,26 @@ export const authService = {
   refreshToken: async () => {
     const response = await api.post<{ data: { accessToken: string } }>(
       "/auth/refresh-token"
+    );
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post<ForgotPasswordResponse>(
+      "/auth/forgot-password",
+      {
+        email,
+      }
+    );
+    return response.data.data;
+  },
+
+  resetPassword: async (token: string, new_password: string) => {
+    const response = await api.put<ForgotPasswordResponse>(
+      `/auth/reset-password/${token}`,
+      {
+        new_password,
+      }
     );
     return response.data;
   },

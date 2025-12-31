@@ -1,14 +1,13 @@
 // src/pages/auth/VerifyEmailPage.tsx
 
 import { useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function VerifyEmailPage() {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { verifyEmail, isLoading, error, isAuthenticated } = useAuthStore();
   const calledRef = useRef(false); // Tránh React.StrictMode gọi API 2 lần

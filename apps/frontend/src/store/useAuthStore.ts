@@ -5,6 +5,8 @@ import type {
   loginInput,
   registerInput,
 } from "@sports-booking-platform/validation";
+import { set } from "react-hook-form";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -33,6 +35,8 @@ interface AuthState {
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   verifyEmail: (token: string) => Promise<any>;
+  forgotPassword: (email: string) => Promise<any>;
+  resetPassword: (token: string, new_password: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -162,6 +166,42 @@ export const useAuthStore = create<AuthState>()(
         } finally {
           localStorage.removeItem("accessToken");
           set({ user: null, isAuthenticated: false, isLoading: false });
+        }
+      },
+      forgotPassword: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const result = await authService.forgotPassword(email);
+          toast.success(
+            result.message || "Yêu cầu thành công. Vui lòng kiểm tra email."
+          );
+          set({ isLoading: false });
+        } catch (error: any) {
+          toast.error(error.response?.data?.message || "Yêu cầu thất bại");
+          set({
+            error: error.response?.data?.message || "Yêu cầu thất bại",
+            isLoading: false,
+          });
+          throw error;
+        }
+      },
+      resetPassword: async (token: string, new_password: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const result = await authService.resetPassword(token, new_password);
+          toast.success(
+            result.message || "Đặt lại mật khẩu thành công. Vui lòng đăng nhập."
+          );
+          set({ isLoading: false });
+        } catch (error: any) {
+          toast.error(
+            error.response?.data?.message || "Đặt lại mật khẩu thất bại"
+          );
+          set({
+            error: error.response?.data?.message || "Đặt lại mật khẩu thất bại",
+            isLoading: false,
+          });
+          throw error;
         }
       },
     }),

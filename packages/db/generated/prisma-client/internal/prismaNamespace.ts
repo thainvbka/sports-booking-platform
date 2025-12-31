@@ -15,10 +15,10 @@
  */
 
 import * as runtime from "@prisma/client/runtime/library"
-import type * as Prisma from "../models.ts"
-import { type PrismaClient } from "./class.ts"
+import type * as Prisma from "../models"
+import { type PrismaClient } from "./class"
 
-export type * from '../models.ts'
+export type * from '../models'
 
 export type DMMF = typeof runtime.DMMF
 
@@ -1433,7 +1433,9 @@ export const AccountScalarFieldEnum = {
   created_at: 'created_at',
   updated_at: 'updated_at',
   verification_token: 'verification_token',
-  verification_expires_at: 'verification_expires_at'
+  verification_expires_at: 'verification_expires_at',
+  reset_password_token: 'reset_password_token',
+  reset_password_expires_at: 'reset_password_expires_at'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
