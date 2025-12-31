@@ -45,9 +45,14 @@ export const expiredRecurringBookings = async () => {
                 status: "CANCELED",
               },
               {
-                expires_at: {
-                  lt: now,
-                },
+                AND: [
+                  { status: "PENDING" },
+                  {
+                    expires_at: {
+                      lt: now,
+                    },
+                  },
+                ],
               },
             ],
           },
@@ -73,6 +78,7 @@ export const expiredRecurringBookings = async () => {
       await prisma.booking.updateMany({
         where: {
           recurring_booking_id: { in: expiredRecurringBookingIds },
+          status: "PENDING",
         },
         data: {
           status: "CANCELED",
