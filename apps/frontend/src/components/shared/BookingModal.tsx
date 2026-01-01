@@ -428,7 +428,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                     Đang xử lý...
                   </>
                 ) : (
-                  "Tiếp tục"
+                  "Đặt sân"
                 )}
               </Button>
             </DialogFooter>

@@ -778,69 +778,150 @@ export const getPlayerBookings = async (
     throw new ForbiddenError("You are not allowed to view bookings");
   }
 
-  const skip = (page - 1) * limit;
-
-  const [total, bookings] = await prisma.$transaction([
-    prisma.booking.count({
-      where: { player_id: player_id },
-    }),
-    prisma.booking.findMany({
-      where: { player_id: player_id },
-      select: {
-        id: true,
-        start_time: true,
-        end_time: true,
-        total_price: true,
-        status: true,
-        expires_at: true,
-        sub_field: {
-          select: {
-            sub_field_name: true,
-            sport_type: true,
-            complex: {
-              select: {
-                complex_name: true,
-                complex_address: true,
-              },
+  //lay tat cả các booking lẻ
+  const singleBookings = await prisma.booking.findMany({
+    where: {
+      player_id: player_id,
+      recurring_booking_id: null,
+    },
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      total_price: true,
+      status: true,
+      expires_at: true,
+      created_at: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              complex_name: true,
+              complex_address: true,
             },
           },
         },
       },
-      orderBy: { created_at: "desc" },
-      skip,
-      take: limit,
-    }),
-  ]);
+    },
+    orderBy: { created_at: "desc" },
+  });
 
-  const totalPages = Math.ceil(total / limit);
-
-  if (!bookings || bookings.length === 0) {
-    return {
-      bookings: [],
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
+  //lay tat ca cac recurring booking
+  const recurringBookings = await prisma.recurringBooking.findMany({
+    where: {
+      player_id: player_id,
+    },
+    select: {
+      id: true,
+      recurrence_type: true,
+      start_date: true,
+      end_date: true,
+      recurrence_detail: true,
+      status: true,
+      created_at: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
       },
-    };
-  }
+      bookings: {
+        select: {
+          id: true,
+          start_time: true,
+          end_time: true,
+          total_price: true,
+          status: true,
+          expires_at: true,
+        },
+        orderBy: { start_time: "desc" },
+      },
+    },
+  });
 
-  const formattedBookings = bookings.map((booking) => ({
+  //format bookings lẻ
+  const formattedSingleBookings = singleBookings.map((booking) => ({
     id: booking.id,
+    type: "SINGLE" as const,
     start_time: booking.start_time,
     end_time: booking.end_time,
     total_price: booking.total_price,
     status: booking.status,
+    sub_field_name: booking.sub_field.sub_field_name,
+    sport_type: booking.sub_field.sport_type,
     complex_name: booking.sub_field.complex.complex_name,
     complex_address: booking.sub_field.complex.complex_address,
-    sport_type: booking.sub_field.sport_type,
-    sub_field_name: booking.sub_field.sub_field_name,
     expires_at: booking.expires_at,
+    created_at: booking.created_at,
   }));
 
+  //format recurring bookings
+  const formattedRecurringBookings = recurringBookings.map((recurring) => {
+    //tinh tong tien cua tat ca cac booking con
+    const total_price = recurring.bookings.reduce(
+      (sum, booking) => sum + Number(booking.total_price),
+      0
+    );
+
+    const earliestExpiration =
+      recurring.status === "PENDING"
+        ? recurring.bookings
+            .filter((booking) => booking.status === "PENDING")
+            .reduce((earliest, booking) => {
+              if (!earliest || booking.expires_at < earliest) {
+                return booking.expires_at;
+              }
+              return earliest;
+            }, null as Date | null)
+        : null;
+
+    return {
+      id: recurring.id,
+      type: "RECURRING" as const,
+      start_date: recurring.start_date,
+      end_date: recurring.end_date,
+      recurrence_type: recurring.recurrence_type,
+      status: recurring.status,
+      total_slots: recurring.bookings.length,
+      total_price: total_price,
+      sub_field_name: recurring.sub_field.sub_field_name,
+      sport_type: recurring.sub_field.sport_type,
+      complex_name: recurring.sub_field.complex.complex_name,
+      complex_address: recurring.sub_field.complex.complex_address,
+      expires_at: earliestExpiration,
+      created_at: recurring.created_at,
+      bookings: recurring.bookings.map((booking) => ({
+        id: booking.id,
+        start_time: booking.start_time,
+        end_time: booking.end_time,
+        total_price: booking.total_price,
+        status: booking.status,
+      })),
+    };
+  });
+
+  //gộp 2 mảng và sắp xếp theo ngày tạo
+  const allBookings = [
+    ...formattedSingleBookings,
+    ...formattedRecurringBookings,
+  ].sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
+
+  //phân trang
+  const total = allBookings.length;
+  const skip = (page - 1) * limit;
+  const paginatedBookings = allBookings.slice(skip, skip + limit);
+  const totalPages = Math.ceil(total / limit);
+
   return {
-    bookings: formattedBookings,
+    bookings: paginatedBookings,
     pagination: {
       total,
       page,

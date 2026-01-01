@@ -66,6 +66,7 @@ export function OwnerBookingsPage() {
   // Stats state
   const [stats, setStats] = useState({
     total: 0,
+    pending: 0,
     canceled: 0,
     confirmed: 0,
     completed: 0,
@@ -97,6 +98,7 @@ export function OwnerBookingsPage() {
       const response = await ownerService.getOwnerBookingStats();
       setStats({
         total: response.data.total,
+        pending: response.data.pending,
         canceled: response.data.canceled,
         confirmed: response.data.confirmed,
         completed: response.data.completed,
@@ -250,7 +252,7 @@ export function OwnerBookingsPage() {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-5">
         <Card className="border-none shadow-md bg-gradient-to-br from-blue-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -290,6 +292,19 @@ export function OwnerBookingsPage() {
           </CardContent>
         </Card>
 
+        <Card className="border-none shadow-md bg-gradient-to-br from-yellow-50 to-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Chưa thanh toán
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-500">
+              {stats.pending}
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="border-none shadow-md bg-gradient-to-br from-red-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -297,7 +312,7 @@ export function OwnerBookingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-700">
+            <div className="text-2xl font-bold text-red-600">
               {stats.canceled}
             </div>
           </CardContent>

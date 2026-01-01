@@ -30,9 +30,48 @@ export interface BookingReviewResponse {
   expires_at: string;
 }
 
-export interface BookingResponse extends BookingReviewResponse {
+// Single booking (booking lẻ)
+export interface SingleBookingResponse {
+  type: "SINGLE";
+  id: string;
+  start_time: string;
+  end_time: string;
+  total_price: number;
   status: BookingStatus;
+  complex_name: string;
+  complex_address: string;
+  sport_type: string;
+  sub_field_name: string;
+  expires_at: string | null;
+  created_at: string;
 }
+
+// Recurring booking (booking định kỳ - đã được nhóm lại)
+export interface RecurringBookingResponse {
+  type: "RECURRING";
+  id: string;
+  recurrence_type: string;
+  start_date: string;
+  end_date: string;
+  total_slots: number;
+  total_price: number;
+  status: BookingStatus;
+  complex_name: string;
+  complex_address: string;
+  sport_type: string;
+  sub_field_name: string;
+  expires_at: string | null;
+  created_at: string;
+  bookings: {
+    id: string;
+    start_time: string;
+    end_time: string;
+    total_price: number;
+    status: BookingStatus;
+  }[];
+}
+
+export type BookingResponse = SingleBookingResponse | RecurringBookingResponse;
 
 export interface BookingListResponse {
   bookings: BookingResponse[];
@@ -52,9 +91,11 @@ export interface RecurringBookingReviewResponse {
   total_price: number;
   slots: {
     id: string;
-    startTime: string;
-    endTime: string;
+    start_time: string;
+    end_time: string;
     price: number;
+    total_price: number;
+    status: BookingStatus;
   }[];
   expires_at: string;
 }

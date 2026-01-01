@@ -2,14 +2,31 @@ import { formatPrice } from "@/services/mockData";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, DollarSign } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Clock, Repeat, MapPin, Eye, CreditCard, X } from "lucide-react";
 import { BookingStatus } from "@/types";
 import { bookingService } from "@/services/booking.service";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import type { BookingResponse } from "@/services/booking.service";
+import type {
+  BookingResponse,
+  RecurringBookingResponse,
+  SingleBookingResponse,
+} from "@/services/booking.service";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
@@ -21,6 +38,12 @@ export function PlayerBookingsPage() {
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
     null
   );
+  const [selectedBookingType, setSelectedBookingType] = useState<
+    "SINGLE" | "RECURRING"
+  >("SINGLE");
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedRecurringBooking, setSelectedRecurringBooking] =
+    useState<RecurringBookingResponse | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,7 +62,6 @@ export function PlayerBookingsPage() {
       .then((res) => {
         setBookings(res.bookings || []);
         setTotalPages(res.pagination?.totalPages || 1);
-        setLoading(false);
       })
       .catch((err) => {
         toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
@@ -55,6 +77,7 @@ export function PlayerBookingsPage() {
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
       case BookingStatus.CONFIRMED:
+        return "bg-green-100 text-green-800 hover:bg-green-200";
       case BookingStatus.COMPLETED:
         return "bg-green-100 text-green-800 hover:bg-green-100";
       case BookingStatus.PENDING:
@@ -71,7 +94,7 @@ export function PlayerBookingsPage() {
       case BookingStatus.CONFIRMED:
         return "Đã xác nhận";
       case BookingStatus.COMPLETED:
-        return "Đã thanh toán";
+        return "Hoàn thành";
       case BookingStatus.PENDING:
         return "Chờ thanh toán";
       case BookingStatus.CANCELED:
@@ -99,6 +122,7 @@ export function PlayerBookingsPage() {
         return sportType;
     }
   };
+
   const handlePayment = async (bookingId: string) => {
     const result = await bookingService
       .creatCheckoutSession([bookingId])
@@ -114,132 +138,241 @@ export function PlayerBookingsPage() {
       toast.error("Đã xảy ra lỗi khi hủy đặt sân");
       throw new Error("Cancel booking failed");
     });
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === selectedBookingId
-          ? { ...booking, status: BookingStatus.CANCELED }
-          : booking
-      )
-    );
+
+    // Cập nhật state dựa trên loại booking
+    if (selectedBookingType === "SINGLE") {
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === selectedBookingId && booking.type === "SINGLE"
+            ? { ...booking, status: BookingStatus.CANCELED }
+            : booking
+        )
+      );
+    } else {
+      // Với recurring booking, cập nhật cả nhóm
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === selectedBookingId && booking.type === "RECURRING"
+            ? { ...booking, status: BookingStatus.CANCELED }
+            : booking
+        )
+      );
+    }
+
     toast.success("Đã hủy đặt sân thành công");
     setSelectedBookingId(null);
+  };
+
+  const handleViewDetails = (booking: RecurringBookingResponse) => {
+    setSelectedRecurringBooking(booking);
+    setDetailDialogOpen(true);
+  };
+
+  const getRecurrenceTypeLabel = (type: string) => {
+    switch (type) {
+      case "WEEKLY":
+        return "Hàng tuần";
+      case "MONTHLY":
+        return "Hàng tháng";
+      default:
+        return type;
+    }
+  };
+
+  const canCancelBooking = (booking: BookingResponse): boolean => {
+    // Chỉ cho phép hủy nếu status là PENDING hoặc CONFIRMED
+    if (!["PENDING", "CONFIRMED"].includes(booking.status)) {
+      return false;
+    }
+
+    // Kiểm tra thời gian
+    if (booking.type === "SINGLE") {
+      return new Date(booking.start_time) > new Date();
+    } else {
+      return new Date(booking.start_date) > new Date();
+    }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Lịch sử đặt sân</h1>
 
-      {loading ? (
+      {loading && bookings.length === 0 ? (
         <div className="text-center py-16">Đang tải...</div>
       ) : bookings.length > 0 ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {bookings.map((booking) => (
-              <Card
-                key={booking.id}
-                className="overflow-hidden shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200 flex flex-col"
-              >
-                <CardHeader className="bg-gradient-to-br from-muted/40 to-muted/20 pb-3 px-4 pt-4 relative">
-                  <Badge
-                    className={`${getStatusColor(
-                      booking.status
-                    )} absolute top-3 right-3 text-xs px-2 py-0.5`}
-                  >
-                    {getStatusLabel(booking.status)}
-                  </Badge>
-                  <CardTitle className="text-lg font-bold pr-20 leading-tight">
-                    {booking.complex_name}
-                  </CardTitle>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium mt-1">
-                    <span className="truncate">{booking.sub_field_name}</span>
-                    <span className="text-xs">•</span>
-                    <span className="text-xs">
-                      {getSportTypeLabel(booking.sport_type)}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-4 pt-3 pb-4 flex flex-col gap-3 flex-1">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                      <span className="text-xs">
-                        {format(
-                          new Date(booking.start_time),
-                          "EEE, dd/MM/yyyy",
-                          { locale: vi }
+          <div className="rounded-md border bg-white overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[60px]">STT</TableHead>
+                    <TableHead className="min-w-[100px]">Loại</TableHead>
+                    <TableHead className="min-w-[200px]">Sân</TableHead>
+                    <TableHead className="min-w-[180px]">Thời gian</TableHead>
+                    <TableHead className="min-w-[120px]">Giá tiền</TableHead>
+                    <TableHead className="min-w-[120px]">Trạng thái</TableHead>
+                    <TableHead className="min-w-[250px] text-right">
+                      Hành động
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking, index) => (
+                    <TableRow
+                      key={booking.id}
+                      className={loading ? "opacity-50" : ""}
+                    >
+                      {/* STT */}
+                      <TableCell className="text-center font-medium text-muted-foreground">
+                        {(page - 1) * 8 + index + 1}
+                      </TableCell>
+                      {/* Loại */}
+                      <TableCell>
+                        {booking.type === "RECURRING" ? (
+                          <div className="flex items-center gap-1 text-blue-600">
+                            <span className="text-xs font-medium">
+                              Đặt định kỳ
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <span className="text-xs font-medium">
+                              Đặt một lần
+                            </span>
+                          </div>
                         )}
-                        <span className="mx-1">•</span>
-                        {format(new Date(booking.start_time), "HH:mm")} -{" "}
-                        {format(new Date(booking.end_time), "HH:mm")}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                      <span
-                        className="truncate text-xs"
-                        title={booking.complex_address}
-                      >
-                        {booking.complex_address}
-                      </span>
-                    </div>
-                  </div>
+                      </TableCell>
 
-                  {booking.status === BookingStatus.PENDING &&
-                    booking.expires_at && (
-                      <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-md px-2 py-1.5 mt-1">
-                        <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
-                        <span className="text-xs text-orange-700 font-medium">
-                          Hết hạn:{" "}
-                          {format(new Date(booking.expires_at), "HH:mm dd/MM")}
-                        </span>
-                      </div>
-                    )}
-
-                  <div className="mt-auto pt-2 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1.5">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="text-base font-bold text-green-700">
-                          {formatPrice(booking.total_price)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2 min-h-[80px] justify-center">
-                      {booking.status === BookingStatus.PENDING && (
-                        <Button
-                          className="w-full py-2 text-sm font-semibold"
-                          onClick={() => handlePayment(booking.id)}
-                        >
-                          Thanh toán ngay
-                        </Button>
-                      )}
-
-                      {["PENDING", "CONFIRMED", "COMPLETED"].includes(
-                        booking.status
-                      ) &&
-                        new Date(booking.start_time) > new Date() && (
-                          <Button
-                            variant="outline"
-                            className="w-full py-2 text-sm"
-                            onClick={() => {
-                              setSelectedBookingId(booking.id);
-                              setDeleteDialogOpen(true);
-                            }}
-                          >
-                            Hủy đặt sân
-                          </Button>
-                        )}
-
-                      {booking.status === BookingStatus.CANCELED && (
-                        <div className="text-xs text-muted-foreground text-center italic">
-                          Đặt sân đã bị hủy
+                      {/* Sân */}
+                      <TableCell>
+                        <div className="max-w-[200px]">
+                          <div className="font-medium truncate">
+                            {booking.complex_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground truncate">
+                            {booking.sub_field_name} •{" "}
+                            {getSportTypeLabel(booking.sport_type)}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      </TableCell>
+
+                      {/* Thời gian */}
+                      <TableCell>
+                        {booking.type === "SINGLE" ? (
+                          <div>
+                            <div className="font-medium text-sm whitespace-nowrap">
+                              {format(
+                                new Date(booking.start_time),
+                                "dd/MM/yyyy"
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground whitespace-nowrap">
+                              {format(new Date(booking.start_time), "HH:mm")} -{" "}
+                              {format(new Date(booking.end_time), "HH:mm")}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="font-medium text-sm whitespace-nowrap">
+                              {format(new Date(booking.start_date), "dd/MM")} -{" "}
+                              {format(new Date(booking.end_date), "dd/MM/yyyy")}
+                            </div>
+                            {booking.bookings &&
+                              booking.bookings.length > 0 && (
+                                <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {format(
+                                    new Date(booking.bookings[0].start_time),
+                                    "HH:mm"
+                                  )}{" "}
+                                  -{" "}
+                                  {format(
+                                    new Date(booking.bookings[0].end_time),
+                                    "HH:mm"
+                                  )}
+                                </div>
+                              )}
+                            <div className="text-sm text-blue-600 font-medium whitespace-nowrap">
+                              {booking.total_slots} buổi •{" "}
+                              {getRecurrenceTypeLabel(booking.recurrence_type)}
+                            </div>
+                          </div>
+                        )}
+                        {booking.status === BookingStatus.PENDING &&
+                          booking.expires_at && (
+                            <div className="flex items-center gap-1 text-orange-600 mt-1">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              <span className="text-xs whitespace-nowrap">
+                                {format(
+                                  new Date(booking.expires_at),
+                                  "HH:mm dd/MM"
+                                )}
+                              </span>
+                            </div>
+                          )}
+                      </TableCell>
+
+                      {/* Giá tiền */}
+                      <TableCell>
+                        <div className="font-bold text-green-700 whitespace-nowrap">
+                          {formatPrice(booking.total_price)}
+                        </div>
+                      </TableCell>
+
+                      {/* Trạng thái */}
+                      <TableCell>
+                        <Badge className={getStatusColor(booking.status)}>
+                          {getStatusLabel(booking.status)}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Hành động */}
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          {booking.status === BookingStatus.PENDING && (
+                            <Button
+                              size="sm"
+                              onClick={() => handlePayment(booking.id)}
+                              disabled={loading}
+                            >
+                              <CreditCard className="w-4 h-4 mr-1" />
+                              Thanh toán
+                            </Button>
+                          )}
+                          {booking.type === "RECURRING" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleViewDetails(booking)}
+                              disabled={loading}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Chi tiết
+                            </Button>
+                          )}
+                          {canCancelBooking(booking) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => {
+                                setSelectedBookingId(booking.id);
+                                setSelectedBookingType(booking.type);
+                                setDeleteDialogOpen(true);
+                              }}
+                              disabled={loading}
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Hủy
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           {/* Pagination Controls */}
           {totalPages > 1 && (
@@ -248,7 +381,7 @@ export function PlayerBookingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
+                disabled={page <= 1 || loading}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Trước
@@ -260,7 +393,7 @@ export function PlayerBookingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
+                disabled={page >= totalPages || loading}
               >
                 Sau
                 <ChevronRight className="h-4 w-4" />
@@ -282,6 +415,127 @@ export function PlayerBookingsPage() {
         bookingId={selectedBookingId || ""}
         onConfirm={handleCancel}
       />
+
+      {/* Recurring Booking Detail Modal */}
+      {selectedRecurringBooking && (
+        <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">
+                Chi tiết đặt sân định kỳ
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Header Info */}
+              <div className="bg-blue-50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">
+                    {selectedRecurringBooking.complex_name}
+                  </h3>
+                  <Badge
+                    className={getStatusColor(selectedRecurringBooking.status)}
+                  >
+                    {getStatusLabel(selectedRecurringBooking.status)}
+                  </Badge>
+                </div>
+                <div className="text-sm space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {selectedRecurringBooking.sub_field_name}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {getSportTypeLabel(selectedRecurringBooking.sport_type)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{selectedRecurringBooking.complex_address}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-blue-600">
+                      {getRecurrenceTypeLabel(
+                        selectedRecurringBooking.recurrence_type
+                      )}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {format(
+                        new Date(selectedRecurringBooking.start_date),
+                        "dd/MM/yyyy"
+                      )}{" "}
+                      -{" "}
+                      {format(
+                        new Date(selectedRecurringBooking.end_date),
+                        "dd/MM/yyyy"
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div>
+                  <p className="text-sm text-muted-foreground">Tổng số buổi</p>
+                  <p className="text-lg font-bold">
+                    {selectedRecurringBooking.total_slots} buổi
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tổng tiền</p>
+                  <p className="text-lg font-bold text-green-700">
+                    {formatPrice(selectedRecurringBooking.total_price)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Booking List */}
+              <div>
+                <h4 className="font-semibold mb-3">
+                  Danh sách các buổi đã đặt
+                </h4>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {selectedRecurringBooking.bookings.map((slot, idx) => (
+                    <div
+                      key={slot.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium">
+                            {format(
+                              new Date(slot.start_time),
+                              "EEEE, dd/MM/yyyy",
+                              { locale: vi }
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(slot.start_time), "HH:mm")} -{" "}
+                            {format(new Date(slot.end_time), "HH:mm")}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={getStatusColor(slot.status)}>
+                          {getStatusLabel(slot.status)}
+                        </Badge>
+                        <div className="text-sm font-semibold text-green-700 mt-1">
+                          {formatPrice(slot.total_price)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

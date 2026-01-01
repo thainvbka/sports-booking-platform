@@ -248,6 +248,24 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
       const totalAmount = session.amount_total;
       console.log(` Webhook received for bookings: ${bookingIds}`);
 
+      const bookingIdFirst = await prisma.booking.findUnique({
+        where: {
+          id: bookingIds[0],
+        },
+        select: {
+          recurring_booking_id: true,
+        },
+      });
+
+      const recurringBooking = await prisma.recurringBooking.findUnique({
+        where: {
+          id: bookingIdFirst?.recurring_booking_id || "",
+        },
+        select: {
+          id: true,
+        },
+      });
+
       try {
         //cập nhật trạng thái booking thành PAID
         await prisma.$transaction(async (tx) => {
@@ -270,6 +288,15 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
               status: BookingStatus.COMPLETED,
               payment_id: newPayment.id,
               paid_at: new Date(),
+            },
+          });
+
+          await tx.recurringBooking.update({
+            where: {
+              id: recurringBooking?.id,
+            },
+            data: {
+              status: BookingStatus.COMPLETED,
             },
           });
         });

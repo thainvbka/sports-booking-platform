@@ -59,7 +59,6 @@ export function SubFieldCard({
           </div>
         </div>
 
-
         {showComplexInfo && subField.complex_name ? (
           <div className="flex items-start gap-1 text-xs text-muted-foreground min-h-[20px]">
             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
@@ -75,7 +74,6 @@ export function SubFieldCard({
         ) : (
           <div className="min-h-[20px]" />
         )}
-
 
         {/* Amenities (Mock) */}
         {/* <div className="flex flex-wrap gap-2 mb-3 mt-auto">
@@ -108,7 +106,7 @@ export function SubFieldCard({
               subField={subField}
               trigger={
                 <Button size="sm" className="h-8 text-xs">
-                  Xem chi tiết
+                  Đặt sân ngay
                 </Button>
               }
             />
