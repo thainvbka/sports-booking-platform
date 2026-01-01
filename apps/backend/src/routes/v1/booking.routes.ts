@@ -23,6 +23,8 @@ import {
   ownerGetAllBookingsController,
   ownerGetBookingByIdController,
   ownerGetBookingStatsController,
+  cancelRecurringBookingController,
+  ownerConfirmRecurringBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -67,6 +69,13 @@ router.patch(
   asyncHandler(cancelBookingController)
 );
 
+router.patch(
+  "/recurring/:id", //recurringBookingId
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(cancelRecurringBookingController)
+);
+
 //recurring booking routes
 router.post(
   "/recurring/:id", //subfieldId
@@ -91,6 +100,16 @@ router.patch(
   validate(confirmBookingSchema),
   asyncHandler(ownerConfirmBookingController)
 );
+
+//owner confirm recurring booking
+router.patch(
+  "/recurring/confirm/:id", //recurringBookingId
+  authenticate,
+  authorize(["OWNER"]),
+  validate(confirmBookingSchema),
+  asyncHandler(ownerConfirmRecurringBookingController)
+);
+
 //owner cancel booking
 router.patch(
   "/cancel/:id", //bookingId

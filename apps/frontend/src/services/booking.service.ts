@@ -152,6 +152,13 @@ export const bookingService = {
     return response.data.data;
   },
 
+  cancelRecurringBooking: async (recurringBookingId: string) => {
+    const response = await axiosInstance.patch(
+      `/bookings/recurring/${recurringBookingId}`
+    );
+    return response.data.data;
+  },
+
   creatCheckoutSession: async (bookingIds: string[]) => {
     const response = await axiosInstance.post(
       `/payments/checkout-session`,

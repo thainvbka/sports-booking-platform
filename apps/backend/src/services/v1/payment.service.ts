@@ -3,6 +3,7 @@ import {
   BookingStatus,
   PaymentStatus,
   PaymentProvider,
+  RecurringStatus,
 } from "@sports-booking-platform/db";
 import {
   BadRequestError,
@@ -248,6 +249,33 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
       const totalAmount = session.amount_total;
       console.log(` Webhook received for bookings: ${bookingIds}`);
 
+      if (bookingIds.length === 1) {
+        await prisma.$transaction(async (tx) => {
+          const newPayment = await tx.payment.create({
+            data: {
+              amount: totalAmount,
+              provider: PaymentProvider.STRIPE,
+              transaction_code: session.id,
+              status: PaymentStatus.SUCCESS,
+            },
+          });
+
+          //cập nhật trạng thái booking thành PAID
+          await tx.booking.updateMany({
+            where: {
+              id: bookingIds[0],
+              status: BookingStatus.PENDING,
+            },
+            data: {
+              status: BookingStatus.COMPLETED,
+              payment_id: newPayment.id,
+              paid_at: new Date(),
+            },
+          });
+        });
+        return;
+      }
+
       const bookingIdFirst = await prisma.booking.findUnique({
         where: {
           id: bookingIds[0],
@@ -296,7 +324,7 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
               id: recurringBooking?.id,
             },
             data: {
-              status: BookingStatus.COMPLETED,
+              status: RecurringStatus.ACTIVE,
             },
           });
         });

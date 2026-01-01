@@ -18,6 +18,8 @@ import { ownerBookingFilterSchema } from "@sports-booking-platform/validation";
 import {
   createRecurringBookingService,
   reviewRecurringBookingService,
+  cancelRecurringBookingService,
+  ownerConfirmRecurringBookingService,
 } from "../../services/v1/recurring_booking.service";
 
 export const createBookingController = async (req: Request, res: Response) => {
@@ -106,6 +108,21 @@ export const reviewRecurringBookingController = async (
   }).send(res);
 };
 
+export const cancelRecurringBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const recurring_booking_id = req.params.id;
+  const result = await cancelRecurringBookingService(
+    req.user?.profiles.playerId as string,
+    recurring_booking_id
+  );
+  return new SuccessResponse({
+    message: "Recurring booking canceled successfully",
+    data: result,
+  }).send(res);
+};
+
 export const getPlayerBookingsController = async (
   req: Request,
   res: Response
@@ -130,6 +147,22 @@ export const ownerConfirmBookingController = async (
   const result = await ownerConfirmBooking(booking_id, ownerId);
   return new SuccessResponse({
     message: "Booking confirmed successfully",
+    data: result,
+  }).send(res);
+};
+
+export const ownerConfirmRecurringBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const recurring_booking_id = req.params.id;
+  const ownerId = req.user?.profiles.ownerId as string;
+  const result = await ownerConfirmRecurringBookingService(
+    recurring_booking_id,
+    ownerId
+  );
+  return new SuccessResponse({
+    message: "Recurring booking confirmed successfully",
     data: result,
   }).send(res);
 };

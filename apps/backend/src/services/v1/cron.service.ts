@@ -97,7 +97,7 @@ export const expiredRecurringBookings = async () => {
 
 export const completeRecurringBookings = async () => {
   try {
-    //chuyển các recurring booking đã hoàn thành sang trạng thái COMPLETED
+    //chuyển các recurring booking đã hoàn thành sang trạng thái
     const result = await prisma.recurringBooking.updateMany({
       where: {
         status: "ACTIVE", // Chỉ xử lý đơn ĐÃ THANH TOÁN

@@ -36,6 +36,9 @@ export type RecurrenceType =
 export const RecurringStatus = {
   ACTIVE: "ACTIVE",
   CANCELED: "CANCELED",
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  CONFIRMED: "CONFIRMED",
 } as const;
 export type RecurringStatus =
   (typeof RecurringStatus)[keyof typeof RecurringStatus];

@@ -72,20 +72,20 @@ export const createRecurringBookingService = async (
   });
 
   if (existingRecurring) {
-    // A. Nếu tìm thấy -> Gia hạn thời gian giữ chỗ cho tất cả booking con
+    //  Nếu tìm thấy -> Gia hạn thời gian giữ chỗ cho tất cả booking con
     // (Cho thêm 15 phút nữa để thanh toán)
     await prisma.booking.updateMany({
       where: { recurring_booking_id: existingRecurring.id },
       data: { expires_at: new Date(Date.now() + 3 * 60 * 1000) },
     });
 
-    // B. Tính lại tổng tiền (để trả về FE hiển thị)
+    //  Tính lại tổng tiền (để trả về FE hiển thị)
     const totalPrice = existingRecurring.bookings.reduce(
       (sum, b) => sum + Number(b.total_price),
       0
     );
 
-    // C. Trả về luôn (Không tạo mới nữa)
+    //  Trả về luôn (Không tạo mới nữa)
     return {
       message: "Resumed existing recurring booking session",
       recurring_booking_id: existingRecurring.id,
@@ -261,120 +261,45 @@ export const createRecurringBookingService = async (
   };
 };
 
-// export const deleteRecurringBookingService = async (
-//   player_id: string,
-//   recurring_booking_id: string
-// ) => {
-//   // 1. Validate Recurring Booking
-//   const recurringBooking = await prisma.recurringBooking.findFirst({
-//     where: {
-//       id: recurring_booking_id,
-//       player_id,
-//       status: "ACTIVE",
-//     },
-//     include: {
-//       sub_field: {
-//         include: {
-//           complex: { include: { owner: true } }, // Lấy thông tin Owner để trừ tiền
-//         },
-//       },
-//     },
-//   });
+export const cancelRecurringBookingService = async (
+  player_id: string,
+  recurring_booking_id: string
+) => {
+  //check player
+  const player = await prisma.player.findUnique({
+    where: { id: player_id, status: "ACTIVE" },
+  });
+  if (!player) throw new ForbiddenError("Player not active or found");
 
-//   if (!recurringBooking)
-//     throw new NotFoundError("Recurring booking not found or inaccessible");
+  // Validate Recurring Booking
+  const recurringBooking = await prisma.recurringBooking.findFirst({
+    where: {
+      id: recurring_booking_id,
+      player_id,
+      status: "PENDING",
+    },
+  });
 
-//   const owner = recurringBooking.sub_field.complex.owner;
+  if (!recurringBooking)
+    throw new NotFoundError("Recurring booking not found or inaccessible");
 
-//   // 2. Transaction xử lý Hủy & Hoàn tiền
-//   await prisma.$transaction(async (tx) => {
-//     // A. Cập nhật trạng thái Booking Cha
-//     await tx.recurringBooking.update({
-//       where: { id: recurring_booking_id },
-//       data: { status: "CANCELED" },
-//     });
-
-//     // B. Tìm các Booking Con hợp lệ để hủy (Chỉ hủy các trận chưa đá)
-//     // Quy định: Chỉ được hủy trước giờ đá 24 tiếng (Ví dụ)
-//     const thresholdTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-//     const futureBookings = await tx.booking.findMany({
-//       where: {
-//         recurring_booking_id: recurring_booking_id,
-//         status: { in: ["PENDING", "CONFIRMED"] },
-//         start_time: { gt: new Date() }, // Chỉ lấy các trận trong tương lai
-//         // start_time: { gt: thresholdTime } // Nếu muốn chặt chẽ: Phải hủy trước 24h
-//       },
-//     });
-
-//     if (futureBookings.length === 0) {
-//       // Không còn trận nào trong tương lai để hủy (các trận cũ đã đá xong hoặc quá hạn hủy)
-//       return;
-//     }
-
-//     // C. Phân loại Booking để xử lý tiền nong
-//     const pendingIds = futureBookings
-//       .filter((b) => b.status === "PENDING")
-//       .map((b) => b.id);
-
-//     const confirmedBookings = futureBookings.filter(
-//       (b) => b.status === "CONFIRMED"
-//     );
-//     const confirmedIds = confirmedBookings.map((b) => b.id);
-
-//     // D. Xử lý nhóm PENDING (Chưa trả tiền -> Hủy luôn)
-//     if (pendingIds.length > 0) {
-//       await tx.booking.updateMany({
-//         where: { id: { in: pendingIds } },
-//         data: { status: "CANCELED" },
-//       });
-//     }
-
-//     // E. Xử lý nhóm CONFIRMED (Đã trả tiền -> Hủy & Trừ doanh thu Owner)
-//     if (confirmedBookings.length > 0) {
-//       // 1. Tính tổng tiền thực nhận của Owner cần thu hồi (Giá - Phí sàn)
-//       let totalRefundFromOwner = 0;
-
-//       for (const booking of confirmedBookings) {
-//         // Lấy lại logic tính tiền lúc cộng (Total - PlatformFee)
-//         // Giả sử platform_fee đã lưu trong booking
-//         const netAmount =
-//           Number(booking.total_price) - Number(booking.platform_fee);
-//         totalRefundFromOwner += netAmount;
-//       }
-
-//       // 2. Trừ ví Owner
-//       await tx.owner.update({
-//         where: { id: owner.id },
-//         data: { balance: { decrement: totalRefundFromOwner } },
-//       });
-
-//       // 3. Ghi lịch sử giao dịch (REFUND)
-//       await tx.walletTransaction.create({
-//         data: {
-//           owner_id: owner.id,
-//           amount: -totalRefundFromOwner, // Số âm
-//           type: "REFUND", // Nhớ thêm Enum REFUND vào schema
-//           description: `Hoàn tiền hủy lịch định kỳ #${recurring_booking_id.slice(
-//             0,
-//             8
-//           )}`,
-//         },
-//       });
-
-//       // 4. Update trạng thái booking thành CANCELED (hoặc REFUNDED nếu có enum đó)
-//       await tx.booking.updateMany({
-//         where: { id: { in: confirmedIds } },
-//         data: { status: "CANCELED" }, // Hoặc status: "REFUNDED"
-//       });
-//     }
-//   });
-
-//   return {
-//     message:
-//       "Recurring booking cancelled successfully. Refunds processed if applicable.",
-//   };
-// };
+  // Tìm các Booking Con hợp lệ để hủy
+  await prisma.booking.updateMany({
+    where: {
+      recurring_booking_id: recurring_booking_id,
+    },
+    data: { status: "CANCELED" },
+  });
+  // Cập nhật trạng thái Recurring Booking
+  await prisma.recurringBooking.update({
+    where: { id: recurring_booking_id },
+    data: { status: "CANCELED" },
+  });
+  return {
+    message:
+      "Recurring booking cancelled successfully. Refunds processed if applicable.",
+  };
+};
 
 export const reviewRecurringBookingService = async (
   recurring_booking_id: string,
@@ -485,5 +410,63 @@ export const reviewRecurringBookingService = async (
     })),
 
     expires_at: firstBooking.expires_at, // Thời hạn thanh toán
+  };
+};
+
+export const ownerConfirmRecurringBookingService = async (
+  recurring_booking_id: string,
+  owner_id: string
+) => {
+  //check owner
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) throw new NotFoundError("Owner not active or found");
+
+  //check recurring booking là thuộc sở hữu của owner
+  const recurringBooking = await prisma.recurringBooking.findFirst({
+    where: {
+      id: recurring_booking_id,
+      sub_field: {
+        complex: {
+          owner_id: owner_id,
+        },
+      },
+      status: "ACTIVE",
+      bookings: {
+        some: {
+          status: "COMPLETED",
+        },
+      },
+    },
+  });
+
+  if (!recurringBooking) {
+    throw new NotFoundError(
+      "Recurring booking not found or inaccessible by owner"
+    );
+  }
+
+  //update tất cả booking con sang CONFIRMED
+  await prisma.booking.updateMany({
+    where: {
+      recurring_booking_id: recurring_booking_id,
+      status: "COMPLETED",
+    },
+    data: {
+      status: "CONFIRMED",
+    },
+  });
+
+  //cập nhật trạng thái recurring booking
+  await prisma.recurringBooking.update({
+    where: { id: recurring_booking_id },
+    data: {
+      status: "CONFIRMED",
+    },
+  });
+
+  return {
+    message: "Recurring booking confirmed successfully by owner",
   };
 };
