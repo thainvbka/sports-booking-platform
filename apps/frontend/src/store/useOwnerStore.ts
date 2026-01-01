@@ -6,6 +6,7 @@ import type {
   SubfieldDetail,
   PricingRule,
   PaginationMeta,
+  StatsMetrics,
 } from "@/types";
 import { ownerService } from "@/services/owner.service";
 
@@ -22,6 +23,7 @@ interface OwnerState {
   error: string | null;
   pricingRules: PricingRule[];
   dayOfWeek: number | null;
+  getStatsMetrics: () => Promise<void>;
 
   //state subfields
 
@@ -35,6 +37,7 @@ interface OwnerState {
     limit: number;
     search: string;
   };
+  dashboardStats: StatsMetrics | null;
 
   // Actions
   fetchComplexes: () => Promise<void>;
@@ -133,6 +136,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     limit: 8,
     search: "",
   },
+  dashboardStats: null,
 
   setParams: (params) => {
     set((state) => ({
@@ -496,6 +500,22 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         isLoading: false,
       });
       throw error;
+    }
+  },
+
+  getStatsMetrics: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await ownerService.getStatsMetrics();
+      set({
+        dashboardStats: res.data,
+        isLoading: false,
+      });
+    } catch (error: any) {
+      set({
+        error: error.message || "Failed to fetch dashboard stats",
+        isLoading: false,
+      });
     }
   },
 }));

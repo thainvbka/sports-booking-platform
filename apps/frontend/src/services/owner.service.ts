@@ -7,6 +7,7 @@ import type {
   SubfieldDetail,
   PricingRule,
   PaginationMeta,
+  StatsMetrics,
 } from "@/types";
 
 //payload and response types
@@ -230,10 +231,10 @@ export const ownerService = {
     };
   }) => {
     const queryParams: Record<string, string> = {};
-    
+
     if (params?.page) queryParams.page = params.page.toString();
     if (params?.limit) queryParams.limit = params.limit.toString();
-    
+
     // Stringify filter object if provided
     if (params?.filter) {
       const filter = {
@@ -250,7 +251,7 @@ export const ownerService = {
         pagination: PaginationMeta;
       }>
     >("/bookings/all", { params: queryParams });
-    
+
     return response.data;
   },
 
@@ -285,6 +286,13 @@ export const ownerService = {
         canceled: number;
       }>
     >("/bookings/stats");
+    return response.data;
+  },
+
+  getStatsMetrics: async () => {
+    const response = await api.get<ApiResponse<StatsMetrics>>(
+      "/owner-dashboard/stats-metrics"
+    );
     return response.data;
   },
 };

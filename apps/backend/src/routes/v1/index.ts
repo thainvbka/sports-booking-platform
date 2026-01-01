@@ -7,6 +7,7 @@ import pricingRuleRouter from "./pricing_rule.routes";
 import publicRouter from "./public.routes";
 import bookingRouter from "./booking.routes";
 import paymentRouter from "./payment.routes";
+import ownerDashboardRouter from "./owner_dashboard.routes";
 import { authLimiter, apiLimiter } from "../../libs/rate_limit";
 
 const router = Router();
@@ -23,5 +24,6 @@ router.use("/sub-fields", apiLimiter, subfieldRouter);
 router.use("/pricing-rules", apiLimiter, pricingRuleRouter);
 router.use("/bookings", apiLimiter, bookingRouter);
 router.use("/payments", apiLimiter, paymentRouter);
+router.use("/owner-dashboard", apiLimiter, ownerDashboardRouter);
 
 export default router;

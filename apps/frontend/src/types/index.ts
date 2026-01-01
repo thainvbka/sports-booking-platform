@@ -220,3 +220,61 @@ export interface PaginationMeta {
   limit: number;
   totalPages: number;
 }
+
+// Chỉ số tổng quan
+export interface OverView {
+  totalRevenue: number; // Tổng doanh thu
+  revenueGrowth: number; // % tăng trưởng so với kỳ trước
+  totalBookings: number; // Tổng số booking
+  newBookingsThisWeek: number; // Booking mới tuần này
+  totalComplexes: number; // Tổng complex
+  activeSubFields: number; // Số sân đang hoạt động
+  totalCustomers: number; // Tổng khách hàng
+  newCustomers: number; // Khách hàng mới
+}
+
+// Phân bố theo khung giờ
+export interface HourlyDistribution {
+  hour: number; // 0-23
+  bookingCount: number;
+  revenue: number;
+}
+
+type HourlyDistributionResponse = Array<HourlyDistribution>;
+
+// phân bố trạng thái booking
+export interface BookingStatusDistribution {
+  completed: number;
+  confirmed: number;
+  pending: number;
+  cancelled: number;
+}
+
+// Top sân được đặt nhiều
+export interface TopSubFields {
+  subFieldId: string;
+  name: string;
+  complexName: string;
+  bookingCount: number;
+  revenue: number;
+}
+
+type TopSubFieldsResponse = Array<TopSubFields>;
+
+// Doanh thu theo complex
+export interface RevenueByComplex {
+  complexId: string;
+  name: string;
+  revenue: number;
+  bookingCount: number;
+}
+
+type RevenueByComplexResponse = Array<RevenueByComplex>;
+
+export interface StatsMetrics {
+  overview: OverView;
+  bookingStatusDistribution: BookingStatusDistribution;
+  topSubFields: TopSubFieldsResponse;
+  revenueByComplex: RevenueByComplexResponse;
+  hourlyDistribution: HourlyDistributionResponse;
+}
