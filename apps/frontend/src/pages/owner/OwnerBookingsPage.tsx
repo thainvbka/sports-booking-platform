@@ -1,13 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
-  Calendar,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  CheckCircle,
-  XCircle,
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Phone,
+  Repeat,
+  CalendarRange,
   MoreVertical,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -26,14 +29,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -41,26 +36,49 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { BookingFilters } from "@/components/owner/BookingFilters";
-import { OwnerBookingDetailDialog } from "@/components/owner/OwnerBookingDetailDialog";
 import { ownerService } from "@/services/owner.service";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import type { OwnerBookingsResponse, BookingStatus } from "@/types";
+import type {
+  OwnerBookingResponse,
+  BookingStatus,
+  RecurringStatus,
+} from "@/types";
 
 export function OwnerBookingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [bookings, setBookings] = useState<OwnerBookingsResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [bookings, setBookings] = useState<OwnerBookingResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBooking, setSelectedBooking] =
-    useState<OwnerBookingsResponse | null>(null);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Confirmation dialog state
+  // Dialog states
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [actionBookingId, setActionBookingId] = useState<string | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
+  const [selectedBookingType, setSelectedBookingType] = useState<
+    "SINGLE" | "RECURRING"
+  >("SINGLE");
+  const [selectedBooking, setSelectedBooking] =
+    useState<OwnerBookingResponse | null>(null);
+
+  // Filter state
+  const [filters, setFilters] = useState<{
+    status?: BookingStatus;
+    dateRange?: DateRange;
+    minPrice?: number;
+    maxPrice?: number;
+  }>({});
 
   // Stats state
   const [stats, setStats] = useState({
@@ -70,22 +88,6 @@ export function OwnerBookingsPage() {
     confirmed: 0,
     completed: 0,
   });
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get("page") || "1")
-  );
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const limit = 8;
-
-  // Filter state
-  const [filters, setFilters] = useState<{
-    status?: BookingStatus;
-    dateRange?: DateRange;
-    minPrice?: number;
-    maxPrice?: number;
-  }>({});
 
   // Fetch stats on mount
   useEffect(() => {
@@ -107,18 +109,24 @@ export function OwnerBookingsPage() {
     }
   };
 
-  // Debounced search
+  // Get page from URL
+  useEffect(() => {
+    const urlPage = parseInt(searchParams.get("page") || "1");
+    setPage(urlPage);
+  }, []);
+
+  // Debounced fetch bookings
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchBookings();
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, currentPage, filters]);
+  }, [searchQuery, page, filters]);
 
   const fetchBookings = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
 
       const filterParams: any = {};
 
@@ -147,21 +155,23 @@ export function OwnerBookingsPage() {
       }
 
       const response = await ownerService.getOwnerBookings({
-        page: currentPage,
-        limit,
+        page,
+        limit: 8,
         filter: Object.keys(filterParams).length > 0 ? filterParams : undefined,
       });
 
-      setBookings(response.data.bookings);
-      setTotal(response.data.pagination.total);
-      setTotalPages(response.data.pagination.totalPages);
+      setBookings(response.data.bookings || []);
+      setTotalPages(response.data.pagination?.totalPages || 1);
+
+      const params = new URLSearchParams();
+      if (page > 1) params.set("page", String(page));
+      setSearchParams(params);
     } catch (error: any) {
-      console.error("Error fetching bookings:", error);
-      toast.error(
-        error.response?.data?.message || "Không thể tải danh sách đặt sân"
-      );
+      toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
+      setBookings([]);
+      setTotalPages(1);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -172,44 +182,49 @@ export function OwnerBookingsPage() {
     maxPrice?: number;
   }) => {
     setFilters(newFilters);
-    setCurrentPage(1);
+    setPage(1);
     setSearchParams({ page: "1" });
   };
 
   const handleClearFilters = () => {
     setFilters({});
     setSearchQuery("");
-    setCurrentPage(1);
+    setPage(1);
     setSearchParams({ page: "1" });
   };
 
-  const handleViewDetail = (booking: OwnerBookingsResponse) => {
+  const handleViewDetail = (booking: OwnerBookingResponse) => {
     setSelectedBooking(booking);
-    setIsDetailDialogOpen(true);
+    setDetailDialogOpen(true);
   };
 
-  const handleConfirmBooking = (bookingId: string) => {
-    setActionBookingId(bookingId);
+  const handleConfirm = (bookingId: string, type: "SINGLE" | "RECURRING") => {
+    setSelectedBookingId(bookingId);
+    setSelectedBookingType(type);
     setConfirmDialogOpen(true);
   };
 
-  const handleCancelBooking = (bookingId: string) => {
-    setActionBookingId(bookingId);
+  const handleCancel = (bookingId: string, type: "SINGLE" | "RECURRING") => {
+    setSelectedBookingId(bookingId);
+    setSelectedBookingType(type);
     setCancelDialogOpen(true);
   };
 
   const confirmBookingAction = async () => {
-    if (!actionBookingId) return;
+    if (!selectedBookingId) return;
 
     try {
-      await ownerService.confirmBooking(actionBookingId);
+      if (selectedBookingType === "SINGLE") {
+        await ownerService.confirmBooking(selectedBookingId);
+      } else {
+        await ownerService.confirmRecurringBooking(selectedBookingId);
+      }
       toast.success("Xác nhận đặt sân thành công");
       fetchBookings();
       fetchStats();
       setConfirmDialogOpen(false);
-      setActionBookingId(null);
+      setSelectedBookingId(null);
     } catch (error: any) {
-      console.error("Error confirming booking:", error);
       toast.error(
         error.response?.data?.message || "Không thể xác nhận đặt sân"
       );
@@ -217,25 +232,105 @@ export function OwnerBookingsPage() {
   };
 
   const cancelBookingAction = async () => {
-    if (!actionBookingId) return;
+    if (!selectedBookingId) return;
 
     try {
-      await ownerService.cancelOwnerBooking(actionBookingId);
+      if (selectedBookingType === "SINGLE") {
+        await ownerService.cancelOwnerBooking(selectedBookingId);
+      } else {
+        await ownerService.cancelOwnerRecurringBooking(selectedBookingId);
+      }
       toast.success("Hủy đặt sân thành công");
       fetchBookings();
       fetchStats();
       setCancelDialogOpen(false);
-      setActionBookingId(null);
+      setSelectedBookingId(null);
     } catch (error: any) {
-      console.error("Error canceling booking:", error);
       toast.error(error.response?.data?.message || "Không thể hủy đặt sân");
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    setSearchParams({ page: newPage.toString() });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const getStatusColor = (status: BookingStatus | RecurringStatus) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "bg-green-100 text-green-800 hover:bg-green-200";
+      case "COMPLETED":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+      case "CANCELED":
+        return "bg-red-100 text-red-800 hover:bg-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+    }
+  };
+
+  const getStatusLabel = (status: BookingStatus | RecurringStatus) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "Đã xác nhận";
+      case "COMPLETED":
+        return "Chờ xác nhận";
+      case "PENDING":
+        return "Chờ thanh toán";
+      case "CANCELED":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
+
+  const getSportTypeLabel = (sportType: string) => {
+    switch (sportType) {
+      case "FOOTBALL":
+        return "Bóng đá";
+      case "BASKETBALL":
+        return "Bóng rổ";
+      case "TENNIS":
+        return "Quần vợt";
+      case "BADMINTON":
+        return "Cầu lông";
+      case "VOLLEYBALL":
+        return "Bóng chuyền";
+      case "PICKLEBALL":
+        return "Pickleball";
+      default:
+        return sportType;
+    }
+  };
+
+  const getRecurrenceTypeLabel = (type: string) => {
+    switch (type) {
+      case "WEEKLY":
+        return "Hàng tuần";
+      case "MONTHLY":
+        return "Hàng tháng";
+      default:
+        return type;
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
+  };
+
+  const canConfirmBooking = (booking: OwnerBookingResponse): boolean => {
+    return booking.status === "COMPLETED";
+  };
+
+  const canCancelBooking = (booking: OwnerBookingResponse): boolean => {
+    // Không hủy được nếu đã bị hủy
+    if (booking.status === "CANCELED") return false;
+
+    // Kiểm tra thời gian
+    if (booking.type === "SINGLE") {
+      return new Date(booking.start_time) > new Date();
+    } else {
+      return new Date(booking.start_date) > new Date();
+    }
   };
 
   return (
@@ -324,7 +419,7 @@ export function OwnerBookingsPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Tìm kiếm theo tên khu phức hợp, sân..."
+            placeholder="Tìm kiếm theo tên, sân, khách hàng..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-background"
@@ -337,134 +432,159 @@ export function OwnerBookingsPage() {
       </div>
 
       {/* Bookings Table */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      {loading && bookings.length === 0 ? (
+        <div className="text-center py-16">Đang tải...</div>
       ) : bookings.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">STT</TableHead>
-                  <TableHead className="w-[130px]">Ngày & Giờ</TableHead>
-                  <TableHead className="w-[180px]">Khách hàng</TableHead>
-                  <TableHead className="w-[200px]">Địa điểm</TableHead>
-                  <TableHead className="w-[110px]">Loại sân</TableHead>
-                  <TableHead className="w-[120px]">Giá tiền</TableHead>
-                  <TableHead className="w-[120px]">Trạng thái</TableHead>
-                  <TableHead className="w-[80px] text-center">
-                    Thao tác
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings.map((booking, index) => {
-                  const startTime = new Date(booking.start_time);
-                  const endTime = new Date(booking.end_time);
-                  const stt = (currentPage - 1) * limit + index + 1;
+        <>
+          <div className="rounded-md border bg-white overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table className="table-fixed w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[60px]">STT</TableHead>
+                    <TableHead className="w-[100px]">Loại</TableHead>
+                    <TableHead className="w-48">Khách hàng</TableHead>
+                    <TableHead className="w-48">Sân</TableHead>
+                    <TableHead className="w-[220px]">Thời gian</TableHead>
+                    <TableHead className="w-[140px]">Giá tiền</TableHead>
+                    <TableHead className="w-[140px]">Trạng thái</TableHead>
+                    <TableHead className="w-16"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking, index) => (
+                    <TableRow
+                      key={booking.id}
+                      className={loading ? "opacity-50" : ""}
+                    >
+                      {/* STT */}
+                      <TableCell className="w-[60px] font-medium text-muted-foreground">
+                        {(page - 1) * 8 + index + 1}
+                      </TableCell>
 
-                  const statusConfig = {
-                    PENDING: {
-                      label: "Chưa thanh toán",
-                      variant: "secondary" as const,
-                    },
-                    CONFIRMED: {
-                      label: "Đã xác nhận",
-                      variant: "default" as const,
-                    },
-                    COMPLETED: {
-                      label: "Đã thanh toán",
-                      variant: "default" as const,
-                    },
-                    CANCELED: {
-                      label: "Đã hủy",
-                      variant: "destructive" as const,
-                    },
-                  }[booking.status] || {
-                    label: booking.status,
-                    variant: "secondary" as const,
-                  };
+                      {/* Loại */}
+                      <TableCell className="w-[100px] whitespace-nowrap">
+                        {booking.type === "RECURRING" ? (
+                          <Badge
+                            variant="secondary"
+                            className="bg-purple-100 text-purple-800"
+                          >
+                            Định kỳ
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="bg-blue-100 text-blue-800"
+                          >
+                            Đơn lẻ
+                          </Badge>
+                        )}
+                      </TableCell>
 
-                  const canConfirm = booking.status === "COMPLETED";
-                  const canCancel =
-                    (booking.status === "PENDING" ||
-                      booking.status === "CONFIRMED" ||
-                      booking.status === "COMPLETED") &&
-                    new Date(booking.start_time) > new Date();
+                      {/* Khách hàng */}
+                      <TableCell className="w-48">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 font-medium">
+                            <User className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="truncate">
+                              {booking.player_name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Phone className="w-3 h-3" />
+                            {booking.player_phone}
+                          </div>
+                        </div>
+                      </TableCell>
 
-                  return (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-medium text-muted-foreground">
-                        {stt}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {format(startTime, "dd/MM/yyyy", { locale: vi })}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {format(startTime, "HH:mm", { locale: vi })} -{" "}
-                            {format(endTime, "HH:mm", { locale: vi })}
-                          </p>
+                      {/* Sân */}
+                      <TableCell className="w-48">
+                        <div className="space-y-1">
+                          <div className="font-medium truncate">
+                            {booking.complex_name}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {booking.sub_field_name} •{" "}
+                            {getSportTypeLabel(booking.sport_type)}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {booking.player.account.full_name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.player.account.phone_number}
-                          </p>
+
+                      {/* Thời gian */}
+                      <TableCell className="w-[220px] whitespace-nowrap">
+                        {booking.type === "RECURRING" ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <CalendarRange className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="font-medium">
+                                {getRecurrenceTypeLabel(
+                                  booking.recurrence_type
+                                )}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {format(
+                                new Date(booking.start_date),
+                                "dd/MM/yyyy",
+                                { locale: vi }
+                              )}{" "}
+                              -{" "}
+                              {format(
+                                new Date(booking.end_date),
+                                "dd/MM/yyyy",
+                                { locale: vi }
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {booking.total_slots} buổi
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-sm">
+                              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                              {format(
+                                new Date(booking.start_time),
+                                "dd/MM/yyyy",
+                                { locale: vi }
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {format(new Date(booking.start_time), "HH:mm", {
+                                locale: vi,
+                              })}{" "}
+                              -{" "}
+                              {format(new Date(booking.end_time), "HH:mm", {
+                                locale: vi,
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {/* Giá tiền */}
+                      <TableCell className="w-[140px] whitespace-nowrap">
+                        <div className="font-semibold text-green-700">
+                          {formatPrice(booking.total_price)}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {booking.sub_field.complex.complex_name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.sub_field.sub_field_name}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-semibold">
-                          {" "}
-                          {booking.sub_field.sport_type === "BADMINTON" &&
-                            "Cầu lông"}
-                          {booking.sub_field.sport_type === "TENNIS" &&
-                            "Tennis"}
-                          {booking.sub_field.sport_type === "BASKETBALL" &&
-                            "Bóng rổ"}
-                          {booking.sub_field.sport_type === "VOLLEYBALL" &&
-                            "Bóng chuyền"}
-                          {booking.sub_field.sport_type === "FOOTBALL" &&
-                            "Bóng đá"}
-                          {booking.sub_field.sport_type === "PICKLEBALL" &&
-                            "Pickleball"}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(booking.total_price)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConfig.variant}>
-                          {statusConfig.label}
+
+                      {/* Trạng thái */}
+                      <TableCell className="w-[140px] whitespace-nowrap">
+                        <Badge className={getStatusColor(booking.status)}>
+                          {getStatusLabel(booking.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center">
+
+                      {/* Hành động */}
+                      <TableCell className="w-16">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
+                              size="icon"
+                              className="h-8 w-8"
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -473,46 +593,64 @@ export function OwnerBookingsPage() {
                             <DropdownMenuItem
                               onClick={() => handleViewDetail(booking)}
                             >
-                              <Eye className="mr-2 h-4 w-4" />
                               Xem chi tiết
                             </DropdownMenuItem>
-                            {canConfirm && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleConfirmBooking(booking.id)
-                                  }
-                                >
-                                  <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                  Xác nhận
-                                </DropdownMenuItem>
-                              </>
+                            {canConfirmBooking(booking) && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleConfirm(booking.id, booking.type)
+                                }
+                              >
+                                Xác nhận
+                              </DropdownMenuItem>
                             )}
-                            {canCancel && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleCancelBooking(booking.id)
-                                  }
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <XCircle className="mr-2 h-4 w-4" />
-                                  Hủy đặt sân
-                                </DropdownMenuItem>
-                              </>
+                            {canCancelBooking(booking) && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleCancel(booking.id, booking.type)
+                                }
+                                className="text-red-600"
+                              >
+                                Hủy đặt sân
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page <= 1 || loading}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Trước
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Trang {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages || loading}
+              >
+                Sau
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -534,43 +672,171 @@ export function OwnerBookingsPage() {
         </Card>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Trước
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Trang {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Sau
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+      {/* Detail Dialog */}
+      {selectedBooking && (
+        <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">
+                Chi tiết đặt sân
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Header Info */}
+              <div className="bg-blue-50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">
+                    {selectedBooking.complex_name}
+                  </h3>
+                  <Badge className={getStatusColor(selectedBooking.status)}>
+                    {getStatusLabel(selectedBooking.status)}
+                  </Badge>
+                </div>
+                <div className="text-sm space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {selectedBooking.sub_field_name}
+                    </span>
+                    <span>•</span>
+                    <span>{getSportTypeLabel(selectedBooking.sport_type)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{selectedBooking.complex_address}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              <div className="border rounded-lg p-4 bg-white space-y-2">
+                <h4 className="font-semibold text-sm text-muted-foreground">
+                  Thông tin khách hàng
+                </h4>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">
+                      {selectedBooking.player_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="w-4 h-4" />
+                    <span>{selectedBooking.player_phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time & Price Info */}
+              {selectedBooking.type === "SINGLE" && (
+                <div className="border rounded-lg p-4 bg-white space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground font-medium">
+                        Thời gian đặt sân
+                      </p>
+                      <div className="font-semibold text-base">
+                        {format(
+                          new Date(selectedBooking.start_time),
+                          "EEEE, dd/MM/yyyy",
+                          { locale: vi }
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        {format(new Date(selectedBooking.start_time), "HH:mm", {
+                          locale: vi,
+                        })}{" "}
+                        -{" "}
+                        {format(new Date(selectedBooking.end_time), "HH:mm", {
+                          locale: vi,
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground font-medium mb-1">
+                        Tổng tiền
+                      </p>
+                      <div className="text-xl font-bold text-green-700">
+                        {formatPrice(selectedBooking.total_price)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recurring Info */}
+              {selectedBooking.type === "RECURRING" && (
+                <>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Tổng số buổi
+                      </p>
+                      <p className="text-lg font-bold">
+                        {selectedBooking.total_slots} buổi
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tổng tiền</p>
+                      <p className="text-lg font-bold text-green-700">
+                        {formatPrice(selectedBooking.total_price)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <h4 className="font-semibold mb-3">
+                    Danh sách các buổi đã đặt
+                  </h4>
+
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {selectedBooking.bookings.map((slot, idx) => (
+                      <div
+                        key={slot.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div className="font-semibold">
+                              {format(
+                                new Date(slot.start_time),
+                                "EEEE, dd/MM/yyyy",
+                                { locale: vi }
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(slot.start_time), "HH:mm", {
+                                locale: vi,
+                              })}{" "}
+                              -{" "}
+                              {format(new Date(slot.end_time), "HH:mm", {
+                                locale: vi,
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={getStatusColor(slot.status)}>
+                            {getStatusLabel(slot.status)}
+                          </Badge>
+                          <div className="text-sm font-semibold text-green-700 mt-1">
+                            {formatPrice(slot.total_price)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
-      {/* Booking Detail Dialog */}
-      <OwnerBookingDetailDialog
-        booking={selectedBooking}
-        open={isDetailDialogOpen}
-        onOpenChange={setIsDetailDialogOpen}
-        onConfirm={handleConfirmBooking}
-        onCancel={handleCancelBooking}
-      />
-
-      {/* Confirm Booking Dialog */}
+      {/* Confirm Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -592,7 +858,7 @@ export function OwnerBookingsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Cancel Booking Dialog */}
+      {/* Cancel Dialog */}
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent>
           <DialogHeader>

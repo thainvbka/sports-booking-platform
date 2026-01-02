@@ -37,7 +37,7 @@ export const createCheckoutSessionController = async (
   res: Response
 ) => {
   const playerId = req.user?.profiles.playerId as string;
-  const bookingIds: string[] = req.body;
+  const bookingIds: string[] = req.body.booking_ids;
   const result = await createCheckoutSession(playerId, bookingIds);
   return new SuccessResponse({
     message: "Checkout session created successfully",

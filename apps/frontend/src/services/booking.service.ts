@@ -91,11 +91,9 @@ export interface RecurringBookingReviewResponse {
   total_price: number;
   slots: {
     id: string;
-    start_time: string;
-    end_time: string;
+    startTime: string;
+    endTime: string;
     price: number;
-    total_price: number;
-    status: BookingStatus;
   }[];
   expires_at: string;
 }
@@ -160,10 +158,9 @@ export const bookingService = {
   },
 
   creatCheckoutSession: async (bookingIds: string[]) => {
-    const response = await axiosInstance.post(
-      `/payments/checkout-session`,
-      bookingIds
-    );
+    const response = await axiosInstance.post(`/payments/checkout-session`, {
+      booking_ids: bookingIds,
+    });
     return response.data.data;
   },
 };

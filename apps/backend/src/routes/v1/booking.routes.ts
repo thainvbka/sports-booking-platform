@@ -25,6 +25,7 @@ import {
   ownerGetBookingStatsController,
   cancelRecurringBookingController,
   ownerConfirmRecurringBookingController,
+  ownerCancelRecurringBookingController,
 } from "../../controllers/v1/booking.controller";
 
 const router = Router();
@@ -118,6 +119,16 @@ router.patch(
   validate(ownerCancelBookingSchema),
   asyncHandler(ownerCancelBookingController)
 );
+
+//owner cancel recurring booking
+router.patch(
+  "/recurring/cancel/:id", //recurringBookingId
+  authenticate,
+  authorize(["OWNER"]),
+  validate(ownerCancelBookingSchema),
+  asyncHandler(ownerCancelRecurringBookingController)
+);
+
 //owner get booking stats
 router.get(
   "/stats", //owner booking stats
@@ -132,14 +143,6 @@ router.get(
   authorize(["OWNER"]),
   validate(ownerGetBookingsQuerySchema),
   asyncHandler(ownerGetAllBookingsController)
-);
-
-//owner get booking by id
-router.get(
-  "/:id", //bookingId
-  authenticate,
-  authorize(["OWNER"]),
-  asyncHandler(ownerGetBookingByIdController)
 );
 
 export default router;

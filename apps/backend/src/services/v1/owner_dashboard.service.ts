@@ -197,8 +197,20 @@ export const getTotalBookings = async (ownerId: string): Promise<number> => {
     throw new NotFoundError("Owner not found");
   }
 
-  //tinh tong so booking
-  const totalBookings = await prisma.booking.count({
+  //tinh tong so booking don le (khong thuoc recurring)
+  const singleBookings = await prisma.booking.count({
+    where: {
+      sub_field: {
+        complex: {
+          owner_id: ownerId,
+        },
+      },
+      recurring_booking_id: null,
+    },
+  });
+
+  //tinh tong so recurring booking
+  const recurringBookings = await prisma.recurringBooking.count({
     where: {
       sub_field: {
         complex: {
@@ -208,7 +220,7 @@ export const getTotalBookings = async (ownerId: string): Promise<number> => {
     },
   });
 
-  return totalBookings;
+  return singleBookings + recurringBookings;
 };
 //booking moi trong tuan
 export const getNewBookingsThisWeek = async (
@@ -233,7 +245,24 @@ export const getNewBookingsThisWeek = async (
     now.getDate() - diffToMonday
   );
   startOfWeek.setHours(0, 0, 0, 0); // Đặt thời gian về đầu ngày
-  const newBookings = await prisma.booking.count({
+
+  //dem single bookings moi
+  const newSingleBookings = await prisma.booking.count({
+    where: {
+      sub_field: {
+        complex: {
+          owner_id: ownerId,
+        },
+      },
+      recurring_booking_id: null,
+      created_at: {
+        gte: startOfWeek,
+      },
+    },
+  });
+
+  //dem recurring bookings moi
+  const newRecurringBookings = await prisma.recurringBooking.count({
     where: {
       sub_field: {
         complex: {
@@ -246,7 +275,7 @@ export const getNewBookingsThisWeek = async (
     },
   });
 
-  return newBookings;
+  return newSingleBookings + newRecurringBookings;
 };
 
 //tong complex
@@ -434,7 +463,24 @@ export const getBookingStatusDistribution = async (
     throw new NotFoundError("Owner not found");
   }
 
-  const bookings = await prisma.booking.groupBy({
+  // Đếm các booking đơn lẻ (không thuộc recurring)
+  const singleBookings = await prisma.booking.groupBy({
+    by: ["status"],
+    where: {
+      sub_field: {
+        complex: {
+          owner_id: ownerId,
+        },
+      },
+      recurring_booking_id: null,
+    },
+    _count: {
+      status: true,
+    },
+  });
+
+  // Đếm các recurring booking
+  const recurringBookings = await prisma.recurringBooking.groupBy({
     by: ["status"],
     where: {
       sub_field: {
@@ -455,19 +501,38 @@ export const getBookingStatusDistribution = async (
     cancelled: 0,
   };
 
-  bookings.forEach((booking) => {
+  // Cộng dồn từ single bookings
+  singleBookings.forEach((booking) => {
     switch (booking.status) {
       case "COMPLETED":
-        distribution.completed = booking._count.status;
+        distribution.completed += booking._count.status;
         break;
       case "CONFIRMED":
-        distribution.confirmed = booking._count.status;
+        distribution.confirmed += booking._count.status;
         break;
       case "PENDING":
-        distribution.pending = booking._count.status;
+        distribution.pending += booking._count.status;
         break;
       case "CANCELED":
-        distribution.cancelled = booking._count.status;
+        distribution.cancelled += booking._count.status;
+        break;
+    }
+  });
+
+  // Cộng dồn từ recurring bookings
+  recurringBookings.forEach((booking) => {
+    switch (booking.status) {
+      case "COMPLETED":
+        distribution.completed += booking._count.status;
+        break;
+      case "CONFIRMED":
+        distribution.confirmed += booking._count.status;
+        break;
+      case "PENDING":
+        distribution.pending += booking._count.status;
+        break;
+      case "CANCELED":
+        distribution.cancelled += booking._count.status;
         break;
     }
   });

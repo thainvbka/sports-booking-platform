@@ -263,9 +263,23 @@ export const ownerService = {
     return response.data;
   },
 
+  confirmRecurringBooking: async (recurringBookingId: string) => {
+    const response = await api.patch<ApiResponse<{ message: string }>>(
+      `/bookings/recurring/confirm/${recurringBookingId}`
+    );
+    return response.data;
+  },
+
   cancelOwnerBooking: async (bookingId: string) => {
     const response = await api.patch<ApiResponse<{ message: string }>>(
       `/bookings/cancel/${bookingId}`
+    );
+    return response.data;
+  },
+
+  cancelOwnerRecurringBooking: async (recurringBookingId: string) => {
+    const response = await api.patch<ApiResponse<{ message: string }>>(
+      `/bookings/recurring/cancel/${recurringBookingId}`
     );
     return response.data;
   },
