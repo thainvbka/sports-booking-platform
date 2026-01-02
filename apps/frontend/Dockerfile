@@ -47,8 +47,8 @@ RUN npm run build
 # ============================================
 FROM nginx:alpine AS runner
 
-# Copy nginx config
-COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+# Copy default nginx config (có thể được override bởi docker-compose mount)
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built static files từ builder
 COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html

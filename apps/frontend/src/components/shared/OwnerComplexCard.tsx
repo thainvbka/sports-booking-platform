@@ -81,17 +81,9 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
             <span className="text-muted-foreground">
               {complex._count?.sub_fields ?? 0} sân con
             </span>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="h-7 text-xs"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              Quản lý
-            </Button>
+            <span className="text-primary font-medium hover:underline">
+              Xem chi tiết →
+            </span>
           </div>
         </CardContent>
       </Card>

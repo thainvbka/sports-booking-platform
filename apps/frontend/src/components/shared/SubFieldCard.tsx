@@ -27,7 +27,7 @@ export function SubFieldCard({
     subField.min_price ||
     (subField.pricing_rules.length > 0 ? getPriceRange(subField).min : 0);
 
-  return (
+  const cardContent = (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
       {/* Image Section */}
       <div className="aspect-video overflow-hidden bg-muted relative">
@@ -111,17 +111,22 @@ export function SubFieldCard({
               }
             />
           ) : (
-            <Link
-              to={`/owner/sub-fields/${subField.id}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button size="sm" variant="outline" className="h-8 text-xs">
-                Quản lý
-              </Button>
-            </Link>
+            <span className="text-primary font-medium text-xs hover:underline">
+              Xem chi tiết →
+            </span>
           )}
         </div>
       </CardContent>
     </Card>
   );
+
+  if (mode === "owner") {
+    return (
+      <Link to={`/owner/sub-fields/${subField.id}`} className="block group">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }
