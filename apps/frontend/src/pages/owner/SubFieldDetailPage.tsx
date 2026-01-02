@@ -42,7 +42,6 @@ import type { PricingRule } from "@/types";
 interface PricingRuleFormData {
   days: number[];
   time_slots: { start_time: string; end_time: string; base_price: number }[];
-  base_price: number;
 }
 
 // Format time from backend (handles both string and Date)
