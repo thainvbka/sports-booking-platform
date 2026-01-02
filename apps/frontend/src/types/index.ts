@@ -34,7 +34,6 @@ export type RecurrenceType =
   (typeof RecurrenceType)[keyof typeof RecurrenceType];
 
 export const RecurringStatus = {
-  ACTIVE: "ACTIVE",
   CANCELED: "CANCELED",
   PENDING: "PENDING",
   COMPLETED: "COMPLETED",
@@ -165,28 +164,54 @@ export interface Booking {
   expires_at: string;
 }
 
-// Owner Booking Management
-export interface OwnerBooking {
+// Single booking (booking lẻ)
+export interface OwnerSingleBookingResponse {
+  type: "SINGLE";
   id: string;
   start_time: string;
   end_time: string;
   total_price: number;
   status: BookingStatus;
-  player: {
-    account: {
-      full_name: string;
-      phone_number: string;
-    };
-  };
-  sub_field: {
-    sub_field_name: string;
-    sport_type: SportType;
-    complex: {
-      complex_name: string;
-      complex_address: string;
-    };
-  };
+  complex_name: string;
+  complex_address: string;
+  sport_type: string;
+  sub_field_name: string;
+  expires_at: string | null;
+  created_at: string;
+  player_name: string;
+  player_phone: string;
 }
+
+// Recurring booking (booking định kỳ - đã được nhóm lại)
+export interface OwnerRecurringBookingResponse {
+  type: "RECURRING";
+  id: string;
+  recurrence_type: string;
+  start_date: string;
+  end_date: string;
+  total_slots: number;
+  total_price: number;
+  status: BookingStatus;
+  complex_name: string;
+  complex_address: string;
+  sport_type: string;
+  sub_field_name: string;
+  expires_at: string | null;
+  created_at: string;
+  bookings: {
+    id: string;
+    start_time: string;
+    end_time: string;
+    total_price: number;
+    status: BookingStatus;
+  }[];
+  player_name: string;
+  player_phone: string;
+}
+
+export type OwnerBookingResponse =
+  | OwnerSingleBookingResponse
+  | OwnerRecurringBookingResponse;
 
 export interface OwnerBookingFilter {
   search?: string;
@@ -198,7 +223,7 @@ export interface OwnerBookingFilter {
 }
 
 export interface OwnerBookingsResponse {
-  bookings: OwnerBooking[];
+  bookings: OwnerBookingResponse[];
   pagination: PaginationMeta;
 }
 

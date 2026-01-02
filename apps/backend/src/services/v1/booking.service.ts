@@ -512,147 +512,147 @@ export const ownerConfirmBooking = async (
   return { message: "Booking confirmed successfully" };
 };
 
-//owner get all bookings of his complex
-export const ownerGetAllBookings = async (
-  owner_id: string,
-  page = 1,
-  limit = 8,
-  filter: Partial<filter> = {}
-) => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: owner_id, status: "ACTIVE" },
-  });
-  if (!owner) {
-    throw new ForbiddenError("You are not allowed to view bookings");
-  }
+// //owner get all bookings of his complex
+// export const ownerGetAllBookings = async (
+//   owner_id: string,
+//   page = 1,
+//   limit = 8,
+//   filter: Partial<filter> = {}
+// ) => {
+//   //check owner exists
+//   const owner = await prisma.owner.findUnique({
+//     where: { id: owner_id, status: "ACTIVE" },
+//   });
+//   if (!owner) {
+//     throw new ForbiddenError("You are not allowed to view bookings");
+//   }
 
-  const skip = (page - 1) * limit;
+//   const skip = (page - 1) * limit;
 
-  let startDate;
-  let endDate;
+//   let startDate;
+//   let endDate;
 
-  if (filter.start_date) {
-    startDate = new Date(filter.start_date);
-  }
+//   if (filter.start_date) {
+//     startDate = new Date(filter.start_date);
+//   }
 
-  if (filter.end_date) {
-    endDate = new Date(filter.end_date);
-  }
+//   if (filter.end_date) {
+//     endDate = new Date(filter.end_date);
+//   }
 
-  //build where condition
-  const whereCondition: any = {
-    sub_field: {
-      complex: {
-        owner_id: owner_id,
-      },
-    },
-  };
+//   //build where condition
+//   const whereCondition: any = {
+//     sub_field: {
+//       complex: {
+//         owner_id: owner_id,
+//       },
+//     },
+//   };
 
-  // Add search filter if provided
-  if (filter.search && filter.search.trim() !== "") {
-    whereCondition.OR = [
-      {
-        sub_field: {
-          complex: {
-            complex_name: {
-              contains: filter.search,
-              mode: "insensitive",
-            },
-          },
-        },
-      },
-      {
-        sub_field: {
-          sub_field_name: {
-            contains: filter.search,
-            mode: "insensitive",
-          },
-        },
-      },
-    ];
-  }
+//   // Add search filter if provided
+//   if (filter.search && filter.search.trim() !== "") {
+//     whereCondition.OR = [
+//       {
+//         sub_field: {
+//           complex: {
+//             complex_name: {
+//               contains: filter.search,
+//               mode: "insensitive",
+//             },
+//           },
+//         },
+//       },
+//       {
+//         sub_field: {
+//           sub_field_name: {
+//             contains: filter.search,
+//             mode: "insensitive",
+//           },
+//         },
+//       },
+//     ];
+//   }
 
-  // Add status filter if provided
-  if (filter.status) {
-    whereCondition.status = filter.status;
-  }
+//   // Add status filter if provided
+//   if (filter.status) {
+//     whereCondition.status = filter.status;
+//   }
 
-  // Add price range filter if provided
-  if (filter.min_price || filter.max_price) {
-    whereCondition.total_price = {};
-    if (filter.min_price) {
-      whereCondition.total_price.gte = filter.min_price;
-    }
-    if (filter.max_price) {
-      whereCondition.total_price.lte = filter.max_price;
-    }
-  }
+//   // Add price range filter if provided
+//   if (filter.min_price || filter.max_price) {
+//     whereCondition.total_price = {};
+//     if (filter.min_price) {
+//       whereCondition.total_price.gte = filter.min_price;
+//     }
+//     if (filter.max_price) {
+//       whereCondition.total_price.lte = filter.max_price;
+//     }
+//   }
 
-  // Add date range filter if provided
-  if (startDate || endDate) {
-    whereCondition.start_time = {};
-    if (startDate) {
-      whereCondition.start_time.gte = startDate;
-    }
-    if (endDate) {
-      whereCondition.start_time.lte = endDate;
-    }
-  }
+//   // Add date range filter if provided
+//   if (startDate || endDate) {
+//     whereCondition.start_time = {};
+//     if (startDate) {
+//       whereCondition.start_time.gte = startDate;
+//     }
+//     if (endDate) {
+//       whereCondition.start_time.lte = endDate;
+//     }
+//   }
 
-  const [total, bookings] = await prisma.$transaction([
-    prisma.booking.count({
-      where: whereCondition,
-    }),
-    prisma.booking.findMany({
-      where: whereCondition,
-      select: {
-        id: true,
-        start_time: true,
-        end_time: true,
-        total_price: true,
-        status: true,
-        player: {
-          select: {
-            account: {
-              select: {
-                full_name: true,
-                phone_number: true,
-              },
-            },
-          },
-        },
-        sub_field: {
-          select: {
-            sub_field_name: true,
-            sport_type: true,
-            complex: {
-              select: {
-                complex_name: true,
-                complex_address: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { created_at: "desc" },
-      skip,
-      take: limit,
-    }),
-  ]);
+//   const [total, bookings] = await prisma.$transaction([
+//     prisma.booking.count({
+//       where: whereCondition,
+//     }),
+//     prisma.booking.findMany({
+//       where: whereCondition,
+//       select: {
+//         id: true,
+//         start_time: true,
+//         end_time: true,
+//         total_price: true,
+//         status: true,
+//         player: {
+//           select: {
+//             account: {
+//               select: {
+//                 full_name: true,
+//                 phone_number: true,
+//               },
+//             },
+//           },
+//         },
+//         sub_field: {
+//           select: {
+//             sub_field_name: true,
+//             sport_type: true,
+//             complex: {
+//               select: {
+//                 complex_name: true,
+//                 complex_address: true,
+//               },
+//             },
+//           },
+//         },
+//       },
+//       orderBy: { created_at: "desc" },
+//       skip,
+//       take: limit,
+//     }),
+//   ]);
 
-  const totalPages = Math.ceil(total / limit);
+//   const totalPages = Math.ceil(total / limit);
 
-  return {
-    bookings,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages,
-    },
-  };
-};
+//   return {
+//     bookings,
+//     pagination: {
+//       total,
+//       page,
+//       limit,
+//       totalPages,
+//     },
+//   };
+// };
 
 // owner get booking by id
 export const ownerGetBookingById = async (
@@ -918,6 +918,268 @@ export const getPlayerBookings = async (
         total_price: booking.total_price,
         status: booking.status,
       })),
+    };
+  });
+
+  //gộp 2 mảng và sắp xếp theo ngày tạo
+  const allBookings = [
+    ...formattedSingleBookings,
+    ...formattedRecurringBookings,
+  ].sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
+
+  //phân trang
+  const total = allBookings.length;
+  const skip = (page - 1) * limit;
+  const paginatedBookings = allBookings.slice(skip, skip + limit);
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    bookings: paginatedBookings,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
+};
+
+//get player bookings
+export const ownerGetAllBookings = async (
+  owner_id: string,
+  page = 1,
+  limit = 8,
+  filter: Partial<filter> = {}
+) => {
+  //check owner exists
+  const owner = await prisma.owner.findUnique({
+    where: { id: owner_id, status: "ACTIVE" },
+  });
+  if (!owner) {
+    throw new ForbiddenError("You are not allowed to view bookings");
+  }
+
+  //ngay bat dau va ket thuc loc
+  let startDate;
+  let endDate;
+
+  if (filter.start_date) {
+    startDate = new Date(filter.start_date);
+  }
+
+  if (filter.end_date) {
+    endDate = new Date(filter.end_date);
+  }
+
+  //build where condition
+  const whereCondition: any = {
+    sub_field: {
+      complex: {
+        owner_id: owner_id,
+      },
+    },
+  };
+
+  // Add search filter if provided
+  if (filter.search && filter.search.trim() !== "") {
+    whereCondition.OR = [
+      {
+        sub_field: {
+          complex: {
+            complex_name: {
+              contains: filter.search,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+      {
+        sub_field: {
+          sub_field_name: {
+            contains: filter.search,
+            mode: "insensitive",
+          },
+        },
+      },
+    ];
+  }
+
+  // Add status filter if provided
+  if (filter.status) {
+    whereCondition.status = filter.status;
+  }
+
+  // Add price range filter if provided
+  // if (filter.min_price || filter.max_price) {
+  //   whereCondition.total_price = {};
+  //   if (filter.min_price) {
+  //     whereCondition.total_price.gte = filter.min_price;
+  //   }
+  //   if (filter.max_price) {
+  //     whereCondition.total_price.lte = filter.max_price;
+  //   }
+  // }
+
+  // Add date range filter if provided
+  // if (startDate || endDate) {
+  //   whereCondition.start_time = {};
+  //   if (startDate) {
+  //     whereCondition.start_time.gte = startDate;
+  //   }
+  //   if (endDate) {
+  //     whereCondition.start_time.lte = endDate;
+  //   }
+  // }
+
+  //lay tat cả các booking lẻ
+  const singleBookings = await prisma.booking.findMany({
+    where: {
+      ...whereCondition,
+      recurring_booking_id: null,
+    },
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      total_price: true,
+      status: true,
+      expires_at: true,
+      created_at: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
+      },
+      player: {
+        select: {
+          account: {
+            select: {
+              full_name: true,
+              phone_number: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { created_at: "desc" },
+  });
+
+  //lay tat ca cac recurring booking
+  const recurringBookings = await prisma.recurringBooking.findMany({
+    where: whereCondition,
+    select: {
+      id: true,
+      recurrence_type: true,
+      start_date: true,
+      end_date: true,
+      recurrence_detail: true,
+      status: true,
+      created_at: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          sport_type: true,
+          complex: {
+            select: {
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
+      },
+      bookings: {
+        select: {
+          id: true,
+          start_time: true,
+          end_time: true,
+          total_price: true,
+          status: true,
+          expires_at: true,
+        },
+        orderBy: { start_time: "desc" },
+      },
+      player: {
+        select: {
+          account: {
+            select: {
+              full_name: true,
+              phone_number: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  //format bookings lẻ
+  const formattedSingleBookings = singleBookings.map((booking) => ({
+    id: booking.id,
+    type: "SINGLE" as const,
+    start_time: booking.start_time,
+    end_time: booking.end_time,
+    total_price: booking.total_price,
+    status: booking.status,
+    sub_field_name: booking.sub_field.sub_field_name,
+    sport_type: booking.sub_field.sport_type,
+    complex_name: booking.sub_field.complex.complex_name,
+    complex_address: booking.sub_field.complex.complex_address,
+    expires_at: booking.expires_at,
+    created_at: booking.created_at,
+    player_name: booking.player.account.full_name,
+    player_phone: booking.player.account.phone_number,
+  }));
+
+  //format recurring bookings
+  const formattedRecurringBookings = recurringBookings.map((recurring) => {
+    //tinh tong tien cua tat ca cac booking con
+    const total_price = recurring.bookings.reduce(
+      (sum, booking) => sum + Number(booking.total_price),
+      0
+    );
+
+    const earliestExpiration =
+      recurring.status === "PENDING"
+        ? recurring.bookings
+            .filter((booking) => booking.status === "PENDING")
+            .reduce((earliest, booking) => {
+              if (!earliest || booking.expires_at < earliest) {
+                return booking.expires_at;
+              }
+              return earliest;
+            }, null as Date | null)
+        : null;
+
+    return {
+      id: recurring.id,
+      type: "RECURRING" as const,
+      start_date: recurring.start_date,
+      end_date: recurring.end_date,
+      recurrence_type: recurring.recurrence_type,
+      status: recurring.status,
+      total_slots: recurring.bookings.length,
+      total_price: total_price,
+      sub_field_name: recurring.sub_field.sub_field_name,
+      sport_type: recurring.sub_field.sport_type,
+      complex_name: recurring.sub_field.complex.complex_name,
+      complex_address: recurring.sub_field.complex.complex_address,
+      expires_at: earliestExpiration,
+      created_at: recurring.created_at,
+      bookings: recurring.bookings.map((booking) => ({
+        id: booking.id,
+        start_time: booking.start_time,
+        end_time: booking.end_time,
+        total_price: booking.total_price,
+        status: booking.status,
+      })),
+      player_name: recurring.player.account.full_name,
+      player_phone: recurring.player.account.phone_number,
     };
   });
 

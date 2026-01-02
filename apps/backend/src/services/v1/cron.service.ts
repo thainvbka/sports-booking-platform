@@ -95,26 +95,6 @@ export const expiredRecurringBookings = async () => {
   }
 };
 
-export const completeRecurringBookings = async () => {
-  try {
-    //chuyển các recurring booking đã hoàn thành sang trạng thái
-    const result = await prisma.recurringBooking.updateMany({
-      where: {
-        status: "ACTIVE", // Chỉ xử lý đơn ĐÃ THANH TOÁN
-        end_date: {
-          lt: new Date(), // Ngày kết thúc hợp đồng < Hiện tại
-        },
-      },
-      data: { status: "COMPLETED" },
-    });
-    if (result.count > 0) {
-      console.log(`Completed ${result.count} finished recurring bookings.`);
-    }
-  } catch (error) {
-    console.error("Error during completeRecurringBookings:", error);
-  }
-};
-
 export const startCronJobs = () => {
   // chay moi phut de huy cac booking le het han
   cron.schedule("*/1 * * * *", () => {
@@ -124,10 +104,5 @@ export const startCronJobs = () => {
   //chay moi 5 phut để hủy recurring booking het han
   cron.schedule("*/5 * * * *", () => {
     expiredRecurringBookings();
-  });
-
-  //chay moi ngay de hoan thanh cac recurring booking da ket thuc
-  cron.schedule("0 0 * * *", () => {
-    completeRecurringBookings();
   });
 };

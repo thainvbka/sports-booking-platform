@@ -61,7 +61,6 @@ enum RecurrenceType {
 }
 
 enum RecurringStatus {
-  ACTIVE
   PENDING
   CONFIRMED
   CANCELED

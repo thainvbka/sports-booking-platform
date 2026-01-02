@@ -8,6 +8,7 @@ import type {
   PricingRule,
   PaginationMeta,
   StatsMetrics,
+  OwnerBookingResponse,
 } from "@/types";
 
 //payload and response types
@@ -247,18 +248,11 @@ export const ownerService = {
 
     const response = await api.get<
       ApiResponse<{
-        bookings: any[];
+        bookings: OwnerBookingResponse[];
         pagination: PaginationMeta;
       }>
     >("/bookings/all", { params: queryParams });
 
-    return response.data;
-  },
-
-  getOwnerBookingById: async (bookingId: string) => {
-    const response = await api.get<ApiResponse<{ booking: any }>>(
-      `/bookings/${bookingId}`
-    );
     return response.data;
   },
 

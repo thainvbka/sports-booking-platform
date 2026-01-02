@@ -65,7 +65,7 @@ export const createRecurringBookingService = async (
       start_date: new Date(data.start_date),
       end_date: new Date(data.end_date),
       status: {
-        in: ["PENDING", "ACTIVE", "CONFIRMED"],
+        in: ["PENDING", "COMPLETED", "CONFIRMED"],
       },
     },
     include: {
@@ -76,7 +76,7 @@ export const createRecurringBookingService = async (
   if (existingRecurring) {
     //nếu đã thanh toán hoặc xác nhận thì báo lỗi xem lại ở trang lịch sử
     if (
-      existingRecurring.status === "ACTIVE" ||
+      existingRecurring.status === "COMPLETED" ||
       existingRecurring.status === "CONFIRMED"
     ) {
       throw new BadRequestError(
@@ -469,7 +469,7 @@ export const ownerConfirmRecurringBookingService = async (
           owner_id: owner_id,
         },
       },
-      status: "ACTIVE",
+      status: "COMPLETED",
       bookings: {
         some: {
           status: "COMPLETED",

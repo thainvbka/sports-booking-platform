@@ -46,16 +46,15 @@ import { OwnerBookingDetailDialog } from "@/components/owner/OwnerBookingDetailD
 import { ownerService } from "@/services/owner.service";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { OwnerBooking, BookingStatus } from "@/types";
+import type { OwnerBookingsResponse, BookingStatus } from "@/types";
 
 export function OwnerBookingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [bookings, setBookings] = useState<OwnerBooking[]>([]);
+  const [bookings, setBookings] = useState<OwnerBookingsResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBooking, setSelectedBooking] = useState<OwnerBooking | null>(
-    null
-  );
+  const [selectedBooking, setSelectedBooking] =
+    useState<OwnerBookingsResponse | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   // Confirmation dialog state
@@ -184,7 +183,7 @@ export function OwnerBookingsPage() {
     setSearchParams({ page: "1" });
   };
 
-  const handleViewDetail = (booking: OwnerBooking) => {
+  const handleViewDetail = (booking: OwnerBookingsResponse) => {
     setSelectedBooking(booking);
     setIsDetailDialogOpen(true);
   };

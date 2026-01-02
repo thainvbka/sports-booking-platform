@@ -324,7 +324,7 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
               id: recurringBooking?.id,
             },
             data: {
-              status: RecurringStatus.ACTIVE,
+              status: RecurringStatus.COMPLETED,
             },
           });
         });
