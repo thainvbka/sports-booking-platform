@@ -121,7 +121,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           end_time: getIsoDateTime(date, selectedRule.end_time),
           type: "ONE_TIME",
         });
-        toast.success("Đặt sân thành công! Vui lòng kiểm tra lại thông tin.");
+        toast.success(
+          response.message ||
+            "Đặt sân thành công! Vui lòng kiểm tra lại thông tin."
+        );
         setIsOpen(false);
         navigate(`/booking-review/${response.booking_id}`);
       } else {
@@ -141,7 +144,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
             type: "RECURRING",
           }
         );
-        toast.success("Tạo lịch định kỳ thành công!");
+        toast.success(response.message || "Đặt sân định kỳ thành công!");
         setIsOpen(false);
         navigate(`/booking-review/recurring/${response.recurring_booking_id}`);
       }

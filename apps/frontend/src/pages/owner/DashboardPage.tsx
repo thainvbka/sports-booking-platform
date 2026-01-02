@@ -100,10 +100,26 @@ export function OwnerDashboardPage() {
     if (!dashboardStats?.bookingStatusDistribution) return [];
     const dist = dashboardStats.bookingStatusDistribution;
     return [
-      { status: "Hoàn thành", value: dist.completed, fill: "#10b981" },
-      { status: "Đã xác nhận", value: dist.confirmed, fill: "#3b82f6" },
-      { status: "Chờ xử lý", value: dist.pending, fill: "#f59e0b" },
-      { status: "Đã hủy", value: dist.cancelled, fill: "#ef4444" },
+      {
+        status: "Hoàn thành",
+        value: dist.completed,
+        fill: "url(#completedGradient)",
+      },
+      {
+        status: "Đã xác nhận",
+        value: dist.confirmed,
+        fill: "url(#confirmedGradient)",
+      },
+      {
+        status: "Chờ xử lý",
+        value: dist.pending,
+        fill: "url(#pendingGradient)",
+      },
+      {
+        status: "Đã hủy",
+        value: dist.cancelled,
+        fill: "url(#cancelledGradient)",
+      },
     ].filter((item) => item.value > 0);
   }, [dashboardStats]);
 
@@ -173,7 +189,7 @@ export function OwnerDashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             Xin chào, {owner?.full_name || "Chủ sân"} 👋
           </h1>
           <p className="text-muted-foreground mt-1 capitalize">
@@ -213,7 +229,7 @@ export function OwnerDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background">
+        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-linear-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tổng doanh thu
@@ -246,7 +262,7 @@ export function OwnerDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-background">
+        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-linear-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Lượt Đặt Sân
@@ -268,7 +284,7 @@ export function OwnerDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-linear-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Khu Phức Hợp
@@ -290,7 +306,7 @@ export function OwnerDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-pink-50 to-white dark:from-pink-950/20 dark:to-background">
+        <Card className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 bg-linear-to-br from-pink-50 to-white dark:from-pink-950/20 dark:to-background">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Khách Hàng
@@ -319,7 +335,7 @@ export function OwnerDashboardPage() {
         <Card className="border-none shadow-md">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
-              Phân bố trạng thái booking
+              Phân bố theo trạng thái booking
             </CardTitle>
             <CardDescription>
               Tổng quan tình trạng các lượt đặt sân
@@ -329,18 +345,77 @@ export function OwnerDashboardPage() {
             {bookingStatusData.length > 0 ? (
               <ChartContainer
                 config={{
-                  completed: { label: "Hoàn thành", color: "#10b981" },
-                  confirmed: { label: "Đã xác nhận", color: "#3b82f6" },
-                  pending: { label: "Chờ xử lý", color: "#f59e0b" },
-                  cancelled: { label: "Đã hủy", color: "#ef4444" },
+                  "Hoàn thành": { label: "Hoàn thành", color: "#10b981" },
+                  "Đã xác nhận": { label: "Đã xác nhận", color: "#3b82f6" },
+                  "Chờ xử lý": { label: "Chờ xử lý", color: "#f59e0b" },
+                  "Đã hủy": { label: "Đã hủy", color: "#ef4444" },
                 }}
                 className="h-[300px]"
               >
                 <PieChart>
+                  <defs>
+                    <linearGradient
+                      id="completedGradient"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#34d399"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="confirmedGradient"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#60a5fa"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="pendingGradient"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#fbbf24"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="cancelledGradient"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#f87171"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                  </defs>
                   <ChartTooltip
                     content={
                       <ChartTooltipContent
-                        labelFormatter={(value) => `${value}`}
+                        nameKey="status"
+                        labelKey="status"
                         formatter={(value) => `${value} lượt`}
                       />
                     }
@@ -354,7 +429,9 @@ export function OwnerDashboardPage() {
                     outerRadius={100}
                     label={({ status, value }) => `${status}: ${value}`}
                   />
-                  <ChartLegend content={<ChartLegendContent />} />
+                  <ChartLegend
+                    content={<ChartLegendContent nameKey="status" />}
+                  />
                 </PieChart>
               </ChartContainer>
             ) : (
@@ -364,7 +441,6 @@ export function OwnerDashboardPage() {
             )}
           </CardContent>
         </Card>
-
         {/* Top SubFields - Bar Chart */}
         <Card className="border-none shadow-md">
           <CardHeader>
@@ -382,6 +458,22 @@ export function OwnerDashboardPage() {
                 className="h-[300px]"
               >
                 <BarChart data={topSubFieldsData}>
+                  <defs>
+                    <linearGradient
+                      id="bookingsGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#a78bfa"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     className="stroke-muted"
@@ -408,7 +500,7 @@ export function OwnerDashboardPage() {
                   />
                   <Bar
                     dataKey="bookings"
-                    fill="#8b5cf6"
+                    fill="url(#bookingsGradient)"
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
@@ -443,6 +535,18 @@ export function OwnerDashboardPage() {
                 className="h-[300px]"
               >
                 <BarChart data={revenueByComplexData} layout="vertical">
+                  <defs>
+                    <linearGradient
+                      id="revenueGradient"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
+                      <stop offset="100%" stopColor="#fb923c" stopOpacity={1} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     className="stroke-muted"
@@ -475,7 +579,11 @@ export function OwnerDashboardPage() {
                       />
                     }
                   />
-                  <Bar dataKey="revenue" fill="#f97316" radius={[0, 8, 8, 0]} />
+                  <Bar
+                    dataKey="revenue"
+                    fill="url(#revenueGradient)"
+                    radius={[0, 8, 8, 0]}
+                  />
                 </BarChart>
               </ChartContainer>
             ) : (
@@ -485,7 +593,6 @@ export function OwnerDashboardPage() {
             )}
           </CardContent>
         </Card>
-
         {/* Hourly Distribution - Area Chart */}
         <Card className="border-none shadow-md">
           <CardHeader>
@@ -513,10 +620,15 @@ export function OwnerDashboardPage() {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8} />
+                      <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.9} />
                       <stop
-                        offset="95%"
-                        stopColor="#06b6d4"
+                        offset="50%"
+                        stopColor="#22d3ee"
+                        stopOpacity={0.4}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#67e8f9"
                         stopOpacity={0.1}
                       />
                     </linearGradient>

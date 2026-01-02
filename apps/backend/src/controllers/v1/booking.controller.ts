@@ -115,7 +115,8 @@ export const cancelRecurringBookingController = async (
   const recurring_booking_id = req.params.id;
   const result = await cancelRecurringBookingService(
     req.user?.profiles.playerId as string,
-    recurring_booking_id
+    recurring_booking_id,
+    "PLAYER"
   );
   return new SuccessResponse({
     message: "Recurring booking canceled successfully",
@@ -176,6 +177,23 @@ export const ownerCancelBookingController = async (
   const result = await ownerCancelBooking(booking_id, ownerId);
   return new SuccessResponse({
     message: "Booking canceled successfully",
+    data: result,
+  }).send(res);
+};
+
+export const ownerCancelRecurringBookingController = async (
+  req: Request,
+  res: Response
+) => {
+  const recurring_booking_id = req.params.id;
+  const ownerId = req.user?.profiles.ownerId as string;
+  const result = await cancelRecurringBookingService(
+    ownerId,
+    recurring_booking_id,
+    "OWNER"
+  );
+  return new SuccessResponse({
+    message: "Recurring booking canceled successfully by owner",
     data: result,
   }).send(res);
 };

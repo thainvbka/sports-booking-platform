@@ -54,6 +54,7 @@ export const createBooking = async (
       sub_field_id: sub_field_id,
       OR: [
         { status: "PENDING", expires_at: { gt: new Date() } },
+        { status: "COMPLETED" },
         { status: "CONFIRMED" },
       ],
       AND: [
@@ -71,6 +72,15 @@ export const createBooking = async (
 
   if (overlappingBooking) {
     if (overlappingBooking.player_id === player_id) {
+      //neu booking đã được thanh toán hoặc xác nhận thì thoong báo xem lại ở trang lịch sử
+      if (
+        overlappingBooking.status === "COMPLETED" ||
+        overlappingBooking.status === "CONFIRMED"
+      ) {
+        throw new BadRequestError(
+          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+        );
+      }
       //gia hạn thời gian giữ chỗ
       const updatedBooking = await prisma.booking.update({
         where: { id: overlappingBooking.id },
@@ -79,6 +89,8 @@ export const createBooking = async (
 
       //trả về thông tin booking đã được gia hạn
       return {
+        message:
+          "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
         booking_id: updatedBooking.id,
         start_time: updatedBooking.start_time,
         end_time: updatedBooking.end_time,
@@ -170,6 +182,7 @@ export const createBooking = async (
   });
 
   return {
+    message: "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
     booking_id: booking.id,
     start_time: booking.start_time,
     end_time: booking.end_time,

@@ -58,13 +58,15 @@ export const createRecurringBookingService = async (
   // Kiểm tra xem user này có đang pending một yêu cầu y hệt không? Nếu có thì không tạo mới, mà gia hạn thời gian giữ chỗ
   const existingRecurring = await prisma.recurringBooking.findFirst({
     where: {
-      player_id,
+      player_id, //cùng player
       sub_field_id,
       recurrence_type: data.recurring_type,
       // So sánh ngày bắt đầu/kết thúc
       start_date: new Date(data.start_date),
       end_date: new Date(data.end_date),
-      status: "PENDING", // Chỉ tìm những cái chưa thanh toán
+      status: {
+        in: ["PENDING", "ACTIVE", "CONFIRMED"],
+      },
     },
     include: {
       bookings: true, // Lấy booking con để tính lại tổng tiền
@@ -72,6 +74,15 @@ export const createRecurringBookingService = async (
   });
 
   if (existingRecurring) {
+    //nếu đã thanh toán hoặc xác nhận thì báo lỗi xem lại ở trang lịch sử
+    if (
+      existingRecurring.status === "ACTIVE" ||
+      existingRecurring.status === "CONFIRMED"
+    ) {
+      throw new BadRequestError(
+        "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+      );
+    }
     //  Nếu tìm thấy -> Gia hạn thời gian giữ chỗ cho tất cả booking con
     // (Cho thêm 15 phút nữa để thanh toán)
     await prisma.booking.updateMany({
@@ -87,7 +98,7 @@ export const createRecurringBookingService = async (
 
     //  Trả về luôn (Không tạo mới nữa)
     return {
-      message: "Resumed existing recurring booking session",
+      message: "Đã tiếp tục phiên đặt chỗ định kỳ trước đó",
       recurring_booking_id: existingRecurring.id,
       total_slots: existingRecurring.bookings.length,
       total_price: totalPrice,
@@ -254,7 +265,7 @@ export const createRecurringBookingService = async (
   });
 
   return {
-    message: "Recurring booking created successfully",
+    message: "Đặt sân định kỳ được tạo thành công",
     recurring_booking_id: result.id,
     total_slots: bookingsToCreate.length,
     total_price: totalRecurringPrice,
@@ -262,26 +273,52 @@ export const createRecurringBookingService = async (
 };
 
 export const cancelRecurringBookingService = async (
-  player_id: string,
-  recurring_booking_id: string
+  user_id: string,
+  recurring_booking_id: string,
+  user_type: "PLAYER" | "OWNER"
 ) => {
-  //check player
-  const player = await prisma.player.findUnique({
-    where: { id: player_id, status: "ACTIVE" },
-  });
-  if (!player) throw new ForbiddenError("Player not active or found");
+  if (user_type === "PLAYER") {
+    // Check player
+    const player = await prisma.player.findUnique({
+      where: { id: user_id, status: "ACTIVE" },
+    });
+    if (!player) throw new ForbiddenError("Player not active or found");
 
-  // Validate Recurring Booking
-  const recurringBooking = await prisma.recurringBooking.findFirst({
-    where: {
-      id: recurring_booking_id,
-      player_id,
-      status: "PENDING",
-    },
-  });
+    // Validate Recurring Booking belongs to player
+    const recurringBooking = await prisma.recurringBooking.findFirst({
+      where: {
+        id: recurring_booking_id,
+        player_id: user_id,
+        status: "PENDING",
+      },
+    });
 
-  if (!recurringBooking)
-    throw new NotFoundError("Recurring booking not found or inaccessible");
+    if (!recurringBooking)
+      throw new NotFoundError("Recurring booking not found or inaccessible");
+  } else if (user_type === "OWNER") {
+    // Check owner
+    const owner = await prisma.owner.findUnique({
+      where: { id: user_id, status: "ACTIVE" },
+    });
+    if (!owner) throw new ForbiddenError("Owner not active or found");
+
+    // Validate Recurring Booking belongs to owner's complex
+    const recurringBooking = await prisma.recurringBooking.findFirst({
+      where: {
+        id: recurring_booking_id,
+        sub_field: {
+          complex: {
+            owner_id: user_id,
+          },
+        },
+      },
+    });
+
+    if (!recurringBooking)
+      throw new NotFoundError(
+        "Recurring booking not found or not owned by this owner"
+      );
+  }
 
   // Tìm các Booking Con hợp lệ để hủy
   await prisma.booking.updateMany({

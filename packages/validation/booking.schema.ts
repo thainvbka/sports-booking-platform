@@ -10,9 +10,6 @@ export const createBookingSchema = z
       end_time: z.coerce.date({
         message: "Thời gian kết thúc không hợp lệ",
       }),
-
-      // Nếu có thêm type để phân biệt đặt lẻ/cố định
-      type: z.enum(["ONE_TIME", "RECURRING"]).optional(),
     }),
     params: z.object({
       id: z.string().uuid(), // sub_field_id
