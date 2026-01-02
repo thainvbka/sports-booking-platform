@@ -201,7 +201,7 @@ export function SubFieldDetailPage() {
       await updatePricingRule(editingRule.id, id, date.getDay(), {
         start_time: timeSlot.start_time,
         end_time: timeSlot.end_time,
-        base_price: data.base_price,
+        base_price: timeSlot.base_price,
       });
       toast.success("Cập nhật khung giờ thành công.");
       setEditingRule(null);
@@ -610,11 +610,7 @@ export function SubFieldDetailPage() {
             onSubmit={
               pricingFormMode === "create"
                 ? handleCreatePricingRule
-                : (data) =>
-                    handleEditPricingRule({
-                      ...data,
-                      base_price: data.time_slots[0]?.base_price ?? 0,
-                    })
+                : handleEditPricingRule
             }
           />
 
