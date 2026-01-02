@@ -249,34 +249,8 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
       const totalAmount = session.amount_total;
       console.log(` Webhook received for bookings: ${bookingIds}`);
 
-      if (bookingIds.length === 1) {
-        await prisma.$transaction(async (tx) => {
-          const newPayment = await tx.payment.create({
-            data: {
-              amount: totalAmount,
-              provider: PaymentProvider.STRIPE,
-              transaction_code: session.id,
-              status: PaymentStatus.SUCCESS,
-            },
-          });
-
-          //cập nhật trạng thái booking thành PAID
-          await tx.booking.updateMany({
-            where: {
-              id: bookingIds[0],
-              status: BookingStatus.PENDING,
-            },
-            data: {
-              status: BookingStatus.COMPLETED,
-              payment_id: newPayment.id,
-              paid_at: new Date(),
-            },
-          });
-        });
-        return;
-      }
-
-      const bookingIdFirst = await prisma.booking.findUnique({
+      // Lấy thông tin booking đầu tiên để check recurring
+      const firstBooking = await prisma.booking.findUnique({
         where: {
           id: bookingIds[0],
         },
@@ -285,18 +259,11 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
         },
       });
 
-      const recurringBooking = await prisma.recurringBooking.findUnique({
-        where: {
-          id: bookingIdFirst?.recurring_booking_id || "",
-        },
-        select: {
-          id: true,
-        },
-      });
+      const recurringBookingId = firstBooking?.recurring_booking_id;
 
       try {
-        //cập nhật trạng thái booking thành PAID
         await prisma.$transaction(async (tx) => {
+          // Tạo payment record
           const newPayment = await tx.payment.create({
             data: {
               amount: totalAmount,
@@ -306,7 +273,7 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
             },
           });
 
-          //cập nhật các booking lẻ hoặc booking con của booking định kỳ
+          // Cập nhật tất cả bookings thành COMPLETED
           await tx.booking.updateMany({
             where: {
               id: { in: bookingIds },
@@ -319,18 +286,33 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
             },
           });
 
-          await tx.recurringBooking.update({
-            where: {
-              id: recurringBooking?.id,
-            },
-            data: {
-              status: RecurringStatus.COMPLETED,
-            },
-          });
+          // Nếu có recurring booking, kiểm tra và update status
+          if (recurringBookingId) {
+            // Đếm số booking PENDING còn lại của recurring này
+            const pendingCount = await tx.booking.count({
+              where: {
+                recurring_booking_id: recurringBookingId,
+                status: BookingStatus.PENDING,
+              },
+            });
+
+            // Nếu không còn booking PENDING nào, đánh dấu recurring là COMPLETED
+            if (pendingCount === 0) {
+              await tx.recurringBooking.update({
+                where: {
+                  id: recurringBookingId,
+                },
+                data: {
+                  status: RecurringStatus.COMPLETED,
+                },
+              });
+            }
+          }
         });
 
-        console.log(`Bookings successfully : ${transactionCode} `);
+        console.log(`Bookings paid successfully: ${transactionCode}`);
       } catch (error: any) {
+        console.error("Database update failed:", error);
         throw new Error("Database update failed: " + error.message);
       }
     }

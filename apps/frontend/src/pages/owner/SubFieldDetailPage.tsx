@@ -181,10 +181,7 @@ export function SubFieldDetailPage() {
     if (!id) return;
     try {
       await addPricingRule(id, data.days, {
-        time_slots: data.time_slots.map((slot) => ({
-          ...slot,
-          base_price: data.base_price,
-        })),
+        time_slots: data.time_slots,
       });
       toast.success("Thêm khung giờ thành công.");
       await fetchPricingRules(id, date.getDay());
@@ -612,11 +609,7 @@ export function SubFieldDetailPage() {
             }
             onSubmit={
               pricingFormMode === "create"
-                ? (data) =>
-                    handleCreatePricingRule({
-                      ...data,
-                      base_price: data.time_slots[0]?.base_price ?? 0,
-                    })
+                ? handleCreatePricingRule
                 : (data) =>
                     handleEditPricingRule({
                       ...data,
