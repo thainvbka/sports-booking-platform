@@ -93,4 +93,9 @@ export const authService = {
     );
     return response.data;
   },
+
+  getCurrentUser: async () => {
+    const response = await api.get<AuthResponse>("/auth/me");
+    return response.data;
+  },
 };

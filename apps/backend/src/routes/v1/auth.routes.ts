@@ -7,6 +7,7 @@ import {
   refreshTokenController,
   forgotPasswordController,
   resetPasswordController,
+  getCurrentUserController,
 } from "../../controllers/v1/auth.controller";
 import { validate } from "../../middlewares/validate";
 import asyncHandler from "../../utils/asyncHandler";
@@ -50,5 +51,7 @@ router.put(
   validate(resetPasswordSchema),
   asyncHandler(resetPasswordController)
 );
+
+router.get("/me", authenticate, asyncHandler(getCurrentUserController));
 
 export default router;

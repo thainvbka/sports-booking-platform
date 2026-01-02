@@ -11,14 +11,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, User, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  User,
+  LogOut,
+  LayoutDashboard,
+  ChevronDown,
+  Building2,
+} from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 // import { NotificationPopover } from "@/components/ui/NotificationPopover";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 
 export function MainLayout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
+  const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
+  const [roleToAdd, setRoleToAdd] = useState<"PLAYER" | "OWNER">("OWNER");
 
   const NavItems = ({ mobile = false }: { mobile?: boolean }) => {
     const items = [
@@ -136,6 +147,18 @@ export function MainLayout() {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  {!user.roles.includes("OWNER") && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setRoleToAdd("OWNER");
+                        setAddRoleDialogOpen(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Tham gia với vai trò quản lý khu phức hợp
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
@@ -180,6 +203,12 @@ export function MainLayout() {
       </main>
 
       <Footer />
+
+      <AddRoleDialog
+        open={addRoleDialogOpen}
+        onOpenChange={setAddRoleDialogOpen}
+        roleToAdd={roleToAdd}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   handlerRefreshToken,
   forgotPassword,
   resetPassword,
+  getCurrentUser,
 } from "../../services/v1/auth.service";
 import { Created, SuccessResponse } from "../../utils/success.response";
 import { config } from "../../configs";
@@ -112,5 +113,16 @@ export const resetPasswordController = async (req: Request, res: Response) => {
   return new SuccessResponse({
     message: "Password reset successfully",
     data: result,
+  }).send(res);
+};
+
+export const getCurrentUserController = async (req: Request, res: Response) => {
+  const accountId = req.user?.accountId;
+  const user = await getCurrentUser(accountId!);
+  return new SuccessResponse({
+    message: "User data retrieved successfully",
+    data: {
+      user,
+    },
   }).send(res);
 };

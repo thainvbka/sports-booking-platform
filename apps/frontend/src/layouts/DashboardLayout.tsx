@@ -11,14 +11,20 @@ import {
   CheckCircle,
   Settings,
   LogOut,
+  ArrowLeft,
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 
 export function DashboardLayout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const isAdmin = user?.roles.includes("ADMIN");
+  const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
+  const [roleToAdd, setRoleToAdd] = useState<"PLAYER" | "OWNER">("PLAYER");
 
   const ownerMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/owner" },
@@ -43,14 +49,25 @@ export function DashboardLayout() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="p-6">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
-            T
+        {user?.roles.includes("PLAYER") ? (
+          <Link to="/" className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+              T
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              T-Sport
+            </span>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+              T
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              T-Sport
+            </span>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            T-Sport
-          </span>
-        </Link>
+        )}
         <div className="mt-2 px-1">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             {isAdmin ? "Admin Portal" : "Owner Portal"}
@@ -114,6 +131,31 @@ export function DashboardLayout() {
             </p>
           </div>
         </div>
+        {!isAdmin && user?.roles.includes("PLAYER") && (
+          <Button
+            variant="outline"
+            className="w-full mb-2 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            asChild
+          >
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Quay về trang chủ
+            </Link>
+          </Button>
+        )}
+        {!isAdmin && !user?.roles.includes("PLAYER") && (
+          <Button
+            variant="outline"
+            className="w-full mb-2 text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            onClick={() => {
+              setRoleToAdd("PLAYER");
+              setAddRoleDialogOpen(true);
+            }}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Tham gia với vai trò người chơi
+          </Button>
+        )}
         <Button
           variant="outline"
           className="w-full text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/5 transition-colors"
@@ -155,6 +197,12 @@ export function DashboardLayout() {
           </div>
         </div>
       </main>
+
+      <AddRoleDialog
+        open={addRoleDialogOpen}
+        onOpenChange={setAddRoleDialogOpen}
+        roleToAdd={roleToAdd}
+      />
     </div>
   );
 }

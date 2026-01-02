@@ -37,6 +37,7 @@ interface AuthState {
   verifyEmail: (token: string) => Promise<any>;
   forgotPassword: (email: string) => Promise<any>;
   resetPassword: (token: string, new_password: string) => Promise<any>;
+  refreshUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -202,6 +203,31 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           throw error;
+        }
+      },
+
+      refreshUser: async () => {
+        try {
+          const response = await authService.getCurrentUser();
+          const { user } = response.data;
+
+          // Sắp xếp role theo độ ưu tiên: ADMIN > OWNER > PLAYER
+          const sortedRoles = user.roles.sort((a: string, b: string) => {
+            const pA = ROLE_PRIORITY[a as keyof typeof ROLE_PRIORITY] || 0;
+            const pB = ROLE_PRIORITY[b as keyof typeof ROLE_PRIORITY] || 0;
+            return pB - pA;
+          });
+
+          // Chọn role cao nhất làm mặc định
+          const defaultRole = sortedRoles[0] || "PLAYER";
+
+          set({
+            user,
+            isAuthenticated: true,
+            currentRole: defaultRole,
+          });
+        } catch (error: any) {
+          console.error("Failed to refresh user:", error);
         }
       },
     }),

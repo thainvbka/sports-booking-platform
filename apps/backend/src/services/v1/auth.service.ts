@@ -417,3 +417,34 @@ export const resetPassword = async (token: string, new_password: string) => {
 
   return { message: "Đặt lại mật khẩu thành công." };
 };
+
+export const getCurrentUser = async (accountId: string) => {
+  const account = await prisma.account.findUnique({
+    where: {
+      id: accountId,
+    },
+    select: {
+      id: true,
+      email: true,
+      full_name: true,
+      phone_number: true,
+      avatar: true,
+    },
+  });
+
+  if (!account) {
+    throw new UnauthorizedError("Tài khoản không tồn tại");
+  }
+
+  const { roles, profiles } = await getUserRolesAndProfiles(accountId);
+
+  return {
+    id: account.id,
+    email: account.email,
+    full_name: account.full_name,
+    phone_number: account.phone_number,
+    avatar: account.avatar,
+    roles,
+    profiles,
+  };
+};
