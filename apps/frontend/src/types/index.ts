@@ -213,6 +213,9 @@ export type OwnerBookingResponse =
   | OwnerSingleBookingResponse
   | OwnerRecurringBookingResponse;
 
+// Alias for consistency with component naming
+export type OwnerBooking = OwnerBookingResponse;
+
 export interface OwnerBookingFilter {
   search?: string;
   status?: BookingStatus;

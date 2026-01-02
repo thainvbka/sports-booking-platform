@@ -427,7 +427,9 @@ export function OwnerDashboardPage() {
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
-                    label={({ status, value }) => `${status}: ${value}`}
+                    label={(props: any) =>
+                      `${props.payload?.status || props.name}: ${props.value}`
+                    }
                   />
                   <ChartLegend
                     content={<ChartLegendContent nameKey="status" />}
