@@ -36,12 +36,16 @@ export default function BookingReviewPage() {
   }, [id, navigate]);
 
   const handlePayment = async () => {
-    const result = await bookingService
-      .creatCheckoutSession([booking!.id])
-      .catch(() => {
-        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
-      });
-    window.location.href = result.url;
+    try {
+      const result = await bookingService.creatCheckoutSession([booking!.id]);
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+    }
   };
 
   if (loading) {

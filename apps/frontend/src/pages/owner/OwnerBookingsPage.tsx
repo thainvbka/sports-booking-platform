@@ -270,9 +270,9 @@ export function OwnerBookingsPage() {
       case "CONFIRMED":
         return "Đã xác nhận";
       case "COMPLETED":
-        return "Chờ xác nhận";
+        return "Chưa xác nhận";
       case "PENDING":
-        return "Chờ thanh toán";
+        return "Chưa thanh toán";
       case "CANCELED":
         return "Đã hủy";
       default:
@@ -535,9 +535,28 @@ export function OwnerBookingsPage() {
                                 { locale: vi }
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {booking.total_slots} buổi
-                            </div>
+                            {booking.bookings &&
+                              booking.bookings.length > 0 && (
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Clock className="w-3 h-3" />
+                                  {format(
+                                    new Date(booking.bookings[0].start_time),
+                                    "HH:mm",
+                                    {
+                                      locale: vi,
+                                    }
+                                  )}{" "}
+                                  -{" "}
+                                  {format(
+                                    new Date(booking.bookings[0].end_time),
+                                    "HH:mm",
+                                    {
+                                      locale: vi,
+                                    }
+                                  )}{" "}
+                                  • {booking.total_slots} buổi
+                                </div>
+                              )}
                           </div>
                         ) : (
                           <div className="space-y-1">

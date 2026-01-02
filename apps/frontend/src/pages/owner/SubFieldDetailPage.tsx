@@ -45,7 +45,6 @@ interface PricingRuleFormData {
   base_price: number;
 }
 
-
 // Format time from backend (handles both string and Date)
 // Always returns 24-hour format HH:MM
 const formatTime = (time: string | Date | unknown): string => {
@@ -113,8 +112,6 @@ export function SubFieldDetailPage() {
     bulkDeletePricingRules,
     copyPricingRules,
   } = useOwnerStore();
-
-
 
   const [date, setDate] = useState<Date>(new Date());
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -225,6 +222,10 @@ export function SubFieldDetailPage() {
       await deletePricingRule(deletingRule.id, id, date.getDay());
       toast.success("Xóa khung giờ thành công.");
       setDeletingRule(null);
+      // Remove deleted rule from selection to hide the banner
+      setSelectedRuleIds(
+        selectedRuleIds.filter((ruleId) => ruleId !== deletingRule.id)
+      );
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Không thể xóa khung giờ";

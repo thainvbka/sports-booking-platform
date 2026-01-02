@@ -47,6 +47,9 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [bookingType, setBookingType] = useState("single");
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [createdBookingId, setCreatedBookingId] = useState<string>("");
+  const [isRecurringBooking, setIsRecurringBooking] = useState(false);
 
   // States
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -125,8 +128,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           response.message ||
             "Đặt sân thành công! Vui lòng kiểm tra lại thông tin."
         );
+        setCreatedBookingId(response.booking_id);
+        setIsRecurringBooking(false);
         setIsOpen(false);
-        navigate(`/booking-review/${response.booking_id}`);
+        setShowConfirmDialog(true);
       } else {
         if (!endDate) {
           toast.error("Vui lòng chọn ngày kết thúc cho lịch định kỳ");
@@ -145,8 +150,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           }
         );
         toast.success(response.message || "Đặt sân định kỳ thành công!");
+        setCreatedBookingId(response.recurring_booking_id);
+        setIsRecurringBooking(true);
         setIsOpen(false);
-        navigate(`/booking-review/recurring/${response.recurring_booking_id}`);
+        setShowConfirmDialog(true);
       }
     } catch (error: any) {
       console.error("Booking Error Details:", error);
@@ -193,251 +200,310 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
     return Number(rule.base_price) * durationHours;
   };
 
+  const handlePayNow = () => {
+    setShowConfirmDialog(false);
+    if (isRecurringBooking) {
+      navigate(`/booking-review/recurring/${createdBookingId}`);
+    } else {
+      navigate(`/booking-review/${createdBookingId}`);
+    }
+  };
+
+  const handleViewBookings = () => {
+    setShowConfirmDialog(false);
+    navigate("/bookings");
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger || <Button size="sm">Đặt sân</Button>}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Đặt sân {subField.sub_field_name}</DialogTitle>
-          <DialogDescription>
-            {user
-              ? "Chọn lịch thi đấu của bạn."
-              : "Vui lòng đăng nhập để thực hiện đặt sân."}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          {trigger || <Button size="sm">Đặt sân</Button>}
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Đặt sân {subField.sub_field_name}</DialogTitle>
+            <DialogDescription>
+              {user
+                ? "Chọn lịch thi đấu của bạn."
+                : "Vui lòng đăng nhập để thực hiện đặt sân."}
+            </DialogDescription>
+          </DialogHeader>
 
-        {!user ? (
-          <div className="flex flex-col items-center gap-4 py-4">
-            <p className="text-center text-muted-foreground text-sm">
-              Bạn cần đăng nhập để sử dụng tính năng này.
-            </p>
-            <Button onClick={() => navigate("/auth/login")}>
-              Đăng nhập ngay
-            </Button>
-          </div>
-        ) : (
-          <Tabs
-            defaultValue="single"
-            value={bookingType}
-            onValueChange={setBookingType}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="single">Đặt một lần</TabsTrigger>
-              <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
-            </TabsList>
+          {!user ? (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <p className="text-center text-muted-foreground text-sm">
+                Bạn cần đăng nhập để sử dụng tính năng này.
+              </p>
+              <Button onClick={() => navigate("/auth/login")}>
+                Đăng nhập ngay
+              </Button>
+            </div>
+          ) : (
+            <Tabs
+              defaultValue="single"
+              value={bookingType}
+              onValueChange={setBookingType}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="single">Đặt một lần</TabsTrigger>
+                <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
+              </TabsList>
 
-            <div className="py-4 space-y-4">
-              {/* Date Selection */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label>Ngày bắt đầu</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? (
-                          format(date, "dd/MM/yyyy", { locale: vi })
-                        ) : (
-                          <span>Chọn ngày</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={(d) => {
-                          setDate(d);
-                          setSelectedRule(null); // Reset selection on date change
-                        }}
-                        initialFocus
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(0, 0, 0, 0))
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {bookingType === "recurring" && (
+              <div className="py-4 space-y-4">
+                {/* Date Selection */}
+                <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label>Ngày kết thúc</Label>
+                    <Label>Ngày bắt đầu</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant={"outline"}
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
+                            !date && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? (
-                            format(endDate, "dd/MM/yyyy", { locale: vi })
+                          {date ? (
+                            format(date, "dd/MM/yyyy", { locale: vi })
                           ) : (
                             <span>Chọn ngày</span>
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent
+                        className="w-auto p-0"
+                        side="top"
+                        align="start"
+                      >
                         <Calendar
                           mode="single"
-                          selected={endDate}
-                          onSelect={setEndDate}
+                          selected={date}
+                          onSelect={(d) => {
+                            setDate(d);
+                            setSelectedRule(null); // Reset selection on date change
+                          }}
                           initialFocus
-                          disabled={(d) => (date ? d <= date : d < new Date())}
+                          disabled={(date) =>
+                            date < new Date(new Date().setHours(0, 0, 0, 0))
+                          }
                         />
                       </PopoverContent>
                     </Popover>
                   </div>
-                )}
-              </div>
 
-              {bookingType === "recurring" && (
-                <div className="grid gap-2">
-                  <Label>Loại lặp lại</Label>
-                  <Select
-                    value={recurringType}
-                    onValueChange={(val: any) => setRecurringType(val)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn loại lặp lại" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="WEEKLY">Hàng tuần</SelectItem>
-                      <SelectItem value="MONTHLY">Hàng tháng</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Time Slots */}
-              <div className="space-y-2">
-                <Label>
-                  Khung giờ trống (
-                  {date ? format(date, "EEEE", { locale: vi }) : ""})
-                </Label>
-                {availableRules.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
-                    {availableRules.map((rule) => {
-                      const price = calculateSlotPrice(rule);
-                      // Calculate slotDate for disabling
-                      const ruleStart = new Date(rule.start_time);
-                      const slotDate = date ? new Date(date) : null;
-                      if (slotDate) {
-                        slotDate.setHours(
-                          ruleStart.getUTCHours(),
-                          ruleStart.getUTCMinutes(),
-                          0,
-                          0
-                        );
-                      }
-                      const isPast = slotDate ? slotDate < now : false;
-                      return (
-                        <Button
-                          key={rule.id}
-                          variant={
-                            selectedRule?.id === rule.id ? "default" : "outline"
-                          }
-                          className={cn(
-                            "flex flex-col items-center justify-center h-auto py-2 px-1",
-                            selectedRule?.id === rule.id
-                              ? "bg-primary text-primary-foreground"
-                              : "hover:bg-accent",
-                            isPast && "opacity-50 cursor-not-allowed"
-                          )}
-                          onClick={() => !isPast && setSelectedRule(rule)}
-                          disabled={isPast}
-                        >
-                          <span className="text-sm font-semibold">
-                            {formatRuleTime(rule.start_time)} -{" "}
-                            {formatRuleTime(rule.end_time)}
-                          </span>
-                          <span className="text-xs opacity-80">
-                            {formatPrice(price)}
-                          </span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-md bg-muted/20">
-                    {date
-                      ? "Không có lịch trống cho ngày này"
-                      : "Vui lòng chọn ngày trước"}
-                  </div>
-                )}
-              </div>
-
-              {/* Recurring Note */}
-              {bookingType === "recurring" && date && (
-                <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
-                  <p>
-                    Lịch sẽ được tạo{" "}
-                    {recurringType === "WEEKLY" ? "hàng tuần" : "hàng tháng"}{" "}
-                    vào <strong>{format(date, "EEEE", { locale: vi })}</strong>,
-                    từ {format(date, "dd/MM")} đến{" "}
-                    {endDate ? format(endDate, "dd/MM") : "..."}.
-                  </p>
-                </div>
-              )}
-
-              {/* Price Summary */}
-              {date && selectedRule && (
-                <div className="rounded-lg bg-muted p-4 text-sm mt-4">
-                  <div className="flex justify-between mb-2">
-                    <span>Thời gian:</span>
-                    <span className="font-medium">
-                      {formatRuleTime(selectedRule.start_time)} -{" "}
-                      {formatRuleTime(selectedRule.end_time)}
-                    </span>
-                  </div>
                   {bookingType === "recurring" && (
-                    <div className="flex justify-between mb-2">
-                      <span>Ước tính:</span>
-                      <span className="text-muted-foreground italic">
-                        Giá trên mỗi buổi
-                      </span>
+                    <div className="grid gap-2">
+                      <Label>Ngày kết thúc</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !endDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {endDate ? (
+                              format(endDate, "dd/MM/yyyy", { locale: vi })
+                            ) : (
+                              <span>Chọn ngày</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto p-0"
+                          side="top"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={endDate}
+                            onSelect={setEndDate}
+                            initialFocus
+                            disabled={(d) =>
+                              date ? d <= date : d < new Date()
+                            }
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   )}
-                  <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                    <span className="font-bold text-lg">Tổng tiền:</span>
-                    <span className="font-bold text-lg text-primary">
-                      {formatPrice(calculateSlotPrice(selectedRule))}
-                    </span>
-                  </div>
                 </div>
-              )}
-            </div>
 
-            <DialogFooter>
-              <Button
-                onClick={handleBooking}
-                className="w-full sm:w-auto"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang xử lý...
-                  </>
-                ) : (
-                  "Đặt sân"
+                {bookingType === "recurring" && (
+                  <div className="grid gap-2">
+                    <Label>Loại lặp lại</Label>
+                    <Select
+                      value={recurringType}
+                      onValueChange={(val: any) => setRecurringType(val)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn loại lặp lại" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="WEEKLY">Hàng tuần</SelectItem>
+                        <SelectItem value="MONTHLY">Hàng tháng</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
-              </Button>
-            </DialogFooter>
-          </Tabs>
-        )}
-      </DialogContent>
-    </Dialog>
+
+                {/* Time Slots */}
+                <div className="space-y-2">
+                  <Label>
+                    Khung giờ trống (
+                    {date ? format(date, "EEEE", { locale: vi }) : ""})
+                  </Label>
+                  {availableRules.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
+                      {availableRules.map((rule) => {
+                        const price = calculateSlotPrice(rule);
+                        // Calculate slotDate for disabling
+                        const ruleStart = new Date(rule.start_time);
+                        const slotDate = date ? new Date(date) : null;
+                        if (slotDate) {
+                          slotDate.setHours(
+                            ruleStart.getUTCHours(),
+                            ruleStart.getUTCMinutes(),
+                            0,
+                            0
+                          );
+                        }
+                        const isPast = slotDate ? slotDate < now : false;
+                        return (
+                          <Button
+                            key={rule.id}
+                            variant={
+                              selectedRule?.id === rule.id
+                                ? "default"
+                                : "outline"
+                            }
+                            className={cn(
+                              "flex flex-col items-center justify-center h-auto py-2 px-1",
+                              selectedRule?.id === rule.id
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-accent",
+                              isPast && "opacity-50 cursor-not-allowed"
+                            )}
+                            onClick={() => !isPast && setSelectedRule(rule)}
+                            disabled={isPast}
+                          >
+                            <span className="text-sm font-semibold">
+                              {formatRuleTime(rule.start_time)} -{" "}
+                              {formatRuleTime(rule.end_time)}
+                            </span>
+                            <span className="text-xs opacity-80">
+                              {formatPrice(price)}
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground border rounded-md bg-muted/20">
+                      {date
+                        ? "Không có lịch trống cho ngày này"
+                        : "Vui lòng chọn ngày trước"}
+                    </div>
+                  )}
+                </div>
+
+                {/* Recurring Note */}
+                {bookingType === "recurring" && date && (
+                  <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+                    <p>
+                      Lịch sẽ được tạo{" "}
+                      {recurringType === "WEEKLY" ? "hàng tuần" : "hàng tháng"}{" "}
+                      vào{" "}
+                      <strong>{format(date, "EEEE", { locale: vi })}</strong>,
+                      từ {format(date, "dd/MM")} đến{" "}
+                      {endDate ? format(endDate, "dd/MM") : "..."}.
+                    </p>
+                  </div>
+                )}
+
+                {/* Price Summary */}
+                {date && selectedRule && (
+                  <div className="rounded-lg bg-muted p-4 text-sm mt-4">
+                    <div className="flex justify-between mb-2">
+                      <span>Thời gian:</span>
+                      <span className="font-medium">
+                        {formatRuleTime(selectedRule.start_time)} -{" "}
+                        {formatRuleTime(selectedRule.end_time)}
+                      </span>
+                    </div>
+                    {bookingType === "recurring" && (
+                      <div className="flex justify-between mb-2">
+                        <span>Ước tính:</span>
+                        <span className="text-muted-foreground italic">
+                          Giá trên mỗi buổi
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                      <span className="font-bold text-lg">Tổng tiền:</span>
+                      <span className="font-bold text-lg text-primary">
+                        {formatPrice(calculateSlotPrice(selectedRule))}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  onClick={handleBooking}
+                  className="w-full sm:w-auto"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    "Đặt sân"
+                  )}
+                </Button>
+              </DialogFooter>
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Đặt sân thành công!</DialogTitle>
+            <DialogDescription className="space-y-2 pt-2">
+              <p>
+                Booking của bạn đã được tạo thành công. Bạn có thể xem lại trong
+                mục <strong>Lịch đặt sân</strong> để thanh toán hoặc thanh toán
+                ngay bây giờ.
+              </p>
+              <p className="text-sm text-amber-600">
+                Lưu ý: Booking sẽ tự động hủy sau 3 phút nếu chưa thanh toán.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleViewBookings}
+              className="w-full sm:w-auto"
+            >
+              Xem lịch đặt sân
+            </Button>
+            <Button onClick={handlePayNow} className="w-full sm:w-auto ml-2">
+              Thanh toán ngay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

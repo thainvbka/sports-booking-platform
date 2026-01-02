@@ -737,30 +737,80 @@ export const getOwnerBookingStats = async (owner_id: string) => {
     },
   };
 
-  // Get counts for each status in parallel
-  const [total, pending, confirmed, completed, canceled] = await Promise.all([
+  // Đếm các booking lẻ (không thuộc recurring)
+  const [
+    singleTotal,
+    singlePending,
+    singleConfirmed,
+    singleCompleted,
+    singleCanceled,
+  ] = await Promise.all([
     prisma.booking.count({
-      where: baseCondition,
+      where: {
+        ...baseCondition,
+        recurring_booking_id: null,
+      },
     }),
     prisma.booking.count({
       where: {
         ...baseCondition,
+        recurring_booking_id: null,
         status: "PENDING",
       },
     }),
     prisma.booking.count({
       where: {
         ...baseCondition,
+        recurring_booking_id: null,
         status: "CONFIRMED",
       },
     }),
     prisma.booking.count({
       where: {
         ...baseCondition,
+        recurring_booking_id: null,
         status: "COMPLETED",
       },
     }),
     prisma.booking.count({
+      where: {
+        ...baseCondition,
+        recurring_booking_id: null,
+        status: "CANCELED",
+      },
+    }),
+  ]);
+
+  // Đếm các recurring booking
+  const [
+    recurringTotal,
+    recurringPending,
+    recurringConfirmed,
+    recurringCompleted,
+    recurringCanceled,
+  ] = await Promise.all([
+    prisma.recurringBooking.count({
+      where: baseCondition,
+    }),
+    prisma.recurringBooking.count({
+      where: {
+        ...baseCondition,
+        status: "PENDING",
+      },
+    }),
+    prisma.recurringBooking.count({
+      where: {
+        ...baseCondition,
+        status: "CONFIRMED",
+      },
+    }),
+    prisma.recurringBooking.count({
+      where: {
+        ...baseCondition,
+        status: "COMPLETED",
+      },
+    }),
+    prisma.recurringBooking.count({
       where: {
         ...baseCondition,
         status: "CANCELED",
@@ -769,11 +819,11 @@ export const getOwnerBookingStats = async (owner_id: string) => {
   ]);
 
   return {
-    total,
-    pending,
-    confirmed,
-    completed,
-    canceled,
+    total: singleTotal + recurringTotal,
+    pending: singlePending + recurringPending,
+    confirmed: singleConfirmed + recurringConfirmed,
+    completed: singleCompleted + recurringCompleted,
+    canceled: singleCanceled + recurringCanceled,
   };
 };
 
