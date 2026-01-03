@@ -25,8 +25,8 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy node_modules từ stage deps (npm workspaces hoists to root)
-COPY --from=deps /app/node_modules ./node_modules
+# Copy toàn bộ dependencies từ stage deps (bao gồm cả root node_modules và nested node_modules)
+COPY --from=deps /app ./
 
 # Copy packages source code (cần thiết cho Prisma generate output)
 COPY packages ./packages
