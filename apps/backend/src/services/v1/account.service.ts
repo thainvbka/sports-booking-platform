@@ -7,6 +7,13 @@ import {
 import { addRoleInput } from "@sports-booking-platform/validation";
 
 import { roleCreationStrategy } from "./auth.service";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  JwtPayload,
+} from "../../libs/jwt";
+import { getUserRolesAndProfiles } from "../../helpers";
+import { getRefreshExpiryDate } from "../../helpers";
 
 export const addRoleToAccount = async (
   accountId: string,
@@ -44,5 +51,45 @@ export const addRoleToAccount = async (
 
   await createRole(prisma, accountId, roleData);
 
-  return { message: `Role ${role} added successfully` };
+  // Lấy roles và profiles mới sau khi thêm role
+  const { roles, profiles } = await getUserRolesAndProfiles(accountId);
+
+  // Tạo JWT payload mới với roles mới
+  const jwtPayload: JwtPayload = {
+    accountId,
+    roles: roles as ("PLAYER" | "OWNER" | "ADMIN")[],
+    profiles: {
+      playerId: profiles.player?.id,
+      ownerId: profiles.owner?.id,
+      adminId: profiles.admin?.id,
+    },
+  };
+
+  // Tạo access token và refresh token mới
+  const accessToken = generateAccessToken(jwtPayload);
+  const refreshToken = generateRefreshToken(accountId);
+
+  // Xóa refresh token cũ và tạo refresh token mới
+  await prisma.refreshToken.deleteMany({
+    where: { account_id: accountId },
+  });
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      account_id: accountId,
+      expires_at: getRefreshExpiryDate(),
+    },
+  });
+
+  return {
+    message: `Role ${role} added successfully`,
+    accessToken,
+    refreshToken,
+    user: {
+      accountId,
+      roles,
+      profiles,
+    },
+  };
 };

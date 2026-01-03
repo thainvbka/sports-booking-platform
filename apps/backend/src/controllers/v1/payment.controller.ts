@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { SuccessResponse } from "../../utils/success.response";
+import { BadRequestError } from "../../utils/error.response";
 
 import {
   createConnectAccount,
@@ -13,6 +14,11 @@ export const createConnectAccountController = async (
   res: Response
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
+  if (!ownerId) {
+    throw new BadRequestError(
+      "Owner profile not found. Please ensure you have an owner role."
+    );
+  }
   const result = await createConnectAccount(ownerId);
   return new SuccessResponse({
     message: "Stripe Connect account creation initiated",
@@ -25,6 +31,11 @@ export const checkStripeAccountStatusController = async (
   res: Response
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
+  if (!ownerId) {
+    throw new BadRequestError(
+      "Owner profile not found. Please ensure you have an owner role."
+    );
+  }
   const result = await checkStripeAccountStatus(ownerId);
   return new SuccessResponse({
     message: "Payment setup completed successfully",
@@ -52,8 +63,9 @@ export const handleStripeWebhookController = async (
 ) => {
   try {
     const sig = req.headers["stripe-signature"] as string;
-    const data = req.body;
-    await handleStripeWebhook(sig, data);
+    const rawBody = req.body;
+
+    await handleStripeWebhook(sig, rawBody);
     return new SuccessResponse({
       message: "Webhook handled successfully",
     }).send(res);

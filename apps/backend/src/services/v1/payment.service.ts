@@ -145,6 +145,9 @@ export const createCheckoutSession = async (
   });
 
   if (bookings.length !== bookingIds.length) {
+    console.log(
+      "ERROR: Mismatch in booking count. Some are missing or not PENDING."
+    );
     throw new BadRequestError("Some bookings not found or not pending");
   }
 
@@ -153,6 +156,7 @@ export const createCheckoutSession = async (
   const owner = firstBooking.sub_field.complex.owner;
 
   if (!owner.stripe_account_id || !owner.stripe_onboarding_complete) {
+    console.log("ERROR: Owner not ready.");
     throw new BadRequestError("Owner has not connected Stripe account");
   }
 
@@ -206,12 +210,20 @@ export const createCheckoutSession = async (
 
 export const handleStripeWebhook = async (sig: string, data: any) => {
   const endpointSecret = config.STRIPE_WEBHOOK_SECRET;
+
+  if (!endpointSecret) {
+    throw new Error(
+      "STRIPE_WEBHOOK_SECRET is not defined in environment variables"
+    );
+  }
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(data, sig, endpointSecret!);
+    event = stripe.webhooks.constructEvent(data, sig, endpointSecret);
   } catch (error: any) {
     console.error(`Webhook Signature Error: ${error.message}`);
+
     throw new BadRequestError(`Webhook Error: ${error.message}`);
   }
 

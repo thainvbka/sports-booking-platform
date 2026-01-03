@@ -12,12 +12,6 @@ import { handleStripeWebhookController } from "./controllers/v1/payment.controll
 
 const app = express();
 
-app.post(
-  "/api/v1/payments/webhook",
-  express.raw({ type: "application/json" }),
-  handleStripeWebhookController
-);
-
 const allowedOrigins = (config.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
@@ -31,6 +25,13 @@ app.use(
   })
 );
 app.use(morgan("dev"));
+
+app.post(
+  "/api/v1/payments/webhook",
+  express.raw({ type: "*/*" }),
+  handleStripeWebhookController
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -51,7 +52,6 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/v1", routesV1);
-
 
 app.use((req, res) => {
   return res

@@ -44,10 +44,15 @@ export function AddRoleDialog({
           ? { role: roleToAdd, company_name: companyName }
           : { role: roleToAdd };
 
-      await accountService.addRole(data);
+      const response = await accountService.addRole(data);
 
-      // Refresh user data to get updated roles
-      await refreshUser();
+      // Update access token with new roles (refresh token is in cookie)
+      if (response.data) {
+        localStorage.setItem("accessToken", response.data.accessToken);
+
+        // Refresh user data to get updated roles
+        await refreshUser();
+      }
 
       toast.success(
         roleToAdd === "OWNER"
