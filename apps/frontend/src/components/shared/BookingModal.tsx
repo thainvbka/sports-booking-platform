@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format, addMonths } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
@@ -61,6 +61,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
     "WEEKLY"
   );
 
+  // Custom time selection
+  const [customStartTime, setCustomStartTime] = useState<string>("");
+  const [customEndTime, setCustomEndTime] = useState<string>("");
+
   // Data State for full details (pricing rules)
   const [fullSubField, setFullSubField] = useState<SubField>(subField);
 
@@ -89,39 +93,33 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   const handleBooking = async () => {
     if (!user) {
       toast.error("Vui lòng đăng nhập để đặt sân");
-      // navigate("/auth/login");
       return;
     }
 
-    if (!date || !selectedRule) {
-      toast.error("Vui lòng chọn ngày và khung giờ");
+    if (!date) {
+      toast.error("Vui lòng chọn ngày");
+      return;
+    }
+
+    if (!customStartTime || !customEndTime) {
+      toast.error("Vui lòng chọn giờ bắt đầu và kết thúc");
       return;
     }
 
     setIsLoading(true);
     try {
-      // Helper to combine date + time (from PricingRule ISO string) into ISO Booking Request
-      // We interpret the PricingRule time (e.g., 1970-01-01T06:00:00Z) as the "Face Value" time for the slot.
-      // So 06:00Z -> 06:00 Local Time for the booking.
-      const getIsoDateTime = (baseDate: Date, timeRuleStr: string | Date) => {
-        const ruleDate = new Date(timeRuleStr);
-        // Use UTC parts to get the "06:00" face value as numbers
-        const hours = ruleDate.getUTCHours();
-        const minutes = ruleDate.getUTCMinutes();
-
-        // Use the selected date (which is local 00:00 usually from calendar)
+      // Helper to combine date + custom time into ISO Booking Request
+      const getIsoDateTime = (baseDate: Date, timeStr: string) => {
+        const [hours, minutes] = timeStr.split(":").map(Number);
         const newDate = new Date(baseDate);
-
-        // Set the LOCAL time to be 06:00
         newDate.setHours(hours, minutes, 0, 0);
-
         return newDate.toISOString();
       };
 
       if (bookingType === "single") {
         const response = await bookingService.createBooking(subField.id, {
-          start_time: getIsoDateTime(date, selectedRule.start_time),
-          end_time: getIsoDateTime(date, selectedRule.end_time),
+          start_time: getIsoDateTime(date, customStartTime),
+          end_time: getIsoDateTime(date, customEndTime),
           type: "ONE_TIME",
         });
         toast.success(
@@ -141,8 +139,8 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         const response = await bookingService.createRecurringBooking(
           subField.id,
           {
-            start_time: getIsoDateTime(date, selectedRule.start_time),
-            end_time: getIsoDateTime(date, selectedRule.end_time),
+            start_time: getIsoDateTime(date, customStartTime),
+            end_time: getIsoDateTime(date, customEndTime),
             start_date: format(date, "yyyy-MM-dd"),
             end_date: format(endDate, "yyyy-MM-dd"),
             recurring_type: recurringType,
@@ -200,6 +198,154 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
     return Number(rule.base_price) * durationHours;
   };
 
+  // Helper format time - moved before useMemo to avoid hoisting issue
+  const formatTime = (minutes: number) => {
+    const h = Math.floor(minutes / 60)
+      .toString()
+      .padStart(2, "0");
+    const m = (minutes % 60).toString().padStart(2, "0");
+    return `${h}:${m}`;
+  };
+
+  // Calculate custom price based on selected time (supports multiple rules)
+  // Use useMemo to avoid infinite re-render loop
+  const priceCalculation = useMemo(() => {
+    if (!date || !customStartTime || !customEndTime) {
+      return { totalPrice: 0, breakdown: null };
+    }
+
+    const [startH, startM] = customStartTime.split(":").map(Number);
+    const [endH, endM] = customEndTime.split(":").map(Number);
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+
+    const dayRules = availableRules.sort(
+      (a, b) =>
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    );
+
+    if (dayRules.length === 0) {
+      return { totalPrice: 0, breakdown: null };
+    }
+
+    let totalPrice = 0;
+    let currentMin = startMin;
+    const breakdown: Array<{ rule: string; duration: number; price: number }> =
+      [];
+
+    for (const rule of dayRules) {
+      const ruleStart = new Date(rule.start_time);
+      const ruleEnd = new Date(rule.end_time);
+      const ruleStartMin =
+        ruleStart.getUTCHours() * 60 + ruleStart.getUTCMinutes();
+      const ruleEndMin = ruleEnd.getUTCHours() * 60 + ruleEnd.getUTCMinutes();
+
+      // Tìm phần giao
+      const segmentStart = Math.max(currentMin, ruleStartMin);
+      const segmentEnd = Math.min(endMin, ruleEndMin);
+
+      if (segmentStart < segmentEnd) {
+        const duration = segmentEnd - segmentStart;
+        const hours = duration / 60;
+        const price = Number(rule.base_price) * hours;
+
+        totalPrice += price;
+        breakdown.push({
+          rule: `${formatTime(ruleStartMin)}-${formatTime(ruleEndMin)}`,
+          duration,
+          price,
+        });
+
+        currentMin = segmentEnd;
+      }
+
+      if (currentMin >= endMin) break;
+    }
+
+    // Kiểm tra có gap không
+    if (currentMin < endMin) {
+      return { totalPrice: 0, breakdown: null }; // Có khoảng trống không có giá
+    }
+
+    return { totalPrice, breakdown };
+  }, [date, customStartTime, customEndTime, availableRules]);
+
+  // Generate time options in 30-minute intervals across all rules
+  const generateTimeOptions = () => {
+    if (availableRules.length === 0) return [];
+
+    // Tìm min/max time của tất cả rules trong ngày
+    const allTimes = availableRules.flatMap((rule) => {
+      const start = new Date(rule.start_time);
+      const end = new Date(rule.end_time);
+      return [
+        start.getUTCHours() * 60 + start.getUTCMinutes(),
+        end.getUTCHours() * 60 + end.getUTCMinutes(),
+      ];
+    });
+
+    const minTime = Math.min(...allTimes);
+    const maxTime = Math.max(...allTimes);
+
+    // Nếu date là hôm nay, lọc ra các mốc thời gian đã qua
+    let effectiveStartMin = minTime;
+    const isToday =
+      date && format(date, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
+
+    if (isToday) {
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      // Làm tròn lên mốc 30 phút tiếp theo
+      const nextSlot = Math.ceil(currentMin / 30) * 30;
+      effectiveStartMin = Math.max(minTime, nextSlot);
+    }
+
+    const options: string[] = [];
+    for (let min = effectiveStartMin; min <= maxTime; min += 30) {
+      const hours = Math.floor(min / 60);
+      const minutes = min % 60;
+      options.push(
+        `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}`
+      );
+    }
+
+    return options;
+  };
+
+  // Validate custom time selection
+  const validateCustomTime = () => {
+    if (!customStartTime || !customEndTime) return true;
+
+    const [startH, startM] = customStartTime.split(":").map(Number);
+    const [endH, endM] = customEndTime.split(":").map(Number);
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
+    const duration = endMin - startMin;
+
+    // Check if duration is multiple of 30
+    if (duration <= 0 || duration % 30 !== 0) {
+      return false;
+    }
+
+    // Check if price can be calculated (no gaps in rules)
+    return priceCalculation.totalPrice > 0;
+  };
+
+  // Reset custom times when date or rules change
+  useEffect(() => {
+    if (availableRules.length > 0) {
+      const timeOptions = generateTimeOptions();
+      if (timeOptions.length >= 2) {
+        setCustomStartTime(timeOptions[0]);
+        setCustomEndTime(timeOptions[1]);
+      }
+    } else {
+      setCustomStartTime("");
+      setCustomEndTime("");
+    }
+  }, [date, availableRules.length]);
+
   const handlePayNow = () => {
     setShowConfirmDialog(false);
     if (isRecurringBooking) {
@@ -220,7 +366,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         <DialogTrigger asChild>
           {trigger || <Button size="sm">Đặt sân</Button>}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Đặt sân {subField.sub_field_name}</DialogTitle>
             <DialogDescription>
@@ -244,14 +390,14 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
               defaultValue="single"
               value={bookingType}
               onValueChange={setBookingType}
-              className="w-full"
+              className="w-full flex flex-col flex-1 overflow-hidden"
             >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="single">Đặt một lần</TabsTrigger>
                 <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
               </TabsList>
 
-              <div className="py-4 space-y-4">
+              <div className="py-4 space-y-4 overflow-y-auto flex-1">
                 {/* Date Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
@@ -352,109 +498,185 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                   </div>
                 )}
 
-                {/* Time Slots */}
-                <div className="space-y-2">
-                  <Label>
-                    Khung giờ trống (
-                    {date ? format(date, "EEEE", { locale: vi }) : ""})
-                  </Label>
-                  {availableRules.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
-                      {availableRules.map((rule) => {
-                        const price = calculateSlotPrice(rule);
-                        // Calculate slotDate for disabling
-                        const ruleStart = new Date(rule.start_time);
-                        const slotDate = date ? new Date(date) : null;
-                        if (slotDate) {
-                          slotDate.setHours(
-                            ruleStart.getUTCHours(),
-                            ruleStart.getUTCMinutes(),
-                            0,
-                            0
-                          );
-                        }
-                        const isPast = slotDate ? slotDate < now : false;
-                        return (
-                          <Button
-                            key={rule.id}
-                            variant={
-                              selectedRule?.id === rule.id
-                                ? "default"
-                                : "outline"
-                            }
-                            className={cn(
-                              "flex flex-col items-center justify-center h-auto py-2 px-1",
-                              selectedRule?.id === rule.id
-                                ? "bg-primary text-primary-foreground"
-                                : "hover:bg-accent",
-                              isPast && "opacity-50 cursor-not-allowed"
-                            )}
-                            onClick={() => !isPast && setSelectedRule(rule)}
-                            disabled={isPast}
-                          >
-                            <span className="text-sm font-semibold">
-                              {formatRuleTime(rule.start_time)} -{" "}
-                              {formatRuleTime(rule.end_time)}
-                            </span>
-                            <span className="text-xs opacity-80">
-                              {formatPrice(price)}
-                            </span>
-                          </Button>
-                        );
-                      })}
+                {/* Pricing Rules Display */}
+                {availableRules.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">
+                      Bảng giá (
+                      {date ? format(date, "EEEE", { locale: vi }) : ""})
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                      {availableRules.map((rule) => (
+                        <div
+                          key={rule.id}
+                          className="flex justify-between text-xs p-2 bg-white rounded border"
+                        >
+                          <span className="font-medium text-gray-700">
+                            {formatRuleTime(rule.start_time)} -{" "}
+                            {formatRuleTime(rule.end_time)}
+                          </span>
+                          <span className="text-blue-600 font-semibold">
+                            {Number(rule.base_price).toLocaleString("vi-VN")}₫/h
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground border rounded-md bg-muted/20">
-                      {date
-                        ? "Không có lịch trống cho ngày này"
-                        : "Vui lòng chọn ngày trước"}
+                  </div>
+                )}
+
+                {/* Custom Time Selection */}
+                {availableRules.length > 0 && (
+                  <div className="space-y-3 p-4 border rounded-md bg-muted/20">
+                    <Label className="text-base font-semibold">
+                      Chọn giờ cụ thể (bội của 30 phút)
+                    </Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label className="text-sm">Giờ bắt đầu</Label>
+                        <Select
+                          value={customStartTime}
+                          onValueChange={setCustomStartTime}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giờ" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {generateTimeOptions().map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label className="text-sm">Giờ kết thúc</Label>
+                        <Select
+                          value={customEndTime}
+                          onValueChange={setCustomEndTime}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giờ" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {generateTimeOptions().map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  )}
-                </div>
+                    {!validateCustomTime() &&
+                      customStartTime &&
+                      customEndTime && (
+                        <p className="text-sm text-red-500">
+                          Thời lượng không hợp lệ. Vui lòng chọn thời lượng là
+                          bội của 30 phút hoặc không có khoảng trống trong khung
+                          giờ.
+                        </p>
+                      )}
+                  </div>
+                )}
 
                 {/* Recurring Note */}
-                {bookingType === "recurring" && date && (
-                  <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
-                    <p>
-                      Lịch sẽ được tạo{" "}
-                      {recurringType === "WEEKLY" ? "hàng tuần" : "hàng tháng"}{" "}
-                      vào{" "}
-                      <strong>{format(date, "EEEE", { locale: vi })}</strong>,
-                      từ {format(date, "dd/MM")} đến{" "}
-                      {endDate ? format(endDate, "dd/MM") : "..."}.
-                    </p>
-                  </div>
-                )}
+                {bookingType === "recurring" &&
+                  date &&
+                  customStartTime &&
+                  customEndTime && (
+                    <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+                      <p>
+                        Lịch sẽ được tạo{" "}
+                        {recurringType === "WEEKLY"
+                          ? "hàng tuần"
+                          : "hàng tháng"}{" "}
+                        vào{" "}
+                        <strong>{format(date, "EEEE", { locale: vi })}</strong>,
+                        từ {format(date, "dd/MM")} đến{" "}
+                        {endDate ? format(endDate, "dd/MM") : "..."}.
+                        <br />
+                        Thời gian:{" "}
+                        <strong>
+                          {customStartTime} - {customEndTime}
+                        </strong>
+                      </p>
+                    </div>
+                  )}
 
                 {/* Price Summary */}
-                {date && selectedRule && (
-                  <div className="rounded-lg bg-muted p-4 text-sm mt-4">
-                    <div className="flex justify-between mb-2">
-                      <span>Thời gian:</span>
-                      <span className="font-medium">
-                        {formatRuleTime(selectedRule.start_time)} -{" "}
-                        {formatRuleTime(selectedRule.end_time)}
-                      </span>
-                    </div>
-                    {bookingType === "recurring" && (
+                {date &&
+                  customStartTime &&
+                  customEndTime &&
+                  validateCustomTime() && (
+                    <div className="rounded-lg bg-muted p-4 text-sm mt-4">
                       <div className="flex justify-between mb-2">
-                        <span>Ước tính:</span>
-                        <span className="text-muted-foreground italic">
-                          Giá trên mỗi buổi
+                        <span>Thời gian:</span>
+                        <span className="font-medium">
+                          {customStartTime} - {customEndTime}
                         </span>
                       </div>
-                    )}
-                    <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                      <span className="font-bold text-lg">Tổng tiền:</span>
-                      <span className="font-bold text-lg text-primary">
-                        {formatPrice(calculateSlotPrice(selectedRule))}
-                      </span>
+
+                      {/* Price Breakdown */}
+                      {priceCalculation.breakdown &&
+                        priceCalculation.breakdown.length > 1 && (
+                          <div className="mb-2">
+                            <div className="text-xs font-semibold mb-1 text-muted-foreground">
+                              Chi tiết giá:
+                            </div>
+                            {priceCalculation.breakdown.map((segment, idx) => (
+                              <div
+                                key={idx}
+                                className="flex justify-between text-xs mb-1 pl-2"
+                              >
+                                <span className="text-muted-foreground">
+                                  {segment.rule} ({segment.duration} phút)
+                                </span>
+                                <span>{formatPrice(segment.price)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                      <div className="flex justify-between mb-2">
+                        <span>Thời lượng:</span>
+                        <span className="font-medium">
+                          {(() => {
+                            const [startH, startM] = customStartTime
+                              .split(":")
+                              .map(Number);
+                            const [endH, endM] = customEndTime
+                              .split(":")
+                              .map(Number);
+                            const durationMin =
+                              endH * 60 + endM - (startH * 60 + startM);
+                            const hours = Math.floor(durationMin / 60);
+                            const minutes = durationMin % 60;
+                            return `${hours > 0 ? hours + " giờ" : ""} ${
+                              minutes > 0 ? minutes + " phút" : ""
+                            }`.trim();
+                          })()}
+                        </span>
+                      </div>
+                      {bookingType === "recurring" && (
+                        <div className="flex justify-between mb-2">
+                          <span>Lưu ý:</span>
+                          <span className="text-muted-foreground italic text-xs">
+                            Giá trên mỗi buổi
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                        <span className="font-bold text-lg">Tổng tiền:</span>
+                        <span className="font-bold text-lg text-primary">
+                          {formatPrice(priceCalculation.totalPrice)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="mt-4 pt-4 border-t">
                 <Button
                   onClick={handleBooking}
                   className="w-full sm:w-auto"

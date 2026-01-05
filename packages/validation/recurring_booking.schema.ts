@@ -46,6 +46,20 @@ export const createRecurringBookingSchema = z
       message: "Không thể đặt lịch định kỳ cho ngày đã qua",
       path: ["body", "start_date"],
     }
+  )
+  .refine(
+    (data) => {
+      // Validate thời lượng phải là bội của 30 phút
+      const durationMs =
+        data.body.end_time.getTime() - data.body.start_time.getTime();
+      const durationMinutes = durationMs / (1000 * 60);
+      return durationMinutes > 0 && durationMinutes % 30 === 0;
+    },
+    {
+      message:
+        "Thời lượng đặt sân phải là bội của 30 phút (0.5 giờ, 1 giờ, 1.5 giờ, ...)",
+      path: ["body", "end_time"],
+    }
   );
 
 export type CreateRecurringBookingInput = z.infer<

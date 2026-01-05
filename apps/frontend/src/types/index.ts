@@ -139,11 +139,6 @@ export interface RecurringBooking {
   player_id: string;
   sub_field_id: string;
   recurrence_type: RecurrenceType;
-  recurrence_detail: {
-    day_of_week: number;
-    start_time: string;
-    end_time: string;
-  };
   start_date: string;
   end_date: string;
   status: RecurringStatus;

@@ -214,12 +214,6 @@ model RecurringBooking {
   sub_field_id      String          @db.Uuid
   sub_field         SubField        @relation(fields: [sub_field_id], references: [id], onDelete: Cascade)
   recurrence_type   RecurrenceType
-  recurrence_detail Json            @db.Json
-  // {
-  //   "day_of_week": 2, // 1: T2, 2: T3, ..., 7: CN
-  //   "start_time": "19:00",
-  //   "end_time": "20:30"
-  // }
   start_date        DateTime        @db.Date
   end_date          DateTime        @db.Date
   status            RecurringStatus

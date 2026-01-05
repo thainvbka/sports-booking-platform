@@ -23,7 +23,21 @@ export const createBookingSchema = z
   .refine((data) => data.body.start_time > new Date(), {
     message: "Không thể đặt sân cho thời gian đã qua",
     path: ["body", "start_time"],
-  });
+  })
+  .refine(
+    (data) => {
+      // Validate thời lượng phải là bội của 30 phút
+      const durationMs =
+        data.body.end_time.getTime() - data.body.start_time.getTime();
+      const durationMinutes = durationMs / (1000 * 60);
+      return durationMinutes > 0 && durationMinutes % 30 === 0;
+    },
+    {
+      message:
+        "Thời lượng đặt sân phải là bội của 30 phút (0.5 giờ, 1 giờ, 1.5 giờ, ...)",
+      path: ["body", "end_time"],
+    }
+  );
 
 // owner booking filter schema
 

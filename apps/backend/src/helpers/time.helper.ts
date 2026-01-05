@@ -45,3 +45,10 @@ export const formatTimeForDisplay = (date: Date): string => {
   const minutes = String(date.getUTCMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 };
+
+export const formatTimeForDisplayErrBookingService = (date: Date): string => {
+  const vnDate = toZonedTime(date, TIME_ZONE);
+  const hours = String(vnDate.getHours()).padStart(2, "0");
+  const minutes = String(vnDate.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
