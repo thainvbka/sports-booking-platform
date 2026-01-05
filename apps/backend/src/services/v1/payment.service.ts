@@ -11,7 +11,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import stripe from "../../libs/stripe";
-import { config } from "../../configs";
+import { config, STRIPE_SESSION_TIMEOUT } from "../../configs";
 
 // Tạo Stripe Connect Account cho Owner
 export const createConnectAccount = async (ownerId: string) => {
@@ -182,6 +182,17 @@ export const createCheckoutSession = async (
   //phí nền tảng (10%)
   const platformFee = Math.round(totalAmount * 0.1);
 
+  //tang booking timeout khi bat dau thanh toan
+  await prisma.booking.updateMany({
+    where: {
+      id: { in: bookingIds },
+      status: "PENDING",
+    },
+    data: {
+      expires_at: new Date(Date.now() + 15 * 60 * 1000), // Reset về 15 phút
+    },
+  });
+
   //tạo stripe checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -202,7 +213,7 @@ export const createCheckoutSession = async (
     },
     success_url: `${config.CLIENT_URL}/bookings/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.CLIENT_URL}/bookings/failed`,
-    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, //30 phut
+    expires_at: Math.floor(Date.now() / 1000) + STRIPE_SESSION_TIMEOUT, //15 phút
   });
 
   return { url: session.url! };

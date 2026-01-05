@@ -11,7 +11,10 @@ import {
   getVietnamMinutes,
   getVietnamDayOfWeek,
   getRawMinutes,
+  formatTimeForDisplayErrBookingService,
 } from "../../helpers/time.helper";
+
+import { BOOKING_TIMEOUT } from "../../configs";
 
 export interface filter {
   search?: string;
@@ -56,8 +59,6 @@ export const createBooking = async (
         { status: "PENDING", expires_at: { gt: new Date() } },
         { status: "COMPLETED" },
         { status: "CONFIRMED" },
-      ],
-      AND: [
         {
           start_time: { lt: data.end_time },
         },
@@ -71,8 +72,9 @@ export const createBooking = async (
   //neu nguoi dung quay lai va sau do lai dat lai thi se khong thong bao loi ma booking do van la cua chinh nguoi do
 
   if (overlappingBooking) {
+    // Nếu là của chính user này
     if (overlappingBooking.player_id === player_id) {
-      //neu booking đã được thanh toán hoặc xác nhận thì thoong báo xem lại ở trang lịch sử
+      //neu booking đã được thanh toán hoặc xác nhận thì thông báo xem lại ở trang lịch sử
       if (
         overlappingBooking.status === "COMPLETED" ||
         overlappingBooking.status === "CONFIRMED"
@@ -81,42 +83,55 @@ export const createBooking = async (
           "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
         );
       }
-      //gia hạn thời gian giữ chỗ
-      const updatedBooking = await prisma.booking.update({
-        where: { id: overlappingBooking.id },
-        data: { expires_at: new Date(Date.now() + 3 * 60 * 1000) }, // 3 minutes from now
-      });
 
-      //trả về thông tin booking đã được gia hạn
-      return {
-        message:
-          "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
-        booking_id: updatedBooking.id,
-        start_time: updatedBooking.start_time,
-        end_time: updatedBooking.end_time,
-        total_price: updatedBooking.total_price,
-        status: updatedBooking.status,
-        expires_at: updatedBooking.expires_at,
-      };
+      // Nếu là PENDING và CHÍNH XÁC cùng thời gian → Gia hạn
+      if (
+        overlappingBooking.start_time.getTime() ===
+          new Date(data.start_time).getTime() &&
+        overlappingBooking.end_time.getTime() ===
+          new Date(data.end_time).getTime()
+      ) {
+        //gia hạn thời gian giữ chỗ
+        const updatedBooking = await prisma.booking.update({
+          where: { id: overlappingBooking.id },
+          data: { expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL) },
+        });
+
+        //trả về thông tin booking đã được gia hạn
+        return {
+          message:
+            "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
+          booking_id: updatedBooking.id,
+          start_time: updatedBooking.start_time,
+          end_time: updatedBooking.end_time,
+          total_price: updatedBooking.total_price,
+          status: updatedBooking.status,
+          expires_at: updatedBooking.expires_at,
+        };
+      }
+
+      // Nếu khác thời gian → Báo lỗi overlap của chính user
+      throw new BadRequestError(
+        "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân."
+      );
     }
+
     //nếu không phải của người dùng hiện tại thì báo lỗi đã có người đặt
-    throw new BadRequestError("The selected time slot is already booked");
+    throw new BadRequestError(
+      `Đã có người đặt khoảng thời gian từ ${formatTimeForDisplayErrBookingService(
+        overlappingBooking.start_time
+      )} đến ${formatTimeForDisplayErrBookingService(
+        overlappingBooking.end_time
+      )}  trên sân này. Vui lòng chọn khung giờ khác.`
+    );
   }
 
-  // ---------------------------------------------------------
-  //  TÌM PRICING RULE PHÙ HỢP
-  // ---------------------------------------------------------
+  //  TÌM PRICING RULE PHÙ HỢP VÀ TÍNH GIÁ
 
-  /**
-   * Ví dụ: Khách đặt đá bóng lúc 02:00 sáng Thứ 4 (Giờ VN).
-   * -> Quy đổi ra UTC là 19:00 tối Thứ 3.
-   * -> Nếu dùng date.getDay() của UTC, nó ra Thứ 3 => SAI RULE.
-   * -> Phải ép về giờ VN để biết đó là sáng Thứ 4.
-   */
   const dayOfWeek = getVietnamDayOfWeek(data.start_time);
   console.log("dayOfWeek:::::", dayOfWeek);
 
-  // Lấy tất cả các khung giá của ngày hôm đó (Ví dụ: Lấy hết giá của Thứ 4)
+  // Lấy tất cả các khung giá của ngày hôm đó
   const potentialRules = await prisma.pricingRule.findMany({
     where: {
       sub_field_id: sub_field_id,
@@ -129,44 +144,93 @@ export const createBooking = async (
     throw new BadRequestError("Sân chưa thiết lập bảng giá cho ngày này.");
   }
 
-  /**
-   * QUY ĐỔI RA PHÚT ĐỂ SO SÁNH
-   * Chúng ta sẽ đưa tất cả về đơn vị "Phút trong ngày" để so sánh.
-   * Bất kể Rule lưu năm 1970 hay Booking là năm 2025,
-   * chỉ cần biết "06:00" là 360 phút.
-   */
   const bookingStartMin = getVietnamMinutes(data.start_time);
   const bookingEndMin = getVietnamMinutes(data.end_time);
   console.log("bookingStartMin:::::", bookingStartMin);
   console.log("bookingEndMin:::::", bookingEndMin);
 
-  // Tìm rule nào "bao trùm" (cover) được khung giờ khách đặt
-  const matchedRule = potentialRules.find((rule: any) => {
+  // Tìm tất cả rules giao với booking time
+  const overlappingRules = potentialRules.filter((rule: any) => {
     const ruleStartMin = getRawMinutes(rule.start_time);
     const ruleEndMin = getRawMinutes(rule.end_time);
-    console.log("ruleStartMin:::::", ruleStartMin);
-    console.log("ruleEndMin:::::", ruleEndMin);
 
-    // Logic: Giờ đặt nằm trọn trong khung giờ của Rule
-    // Rule:  |-------------------| (Ví dụ 17h - 21h)
-    // Book:      |---------|       (Ví dụ 18h - 20h) -> OK
-    return bookingStartMin >= ruleStartMin && bookingEndMin <= ruleEndMin;
+    // Rule giao với booking nếu:
+    // Rule bắt đầu trước khi booking kết thúc VÀ
+    // Rule kết thúc sau khi booking bắt đầu
+    return ruleStartMin < bookingEndMin && ruleEndMin > bookingStartMin;
   });
 
-  if (!matchedRule) {
+  if (overlappingRules.length === 0) {
     throw new BadRequestError(
       "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân."
     );
   }
 
-  //lay base price
-  const basePrice = Number(matchedRule.base_price);
+  // Sắp xếp rules theo thời gian
+  overlappingRules.sort(
+    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time)
+  );
 
-  ///tinh total_price dua tren base_price va thoi gian dat
-  //base_price gia/gio
-  const duration = bookingEndMin - bookingStartMin; //in minutes
-  const hours = duration / 60;
-  const totalPrice = basePrice * hours;
+  // Tính giá theo từng segment
+  let totalPrice = 0;
+  let currentMin = bookingStartMin;
+  const priceBreakdown: Array<{
+    rule_id: string;
+    start_min: number;
+    end_min: number;
+    duration_min: number;
+    base_price: number;
+    segment_price: number;
+  }> = [];
+
+  for (const rule of overlappingRules) {
+    const ruleStartMin = getRawMinutes(rule.start_time);
+    const ruleEndMin = getRawMinutes(rule.end_time);
+
+    // Tìm phần giao nhau
+    const segmentStart = Math.max(currentMin, ruleStartMin);
+    const segmentEnd = Math.min(bookingEndMin, ruleEndMin);
+
+    if (segmentStart < segmentEnd) {
+      const segmentDuration = segmentEnd - segmentStart; // minutes
+      const segmentHours = segmentDuration / 60;
+      const segmentPrice = Number(rule.base_price) * segmentHours;
+
+      totalPrice += segmentPrice;
+      priceBreakdown.push({
+        rule_id: rule.id,
+        start_min: segmentStart,
+        end_min: segmentEnd,
+        duration_min: segmentDuration,
+        base_price: Number(rule.base_price),
+        segment_price: segmentPrice,
+      });
+
+      currentMin = segmentEnd;
+    }
+
+    if (currentMin >= bookingEndMin) break;
+  }
+
+  // Kiểm tra xem đã cover hết booking chưa
+  if (currentMin < bookingEndMin) {
+    const formatTime = (min: number) => {
+      const h = Math.floor(min / 60)
+        .toString()
+        .padStart(2, "0");
+      const m = (min % 60).toString().padStart(2, "0");
+      return `${h}:${m}`;
+    };
+
+    throw new BadRequestError(
+      `Khung giờ ${formatTime(currentMin)} - ${formatTime(
+        bookingEndMin
+      )} không có giá. Vui lòng chọn khung giờ khác.`
+    );
+  }
+
+  console.log("Price Breakdown:::::", priceBreakdown);
+  console.log("Total Price:::::", totalPrice);
 
   //create booking
   const booking = await prisma.booking.create({
@@ -177,7 +241,7 @@ export const createBooking = async (
       end_time: data.end_time,
       total_price: totalPrice,
       status: "PENDING",
-      expires_at: new Date(Date.now() + 3 * 60 * 1000), // 3 minutes from now
+      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL), // 5 minutes from now
     },
   });
 
@@ -310,23 +374,21 @@ export const updateBooking = async (
   });
 
   if (overlappingBooking) {
-    throw new BadRequestError("The selected time slot is already booked");
+    throw new BadRequestError(
+      `Đã có một booking khung giờ từ ${formatTimeForDisplayErrBookingService(
+        overlappingBooking.start_time
+      )} đến ${formatTimeForDisplayErrBookingService(
+        overlappingBooking.end_time
+      )}. Vui lòng chọn khung giờ khác.`
+    );
   }
 
-  // ---------------------------------------------------------
-  //  TÌM PRICING RULE PHÙ HỢP
-  // ---------------------------------------------------------
+  //  TÌM PRICING RULE PHÙ HỢP VÀ TÍNH GIÁ
 
-  /**
-   * Ví dụ: Khách đặt đá bóng lúc 02:00 sáng Thứ 4 (Giờ VN).
-   * -> Quy đổi ra UTC là 19:00 tối Thứ 3.
-   * -> Nếu dùng date.getDay() của UTC, nó ra Thứ 3 => SAI RULE.
-   * -> Phải ép về giờ VN để biết đó là sáng Thứ 4.
-   */
   const dayOfWeek = getVietnamDayOfWeek(data.start_time);
   console.log("dayOfWeek:::::", dayOfWeek);
 
-  // Lấy tất cả các khung giá của ngày hôm đó (Ví dụ: Lấy hết giá của Thứ 4)
+  // Lấy tất cả các khung giá của ngày hôm đó
   const potentialRules = await prisma.pricingRule.findMany({
     where: {
       sub_field_id: sub_field_id,
@@ -339,44 +401,75 @@ export const updateBooking = async (
     throw new BadRequestError("Sân chưa thiết lập bảng giá cho ngày này.");
   }
 
-  /**
-   * QUY ĐỔI RA PHÚT ĐỂ SO SÁNH
-   * Chúng ta sẽ đưa tất cả về đơn vị "Phút trong ngày" để so sánh.
-   * Bất kể Rule lưu năm 1970 hay Booking là năm 2025,
-   * chỉ cần biết "06:00" là 360 phút.
-   */
   const bookingStartMin = getVietnamMinutes(data.start_time);
   const bookingEndMin = getVietnamMinutes(data.end_time);
   console.log("bookingStartMin:::::", bookingStartMin);
   console.log("bookingEndMin:::::", bookingEndMin);
 
-  // Tìm rule nào "bao trùm" (cover) được khung giờ khách đặt
-  const matchedRule = potentialRules.find((rule) => {
+  // Tìm tất cả rules giao với booking time
+  const overlappingRules = potentialRules.filter((rule: any) => {
     const ruleStartMin = getRawMinutes(rule.start_time);
     const ruleEndMin = getRawMinutes(rule.end_time);
-    console.log("ruleStartMin:::::", ruleStartMin);
-    console.log("ruleEndMin:::::", ruleEndMin);
 
-    // Logic: Giờ đặt nằm trọn trong khung giờ của Rule
-    // Rule:  |-------------------| (Ví dụ 17h - 21h)
-    // Book:      |---------|       (Ví dụ 18h - 20h) -> OK
-    return bookingStartMin >= ruleStartMin && bookingEndMin <= ruleEndMin;
+    // Rule giao với booking nếu:
+    // Rule bắt đầu trước khi booking kết thúc VÀ
+    // Rule kết thúc sau khi booking bắt đầu
+    return ruleStartMin < bookingEndMin && ruleEndMin > bookingStartMin;
   });
 
-  if (!matchedRule) {
+  if (overlappingRules.length === 0) {
     throw new BadRequestError(
       "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân."
     );
   }
 
-  //lay base price
-  const basePrice = Number(matchedRule.base_price);
+  // Sắp xếp rules theo thời gian
+  overlappingRules.sort(
+    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time)
+  );
 
-  ///tinh total_price dua tren base_price va thoi gian dat
-  //base_price gia/gio
-  const duration = bookingEndMin - bookingStartMin; //in minutes
-  const hours = duration / 60;
-  const totalPrice = basePrice * hours;
+  // Tính giá theo từng segment
+  let totalPrice = 0;
+  let currentMin = bookingStartMin;
+
+  for (const rule of overlappingRules) {
+    const ruleStartMin = getRawMinutes(rule.start_time);
+    const ruleEndMin = getRawMinutes(rule.end_time);
+
+    // Tìm phần giao nhau
+    const segmentStart = Math.max(currentMin, ruleStartMin);
+    const segmentEnd = Math.min(bookingEndMin, ruleEndMin);
+
+    if (segmentStart < segmentEnd) {
+      const segmentDuration = segmentEnd - segmentStart; // minutes
+      const segmentHours = segmentDuration / 60;
+      const segmentPrice = Number(rule.base_price) * segmentHours;
+
+      totalPrice += segmentPrice;
+      currentMin = segmentEnd;
+    }
+
+    if (currentMin >= bookingEndMin) break;
+  }
+
+  // Kiểm tra xem đã cover hết booking chưa
+  if (currentMin < bookingEndMin) {
+    const formatTime = (min: number) => {
+      const h = Math.floor(min / 60)
+        .toString()
+        .padStart(2, "0");
+      const m = (min % 60).toString().padStart(2, "0");
+      return `${h}:${m}`;
+    };
+
+    throw new BadRequestError(
+      `Khung giờ ${formatTime(currentMin)} - ${formatTime(
+        bookingEndMin
+      )} không có giá. Vui lòng chọn khung giờ khác.`
+    );
+  }
+
+  console.log("Total Price:::::", totalPrice);
 
   //create booking
   const booking = await prisma.booking.update({
@@ -388,7 +481,7 @@ export const updateBooking = async (
       end_time: data.end_time,
       total_price: totalPrice,
       status: "PENDING",
-      expires_at: new Date(Date.now() + 3 * 60 * 1000), // 3 minutes from now
+      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL), // 5 minutes from now
     },
   });
 
@@ -881,7 +974,6 @@ export const getPlayerBookings = async (
       recurrence_type: true,
       start_date: true,
       end_date: true,
-      recurrence_detail: true,
       status: true,
       created_at: true,
       sub_field: {
@@ -1129,7 +1221,6 @@ export const ownerGetAllBookings = async (
       recurrence_type: true,
       start_date: true,
       end_date: true,
-      recurrence_detail: true,
       status: true,
       created_at: true,
       sub_field: {

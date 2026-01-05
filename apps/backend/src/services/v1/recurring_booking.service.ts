@@ -12,6 +12,7 @@ import {
   getVietnamDayOfWeek,
   getVietnamMinutes,
   getRawMinutes,
+  formatTimeForDisplayErrBookingService,
 } from "../../helpers/time.helper";
 import {
   addDays,
@@ -21,6 +22,7 @@ import {
   setMinutes,
   startOfDay,
 } from "date-fns";
+import { BOOKING_TIMEOUT } from "../../configs";
 
 /**
  * 
@@ -44,6 +46,12 @@ export const createRecurringBookingService = async (
   data: CreateRecurringBookingInput,
   sub_field_id: string
 ) => {
+  // Lấy giờ và phút từ input
+  const startHour = data.start_time.getHours();
+  const startMinute = data.start_time.getMinutes();
+  const endHour = data.end_time.getHours();
+  const endMinute = data.end_time.getMinutes();
+
   // 1. Validate SubField & Player
   const player = await prisma.player.findUnique({
     where: { id: player_id, status: "ACTIVE" },
@@ -55,54 +63,144 @@ export const createRecurringBookingService = async (
   });
   if (!subField) throw new NotFoundError("Sub field not found");
 
-  // Kiểm tra xem user này có đang pending một yêu cầu y hệt không? Nếu có thì không tạo mới, mà gia hạn thời gian giữ chỗ
-  const existingRecurring = await prisma.recurringBooking.findFirst({
+  // // Tạo khung giờ key để so sánh
+  // const timeKey = `${String(startHour).padStart(2, "0")}:${String(
+  //   startMinute
+  // ).padStart(2, "0")}-${String(endHour).padStart(2, "0")}:${String(
+  //   endMinute
+  // ).padStart(2, "0")}`;
+
+  // Check overlap về khoảng ngày và khung giờ
+  const existingRecurrings = await prisma.recurringBooking.findMany({
     where: {
-      player_id, //cùng player
       sub_field_id,
-      recurrence_type: data.recurring_type,
-      // So sánh ngày bắt đầu/kết thúc
-      start_date: new Date(data.start_date),
-      end_date: new Date(data.end_date),
       status: {
         in: ["PENDING", "COMPLETED", "CONFIRMED"],
       },
+      // Check overlap về khoảng ngày
+      OR: [
+        {
+          // Case 1: start_date của existing nằm trong range mới
+          start_date: {
+            gte: data.start_date,
+            lte: data.end_date,
+          },
+        },
+        {
+          // Case 2: end_date của existing nằm trong range mới
+          end_date: {
+            gte: data.start_date,
+            lte: data.end_date,
+          },
+        },
+        {
+          // Case 3: Range mới nằm hoàn toàn trong existing
+          AND: [
+            { start_date: { lte: data.start_date } },
+            { end_date: { gte: data.end_date } },
+          ],
+        },
+      ],
     },
     include: {
-      bookings: true, // Lấy booking con để tính lại tổng tiền
+      bookings: {
+        take: 1, // lấy 1 vì các booking con đều có cùng khung giờ
+        orderBy: { start_time: "asc" },
+      },
     },
   });
 
+  // Tìm recurring có overlap về khung giờ
+  const existingRecurring = existingRecurrings.find((rb) => {
+    const firstBooking = rb.bookings[0];
+    if (!firstBooking) return false;
+
+    // Chuyển khung giờ sang phút để so sánh
+    const existingStartMin =
+      firstBooking.start_time.getHours() * 60 +
+      firstBooking.start_time.getMinutes();
+    const existingEndMin =
+      firstBooking.end_time.getHours() * 60 +
+      firstBooking.end_time.getMinutes();
+
+    const newStartMin = startHour * 60 + startMinute;
+    const newEndMin = endHour * 60 + endMinute;
+
+    // Check overlap: start1 < end2 AND end1 > start2
+    return existingStartMin < newEndMin && existingEndMin > newStartMin;
+  });
+
   if (existingRecurring) {
-    //nếu đã thanh toán hoặc xác nhận thì báo lỗi xem lại ở trang lịch sử
-    if (
-      existingRecurring.status === "COMPLETED" ||
-      existingRecurring.status === "CONFIRMED"
-    ) {
+    // Nếu là của chính player này
+    if (existingRecurring?.player_id === player_id) {
+      //nếu đã thanh toán hoặc xác nhận thì báo lỗi xem lại ở trang lịch sử
+      if (
+        existingRecurring.status === "COMPLETED" ||
+        existingRecurring.status === "CONFIRMED"
+      ) {
+        throw new BadRequestError(
+          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+        );
+      }
+
+      // Nếu là PENDING và cùng CHÍNH XÁC cả ngày và giờ → Gia hạn
+      const firstBooking = existingRecurring.bookings[0];
+      const existingStartMin =
+        firstBooking.start_time.getHours() * 60 +
+        firstBooking.start_time.getMinutes();
+      const existingEndMin =
+        firstBooking.end_time.getHours() * 60 +
+        firstBooking.end_time.getMinutes();
+      const newStartMin = startHour * 60 + startMinute;
+      const newEndMin = endHour * 60 + endMinute;
+
+      const sameTimeSlot =
+        existingStartMin === newStartMin && existingEndMin === newEndMin;
+      const sameDate =
+        existingRecurring.start_date.getTime() ===
+          new Date(data.start_date).getTime() &&
+        existingRecurring.end_date.getTime() ===
+          new Date(data.end_date).getTime();
+
+      if (sameTimeSlot && sameDate) {
+        //  Gia hạn thời gian giữ chỗ cho tất cả booking con
+        await prisma.booking.updateMany({
+          where: { recurring_booking_id: existingRecurring.id },
+          data: {
+            expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING),
+          },
+        });
+
+        //  Tính lại tổng tiền
+        const totalPrice = existingRecurring.bookings.reduce(
+          (sum, b) => sum + Number(b.total_price),
+          0
+        );
+
+        //  Trả về luô
+        return {
+          message:
+            "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
+          recurring_booking_id: existingRecurring.id,
+          total_slots: existingRecurring.bookings.length,
+          total_price: totalPrice,
+        };
+      }
+
+      // Nếu khác ngày hoặc khác giờ thì lỗi overlap của chính player
       throw new BadRequestError(
-        "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+        `Bạn đã đặt một khung giờ khác trùng giờ với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.`
       );
     }
-    //  Nếu tìm thấy -> Gia hạn thời gian giữ chỗ cho tất cả booking con
-    // (Cho thêm 15 phút nữa để thanh toán)
-    await prisma.booking.updateMany({
-      where: { recurring_booking_id: existingRecurring.id },
-      data: { expires_at: new Date(Date.now() + 3 * 60 * 1000) },
-    });
 
-    //  Tính lại tổng tiền (để trả về FE hiển thị)
-    const totalPrice = existingRecurring.bookings.reduce(
-      (sum, b) => sum + Number(b.total_price),
-      0
+    // Nếu không phải của player thì  lỗi conflict
+    throw new BadRequestError(
+      `Đã có một booking đặt vào khung giờ từ ${formatTimeForDisplayErrBookingService(
+        existingRecurring.bookings[0].start_time
+      )} đến ${formatTimeForDisplayErrBookingService(
+        existingRecurring.bookings[0].end_time
+      )}. Vui lòng chọn khung giờ khác.`
     );
-
-    //  Trả về luôn (Không tạo mới nữa)
-    return {
-      message: "Đã tiếp tục phiên đặt chỗ định kỳ trước đó",
-      recurring_booking_id: existingRecurring.id,
-      total_slots: existingRecurring.bookings.length,
-      total_price: totalPrice,
-    };
   }
 
   // 2. Tạo danh sách các ngày cần đặt (Booking Slots)
@@ -110,12 +208,6 @@ export const createRecurringBookingService = async (
 
   let currentDate = new Date(data.start_date);
   const endDate = new Date(data.end_date);
-
-  // Lấy giờ và phút từ input (ví dụ: 19:00 - 20:30)
-  const startHour = data.start_time.getHours();
-  const startMinute = data.start_time.getMinutes();
-  const endHour = data.end_time.getHours();
-  const endMinute = data.end_time.getMinutes();
 
   // Vòng lặp tạo ngày
   while (
@@ -182,11 +274,10 @@ export const createRecurringBookingService = async (
       );
     }
 
-    //  Tính Tiền
-    // Tái sử dụng logic tìm rule giống createBooking
+    //  Tính Tiền (Multi-rule support)
     const dayOfWeek = getVietnamDayOfWeek(slot.start);
 
-    // Tìm rule khớp với ngày thứ...
+    // Tìm tất cả rules trong ngày
     const rules = await prisma.pricingRule.findMany({
       where: { sub_field_id: sub_field_id, day_of_week: dayOfWeek },
     });
@@ -200,21 +291,55 @@ export const createRecurringBookingService = async (
     const slotStartMin = getVietnamMinutes(slot.start);
     const slotEndMin = getVietnamMinutes(slot.end);
 
-    const matchedRule = rules.find((rule) => {
+    // Tìm tất cả rules có phần giao với booking time
+    const overlappingRules = rules.filter((rule) => {
       const ruleStartMin = getRawMinutes(rule.start_time);
       const ruleEndMin = getRawMinutes(rule.end_time);
-      return slotStartMin >= ruleStartMin && slotEndMin <= ruleEndMin;
+      // Check overlap: rule.start < booking.end AND rule.end > booking.start
+      return ruleStartMin < slotEndMin && ruleEndMin > slotStartMin;
     });
 
-    if (!matchedRule) {
+    if (overlappingRules.length === 0) {
       throw new BadRequestError(
-        `Time slot ${slot.start.toLocaleTimeString()} is out of operating hours`
+        `No pricing rule covers the time slot ${slot.start.toLocaleTimeString()}`
       );
     }
 
-    // Tính giá cho slot này
-    const durationHours = (slotEndMin - slotStartMin) / 60;
-    const slotPrice = Number(matchedRule.base_price) * durationHours;
+    // Sắp xếp rules theo thời gian bắt đầu
+    overlappingRules.sort((a, b) => {
+      return getRawMinutes(a.start_time) - getRawMinutes(b.start_time);
+    });
+
+    // Tính giá theo từng segment
+    let slotPrice = 0;
+    let currentMin = slotStartMin;
+
+    for (const rule of overlappingRules) {
+      const ruleStartMin = getRawMinutes(rule.start_time);
+      const ruleEndMin = getRawMinutes(rule.end_time);
+
+      // Tìm phần giao giữa booking và rule
+      const segmentStart = Math.max(currentMin, ruleStartMin);
+      const segmentEnd = Math.min(slotEndMin, ruleEndMin);
+
+      if (segmentStart < segmentEnd) {
+        const durationMinutes = segmentEnd - segmentStart;
+        const durationHours = durationMinutes / 60;
+        const segmentPrice = Number(rule.base_price) * durationHours;
+
+        slotPrice += segmentPrice;
+        currentMin = segmentEnd;
+      }
+
+      if (currentMin >= slotEndMin) break;
+    }
+
+    // Kiểm tra xem có gap (khoảng trống không có rule) không
+    if (currentMin < slotEndMin) {
+      throw new BadRequestError(
+        `Booking time ${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()} has gaps not covered by any pricing rule`
+      );
+    }
 
     totalRecurringPrice += slotPrice;
 
@@ -224,7 +349,7 @@ export const createRecurringBookingService = async (
       end_time: slot.end,
       total_price: slotPrice,
       status: "PENDING", // Trạng thái ban đầu
-      expires_at: new Date(Date.now() + 3 * 60 * 1000), // Cho 3 phút để thanh toán cả cụm
+      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING), // Cho 5 phút để thanh toán cả cụm
     });
   }
 
@@ -239,11 +364,6 @@ export const createRecurringBookingService = async (
         start_date: data.start_date,
         end_date: data.end_date,
         status: "PENDING",
-        recurrence_detail: {
-          day_of_week: getVietnamDayOfWeek(data.start_time),
-          start_time: `${startHour}:${startMinute}`,
-          end_time: `${endHour}:${endMinute}`,
-        }, // Lưu chi tiết để hiển thị UI
       },
     });
 
