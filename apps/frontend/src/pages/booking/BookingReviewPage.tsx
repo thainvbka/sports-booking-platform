@@ -44,6 +44,7 @@ export default function BookingReviewPage() {
         toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");
       }
     } catch (error) {
+      console.error("Create checkout session failed", error);
       toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
     }
   };

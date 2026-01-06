@@ -441,3 +441,58 @@ export const getPublicSubfieldById = async (subfieldId: string) => {
 
   return subfield;
 };
+
+export const getSubfieldAvailability = async (
+  subfieldId: string,
+  date: string
+) => {
+  // Validate subfield exists
+  const subfield = await prisma.subField.findUnique({
+    where: {
+      id: subfieldId,
+      isDelete: false,
+      complex: { status: "ACTIVE" },
+    },
+  });
+
+  if (!subfield) {
+    throw new NotFoundError("Subfield not found");
+  }
+
+  // Parse date and create start/end of day
+  const targetDate = new Date(date);
+  const startOfDay = new Date(targetDate);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  // Get all bookings for this date
+  const bookings = await prisma.booking.findMany({
+    where: {
+      sub_field_id: subfieldId,
+      start_time: { gte: startOfDay, lte: endOfDay },
+      OR: [
+        { status: "CONFIRMED" },
+        { status: "COMPLETED" },
+        { status: "PENDING", expires_at: { gt: new Date() } },
+      ],
+    },
+    select: {
+      start_time: true,
+      end_time: true,
+      status: true,
+      expires_at: true,
+    },
+    orderBy: { start_time: "asc" },
+  });
+
+  return {
+    date,
+    bookings: bookings.map((b) => ({
+      start: b.start_time,
+      end: b.end_time,
+      status: b.status,
+      expiresAt: b.status === "PENDING" ? b.expires_at : null,
+    })),
+  };
+};

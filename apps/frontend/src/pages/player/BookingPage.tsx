@@ -169,13 +169,13 @@ export function PlayerBookingsPage() {
   };
 
   const handlePayment = async (bookingIds: string[]) => {
-    const result = await bookingService
-      .creatCheckoutSession(bookingIds)
-      .catch(() => {
-        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
-      });
-
-    window.location.href = result.url;
+    try {
+      const result = await bookingService.creatCheckoutSession(bookingIds);
+      window.location.href = result.url;
+    } catch (err) {
+      console.error("Create checkout session failed", err);
+      toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+    }
   };
 
   const handleCancel = async () => {

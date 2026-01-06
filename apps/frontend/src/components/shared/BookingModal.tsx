@@ -35,6 +35,7 @@ import { formatPrice } from "@/services/mockData";
 import { bookingService } from "@/services/booking.service";
 import { publicService } from "@/services/public.service";
 import { useNavigate } from "react-router-dom";
+import { TimeSlotsGrid } from "./TimeSlotsGrid";
 
 interface BookingModalProps {
   subField: SubField;
@@ -366,7 +367,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         <DialogTrigger asChild>
           {trigger || <Button size="sm">Đặt sân</Button>}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col h-[600px]">
           <DialogHeader>
             <DialogTitle>Đặt sân {subField.sub_field_name}</DialogTitle>
             <DialogDescription>
@@ -386,18 +387,39 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
               </Button>
             </div>
           ) : (
-            <Tabs
-              defaultValue="single"
-              value={bookingType}
-              onValueChange={setBookingType}
-              className="w-full flex flex-col flex-1 overflow-hidden"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="single">Đặt một lần</TabsTrigger>
-                <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
-              </TabsList>
+            <div className="flex-1 overflow-y-auto p-1">
+              <div className="flex gap-6 md:flex-row flex-col">
+               {/* LEFT COLUMN: Time Grid */}
+               <div className="w-full md:w-1/3 border-r pr-4 flex flex-col">
+                  {date && (
+                    <>
+                      <Label className="mb-2 font-semibold">Tình trạng sân ({format(date, "dd/MM")})</Label>
+                      <TimeSlotsGrid 
+                        subFieldId={subField.id}
+                        date={date}
+                        pricingRules={availableRules}
+                        selectedStart={customStartTime}
+                        selectedEnd={customEndTime}
+                      />
+                    </>
+                  )}
+                  {!date && <div className="text-center text-muted-foreground mt-10">Vui lòng chọn ngày để xem lịch</div>}
+               </div>
 
-              <div className="py-4 space-y-4 overflow-y-auto flex-1">
+               {/* RIGHT COLUMN: Booking Form */}
+               <div className="flex-1 flex flex-col">
+                <Tabs
+                  defaultValue="single"
+                  value={bookingType}
+                  onValueChange={setBookingType}
+                  className="w-full flex flex-col"
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="single">Đặt một lần</TabsTrigger>
+                    <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
+                  </TabsList>
+
+                  <div className="py-4 space-y-4 pr-2">
                 {/* Date Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
@@ -693,6 +715,9 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                 </Button>
               </DialogFooter>
             </Tabs>
+            </div>
+           </div>
+          </div>
           )}
         </DialogContent>
       </Dialog>
@@ -702,14 +727,15 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           <DialogHeader>
             <DialogTitle>Đặt sân thành công!</DialogTitle>
             <DialogDescription className="space-y-2 pt-2">
-              <p>
+              <div>
                 Booking của bạn đã được tạo thành công. Bạn có thể xem lại trong
                 mục <strong>Lịch đặt sân</strong> để thanh toán hoặc thanh toán
                 ngay bây giờ.
-              </p>
-              <p className="text-sm text-amber-600">
-                Lưu ý: Booking sẽ tự động hủy sau 3 phút nếu chưa thanh toán.
-              </p>
+              </div>
+              <div className="text-sm text-amber-600">
+                Lưu ý: Booking sẽ tự động hủy sau 5 phút nếu chưa thanh toán.
+                Xem chi tiết ở phần lịch đặt sân!
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">

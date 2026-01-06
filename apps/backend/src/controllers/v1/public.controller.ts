@@ -7,6 +7,7 @@ import {
 import {
   getAllPublicSubfields,
   getPublicSubfieldById,
+  getSubfieldAvailability,
 } from "../../services/v1/subfield.service";
 
 // Helper function to parse string array from query params
@@ -128,6 +129,27 @@ export const getPublicSubfieldByIdController = async (
   const result = await getPublicSubfieldById(subfieldId);
   return new SuccessResponse({
     message: "Get public subfield detail successfully",
+    data: result,
+  }).send(res);
+};
+
+export const getSubfieldAvailabilityController = async (
+  req: Request,
+  res: Response
+) => {
+  const subfieldId = req.params.id;
+  const date = req.query.date as string;
+
+  if (!date) {
+    return res.status(400).json({
+      success: false,
+      message: "Date parameter is required (format: YYYY-MM-DD)",
+    });
+  }
+
+  const result = await getSubfieldAvailability(subfieldId, date);
+  return new SuccessResponse({
+    message: "Get subfield availability successfully",
     data: result,
   }).send(res);
 };

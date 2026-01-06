@@ -17,6 +17,13 @@ interface GetPublicSubfieldsResponse {
   pagination: PaginationMeta;
 }
 
+interface BookingSlot {
+  start: string;
+  end: string;
+  status: "PENDING" | "CONFIRMED" | "COMPLETED";
+  expiresAt: string | null;
+}
+
 export const publicService = {
   getComplexes: async (params?: {
     page?: number;
@@ -62,9 +69,16 @@ export const publicService = {
   },
 
   getSubfieldById: async (id: string) => {
-    const response = await api.get<ApiResponse<SubField & { complex_name: string; complex_address: string }>>(
-      `/public/subfields/${id}`
-    );
+    const response = await api.get<
+      ApiResponse<SubField & { complex_name: string; complex_address: string }>
+    >(`/public/subfields/${id}`);
+    return response.data;
+  },
+
+  getSubfieldAvailability: async (id: string, date: string) => {
+    const response = await api.get<
+      ApiResponse<{ date: string; bookings: BookingSlot[] }>
+    >(`/public/subfields/${id}/availability`, { params: { date } });
     return response.data;
   },
 };

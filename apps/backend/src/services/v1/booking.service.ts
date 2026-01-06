@@ -59,13 +59,9 @@ export const createBooking = async (
         { status: "PENDING", expires_at: { gt: new Date() } },
         { status: "COMPLETED" },
         { status: "CONFIRMED" },
-        {
-          start_time: { lt: data.end_time },
-        },
-        {
-          end_time: { gt: data.start_time },
-        },
       ],
+      start_time: { lt: data.end_time },
+      end_time: { gt: data.start_time },
     },
   });
 
