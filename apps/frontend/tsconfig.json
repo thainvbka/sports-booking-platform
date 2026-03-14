@@ -11,10 +11,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@sports-booking-platform/validation": [
-        "../../packages/validation/index.ts"
-      ]
+      "@/*": ["./src/*"]
     }
   }
 }

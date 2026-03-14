@@ -10,7 +10,7 @@ import {
   updateSubfieldController,
   deleteSubfieldController,
 } from "../../controllers/v1/subfield.controller";
-import { updateSubfieldSchema } from "@sports-booking-platform/validation";
+import { updateSubfieldSchema } from "../../validations";
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.get(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(getOwnerSubfieldByIdController)
+  asyncHandler(getOwnerSubfieldByIdController),
 );
 
 router.patch(
@@ -26,14 +26,14 @@ router.patch(
   authenticate,
   authorize(["OWNER"]),
   validate(updateSubfieldSchema),
-  asyncHandler(updateSubfieldController)
+  asyncHandler(updateSubfieldController),
 );
 
 router.delete(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(deleteSubfieldController)
+  asyncHandler(deleteSubfieldController),
 );
 
 export default router;

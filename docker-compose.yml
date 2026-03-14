@@ -16,22 +16,18 @@ services:
   # ---  BACKEND ---
   backend:
     build:
-      context: .
-      dockerfile: apps/backend/Dockerfile.dev
+      context: ./apps/backend
+      dockerfile: Dockerfile.dev
     container_name: sports-booking-backend
     ports:
       - "${SERVER_PORT}:3000"
       - "${PRISMA_STUDIO_PORT}:5555"
     volumes:
-      # Mount toàn bộ source code để hot-reload
-      # Loại trừ node_modules ở thư mục gốc để không ghi đè lên thư mục đã được cài đặt bên trong container
-      - ./:/app
+      # Mount folder backend để hot-reload
+      - ./apps/backend:/app
       - /app/node_modules
     env_file:
-      - ./.env
-    # Đảm bảo DATABASE_URL được truyền vào đúng cách
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - ./apps/backend/.env
     depends_on:
       - postgres-db
     restart: always
@@ -41,16 +37,17 @@ services:
   # ---  FRONTEND ---
   frontend:
     build:
-      context: .
-      dockerfile: apps/frontend/Dockerfile.dev
+      context: ./apps/frontend
+      dockerfile: Dockerfile.dev
     container_name: sports-booking-frontend
     ports:
       - "${CLIENT_PORT}:5173"
     volumes:
-      - ./:/app
+      # Mount folder frontend để hot-reload
+      - ./apps/frontend:/app
       - /app/node_modules
     env_file:
-      - ./.env
+      - ./apps/frontend/.env
     restart: always
     networks:
       - my-network

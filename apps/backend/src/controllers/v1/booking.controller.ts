@@ -13,7 +13,7 @@ import {
   getOwnerBookingStats,
 } from "../../services/v1/booking.service";
 import type { filter } from "../../services/v1/booking.service";
-import { ownerBookingFilterSchema } from "@sports-booking-platform/validation";
+import { ownerBookingFilterSchema } from "../../validations";
 
 import {
   createRecurringBookingService,
@@ -28,7 +28,7 @@ export const createBookingController = async (req: Request, res: Response) => {
   const booking = await createBooking(
     req.user?.profiles.playerId as string,
     data,
-    sub_field_id
+    sub_field_id,
   );
   return new SuccessResponse({
     message: "Booking created successfully",
@@ -40,7 +40,7 @@ export const reviewBookingController = async (req: Request, res: Response) => {
   const booking_id = req.params.id;
   const booking = await reviewBooking(
     booking_id,
-    req.user?.profiles.playerId as string
+    req.user?.profiles.playerId as string,
   );
   return new SuccessResponse({
     message: "Booking reviewed successfully",
@@ -54,7 +54,7 @@ export const updateBookingController = async (req: Request, res: Response) => {
   const booking = await updateBooking(
     req.user?.profiles.playerId as string,
     data,
-    booking_id
+    booking_id,
   );
   return new SuccessResponse({
     message: "Booking updated successfully",
@@ -67,7 +67,7 @@ export const cancelBookingController = async (req: Request, res: Response) => {
   const booking_id = req.params.id;
   const result = await cancelBooking(
     booking_id,
-    req.user?.profiles.playerId as string
+    req.user?.profiles.playerId as string,
   );
   return new SuccessResponse({
     message: "Booking canceled successfully",
@@ -78,14 +78,14 @@ export const cancelBookingController = async (req: Request, res: Response) => {
 // Recurring booking controllers
 export const createRecurringBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const data = req.body; // { start_time, end_time, start_date, end_date, recurring_type }
   const sub_field_id = req.params.id; // subfield id
   const recurringBooking = await createRecurringBookingService(
     req.user?.profiles.playerId as string,
     data,
-    sub_field_id
+    sub_field_id,
   );
   return new SuccessResponse({
     message: "Recurring booking created successfully",
@@ -95,12 +95,12 @@ export const createRecurringBookingController = async (
 
 export const reviewRecurringBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const booking_id = req.params.id; // recurringBookingId
   const result = await reviewRecurringBookingService(
     booking_id,
-    req.user?.profiles.playerId as string
+    req.user?.profiles.playerId as string,
   );
   return new SuccessResponse({
     message: "Recurring booking reviewed successfully",
@@ -110,13 +110,13 @@ export const reviewRecurringBookingController = async (
 
 export const cancelRecurringBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const recurring_booking_id = req.params.id;
   const result = await cancelRecurringBookingService(
     req.user?.profiles.playerId as string,
     recurring_booking_id,
-    "PLAYER"
+    "PLAYER",
   );
   return new SuccessResponse({
     message: "Recurring booking canceled successfully",
@@ -126,7 +126,7 @@ export const cancelRecurringBookingController = async (
 
 export const getPlayerBookingsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const playerId = req.user?.profiles.playerId as string;
   const page = parseInt(req.query.page as string) || 1;
@@ -141,7 +141,7 @@ export const getPlayerBookingsController = async (
 //owner
 export const ownerConfirmBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const booking_id = req.params.id;
   const ownerId = req.user?.profiles.ownerId as string;
@@ -154,13 +154,13 @@ export const ownerConfirmBookingController = async (
 
 export const ownerConfirmRecurringBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const recurring_booking_id = req.params.id;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await ownerConfirmRecurringBookingService(
     recurring_booking_id,
-    ownerId
+    ownerId,
   );
   return new SuccessResponse({
     message: "Recurring booking confirmed successfully",
@@ -170,7 +170,7 @@ export const ownerConfirmRecurringBookingController = async (
 
 export const ownerCancelBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const booking_id = req.params.id;
   const ownerId = req.user?.profiles.ownerId as string;
@@ -183,14 +183,14 @@ export const ownerCancelBookingController = async (
 
 export const ownerCancelRecurringBookingController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const recurring_booking_id = req.params.id;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await cancelRecurringBookingService(
     ownerId,
     recurring_booking_id,
-    "OWNER"
+    "OWNER",
   );
   return new SuccessResponse({
     message: "Recurring booking canceled successfully by owner",
@@ -200,7 +200,7 @@ export const ownerCancelRecurringBookingController = async (
 
 export const ownerGetAllBookingsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   const page = parseInt(req.query.page as string) || 1;
@@ -235,7 +235,7 @@ export const ownerGetAllBookingsController = async (
 //owner get booking by id
 export const ownerGetBookingByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const owner_id = req.user?.profiles.ownerId as string;
   const booking_id = req.params.id;
@@ -249,7 +249,7 @@ export const ownerGetBookingByIdController = async (
 //owner get booking stats
 export const ownerGetBookingStatsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const owner_id = req.user?.profiles.ownerId as string;
   const stats = await getOwnerBookingStats(owner_id);

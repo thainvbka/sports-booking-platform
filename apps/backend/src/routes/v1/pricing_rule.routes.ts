@@ -7,7 +7,7 @@ import { validate } from "../../middlewares/validate";
 import {
   createPricingRuleSchema,
   updatePricingRuleSchema,
-} from "@sports-booking-platform/validation";
+} from "../../validations";
 
 import {
   createPricingRuleController,
@@ -25,40 +25,40 @@ router.post(
   authenticate,
   authorize(["OWNER"]),
   validate(createPricingRuleSchema),
-  asyncHandler(createPricingRuleController)
+  asyncHandler(createPricingRuleController),
 );
 router.get(
   "/",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(getOwnerPricingRulesByDayController)
+  asyncHandler(getOwnerPricingRulesByDayController),
 );
 router.patch(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
   validate(updatePricingRuleSchema),
-  asyncHandler(updatePricingRuleController)
+  asyncHandler(updatePricingRuleController),
 );
 router.delete(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(deletePricingRuleController)
+  asyncHandler(deletePricingRuleController),
 );
 
 router.post(
   "/bulk-delete",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(bulkDeletePricingRulesController)
+  asyncHandler(bulkDeletePricingRulesController),
 );
 
 router.post(
   "/copy",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(copyPricingRulesController)
+  asyncHandler(copyPricingRulesController),
 );
 
 export default router;

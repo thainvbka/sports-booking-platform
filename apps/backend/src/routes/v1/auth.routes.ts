@@ -18,20 +18,20 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
-} from "@sports-booking-platform/validation";
+} from "../../validations";
 
 const router = Router();
 
 router.post(
   "/signup",
   validate(registerSchema),
-  asyncHandler(signupController)
+  asyncHandler(signupController),
 );
 
 router.post(
   "/verify-email/:token",
   validate(verifyEmailSchema),
-  asyncHandler(verifyEmailController)
+  asyncHandler(verifyEmailController),
 );
 
 router.post("/login", validate(loginSchema), asyncHandler(loginController));
@@ -43,13 +43,13 @@ router.post("/logout", authenticate, asyncHandler(logoutController));
 router.post(
   "/forgot-password",
   validate(forgotPasswordSchema),
-  asyncHandler(forgotPasswordController)
+  asyncHandler(forgotPasswordController),
 );
 
 router.put(
   "/reset-password/:token",
   validate(resetPasswordSchema),
-  asyncHandler(resetPasswordController)
+  asyncHandler(resetPasswordController),
 );
 
 router.get("/me", authenticate, asyncHandler(getCurrentUserController));

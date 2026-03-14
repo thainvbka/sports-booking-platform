@@ -1,8 +1,8 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import {
   CreateRecurringBookingInput,
   RecurringBookingType,
-} from "@sports-booking-platform/validation";
+} from "../../validations";
 import {
   BadRequestError,
   ForbiddenError,
@@ -44,7 +44,7 @@ Hệ thống sẽ tự động sinh ra các booking vào ngày 1/1, 8/1, 15/1, 2
 export const createRecurringBookingService = async (
   player_id: string,
   data: CreateRecurringBookingInput,
-  sub_field_id: string
+  sub_field_id: string,
 ) => {
   // Lấy giờ và phút từ input
   const startHour = data.start_time.getHours();
@@ -139,7 +139,7 @@ export const createRecurringBookingService = async (
         existingRecurring.status === "CONFIRMED"
       ) {
         throw new BadRequestError(
-          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
         );
       }
 
@@ -174,7 +174,7 @@ export const createRecurringBookingService = async (
         //  Tính lại tổng tiền
         const totalPrice = existingRecurring.bookings.reduce(
           (sum, b) => sum + Number(b.total_price),
-          0
+          0,
         );
 
         //  Trả về luô
@@ -189,17 +189,17 @@ export const createRecurringBookingService = async (
 
       // Nếu khác ngày hoặc khác giờ thì lỗi overlap của chính player
       throw new BadRequestError(
-        `Bạn đã đặt một khung giờ khác trùng giờ với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.`
+        `Bạn đã đặt một khung giờ khác trùng giờ với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.`,
       );
     }
 
     // Nếu không phải của player thì  lỗi conflict
     throw new BadRequestError(
       `Đã có một booking đặt vào khung giờ từ ${formatTimeForDisplayErrBookingService(
-        existingRecurring.bookings[0].start_time
+        existingRecurring.bookings[0].start_time,
       )} đến ${formatTimeForDisplayErrBookingService(
-        existingRecurring.bookings[0].end_time
-      )}. Vui lòng chọn khung giờ khác.`
+        existingRecurring.bookings[0].end_time,
+      )}. Vui lòng chọn khung giờ khác.`,
     );
   }
 
@@ -218,11 +218,11 @@ export const createRecurringBookingService = async (
     // Set giờ phút của ngày đó theo giờ mẫu
     const slotStart = setMinutes(
       setHours(new Date(currentDate), startHour),
-      startMinute
+      startMinute,
     );
     const slotEnd = setMinutes(
       setHours(new Date(currentDate), endHour),
-      endMinute
+      endMinute,
     );
 
     bookingSlots.push({ start: slotStart, end: slotEnd });
@@ -249,7 +249,7 @@ export const createRecurringBookingService = async (
     //giờ bắt đầu phải lớn hơn giờ hiện tại
     if (slot.start < new Date()) {
       throw new BadRequestError(
-        `Cannot create booking in the past: ${slot.start.toLocaleString()}`
+        `Cannot create booking in the past: ${slot.start.toLocaleString()}`,
       );
     }
     // Check Trùng Lịch
@@ -270,7 +270,7 @@ export const createRecurringBookingService = async (
     if (overlappingBooking) {
       // Nếu chỉ cần 1 ngày bị trùng, báo lỗi ngay và hủy toàn bộ thao tác
       throw new BadRequestError(
-        `Slot at ${slot.start.toLocaleString()} is already booked. Recurring booking failed.`
+        `Slot at ${slot.start.toLocaleString()} is already booked. Recurring booking failed.`,
       );
     }
 
@@ -284,7 +284,7 @@ export const createRecurringBookingService = async (
 
     if (!rules.length) {
       throw new BadRequestError(
-        `No pricing rule found for ${slot.start.toDateString()}`
+        `No pricing rule found for ${slot.start.toDateString()}`,
       );
     }
 
@@ -301,7 +301,7 @@ export const createRecurringBookingService = async (
 
     if (overlappingRules.length === 0) {
       throw new BadRequestError(
-        `No pricing rule covers the time slot ${slot.start.toLocaleTimeString()}`
+        `No pricing rule covers the time slot ${slot.start.toLocaleTimeString()}`,
       );
     }
 
@@ -337,7 +337,7 @@ export const createRecurringBookingService = async (
     // Kiểm tra xem có gap (khoảng trống không có rule) không
     if (currentMin < slotEndMin) {
       throw new BadRequestError(
-        `Booking time ${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()} has gaps not covered by any pricing rule`
+        `Booking time ${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()} has gaps not covered by any pricing rule`,
       );
     }
 
@@ -395,7 +395,7 @@ export const createRecurringBookingService = async (
 export const cancelRecurringBookingService = async (
   user_id: string,
   recurring_booking_id: string,
-  user_type: "PLAYER" | "OWNER"
+  user_type: "PLAYER" | "OWNER",
 ) => {
   if (user_type === "PLAYER") {
     // Check player
@@ -436,7 +436,7 @@ export const cancelRecurringBookingService = async (
 
     if (!recurringBooking)
       throw new NotFoundError(
-        "Recurring booking not found or not owned by this owner"
+        "Recurring booking not found or not owned by this owner",
       );
   }
 
@@ -460,7 +460,7 @@ export const cancelRecurringBookingService = async (
 
 export const reviewRecurringBookingService = async (
   recurring_booking_id: string,
-  player_id: string
+  player_id: string,
 ) => {
   // 1. Lấy thông tin Recurring Booking và tất cả các Booking con
   const recurringBooking = await prisma.recurringBooking.findFirst({
@@ -531,14 +531,14 @@ export const reviewRecurringBookingService = async (
     // Nếu tìm thấy dù chỉ 1 slot bị trùng -> Báo lỗi ngay
     // Có thể nâng cao bằng cách báo cụ thể ngày nào bị trùng
     throw new BadRequestError(
-      `One of the slots (around ${conflictBooking.start_time.toLocaleString()}) has been booked by someone else.`
+      `One of the slots (around ${conflictBooking.start_time.toLocaleString()}) has been booked by someone else.`,
     );
   }
 
   // 4. Tính toán tổng tiền (để hiển thị lần cuối)
   const totalAmount = recurringBooking.bookings.reduce(
     (sum, item) => sum + Number(item.total_price),
-    0
+    0,
   );
 
   // 5. Trả về dữ liệu đã Clean để Frontend hiển thị
@@ -572,7 +572,7 @@ export const reviewRecurringBookingService = async (
 
 export const ownerConfirmRecurringBookingService = async (
   recurring_booking_id: string,
-  owner_id: string
+  owner_id: string,
 ) => {
   //check owner
   const owner = await prisma.owner.findUnique({
@@ -600,7 +600,7 @@ export const ownerConfirmRecurringBookingService = async (
 
   if (!recurringBooking) {
     throw new NotFoundError(
-      "Recurring booking not found or inaccessible by owner"
+      "Recurring booking not found or inaccessible by owner",
     );
   }
 

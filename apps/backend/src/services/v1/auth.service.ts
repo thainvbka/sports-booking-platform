@@ -1,4 +1,4 @@
-import { prisma, Prisma } from "@sports-booking-platform/db";
+import { prisma, Prisma } from "../../libs/prisma";
 import {
   ConflictRequestError,
   UnauthorizedError,
@@ -9,8 +9,8 @@ import { JwtPayload } from "../../libs/jwt";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
 import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
-import { registerInput } from "@sports-booking-platform/validation";
-import { addRoleInput } from "@sports-booking-platform/validation";
+import { registerInput } from "../../validations";
+import { addRoleInput } from "../../validations";
 import { getUserRolesAndProfiles } from "../../helpers";
 import { sendActivationEmail, sendResetPasswordEmail } from "../../libs/mailer";
 import crypto from "crypto";
@@ -29,7 +29,7 @@ export const roleCreationStrategy = {
   OWNER: async (
     tx: PrismaTransactionClient,
     accountId: string,
-    data: registerInput | addRoleInput
+    data: registerInput | addRoleInput,
   ) => {
     // type guard để TypeScript hiểu data này có company_name
     if (data.role !== "OWNER") {
@@ -92,12 +92,13 @@ export const signUp = async (userData: registerInput) => {
       // },
     });
 
-    const createRoleAccount = roleCreationStrategy[userData.role];
+    const createRoleAccount =
+      roleCreationStrategy[userData.role as keyof typeof roleCreationStrategy];
 
     if (!createRoleAccount) {
       //schema có role mới nhưng strategy chưa cập nhật
       throw new InternalServerError(
-        `Tạo vai trò cho '${userData.role}' chưa được triển khai.`
+        `Tạo vai trò cho '${userData.role}' chưa được triển khai.`,
       );
     }
 
@@ -226,7 +227,7 @@ export const logIn = async (email: string, password: string) => {
 
   if (!user.email_verified) {
     throw new UnauthorizedError(
-      "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
+      "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn.",
     );
   }
 
@@ -307,7 +308,7 @@ export const handlerRefreshToken = async (refreshToken: string) => {
 
   //fetch roles và profiles
   const { roles, profiles } = await getUserRolesAndProfiles(
-    storedToken.account_id
+    storedToken.account_id,
   );
 
   //tạo payload cho jwt
@@ -361,7 +362,7 @@ export const forgotPassword = async (email: string) => {
   });
   if (!account) {
     throw new ConflictRequestError(
-      "Email chưa được đăng ký hoặc chưa được kích hoạt"
+      "Email chưa được đăng ký hoặc chưa được kích hoạt",
     );
   }
 
@@ -398,7 +399,7 @@ export const resetPassword = async (token: string, new_password: string) => {
 
   if (!account) {
     throw new BadRequestError(
-      "Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"
+      "Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
     );
   }
 

@@ -25,7 +25,7 @@ WORKDIR /app
 # Copy node_modules từ stage deps (npm workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy packages source code (frontend cần @sports-booking-platform/validation)
+# Copy packages source code (frontend cần ../../validations)
 COPY packages ./packages
 
 # Copy frontend source code

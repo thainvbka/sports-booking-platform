@@ -1,8 +1,5 @@
-import { prisma } from "@sports-booking-platform/db";
-import {
-  CreateComplexInput,
-  UpdateComplexInput,
-} from "@sports-booking-platform/validation";
+import { prisma } from "../../libs/prisma";
+import { CreateComplexInput, UpdateComplexInput } from "../../validations";
 import {
   BadRequestError,
   ForbiddenError,
@@ -21,7 +18,7 @@ interface CreateComplexData extends CreateComplexInput {
 
 export const createComplex = async (
   ownerId: string,
-  data: CreateComplexData
+  data: CreateComplexData,
 ) => {
   //check owner
   const owner = await prisma.owner.findUnique({
@@ -43,14 +40,14 @@ export const createComplex = async (
   });
   if (existingComplex) {
     throw new BadRequestError(
-      `Complex with name '${data.complex_name}' already exists`
+      `Complex with name '${data.complex_name}' already exists`,
     );
   }
 
   //upload image, verification_docs
   const { complex_image, verification_docs } = await uploadComplexImages(
     data.files,
-    ownerId
+    ownerId,
   );
 
   //check giấy tờ xác thực
@@ -101,7 +98,7 @@ export const getOwnerComplexes = async (
     page?: number;
     limit?: number;
     search?: string;
-  }
+  },
 ) => {
   //check owner
   const owner = await prisma.owner.findUnique({
@@ -171,7 +168,7 @@ export const getOwnerComplexById = async (
     page?: number;
     limit?: number;
     search?: string;
-  }
+  },
 ) => {
   //check complex thuộc owner
   const complex = await prisma.complex.findFirst({
@@ -260,7 +257,7 @@ export const getOwnerComplexById = async (
 export const updateComplex = async (
   ownerId: string,
   complexId: string,
-  data: UpdateComplexInput
+  data: UpdateComplexInput,
 ) => {
   const complex = await prisma.complex.findFirst({
     where: {
@@ -274,7 +271,7 @@ export const updateComplex = async (
 
   if (complex.status === "REJECTED" || complex.status === "INACTIVE") {
     throw new ForbiddenError(
-      `Cannot update complex with status '${complex.status}'`
+      `Cannot update complex with status '${complex.status}'`,
     );
   }
   return await prisma.complex.update({
@@ -322,7 +319,7 @@ export const reactivateComplex = async (complexId: string, ownerId: string) => {
   }
   if (complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You don't have permission to reactivate this complex"
+      "You don't have permission to reactivate this complex",
     );
   }
   if (complex.status !== "INACTIVE") {
@@ -586,7 +583,7 @@ export const getPublicComplexById = async (
     page?: number;
     limit?: number;
     search?: string;
-  }
+  },
 ) => {
   //check complex thuộc owner
   const complex = await prisma.complex.findFirst({

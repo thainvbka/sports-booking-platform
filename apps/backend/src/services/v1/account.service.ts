@@ -1,10 +1,10 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import {
   ConflictRequestError,
   InternalServerError,
 } from "../../utils/error.response";
 
-import { addRoleInput } from "@sports-booking-platform/validation";
+import { addRoleInput } from "../../validations";
 
 import { roleCreationStrategy } from "./auth.service";
 import {
@@ -17,7 +17,7 @@ import { getRefreshExpiryDate } from "../../helpers";
 
 export const addRoleToAccount = async (
   accountId: string,
-  roleData: addRoleInput
+  roleData: addRoleInput,
 ) => {
   const { role } = roleData;
 

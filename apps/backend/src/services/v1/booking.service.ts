@@ -1,6 +1,6 @@
-import { prisma } from "@sports-booking-platform/db";
-import { CreateBookingInput } from "@sports-booking-platform/validation";
-import { BookingStatus } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
+import { CreateBookingInput } from "../../validations";
+import { BookingStatus } from "@prisma/client";
 import {
   BadRequestError,
   ForbiddenError,
@@ -28,7 +28,7 @@ export interface filter {
 export const createBooking = async (
   player_id: string,
   data: CreateBookingInput,
-  sub_field_id: string
+  sub_field_id: string,
 ) => {
   //check player exists
   const player = await prisma.player.findUnique({
@@ -76,7 +76,7 @@ export const createBooking = async (
         overlappingBooking.status === "CONFIRMED"
       ) {
         throw new BadRequestError(
-          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn."
+          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
         );
       }
 
@@ -108,17 +108,17 @@ export const createBooking = async (
 
       // Nếu khác thời gian → Báo lỗi overlap của chính user
       throw new BadRequestError(
-        "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân."
+        "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
       );
     }
 
     //nếu không phải của người dùng hiện tại thì báo lỗi đã có người đặt
     throw new BadRequestError(
       `Đã có người đặt khoảng thời gian từ ${formatTimeForDisplayErrBookingService(
-        overlappingBooking.start_time
+        overlappingBooking.start_time,
       )} đến ${formatTimeForDisplayErrBookingService(
-        overlappingBooking.end_time
-      )}  trên sân này. Vui lòng chọn khung giờ khác.`
+        overlappingBooking.end_time,
+      )}  trên sân này. Vui lòng chọn khung giờ khác.`,
     );
   }
 
@@ -158,13 +158,13 @@ export const createBooking = async (
 
   if (overlappingRules.length === 0) {
     throw new BadRequestError(
-      "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân."
+      "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân.",
     );
   }
 
   // Sắp xếp rules theo thời gian
   overlappingRules.sort(
-    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time)
+    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time),
   );
 
   // Tính giá theo từng segment
@@ -220,8 +220,8 @@ export const createBooking = async (
 
     throw new BadRequestError(
       `Khung giờ ${formatTime(currentMin)} - ${formatTime(
-        bookingEndMin
-      )} không có giá. Vui lòng chọn khung giờ khác.`
+        bookingEndMin,
+      )} không có giá. Vui lòng chọn khung giờ khác.`,
     );
   }
 
@@ -309,7 +309,7 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
 
   if (conflickBooking) {
     throw new BadRequestError(
-      "The selected time slot has just been booked by someone else"
+      "The selected time slot has just been booked by someone else",
     );
   }
 
@@ -329,7 +329,7 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
 export const updateBooking = async (
   player_id: string,
   data: CreateBookingInput,
-  booking_id: string
+  booking_id: string,
 ) => {
   //check player exists
   const player = await prisma.player.findUnique({
@@ -372,10 +372,10 @@ export const updateBooking = async (
   if (overlappingBooking) {
     throw new BadRequestError(
       `Đã có một booking khung giờ từ ${formatTimeForDisplayErrBookingService(
-        overlappingBooking.start_time
+        overlappingBooking.start_time,
       )} đến ${formatTimeForDisplayErrBookingService(
-        overlappingBooking.end_time
-      )}. Vui lòng chọn khung giờ khác.`
+        overlappingBooking.end_time,
+      )}. Vui lòng chọn khung giờ khác.`,
     );
   }
 
@@ -415,13 +415,13 @@ export const updateBooking = async (
 
   if (overlappingRules.length === 0) {
     throw new BadRequestError(
-      "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân."
+      "Giờ đặt không hợp lệ hoặc nằm ngoài khung giờ hoạt động của sân.",
     );
   }
 
   // Sắp xếp rules theo thời gian
   overlappingRules.sort(
-    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time)
+    (a, b) => getRawMinutes(a.start_time) - getRawMinutes(b.start_time),
   );
 
   // Tính giá theo từng segment
@@ -460,8 +460,8 @@ export const updateBooking = async (
 
     throw new BadRequestError(
       `Khung giờ ${formatTime(currentMin)} - ${formatTime(
-        bookingEndMin
-      )} không có giá. Vui lòng chọn khung giờ khác.`
+        bookingEndMin,
+      )} không có giá. Vui lòng chọn khung giờ khác.`,
     );
   }
 
@@ -507,7 +507,7 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
   //chi huy những booking chưa xảy ra, tức là thời gian hiện tại phải nhỏ hơn start_time
   if (booking.start_time <= new Date()) {
     throw new BadRequestError(
-      "Cannot cancel a booking that has already started or passed"
+      "Cannot cancel a booking that has already started or passed",
     );
   }
 
@@ -522,7 +522,7 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
 //owner hủy booking
 export const ownerCancelBooking = async (
   booking_id: string,
-  owner_id: string
+  owner_id: string,
 ) => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -549,7 +549,7 @@ export const ownerCancelBooking = async (
 
   if (booking.status === "CANCELED") {
     throw new BadRequestError(
-      "Booking has already been canceled and cannot be canceled again"
+      "Booking has already been canceled and cannot be canceled again",
     );
   }
 
@@ -564,7 +564,7 @@ export const ownerCancelBooking = async (
 //owner xác nhận booking
 export const ownerConfirmBooking = async (
   booking_id: string,
-  owner_id: string
+  owner_id: string,
 ) => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -746,7 +746,7 @@ export const ownerConfirmBooking = async (
 // owner get booking by id
 export const ownerGetBookingById = async (
   booking_id: string,
-  owner_id: string
+  owner_id: string,
 ) => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -920,7 +920,7 @@ export const getOwnerBookingStats = async (owner_id: string) => {
 export const getPlayerBookings = async (
   player_id: string,
   page = 1,
-  limit = 8
+  limit = 8,
 ) => {
   //check player exists
   const player = await prisma.player.findUnique({
@@ -1019,19 +1019,22 @@ export const getPlayerBookings = async (
     //tinh tong tien cua tat ca cac booking con
     const total_price = recurring.bookings.reduce(
       (sum, booking) => sum + Number(booking.total_price),
-      0
+      0,
     );
 
     const earliestExpiration =
       recurring.status === "PENDING"
         ? recurring.bookings
             .filter((booking) => booking.status === "PENDING")
-            .reduce((earliest, booking) => {
-              if (!earliest || booking.expires_at < earliest) {
-                return booking.expires_at;
-              }
-              return earliest;
-            }, null as Date | null)
+            .reduce(
+              (earliest, booking) => {
+                if (!earliest || booking.expires_at < earliest) {
+                  return booking.expires_at;
+                }
+                return earliest;
+              },
+              null as Date | null,
+            )
         : null;
 
     return {
@@ -1087,7 +1090,7 @@ export const ownerGetAllBookings = async (
   owner_id: string,
   page = 1,
   limit = 8,
-  filter: Partial<filter> = {}
+  filter: Partial<filter> = {},
 ) => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -1278,19 +1281,22 @@ export const ownerGetAllBookings = async (
     //tinh tong tien cua tat ca cac booking con
     const total_price = recurring.bookings.reduce(
       (sum, booking) => sum + Number(booking.total_price),
-      0
+      0,
     );
 
     const earliestExpiration =
       recurring.status === "PENDING"
         ? recurring.bookings
             .filter((booking) => booking.status === "PENDING")
-            .reduce((earliest, booking) => {
-              if (!earliest || booking.expires_at < earliest) {
-                return booking.expires_at;
-              }
-              return earliest;
-            }, null as Date | null)
+            .reduce(
+              (earliest, booking) => {
+                if (!earliest || booking.expires_at < earliest) {
+                  return booking.expires_at;
+                }
+                return earliest;
+              },
+              null as Date | null,
+            )
         : null;
 
     return {

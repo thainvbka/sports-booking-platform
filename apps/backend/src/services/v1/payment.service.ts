@@ -1,10 +1,10 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import {
   BookingStatus,
   PaymentStatus,
   PaymentProvider,
   RecurringStatus,
-} from "@sports-booking-platform/db";
+} from "../../libs/prisma";
 import {
   BadRequestError,
   ForbiddenError,
@@ -108,10 +108,10 @@ export const checkStripeAccountStatus = async (ownerId: string) => {
 //tạo session thanh toán cho booking
 export const createCheckoutSession = async (
   playerId: string,
-  bookingIds: string[]
+  bookingIds: string[],
 ) => {
   console.log(
-    `Creating checkout session for player: ${playerId}, bookings: ${bookingIds}`
+    `Creating checkout session for player: ${playerId}, bookings: ${bookingIds}`,
   );
   if (!bookingIds || bookingIds.length === 0) {
     throw new BadRequestError("No bookings provided for payment");
@@ -149,7 +149,7 @@ export const createCheckoutSession = async (
 
   if (bookings.length !== bookingIds.length) {
     console.log(
-      "ERROR: Mismatch in booking count. Some are missing or not PENDING."
+      "ERROR: Mismatch in booking count. Some are missing or not PENDING.",
     );
     throw new BadRequestError("Some bookings not found or not pending");
   }
@@ -179,7 +179,7 @@ export const createCheckoutSession = async (
   //tinh tong tien
   const totalAmount = bookings.reduce(
     (sum, booking) => sum + Number(booking.total_price),
-    0
+    0,
   );
 
   //phí nền tảng (10%)
@@ -227,7 +227,7 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
 
   if (!endpointSecret) {
     throw new Error(
-      "STRIPE_WEBHOOK_SECRET is not defined in environment variables"
+      "STRIPE_WEBHOOK_SECRET is not defined in environment variables",
     );
   }
 

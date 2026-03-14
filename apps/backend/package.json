@@ -14,9 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@sports-booking-platform/db": "file:../../packages/db",
-    "@sports-booking-platform/validation": "file:../../packages/validation",
-    "bcrypt": "^6.0.0",
+    "@prisma/client": "^6.17.1",
     "cloudinary": "^1.41.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -29,14 +27,17 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "ms": "^2.1.3",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.9",
     "pg": "^8.16.3",
-    "stripe": "^14.0.0"
+    "stripe": "^14.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.9",
@@ -48,9 +49,13 @@
     "@types/node": "^24.7.2",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.2",
+    "bcrypt": "^6.0.0",
     "dotenv-cli": "^10.0.0",
     "prisma": "^6.17.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

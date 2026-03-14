@@ -1,26 +1,23 @@
-# Sử dụng image Node.js phiên bản 22
 FROM node:22-alpine
 
-# Đặt thư mục làm việc bên trong container
+# Cài đặt các thư viện cần thiết cho Prisma (openssl)
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
-# Sao chép các file package.json và lock file từ thư mục gốc và các workspace
-# Điều này giúp tận dụng cache của Docker. Nếu các file này không đổi, Docker sẽ không chạy lại npm install.
-COPY package.json package-lock.json* ./
-COPY apps/backend/package.json ./apps/backend/
-COPY apps/frontend/package.json ./apps/frontend/
+# Chỉ copy package.json của backend
+COPY package*.json ./
 
-# Cài đặt tất cả dependencies trong monorepo
-# Sử dụng --omit=dev cho production, nhưng ở đây là dev nên cài hết
+# Cài đặt dependencies cho riêng backend
 RUN npm install
 
-# Sao chép toàn bộ source code còn lại vào container
-# .dockerignore nên được sử dụng để loại trừ node_modules, .git, etc.
+# Copy toàn bộ code backend
 COPY . .
 
-# Expose port mà backend sẽ chạy
+# Generate Prisma Client (sẽ tạo vào node_modules/.prisma/client)
+RUN npx prisma generate
+
 EXPOSE 3000
 
-# Lệnh mặc định để chạy server.
-# Container đã có sẵn các biến môi trường từ docker-compose, không cần dotenv-cli
-CMD ["npm", "run", "dev", "--workspace=backend"]
+# Chạy trực tiếp không cần --workspace
+CMD ["npm", "run", "dev"]

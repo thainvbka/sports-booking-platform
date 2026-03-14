@@ -1,8 +1,8 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import {
   CreatePricingRuleInput,
   UpdatePricingRuleInput,
-} from "@sports-booking-platform/validation";
+} from "../../validations";
 import {
   BadRequestError,
   ForbiddenError,
@@ -13,7 +13,7 @@ import { updateComplexCache } from "../../helpers/complexCache";
 
 export const createPricingRule = async (
   ownerId: string,
-  data: CreatePricingRuleInput
+  data: CreatePricingRuleInput,
 ) => {
   //check owner
   const owner = await prisma.owner.findUnique({
@@ -36,7 +36,7 @@ export const createPricingRule = async (
 
   if (subField.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this sub-field"
+      "You do not have permission to manage this sub-field",
     );
   }
 
@@ -81,7 +81,7 @@ export const createPricingRule = async (
           "Thứ 7",
         ];
         throw new BadRequestError(
-          `Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[day]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`
+          `Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[day]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`,
         );
       }
 
@@ -105,8 +105,8 @@ export const createPricingRule = async (
     rulesToCreate.map((rule) =>
       prisma.pricingRule.create({
         data: rule,
-      })
-    )
+      }),
+    ),
   );
 
   // Update complex cache after creating pricing rules
@@ -119,7 +119,7 @@ export const createPricingRule = async (
 export const getOwnerPricingRulesByDay = async (
   ownerId: string,
   subFieldId: string,
-  dayOfWeek: number
+  dayOfWeek: number,
 ) => {
   const pricingRules = await prisma.pricingRule.findMany({
     where: {
@@ -147,7 +147,7 @@ export const getOwnerPricingRulesByDay = async (
 export const updatePricingRule = async (
   ownerId: string,
   pricingRuleId: string,
-  data: UpdatePricingRuleInput
+  data: UpdatePricingRuleInput,
 ) => {
   // lấy rule hiện tại
   const existingRule = await prisma.pricingRule.findUnique({
@@ -213,7 +213,7 @@ export const updatePricingRule = async (
         "Thứ 7",
       ];
       throw new BadRequestError(
-        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`
+        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`,
       );
     }
   }
@@ -239,7 +239,7 @@ export const updatePricingRule = async (
 
 export const deletePricingRule = async (
   ownerId: string,
-  pricingRuleId: string
+  pricingRuleId: string,
 ) => {
   // Kiểm tra quyền sở hữu PricingRule qua SubField -> Complex -> Owner
   const pricingRule = await prisma.pricingRule.findUnique({
@@ -261,7 +261,7 @@ export const deletePricingRule = async (
 
   if (pricingRule.sub_field.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this pricing rule"
+      "You do not have permission to manage this pricing rule",
     );
   }
 
@@ -278,7 +278,7 @@ export const deletePricingRule = async (
 // Bulk delete pricing rules
 export const bulkDeletePricingRules = async (
   ownerId: string,
-  pricingRuleIds: string[]
+  pricingRuleIds: string[],
 ) => {
   if (!pricingRuleIds || pricingRuleIds.length === 0) {
     throw new BadRequestError("No pricing rule IDs provided");
@@ -307,12 +307,12 @@ export const bulkDeletePricingRules = async (
 
   // Check ownership cho tất cả rules
   const unauthorizedRules = pricingRules.filter(
-    (rule) => rule.sub_field.complex.owner_id !== ownerId
+    (rule) => rule.sub_field.complex.owner_id !== ownerId,
   );
 
   if (unauthorizedRules.length > 0) {
     throw new ForbiddenError(
-      "You do not have permission to delete some of these pricing rules"
+      "You do not have permission to delete some of these pricing rules",
     );
   }
 
@@ -328,7 +328,7 @@ export const bulkDeletePricingRules = async (
     ...new Set(pricingRules.map((rule) => rule.sub_field.complex.id)),
   ];
   await Promise.all(
-    affectedComplexIds.map((complexId) => updateComplexCache(complexId))
+    affectedComplexIds.map((complexId) => updateComplexCache(complexId)),
   );
 
   return { deletedCount: pricingRules.length };
@@ -339,7 +339,7 @@ export const copyPricingRules = async (
   ownerId: string,
   subFieldId: string,
   sourceDayOfWeek: number,
-  targetDaysOfWeek: number[]
+  targetDaysOfWeek: number[],
 ) => {
   // Validate days
   if (sourceDayOfWeek < 0 || sourceDayOfWeek > 6) {
@@ -368,7 +368,7 @@ export const copyPricingRules = async (
 
   if (subField.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this sub-field"
+      "You do not have permission to manage this sub-field",
     );
   }
 
@@ -387,7 +387,7 @@ export const copyPricingRules = async (
 
   if (sourceRules.length === 0) {
     throw new NotFoundError(
-      `No pricing rules found for source day ${sourceDayOfWeek}`
+      `No pricing rules found for source day ${sourceDayOfWeek}`,
     );
   }
 
@@ -407,15 +407,15 @@ export const copyPricingRules = async (
       start_time: rule.start_time,
       end_time: rule.end_time,
       base_price: rule.base_price,
-    }))
+    })),
   );
 
   const createdRules = await prisma.$transaction(
     newRules.map((rule) =>
       prisma.pricingRule.create({
         data: rule,
-      })
-    )
+      }),
+    ),
   );
 
   // Update complex cache after copying pricing rules

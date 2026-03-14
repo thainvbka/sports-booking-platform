@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   resetPasswordSchema,
   type resetPasswordInput,
-} from "@sports-booking-platform/validation";
+} from "@/validations";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export function ResetPasswordPage() {
     resolver: zodResolver(
       resetPasswordSchema.shape.body.extend({
         confirmPassword: resetPasswordSchema.shape.body.shape.new_password,
-      })
+      }),
     ),
   });
 
@@ -49,15 +49,14 @@ export function ResetPasswordPage() {
       setIsLoading(true);
       await authService.resetPassword(token, data.new_password);
       toast.success("Đặt lại mật khẩu thành công!");
-      
+
       // Redirect to login after 1.5 seconds
       setTimeout(() => {
         navigate("/auth/login");
       }, 1500);
     } catch (err: any) {
       toast.error(
-        err?.response?.data?.message ||
-          "Có lỗi xảy ra. Vui lòng thử lại."
+        err?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.",
       );
       console.error("Reset password failed", err);
     } finally {

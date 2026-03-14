@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   forgotPasswordSchema,
   type forgotPasswordInput,
-} from "@sports-booking-platform/validation";
+} from "@/validations";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,8 +33,7 @@ export function ForgotPasswordPage() {
       toast.success("Vui lòng kiểm tra email của bạn để đặt lại mật khẩu");
     } catch (err: any) {
       toast.error(
-        err?.response?.data?.message ||
-          "Có lỗi xảy ra. Vui lòng thử lại sau."
+        err?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại sau.",
       );
       console.error("Forgot password failed", err);
     } finally {
@@ -54,8 +53,8 @@ export function ForgotPasswordPage() {
               Kiểm tra email của bạn
             </h1>
             <p className="text-sm text-muted-foreground max-w-md">
-              Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn.
-              Vui lòng kiểm tra hộp thư đến và làm theo hướng dẫn.
+              Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email của bạn. Vui
+              lòng kiểm tra hộp thư đến và làm theo hướng dẫn.
             </p>
           </div>
           <Link to="/auth/login" className="w-full">

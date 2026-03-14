@@ -1,10 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authService } from "@/services/auth.service";
-import type {
-  loginInput,
-  registerInput,
-} from "@sports-booking-platform/validation";
+import type { loginInput, registerInput } from "@/validations";
 import { set } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -174,7 +171,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const result = await authService.forgotPassword(email);
           toast.success(
-            result.message || "Yêu cầu thành công. Vui lòng kiểm tra email."
+            result.message || "Yêu cầu thành công. Vui lòng kiểm tra email.",
           );
           set({ isLoading: false });
         } catch (error: any) {
@@ -191,12 +188,13 @@ export const useAuthStore = create<AuthState>()(
         try {
           const result = await authService.resetPassword(token, new_password);
           toast.success(
-            result.message || "Đặt lại mật khẩu thành công. Vui lòng đăng nhập."
+            result.message ||
+              "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.",
           );
           set({ isLoading: false });
         } catch (error: any) {
           toast.error(
-            error.response?.data?.message || "Đặt lại mật khẩu thất bại"
+            error.response?.data?.message || "Đặt lại mật khẩu thất bại",
           );
           set({
             error: error.response?.data?.message || "Đặt lại mật khẩu thất bại",
@@ -237,6 +235,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

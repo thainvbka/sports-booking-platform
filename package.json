@@ -4,10 +4,6 @@
   "type": "commonjs",
   "main": "index.js",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

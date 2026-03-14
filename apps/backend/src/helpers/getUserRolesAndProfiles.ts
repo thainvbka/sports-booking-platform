@@ -1,4 +1,4 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../libs/prisma";
 import { NotFoundError } from "../utils/error.response";
 import stripe from "../libs/stripe";
 

@@ -1,8 +1,5 @@
 import { api } from "@/lib/axios";
-import type {
-  loginInput,
-  registerInput,
-} from "@sports-booking-platform/validation";
+import type { loginInput, registerInput } from "../validations";
 
 export interface AuthResponse {
   message: string;
@@ -58,7 +55,7 @@ export const authService = {
   verifyEmail: async (token: string) => {
     //token gửi ở param
     const response = await api.post<AuthResponse>(
-      `/auth/verify-email/${token}`
+      `/auth/verify-email/${token}`,
     );
     return response.data;
   },
@@ -69,7 +66,7 @@ export const authService = {
 
   refreshToken: async () => {
     const response = await api.post<{ data: { accessToken: string } }>(
-      "/auth/refresh-token"
+      "/auth/refresh-token",
     );
     return response.data;
   },
@@ -79,7 +76,7 @@ export const authService = {
       "/auth/forgot-password",
       {
         email,
-      }
+      },
     );
     return response.data.data;
   },
@@ -89,7 +86,7 @@ export const authService = {
       `/auth/reset-password/${token}`,
       {
         new_password,
-      }
+      },
     );
     return response.data;
   },

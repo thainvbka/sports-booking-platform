@@ -1,8 +1,5 @@
-import { prisma } from "@sports-booking-platform/db";
-import {
-  CreateSubfieldInput,
-  UpdateSubfieldInput,
-} from "@sports-booking-platform/validation";
+import { prisma } from "../../libs/prisma";
+import { CreateSubfieldInput, UpdateSubfieldInput } from "../../validations";
 import {
   BadRequestError,
   ForbiddenError,
@@ -18,7 +15,7 @@ interface CreateSubfieldData extends CreateSubfieldInput {
 export const createSubfield = async (
   ownerId: string,
   complexId: string,
-  data: CreateSubfieldData
+  data: CreateSubfieldData,
 ) => {
   //check complex thuộc owner
   const complex = await prisma.complex.findUnique({
@@ -30,7 +27,7 @@ export const createSubfield = async (
   }
   if (complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this complex"
+      "You do not have permission to manage this complex",
     );
   }
   // Check if active subfield with same name exists (deleted ones are OK due to unique constraint including isDelete)
@@ -47,7 +44,7 @@ export const createSubfield = async (
 
   if (subfieldExists) {
     throw new BadRequestError(
-      `Subfield with name '${data.subfield_name}' already exists in this complex`
+      `Subfield with name '${data.subfield_name}' already exists in this complex`,
     );
   }
 
@@ -113,7 +110,7 @@ export const createSubfield = async (
 
 export const getOwnerSubfieldById = async (
   ownerId: string,
-  subfieldId: string
+  subfieldId: string,
 ) => {
   //check subfield thuộc owner
   const subfield = await prisma.subField.findUnique({
@@ -132,7 +129,7 @@ export const getOwnerSubfieldById = async (
   }
   if (subfield.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this subfield"
+      "You do not have permission to manage this subfield",
     );
   }
   if (subfield.complex.status !== "ACTIVE") {
@@ -156,7 +153,7 @@ export const getOwnerSubfieldById = async (
 export const updateSubfield = async (
   ownerId: string,
   subfieldId: string,
-  data: UpdateSubfieldInput
+  data: UpdateSubfieldInput,
 ) => {
   //check subfield thuộc owner
   const subfield = await prisma.subField.findUnique({
@@ -173,7 +170,7 @@ export const updateSubfield = async (
   }
   if (subfield.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this subfield"
+      "You do not have permission to manage this subfield",
     );
   }
 
@@ -192,7 +189,7 @@ export const updateSubfield = async (
 
   if (duplicateSubfield) {
     throw new BadRequestError(
-      `Subfield with name '${data.subfield_name}' already exists in this complex`
+      `Subfield with name '${data.subfield_name}' already exists in this complex`,
     );
   }
 
@@ -227,7 +224,7 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
   }
   if (subfield.complex.owner_id !== ownerId) {
     throw new ForbiddenError(
-      "You do not have permission to manage this subfield"
+      "You do not have permission to manage this subfield",
     );
   }
 
@@ -444,7 +441,7 @@ export const getPublicSubfieldById = async (subfieldId: string) => {
 
 export const getSubfieldAvailability = async (
   subfieldId: string,
-  date: string
+  date: string,
 ) => {
   // Validate subfield exists
   const subfield = await prisma.subField.findUnique({

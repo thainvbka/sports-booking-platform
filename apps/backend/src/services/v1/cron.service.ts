@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 
 export const cleanupExpiredBookings = async () => {
   try {
@@ -22,7 +22,7 @@ export const cleanupExpiredBookings = async () => {
       console.log(
         `Canceled ${
           expiredBookings.count
-        } expired bookings at ${now.toISOString()}`
+        } expired bookings at ${now.toISOString()}`,
       );
     }
   } catch (error) {
@@ -63,7 +63,7 @@ export const expiredRecurringBookings = async () => {
 
     if (expiredRecurringBookings.length > 0) {
       const expiredRecurringBookingIds = expiredRecurringBookings.map(
-        (rb) => rb.id
+        (rb) => rb.id,
       );
       await prisma.recurringBooking.updateMany({
         where: {
@@ -87,7 +87,7 @@ export const expiredRecurringBookings = async () => {
       console.log(
         `Canceled ${
           expiredRecurringBookingIds.length
-        } expired recurring bookings at ${now.toISOString()}`
+        } expired recurring bookings at ${now.toISOString()}`,
       );
     }
   } catch (error) {

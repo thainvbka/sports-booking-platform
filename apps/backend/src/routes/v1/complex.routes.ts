@@ -4,10 +4,7 @@ import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
 import { upload } from "../../middlewares/multer";
-import {
-  createComplexSchema,
-  updateComplexSchema,
-} from "@sports-booking-platform/validation";
+import { createComplexSchema, updateComplexSchema } from "../../validations";
 import {
   createComplexController,
   getOwnerComplexesController,
@@ -26,7 +23,7 @@ import {
   // getOwnerSubfieldsController,
 } from "../../controllers/v1/subfield.controller";
 
-import { createSubfieldSchema } from "@sports-booking-platform/validation";
+import { createSubfieldSchema } from "../../validations";
 
 const router = Router();
 
@@ -37,35 +34,35 @@ router.get(
   "/pending",
   authenticate,
   authorize(["ADMIN"]),
-  asyncHandler(getPendingComplexesController)
+  asyncHandler(getPendingComplexesController),
 );
 
 router.get(
   "/all",
   authenticate,
   authorize(["ADMIN"]),
-  asyncHandler(getAllComplexesAdminController)
+  asyncHandler(getAllComplexesAdminController),
 );
 
 router.post(
   "/:id/approve",
   authenticate,
   authorize(["ADMIN"]),
-  asyncHandler(approveComplexController)
+  asyncHandler(approveComplexController),
 );
 
 router.post(
   "/:id/reject",
   authenticate,
   authorize(["ADMIN"]),
-  asyncHandler(rejectComplexController)
+  asyncHandler(rejectComplexController),
 );
 
 router.post(
   "/:id/suspend",
   authenticate,
   authorize(["ADMIN"]),
-  asyncHandler(suspendComplexController)
+  asyncHandler(suspendComplexController),
 );
 
 /**
@@ -81,7 +78,7 @@ router.post(
     { name: "verification_docs", maxCount: 10 },
   ]),
   validate(createComplexSchema),
-  asyncHandler(createComplexController)
+  asyncHandler(createComplexController),
 );
 
 router.patch(
@@ -89,7 +86,7 @@ router.patch(
   authenticate,
   authorize(["OWNER"]),
   validate(updateComplexSchema),
-  asyncHandler(updateComplexController)
+  asyncHandler(updateComplexController),
 );
 
 // Subfield Routes
@@ -100,7 +97,7 @@ router.post(
   authorize(["OWNER"]),
   upload.fields([{ name: "subfield_image", maxCount: 1 }]),
   validate(createSubfieldSchema),
-  asyncHandler(createSubfieldController)
+  asyncHandler(createSubfieldController),
 );
 
 // router.get(
@@ -114,28 +111,28 @@ router.get(
   "/",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(getOwnerComplexesController)
+  asyncHandler(getOwnerComplexesController),
 );
 
 router.get(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(getOwnerComplexByIdController)
+  asyncHandler(getOwnerComplexByIdController),
 );
 
 router.delete(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(deleteComplexController)
+  asyncHandler(deleteComplexController),
 );
 
 router.post(
   "/:id/reactivate",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(reactivateComplexController)
+  asyncHandler(reactivateComplexController),
 );
 
 export default router;

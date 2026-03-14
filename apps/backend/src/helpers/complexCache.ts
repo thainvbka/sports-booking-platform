@@ -1,4 +1,4 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../libs/prisma";
 
 /**
  * Update cached statistics for a complex

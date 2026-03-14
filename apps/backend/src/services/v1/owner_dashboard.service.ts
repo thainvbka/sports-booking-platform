@@ -1,4 +1,4 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
   ForbiddenError,
@@ -97,7 +97,7 @@ export const getTotalRevenue = async (ownerId: string): Promise<number> => {
 
 //doanh thu thang nay
 export const getTotalRevenueThisMonth = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<number> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -132,7 +132,7 @@ export const getTotalRevenueThisMonth = async (
 
 //doanh thu thang truoc
 export const getTotalRevenueLastMonth = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<number> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -224,7 +224,7 @@ export const getTotalBookings = async (ownerId: string): Promise<number> => {
 };
 //booking moi trong tuan
 export const getNewBookingsThisWeek = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<number> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -242,7 +242,7 @@ export const getNewBookingsThisWeek = async (
   const startOfWeek = new Date(
     now.getFullYear(),
     now.getMonth(),
-    now.getDate() - diffToMonday
+    now.getDate() - diffToMonday,
   );
   startOfWeek.setHours(0, 0, 0, 0); // Đặt thời gian về đầu ngày
 
@@ -452,7 +452,7 @@ export const getStatsMetrics = async (ownerId: string): Promise<OverView> => {
 
 //phan bo booking theo trang thai
 export const getBookingStatusDistribution = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<BookingStatusDistribution> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -542,7 +542,7 @@ export const getBookingStatusDistribution = async (
 
 //top san duoc dat nhieu
 export const getTopSubFields = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<TopSubFieldsResponse> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -603,7 +603,7 @@ export const getTopSubFields = async (
 
 //doanh thu theo complex
 export const getRevenueByComplex = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<RevenueByComplexResponse> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -651,7 +651,7 @@ export const getRevenueByComplex = async (
 
 //phan bo theo khung gio
 export const getHourlyDistribution = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<HourlyDistributionResponse> => {
   //check owner exists
   const owner = await prisma.owner.findUnique({
@@ -707,7 +707,7 @@ export const getHourlyDistribution = async (
 
 //get stat metrics
 export const getOwnerDashboardStatsMetrics = async (
-  ownerId: string
+  ownerId: string,
 ): Promise<StatsMetrics> => {
   const [
     overview,

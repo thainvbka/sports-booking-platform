@@ -1,4 +1,4 @@
-import { prisma } from "@sports-booking-platform/db";
+import { prisma } from "../../libs/prisma";
 import { updateComplexCache } from "../helpers/complexCache";
 
 /**
@@ -32,7 +32,7 @@ async function populateAllComplexCache() {
         errorCount++;
         console.error(
           `Failed to update cache for: ${complex.complex_name}`,
-          error
+          error,
         );
       }
     }

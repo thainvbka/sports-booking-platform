@@ -1,9 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  loginSchema,
-  type loginInput,
-} from "@sports-booking-platform/validation";
+import { loginSchema, type loginInput } from "@/validations";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +36,7 @@ export function LoginPage() {
       }
     } catch (err) {
       toast.error(
-        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại."
+        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại.",
       );
       // Error is handled in store
       console.error("Login failed", err);
