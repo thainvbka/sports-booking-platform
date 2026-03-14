@@ -1,8 +1,8 @@
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
 import { publicService } from "@/services/public.service";
-import type { ComplexDetail, SubField, PaginationMeta } from "@/types";
+import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function PublicComplexDetailPage() {
@@ -74,7 +74,7 @@ export function PublicComplexDetailPage() {
         err.response?.data?.message || "Không thể tải thông tin khu phức hợp";
       setError(errorMessage);
       toast.error(
-        "Có lỗi xảy ra khi tải thông tin khu phức hợp. Vui lòng thử lại sau."
+        "Có lỗi xảy ra khi tải thông tin khu phức hợp. Vui lòng thử lại sau.",
       );
     } finally {
       setIsLoading(false);

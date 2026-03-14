@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, RotateCcw } from "lucide-react";
+import { useState } from "react";
 
 interface ReactivateComplexDialogProps {
   open: boolean;
@@ -39,7 +39,7 @@ export function ReactivateComplexDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -56,7 +56,7 @@ export function ReactivateComplexDialog({
 
         <div className="my-4">
           <div className="flex items-start gap-2 rounded-md bg-green-50 p-3">
-            <AlertCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
             <p className="text-sm text-muted-foreground">
               Bạn có chắc chắn muốn kích hoạt lại khu phức hợp{" "}
               <span className="font-semibold text-foreground">

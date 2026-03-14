@@ -1,14 +1,14 @@
-import { Users, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { BookingModal } from "@/components/shared/BookingModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  getSportTypeLabel,
   formatPrice,
   getPriceRange,
+  getSportTypeLabel,
 } from "@/services/mockData";
 import type { SubField } from "@/types";
+import { MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface SubFieldCardProps {
@@ -60,7 +60,7 @@ export function SubFieldCard({
         </div>
 
         {showComplexInfo && subField.complex_name ? (
-          <div className="flex items-start gap-1 text-xs text-muted-foreground min-h-[20px]">
+          <div className="flex items-start gap-1 text-xs text-muted-foreground min-h-5">
             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <span
               className="line-clamp-1"
@@ -72,7 +72,7 @@ export function SubFieldCard({
             </span>
           </div>
         ) : (
-          <div className="min-h-[20px]" />
+          <div className="min-h-5" />
         )}
 
         {/* Amenities (Mock) */}

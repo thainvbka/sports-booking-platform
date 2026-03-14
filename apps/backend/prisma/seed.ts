@@ -1,17 +1,17 @@
+import { faker } from "@faker-js/faker/locale/vi";
 import {
-  PrismaClient,
-  SportType,
+  AdminStatus,
   BookingStatus,
+  ComplexStatus,
+  OwnerStatus,
   PaymentProvider,
   PaymentStatus,
-  AdminStatus,
   PlayerStatus,
-  OwnerStatus,
+  PrismaClient,
   RecurrenceType,
   RecurringStatus,
-  ComplexStatus,
+  SportType,
 } from "@prisma/client";
-import { faker } from "@faker-js/faker/locale/vi";
 import * as bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();

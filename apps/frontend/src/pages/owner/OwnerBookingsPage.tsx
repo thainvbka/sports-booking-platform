@@ -1,33 +1,7 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Clock,
-  MapPin,
-  User,
-  Phone,
-  Repeat,
-  CalendarRange,
-  MoreVertical,
-} from "lucide-react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import type { DateRange } from "react-day-picker";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { BookingFilters } from "@/components/owner/BookingFilters";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -42,14 +16,39 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookingFilters } from "@/components/owner/BookingFilters";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ownerService } from "@/services/owner.service";
-import { toast } from "sonner";
 import type {
-  OwnerBookingResponse,
   BookingStatus,
+  OwnerBookingResponse,
   RecurringStatus,
 } from "@/types";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import {
+  Calendar,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  MapPin,
+  MoreVertical,
+  Phone,
+  Search,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export function OwnerBookingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -64,7 +63,7 @@ export function OwnerBookingsPage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
-    null
+    null,
   );
   const [selectedBookingType, setSelectedBookingType] = useState<
     "SINGLE" | "RECURRING"
@@ -226,7 +225,7 @@ export function OwnerBookingsPage() {
       setSelectedBookingId(null);
     } catch (error: any) {
       toast.error(
-        error.response?.data?.message || "Không thể xác nhận đặt sân"
+        error.response?.data?.message || "Không thể xác nhận đặt sân",
       );
     }
   };
@@ -337,7 +336,7 @@ export function OwnerBookingsPage() {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
           Quản lý lịch đặt sân
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -347,7 +346,7 @@ export function OwnerBookingsPage() {
 
       {/* Stats Summary */}
       <div className="grid gap-5 md:grid-cols-5">
-        <Card className="border-none shadow-md bg-gradient-to-br from-blue-50 to-white">
+        <Card className="border-none shadow-md bg-linear-to-br from-blue-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tổng số lượt đặt sân
@@ -360,7 +359,7 @@ export function OwnerBookingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-gradient-to-br from-green-50 to-white">
+        <Card className="border-none shadow-md bg-linear-to-br from-green-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Đã xác nhận
@@ -373,7 +372,7 @@ export function OwnerBookingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-gradient-to-br from-purple-50 to-white">
+        <Card className="border-none shadow-md bg-linear-to-br from-purple-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Đã thanh toán
@@ -386,7 +385,7 @@ export function OwnerBookingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-gradient-to-br from-yellow-50 to-white">
+        <Card className="border-none shadow-md bg-linear-to-br from-yellow-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Chưa thanh toán
@@ -399,7 +398,7 @@ export function OwnerBookingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-gradient-to-br from-red-50 to-white">
+        <Card className="border-none shadow-md bg-linear-to-br from-red-50 to-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Đã hủy
@@ -441,13 +440,13 @@ export function OwnerBookingsPage() {
               <Table className="table-fixed w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[60px]">STT</TableHead>
-                    <TableHead className="w-[100px]">Loại</TableHead>
+                    <TableHead className="w-15">STT</TableHead>
+                    <TableHead className="w-25">Loại</TableHead>
                     <TableHead className="w-48">Khách hàng</TableHead>
                     <TableHead className="w-48">Sân</TableHead>
-                    <TableHead className="w-[220px]">Thời gian</TableHead>
-                    <TableHead className="w-[140px]">Giá tiền</TableHead>
-                    <TableHead className="w-[140px]">Trạng thái</TableHead>
+                    <TableHead className="w-55">Thời gian</TableHead>
+                    <TableHead className="w-35">Giá tiền</TableHead>
+                    <TableHead className="w-35">Trạng thái</TableHead>
                     <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -458,12 +457,12 @@ export function OwnerBookingsPage() {
                       className={loading ? "opacity-50" : ""}
                     >
                       {/* STT */}
-                      <TableCell className="w-[60px] font-medium text-muted-foreground">
+                      <TableCell className="w-15 font-medium text-muted-foreground">
                         {(page - 1) * 8 + index + 1}
                       </TableCell>
 
                       {/* Loại */}
-                      <TableCell className="w-[100px] whitespace-nowrap">
+                      <TableCell className="w-25 whitespace-nowrap">
                         {booking.type === "RECURRING" ? (
                           <Badge
                             variant="secondary"
@@ -511,14 +510,14 @@ export function OwnerBookingsPage() {
                       </TableCell>
 
                       {/* Thời gian */}
-                      <TableCell className="w-[220px] whitespace-nowrap">
+                      <TableCell className="w-55 whitespace-nowrap">
                         {booking.type === "RECURRING" ? (
                           <div className="space-y-1">
                             <div className="flex items-center gap-1.5 text-sm">
                               <CalendarRange className="w-3.5 h-3.5 text-muted-foreground" />
                               <span className="font-medium">
                                 {getRecurrenceTypeLabel(
-                                  booking.recurrence_type
+                                  booking.recurrence_type,
                                 )}
                               </span>
                             </div>
@@ -526,13 +525,13 @@ export function OwnerBookingsPage() {
                               {format(
                                 new Date(booking.start_date),
                                 "dd/MM/yyyy",
-                                { locale: vi }
+                                { locale: vi },
                               )}{" "}
                               -{" "}
                               {format(
                                 new Date(booking.end_date),
                                 "dd/MM/yyyy",
-                                { locale: vi }
+                                { locale: vi },
                               )}
                             </div>
                             {booking.bookings &&
@@ -544,7 +543,7 @@ export function OwnerBookingsPage() {
                                     "HH:mm",
                                     {
                                       locale: vi,
-                                    }
+                                    },
                                   )}{" "}
                                   -{" "}
                                   {format(
@@ -552,7 +551,7 @@ export function OwnerBookingsPage() {
                                     "HH:mm",
                                     {
                                       locale: vi,
-                                    }
+                                    },
                                   )}{" "}
                                   • {booking.total_slots} buổi
                                 </div>
@@ -565,7 +564,7 @@ export function OwnerBookingsPage() {
                               {format(
                                 new Date(booking.start_time),
                                 "dd/MM/yyyy",
-                                { locale: vi }
+                                { locale: vi },
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -583,14 +582,14 @@ export function OwnerBookingsPage() {
                       </TableCell>
 
                       {/* Giá tiền */}
-                      <TableCell className="w-[140px] whitespace-nowrap">
+                      <TableCell className="w-35 whitespace-nowrap">
                         <div className="font-semibold text-green-700">
                           {formatPrice(booking.total_price)}
                         </div>
                       </TableCell>
 
                       {/* Trạng thái */}
-                      <TableCell className="w-[140px] whitespace-nowrap">
+                      <TableCell className="w-35 whitespace-nowrap">
                         <Badge className={getStatusColor(booking.status)}>
                           {getStatusLabel(booking.status)}
                         </Badge>
@@ -758,7 +757,7 @@ export function OwnerBookingsPage() {
                         {format(
                           new Date(selectedBooking.start_time),
                           "EEEE, dd/MM/yyyy",
-                          { locale: vi }
+                          { locale: vi },
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -808,7 +807,7 @@ export function OwnerBookingsPage() {
                     Danh sách các buổi đã đặt
                   </h4>
 
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  <div className="space-y-2 max-h-75 overflow-y-auto">
                     {selectedBooking.bookings.map((slot, idx) => (
                       <div
                         key={slot.id}
@@ -823,7 +822,7 @@ export function OwnerBookingsPage() {
                               {format(
                                 new Date(slot.start_time),
                                 "EEEE, dd/MM/yyyy",
-                                { locale: vi }
+                                { locale: vi },
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground">

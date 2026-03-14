@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
 import { authBg } from "@/assets/index";
+import { Outlet } from "react-router-dom";
 
 export function AuthLayout() {
   return (

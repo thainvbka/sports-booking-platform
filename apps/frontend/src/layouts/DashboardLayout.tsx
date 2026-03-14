@@ -1,23 +1,23 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/useAuthStore";
 import {
-  Menu,
-  LayoutDashboard,
+  ArrowLeft,
   Building2,
   Calendar,
-  Users,
   CheckCircle,
-  Settings,
+  LayoutDashboard,
   LogOut,
-  ArrowLeft,
+  Menu,
+  Settings,
   UserPlus,
+  Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 export function DashboardLayout() {
   const { user, logout } = useAuthStore();
@@ -47,23 +47,23 @@ export function DashboardLayout() {
   const menuItems = isAdmin ? adminMenuItems : ownerMenuItems;
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex flex-col h-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="p-6">
         {user?.roles.includes("PLAYER") ? (
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
               T
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
               T-Sport
             </span>
           </Link>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
               T
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
               T-Sport
             </span>
           </div>
@@ -98,13 +98,13 @@ export function DashboardLayout() {
                   "w-full justify-start mb-1 transition-all duration-200",
                   isActive
                     ? "bg-primary/10 text-primary font-medium hover:bg-primary/15"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 )}
               >
                 <Icon
                   className={cn(
                     "mr-3 h-4 w-4",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
                 {item.label}

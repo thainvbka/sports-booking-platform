@@ -1,5 +1,5 @@
-import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Navigate, useLocation } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ export function ProtectedRoute({
 
   if (allowedRoles && user) {
     const hasPermission = user.roles.some((role) =>
-      allowedRoles.includes(role)
+      allowedRoles.includes(role),
     );
     if (!hasPermission) {
       // Redirect to appropriate dashboard based on role or home

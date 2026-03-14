@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getSportTypeLabel } from "@/services/mockData";
 import type { SubfieldDetail } from "@/types";
 import { SportType } from "@/types";
-import { getSportTypeLabel } from "@/services/mockData";
+import { useEffect, useState } from "react";
 
 interface EditSubfieldDialogProps {
   open: boolean;
@@ -79,7 +79,7 @@ export function EditSubfieldDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Chỉnh sửa thông tin sân con</DialogTitle>
           <DialogDescription>

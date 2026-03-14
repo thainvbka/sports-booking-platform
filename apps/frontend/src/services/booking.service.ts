@@ -1,6 +1,6 @@
 import { api as axiosInstance } from "@/lib/axios";
-import { BookingStatus } from "@/types";
 import type { PaginationMeta } from "@/types";
+import { BookingStatus } from "@/types";
 
 // Types based on the backend schemas/responses
 export interface CreateBookingData {
@@ -112,11 +112,11 @@ export const bookingService = {
 
   createRecurringBooking: async (
     subFieldId: string,
-    data: CreateRecurringBookingData
+    data: CreateRecurringBookingData,
   ) => {
     const response = await axiosInstance.post(
       `/bookings/recurring/${subFieldId}`,
-      data
+      data,
     );
     const recurringBooking = response.data.data.recurringBooking;
     return {
@@ -132,7 +132,7 @@ export const bookingService = {
 
   reviewRecurringBooking: async (bookingId: string) => {
     const response = await axiosInstance.get(
-      `/bookings/recurring/review/${bookingId}`
+      `/bookings/recurring/review/${bookingId}`,
     );
 
     return response.data.data;
@@ -140,7 +140,7 @@ export const bookingService = {
 
   getAllBookings: async (page: number = 1, limit: number = 8) => {
     const response = await axiosInstance.get(
-      `/bookings?page=${page}&limit=${limit}`
+      `/bookings?page=${page}&limit=${limit}`,
     );
     return response.data.data as BookingListResponse;
   },
@@ -152,7 +152,7 @@ export const bookingService = {
 
   cancelRecurringBooking: async (recurringBookingId: string) => {
     const response = await axiosInstance.patch(
-      `/bookings/recurring/${recurringBookingId}`
+      `/bookings/recurring/${recurringBookingId}`,
     );
     return response.data.data;
   },

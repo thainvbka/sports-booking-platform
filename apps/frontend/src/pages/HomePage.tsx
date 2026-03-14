@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom";
-import { SearchBar } from "@/components/shared/SearchBar";
-import { ComplexCard } from "@/components/shared/ComplexCard";
-import { SubFieldCard } from "@/components/shared/SubFieldCard";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { heroBg } from "@/assets";
-import { useEffect, useState } from "react";
+import { ComplexCard } from "@/components/shared/ComplexCard";
+import { SearchBar } from "@/components/shared/SearchBar";
+import { SubFieldCard } from "@/components/shared/SubFieldCard";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { publicService } from "@/services/public.service";
 import type { Complex, SubField } from "@/types";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export function HomePage() {
@@ -48,7 +48,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-24 overflow-hidden">
+      <section className="relative bg-linear-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-24 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${heroBg})` }}

@@ -1,58 +1,47 @@
-import { useOwnerStore } from "@/store/useOwnerStore";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useEffect, useState, useMemo } from "react";
-import {
-  Building2,
-  Calendar,
-  DollarSign,
-  Users,
-  TrendingUp,
-  Clock,
-  ArrowUpRight,
-  Plus,
-  MoreHorizontal,
-  Wallet,
-  CheckCircle,
-  AlertCircle,
-  TrendingDown,
-} from "lucide-react";
-import {
-  Label,
-  Pie,
-  PieChart,
-  Bar,
-  BarChart,
-  Line,
-  LineChart,
-  Area,
-  AreaChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import { ownerService } from "@/services/owner.service";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useOwnerStore } from "@/store/useOwnerStore";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { ownerService } from "@/services/owner.service";
+import {
+  Building2,
+  Calendar,
+  CheckCircle,
+  DollarSign,
+  Plus,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { toast } from "sonner";
 
 export function OwnerDashboardPage() {
@@ -74,7 +63,7 @@ export function OwnerDashboardPage() {
       })
       .catch((error) => {
         toast.error(
-          "Đã có lỗi xảy ra khi kiểm tra trạng thái kết nối Stripe. Vui lòng thử lại sau."
+          "Đã có lỗi xảy ra khi kiểm tra trạng thái kết nối Stripe. Vui lòng thử lại sau.",
         );
         console.error("Lỗi khi lấy trạng thái Stripe:", error);
       });
@@ -178,7 +167,7 @@ export function OwnerDashboardPage() {
       window.location.href = data.url; // Redirect sang Stripe
     } catch (error) {
       toast.error(
-        "Đã có lỗi xảy ra khi kết nối với Stripe. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi kết nối với Stripe. Vui lòng thử lại sau.",
       );
       console.error("Lỗi kết nối Stripe:", error);
     }
@@ -350,7 +339,7 @@ export function OwnerDashboardPage() {
                   "Chờ xử lý": { label: "Chờ xử lý", color: "#f59e0b" },
                   "Đã hủy": { label: "Đã hủy", color: "#ef4444" },
                 }}
-                className="h-[300px]"
+                className="h-75"
               >
                 <PieChart>
                   <defs>
@@ -437,7 +426,7 @@ export function OwnerDashboardPage() {
                 </PieChart>
               </ChartContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-75 flex items-center justify-center text-muted-foreground">
                 Chưa có dữ liệu
               </div>
             )}
@@ -457,7 +446,7 @@ export function OwnerDashboardPage() {
                 config={{
                   bookings: { label: "Lượt đặt", color: "#8b5cf6" },
                 }}
-                className="h-[300px]"
+                className="h-75"
               >
                 <BarChart data={topSubFieldsData}>
                   <defs>
@@ -508,7 +497,7 @@ export function OwnerDashboardPage() {
                 </BarChart>
               </ChartContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-75 flex items-center justify-center text-muted-foreground">
                 Chưa có dữ liệu
               </div>
             )}
@@ -534,7 +523,7 @@ export function OwnerDashboardPage() {
                 config={{
                   revenue: { label: "Doanh thu", color: "#f97316" },
                 }}
-                className="h-[300px]"
+                className="h-75"
               >
                 <BarChart data={revenueByComplexData} layout="vertical">
                   <defs>
@@ -589,7 +578,7 @@ export function OwnerDashboardPage() {
                 </BarChart>
               </ChartContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-75 flex items-center justify-center text-muted-foreground">
                 Chưa có dữ liệu
               </div>
             )}
@@ -611,7 +600,7 @@ export function OwnerDashboardPage() {
                 config={{
                   bookings: { label: "Lượt đặt", color: "#06b6d4" },
                 }}
-                className="h-[300px]"
+                className="h-75"
               >
                 <AreaChart data={hourlyDistributionData}>
                   <defs>
@@ -669,7 +658,7 @@ export function OwnerDashboardPage() {
                 </AreaChart>
               </ChartContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <div className="h-75 flex items-center justify-center text-muted-foreground">
                 Chưa có dữ liệu
               </div>
             )}

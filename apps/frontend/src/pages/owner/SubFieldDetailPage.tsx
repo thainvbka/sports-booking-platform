@@ -1,26 +1,12 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useOwnerStore } from "@/store/useOwnerStore";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DeletePricingRuleDialog } from "@/components/owner/DeletePricingRuleDialog";
+import { DeleteSubfieldDialog } from "@/components/owner/DeleteSubfieldDialog";
+import { EditSubfieldDialog } from "@/components/owner/EditSubfieldDialog";
+import { PricingRuleFormDialog } from "@/components/owner/PricingRuleFormDialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Users,
-  Calendar as CalendarIcon,
-  Clock,
-  Edit,
-  Trash2,
-  Plus,
-  Copy,
-} from "lucide-react";
-import { getSportTypeLabel, formatPrice } from "@/services/mockData";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,16 +14,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { formatPrice, getSportTypeLabel } from "@/services/mockData";
+import { useOwnerStore } from "@/store/useOwnerStore";
+import type { PricingRule } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { EditSubfieldDialog } from "@/components/owner/EditSubfieldDialog";
-import { DeleteSubfieldDialog } from "@/components/owner/DeleteSubfieldDialog";
-import { PricingRuleFormDialog } from "@/components/owner/PricingRuleFormDialog";
-import { DeletePricingRuleDialog } from "@/components/owner/DeletePricingRuleDialog";
+import {
+  ArrowLeft,
+  Calendar as CalendarIcon,
+  Clock,
+  Copy,
+  Edit,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import type { PricingRule } from "@/types";
 
 interface PricingRuleFormData {
   days: number[];
@@ -120,7 +120,7 @@ export function SubFieldDetailPage() {
   const [isPricingFormOpen, setIsPricingFormOpen] = useState(false);
   const [isPricingDeleteOpen, setIsPricingDeleteOpen] = useState(false);
   const [pricingFormMode, setPricingFormMode] = useState<"create" | "edit">(
-    "create"
+    "create",
   );
   const [editingRule, setEditingRule] = useState<PricingRule | null>(null);
   const [deletingRule, setDeletingRule] = useState<PricingRule | null>(null);
@@ -155,10 +155,10 @@ export function SubFieldDetailPage() {
       console.log("Cập nhật thành công: Thông tin sân con đã được cập nhật.");
     } catch {
       toast.error(
-        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con."
+        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con.",
       );
       console.error(
-        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con."
+        "Cập nhật thất bại: Có lỗi xảy ra khi cập nhật thông tin sân con.",
       );
     }
   };
@@ -220,7 +220,7 @@ export function SubFieldDetailPage() {
       setDeletingRule(null);
       // Remove deleted rule from selection to hide the banner
       setSelectedRuleIds(
-        selectedRuleIds.filter((ruleId) => ruleId !== deletingRule.id)
+        selectedRuleIds.filter((ruleId) => ruleId !== deletingRule.id),
       );
     } catch (error: unknown) {
       const message =
@@ -380,7 +380,7 @@ export function SubFieldDetailPage() {
                     variant={"outline"}
                     className={cn(
                       "w-60 justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
+                      !date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -618,7 +618,7 @@ export function SubFieldDetailPage() {
               open={isPricingDeleteOpen}
               onOpenChange={setIsPricingDeleteOpen}
               timeRange={`${formatTime(deletingRule.start_time)} - ${formatTime(
-                deletingRule.end_time
+                deletingRule.end_time,
               )}`}
               onConfirm={handleDeletePricingRule}
             />

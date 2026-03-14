@@ -1,14 +1,14 @@
-import { create } from "zustand";
+import { ownerService } from "@/services/owner.service";
 import type {
   ComplexDetail,
   ComplexListItem,
+  PaginationMeta,
+  PricingRule,
+  StatsMetrics,
   SubField,
   SubfieldDetail,
-  PricingRule,
-  PaginationMeta,
-  StatsMetrics,
 } from "@/types";
-import { ownerService } from "@/services/owner.service";
+import { create } from "zustand";
 
 interface OwnerState {
   complexes: ComplexListItem[];
@@ -52,7 +52,7 @@ interface OwnerState {
   createComplex: (formData: FormData) => Promise<void>;
   updateComplex: (
     complexId: string,
-    data: { complex_name?: string; complex_address?: string }
+    data: { complex_name?: string; complex_address?: string },
   ) => Promise<void>;
   deleteComplex: (complexId: string) => Promise<void>;
   reactivateComplex: (complexId: string) => Promise<void>;
@@ -66,7 +66,7 @@ interface OwnerState {
         end_time: string;
         base_price: number;
       }[];
-    }
+    },
   ) => Promise<void>;
   updatePricingRule: (
     ruleId: string,
@@ -77,22 +77,22 @@ interface OwnerState {
       start_time?: string;
       end_time?: string;
       base_price?: number;
-    }
+    },
   ) => Promise<void>;
   deletePricingRule: (
     ruleId: string,
     subFieldId: string,
-    dayOfWeek: number
+    dayOfWeek: number,
   ) => Promise<void>;
   bulkDeletePricingRules: (
     ruleIds: string[],
     subFieldId: string,
-    dayOfWeek: number
+    dayOfWeek: number,
   ) => Promise<void>;
   copyPricingRules: (
     subFieldId: string,
     sourceDay: number,
-    targetDays: number[]
+    targetDays: number[],
   ) => Promise<void>;
 
   //action subfields
@@ -100,7 +100,7 @@ interface OwnerState {
   createSubfield: (complexId: string, formData: FormData) => Promise<void>;
   updateSubfield: (
     subfieldId: string,
-    data: { subfield_name: string; sport_type: string; capacity: number }
+    data: { subfield_name: string; sport_type: string; capacity: number },
   ) => Promise<void>;
   deleteSubfield: (subfieldId: string) => Promise<void>;
   fetchSubfieldById: (id: string) => Promise<void>;
@@ -279,7 +279,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         end_time: string;
         base_price: number;
       }[];
-    }
+    },
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -309,7 +309,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
       start_time?: string;
       end_time?: string;
       base_price?: number;
-    }
+    },
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -333,7 +333,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   deletePricingRule: async (
     ruleId: string,
     subFieldId: string,
-    dayOfWeek: number
+    dayOfWeek: number,
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -354,7 +354,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   bulkDeletePricingRules: async (
     ruleIds: string[],
     subFieldId: string,
-    dayOfWeek: number
+    dayOfWeek: number,
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -375,7 +375,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   copyPricingRules: async (
     subFieldId: string,
     sourceDay: number,
-    targetDays: number[]
+    targetDays: number[],
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -415,7 +415,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   },
   updateSubfield: async (
     subfieldId: string,
-    data: { subfield_name: string; sport_type: string; capacity: number }
+    data: { subfield_name: string; sport_type: string; capacity: number },
   ) => {
     set({ isLoading: true, error: null });
     try {
@@ -458,7 +458,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
   },
   updateComplex: async (
     complexId: string,
-    data: { complex_name?: string; complex_address?: string }
+    data: { complex_name?: string; complex_address?: string },
   ) => {
     set({ isLoading: true, error: null });
     try {

@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SportType } from "@/types";
-import { getSportTypeLabel } from "@/services/mockData";
-import { Search, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
+import { getSportTypeLabel } from "@/services/mockData";
+import { SportType } from "@/types";
+import { MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function SearchBar() {
   const navigate = useNavigate();
@@ -18,15 +18,15 @@ export function SearchBar() {
 
   const [location, setLocation] = useState(searchParams.get("location") || "");
   const [sportType, setSportType] = useState<SportType | "">(
-    (searchParams.get("sport_type") as SportType) || ""
+    (searchParams.get("sport_type") as SportType) || "",
   );
   const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
   const [minCapacity, setMinCapacity] = useState(
-    searchParams.get("minCapacity") || ""
+    searchParams.get("minCapacity") || "",
   );
   const [maxCapacity, setMaxCapacity] = useState(
-    searchParams.get("maxCapacity") || ""
+    searchParams.get("maxCapacity") || "",
   );
 
   const hasAdvancedFilters = minPrice || maxPrice || minCapacity || maxCapacity;

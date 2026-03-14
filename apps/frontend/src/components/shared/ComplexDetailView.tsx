@@ -1,16 +1,16 @@
-import { Link, useSearchParams } from "react-router-dom";
-import React, { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { SubFieldCard } from "@/components/shared/SubFieldCard";
-import type { ComplexDetail, SubField, PaginationMeta } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import {
   ArrowLeft,
-  MapPin,
-  Search,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  Search,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import React, { useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface ComplexDetailViewProps {
   mode: "owner" | "public";
@@ -127,7 +127,7 @@ export function ComplexDetailView({
 
       {/* Hero Image Section */}
       {complex.complex_image && (
-        <div className="relative h-[350px] md:h-[450px] lg:h-[550px] -mx-4 md:-mx-8 lg:mx-0 rounded-none lg:rounded-2xl overflow-hidden shadow-xl">
+        <div className="relative h-87.5 md:h-112.5 lg:h-137.5 -mx-4 md:-mx-8 lg:mx-0 rounded-none lg:rounded-2xl overflow-hidden shadow-xl">
           <img
             src={complex.complex_image}
             alt={complex.complex_name}
@@ -269,8 +269,8 @@ export function ComplexDetailView({
               {mode === "owner"
                 ? "Khu phức hợp này chưa có sân con nào. Hãy thêm sân con để bắt đầu nhận lịch đặt."
                 : searchTerm
-                ? "Không tìm thấy sân nào phù hợp. Thử tìm kiếm với từ khóa khác."
-                : "Khu phức hợp này hiện chưa có sân nào để đặt."}
+                  ? "Không tìm thấy sân nào phù hợp. Thử tìm kiếm với từ khóa khác."
+                  : "Khu phức hợp này hiện chưa có sân nào để đặt."}
             </p>
             {emptyStateButton}
           </div>

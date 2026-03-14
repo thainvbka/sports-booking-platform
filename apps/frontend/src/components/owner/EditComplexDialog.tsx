@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ComplexDetail } from "@/types";
+import { useEffect, useState } from "react";
 
 interface EditComplexDialogProps {
   open: boolean;
@@ -59,7 +59,7 @@ export function EditComplexDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Chỉnh sửa thông tin khu phức hợp</DialogTitle>
           <DialogDescription>

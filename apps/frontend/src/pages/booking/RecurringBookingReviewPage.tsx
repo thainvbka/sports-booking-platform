@@ -1,31 +1,31 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   bookingService,
   type RecurringBookingReviewResponse,
 } from "@/services/booking.service";
 import { formatPrice } from "@/services/mockData";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import {
+  ArrowLeft,
   Calendar,
   Clock,
   MapPin,
-  Trophy,
   Repeat,
-  ArrowLeft,
+  Trophy,
 } from "lucide-react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function RecurringBookingReviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [booking, setBooking] = useState<RecurringBookingReviewResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
 
@@ -64,16 +64,6 @@ export default function RecurringBookingReviewPage() {
   }
 
   if (!booking) return null;
-
-  // Use info from the first slot for time display if available, or parsed from stored date
-  const firstSlot = booking.slots[0];
-  const firstDt = firstSlot?.startTime || (firstSlot as any)?.date;
-  const startTimeStr =
-    firstDt && !isNaN(new Date(firstDt).getTime())
-      ? format(new Date(firstDt), "HH:mm")
-      : "";
-  // Calculating end time is tricky without explicit end time in slot,
-  // but we can infer or just show "Theo lịch"
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -184,7 +174,7 @@ export default function RecurringBookingReviewPage() {
             <h4 className="font-semibold mb-4 flex items-center gap-2">
               <Clock className="w-4 h-4" /> Danh sách các buổi
             </h4>
-            <ScrollArea className="h-[400px] w-full pr-4">
+            <ScrollArea className="h-100 w-full pr-4">
               {booking.slots.map((slot, index) => {
                 const start = slot.startTime || (slot as any).date;
                 const end = slot.endTime;

@@ -1,6 +1,6 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Footer } from "@/components/shared/Footer";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,21 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuthStore } from "@/store/useAuthStore";
 import {
+  Building2,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
   Menu,
   User,
-  LogOut,
-  LayoutDashboard,
-  ChevronDown,
-  Building2,
 } from "lucide-react";
-import { Footer } from "@/components/shared/Footer";
+import { Link, Outlet, useLocation } from "react-router-dom";
 // import { NotificationPopover } from "@/components/ui/NotificationPopover";
+import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 
 export function MainLayout() {
   const { user, logout } = useAuthStore();
@@ -50,7 +50,7 @@ export function MainLayout() {
               location.pathname === item.href
                 ? "text-primary"
                 : "text-muted-foreground",
-              mobile && "text-base py-2"
+              mobile && "text-base py-2",
             )}
           >
             {item.label}
@@ -62,7 +62,7 @@ export function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans antialiased">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Left side: Logo and Nav items */}
           <div className="flex items-center gap-6">
@@ -73,11 +73,11 @@ export function MainLayout() {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="left" className="w-75 sm:w-100">
                 <div className="flex flex-col gap-6 mt-8">
                   <Link
                     to="/"
-                    className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+                    className="text-2xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
                   >
                     T-Sport
                   </Link>
@@ -89,7 +89,7 @@ export function MainLayout() {
             </Sheet>
 
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
                 T
               </div>
               <span className="text-xl font-bold hidden sm:inline-block">
@@ -188,7 +188,7 @@ export function MainLayout() {
                 <Button
                   size="sm"
                   asChild
-                  className="bg-gradient-to-r from-blue-600 to-blue-800 hover:opacity-90 border-0"
+                  className="bg-linear-to-r from-blue-600 to-blue-800 hover:opacity-90 border-0"
                 >
                   <Link to="/auth/register">Đăng ký</Link>
                 </Button>

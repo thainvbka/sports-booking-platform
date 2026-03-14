@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();

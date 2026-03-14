@@ -1,19 +1,20 @@
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { getRefreshExpiryDate, getUserRolesAndProfiles } from "../../helpers";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  JwtPayload,
+} from "../../libs/jwt";
+import { sendActivationEmail, sendResetPasswordEmail } from "../../libs/mailer";
 import { prisma, Prisma } from "../../libs/prisma";
 import {
-  ConflictRequestError,
-  UnauthorizedError,
-  InternalServerError,
   BadRequestError,
+  ConflictRequestError,
+  InternalServerError,
+  UnauthorizedError,
 } from "../../utils/error.response";
-import { JwtPayload } from "../../libs/jwt";
-import bcrypt from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../../libs/jwt";
-import { getAccessExpiryDate, getRefreshExpiryDate } from "../../helpers";
-import { registerInput } from "../../validations";
-import { addRoleInput } from "../../validations";
-import { getUserRolesAndProfiles } from "../../helpers";
-import { sendActivationEmail, sendResetPasswordEmail } from "../../libs/mailer";
-import crypto from "crypto";
+import { addRoleInput, registerInput } from "../../validations";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 

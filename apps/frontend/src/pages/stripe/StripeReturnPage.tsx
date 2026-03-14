@@ -1,15 +1,15 @@
 // src/pages/owner/stripe/StripeReturnPage.tsx
+import { Button } from "@/components/ui/button";
+import { ownerService } from "@/services/owner.service";
+import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ownerService } from "@/services/owner.service";
-import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function StripeReturnPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<"loading" | "success" | "incomplete">(
-    "loading"
+    "loading",
   );
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function StripeReturnPage() {
       window.location.href = data.url;
     } catch (error) {
       toast.error(
-        "Đã có lỗi xảy ra khi tạo liên kết Stripe. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi tạo liên kết Stripe. Vui lòng thử lại sau.",
       );
       setStatus("incomplete");
     }

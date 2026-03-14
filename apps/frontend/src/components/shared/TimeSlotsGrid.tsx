@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
+import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface BookingSlot {
   start: string;
@@ -38,9 +37,8 @@ export function TimeSlotsGrid({
         const fmtDate = format(date, "yyyy-MM-dd");
         const data = await publicService.getSubfieldAvailability(
           subFieldId,
-          fmtDate
+          fmtDate,
         );
-        // @ts-ignore
         setBookings(data.data.bookings);
       } catch (error) {
         console.error("Failed to fetch availability", error);
@@ -77,7 +75,7 @@ export function TimeSlotsGrid({
   }, [pricingRules]);
 
   const getSlotStatus = (
-    slotMin: number
+    slotMin: number,
   ): "AVAILABLE" | "BOOKED" | "PENDING" | "SELECTED" => {
     const slotStartMin = slotMin;
     const slotEndMin = slotMin + 30;
@@ -182,7 +180,7 @@ export function TimeSlotsGrid({
                   status === "PENDING" &&
                     "bg-yellow-50 border-yellow-200 text-yellow-700",
                   status === "BOOKED" &&
-                    "bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-90"
+                    "bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-90",
                 )}
                 style={
                   status === "BOOKED"
@@ -200,16 +198,16 @@ export function TimeSlotsGrid({
                     "text-[10px] font-normal",
                     status === "SELECTED"
                       ? "text-primary-foreground/80"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   {status === "AVAILABLE"
                     ? "Trống"
                     : status === "SELECTED"
-                    ? "Chọn"
-                    : status === "PENDING"
-                    ? "Chờ"
-                    : "Đã đặt"}
+                      ? "Chọn"
+                      : status === "PENDING"
+                        ? "Chờ"
+                        : "Đã đặt"}
                 </span>
               </div>
             );

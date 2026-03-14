@@ -1,12 +1,11 @@
 import { Separator } from "@/components/ui/separator";
-import { Shield, Lock, FileText, Scale } from "lucide-react";
 
 export const TermsPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="space-y-6">
         <div className="text-center space-y-4 mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Terms of Use
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -18,7 +17,7 @@ export const TermsPage = () => {
         <div className="grid gap-8">
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 1. Giới thiệu
               </h2>
             </div>
@@ -34,7 +33,7 @@ export const TermsPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 2. Tài khoản người dùng
               </h2>
             </div>
@@ -59,7 +58,7 @@ export const TermsPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 3. Quy định đặt sân
               </h2>
             </div>
@@ -76,7 +75,7 @@ export const TermsPage = () => {
           <Separator />
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               4. Thanh toán và Hoàn tiền
             </h2>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
@@ -98,7 +97,7 @@ export const TermsPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 5. Giới hạn trách nhiệm
               </h2>
             </div>
@@ -113,7 +112,7 @@ export const TermsPage = () => {
           <Separator />
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               6. Thay đổi điều khoản
             </h2>
             <p className="text-muted-foreground leading-relaxed">

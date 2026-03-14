@@ -1,17 +1,16 @@
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useOwnerStore } from "@/store/useOwnerStore";
-import { Button } from "@/components/ui/button";
-import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
-import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { DeleteComplexDialog } from "@/components/owner/DeleteComplexDialog";
+import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";
 import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
-import { ComplexStatus } from "@/types";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useOwnerStore } from "@/store/useOwnerStore";
 import type { ComplexDetail } from "@/types";
+import { ComplexStatus } from "@/types";
+import { AlertCircle, Edit, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function ComplexDetailPage() {
@@ -78,12 +77,12 @@ export function ComplexDetailPage() {
     try {
       await updateComplex(id, data);
       toast.success(
-        "Cập nhật thành công: Thông tin khu phức hợp đã được cập nhật."
+        "Cập nhật thành công: Thông tin khu phức hợp đã được cập nhật.",
       );
       console.log("Cập nhật thành công");
     } catch {
       toast.error(
-        "Đã có lỗi xảy ra khi cập nhật thông tin khu phức hợp. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi cập nhật thông tin khu phức hợp. Vui lòng thử lại sau.",
       );
       console.error("Cập nhật thất bại");
     }
@@ -98,7 +97,7 @@ export function ComplexDetailPage() {
       navigate("/owner/complexes", { replace: true });
     } catch {
       toast.error(
-        "Đã có lỗi xảy ra khi ngừng hoạt động khu phức hợp. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi ngừng hoạt động khu phức hợp. Vui lòng thử lại sau.",
       );
       console.error("Xóa thất bại");
     }
@@ -112,7 +111,7 @@ export function ComplexDetailPage() {
       console.log("Kích hoạt thành công");
     } catch {
       toast.error(
-        "Đã có lỗi xảy ra khi kích hoạt lại khu phức hợp. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi kích hoạt lại khu phức hợp. Vui lòng thử lại sau.",
       );
       console.error("Kích hoạt thất bại");
     }

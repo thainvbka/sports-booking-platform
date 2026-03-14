@@ -6,15 +6,13 @@ import {
 
 import { addRoleInput } from "../../validations";
 
-import { roleCreationStrategy } from "./auth.service";
+import { getRefreshExpiryDate, getUserRolesAndProfiles } from "../../helpers";
 import {
   generateAccessToken,
   generateRefreshToken,
   JwtPayload,
 } from "../../libs/jwt";
-import { getUserRolesAndProfiles } from "../../helpers";
-import { getRefreshExpiryDate } from "../../helpers";
-
+import { roleCreationStrategy } from "./auth.service";
 export const addRoleToAccount = async (
   accountId: string,
   roleData: addRoleInput,

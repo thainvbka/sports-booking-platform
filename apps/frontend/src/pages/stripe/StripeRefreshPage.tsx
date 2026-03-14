@@ -1,8 +1,7 @@
 // src/pages/owner/stripe/StripeRefreshPage.tsx
-import { useEffect } from "react";
 import { ownerService } from "@/services/owner.service";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect } from "react";
 
 export function StripeRefreshPage() {
   useEffect(() => {

@@ -1,15 +1,15 @@
-import { useOwnerStore } from "@/store/useOwnerStore";
-import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
+import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useOwnerStore } from "@/store/useOwnerStore";
 import {
   AlertCircle,
-  Search,
-  Filter,
-  ChevronRight,
   ChevronLeft,
+  ChevronRight,
+  Filter,
+  Search,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -61,7 +61,7 @@ export function ComplexesPage() {
     <div className="space-y-8 pb-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             Khu Phức Hợp
           </h1>
           <p className="text-muted-foreground mt-1">

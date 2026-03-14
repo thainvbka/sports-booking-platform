@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { accountService } from "@/services/account.service";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
 import { Building2, User } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface AddRoleDialogProps {
   open: boolean;
@@ -57,7 +57,7 @@ export function AddRoleDialog({
       toast.success(
         roleToAdd === "OWNER"
           ? "Đã thêm vai trò Chủ khu phức hợp thành công!"
-          : "Đã thêm vai trò Người chơi thành công!"
+          : "Đã thêm vai trò Người chơi thành công!",
       );
 
       onOpenChange(false);
@@ -72,7 +72,7 @@ export function AddRoleDialog({
     } catch (error: any) {
       toast.error(
         error.response?.data?.message ||
-          "Không thể thêm vai trò. Vui lòng thử lại."
+          "Không thể thêm vai trò. Vui lòng thử lại.",
       );
     } finally {
       setIsLoading(false);
@@ -81,7 +81,7 @@ export function AddRoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {roleToAdd === "OWNER" ? (

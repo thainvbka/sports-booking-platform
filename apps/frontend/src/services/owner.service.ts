@@ -1,14 +1,14 @@
 import { api } from "@/lib/axios";
 import type {
-  ComplexListItem,
-  ComplexDetail,
   ApiResponse,
+  ComplexDetail,
+  ComplexListItem,
+  OwnerBookingResponse,
+  PaginationMeta,
+  PricingRule,
+  StatsMetrics,
   // SubField,
   SubfieldDetail,
-  PricingRule,
-  PaginationMeta,
-  StatsMetrics,
-  OwnerBookingResponse,
 } from "@/types";
 
 //payload and response types
@@ -43,18 +43,18 @@ export const ownerService = {
   }) => {
     const response = await api.get<ApiResponse<GetOwnerComplexesResponse>>(
       "/complexes",
-      { params }
+      { params },
     );
     //response : { data : { message, status, reason, data: { complexes, pagination } } }
     return response.data;
   },
   getComplexById: async (
     id: string,
-    params?: { page?: number; limit?: number; search?: string }
+    params?: { page?: number; limit?: number; search?: string },
   ) => {
     const response = await api.get<ApiResponse<GetOwnerComplexByIdResponse>>(
       `/complexes/${id}`,
-      { params }
+      { params },
     );
     return response.data;
   },
@@ -66,7 +66,7 @@ export const ownerService = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   },
@@ -78,13 +78,13 @@ export const ownerService = {
   // },
   getSubfieldById: async (id: string) => {
     const response = await api.get<ApiResponse<{ subfield: SubfieldDetail }>>(
-      `/sub-fields/${id}`
+      `/sub-fields/${id}`,
     );
     return response.data;
   },
   getPricingRules: async (subFieldId: string, dayOfWeek: number) => {
     const response = await api.get<ApiResponse<PricingRule[]>>(
-      `/pricing-rules?sub_field_id=${subFieldId}&day_of_week=${dayOfWeek}`
+      `/pricing-rules?sub_field_id=${subFieldId}&day_of_week=${dayOfWeek}`,
     );
     return response.data;
   },
@@ -95,7 +95,7 @@ export const ownerService = {
   }) => {
     const response = await api.post<ApiResponse<GetOwnerPricingRulesResponse>>(
       `/pricing-rules`,
-      payload
+      payload,
     );
     return response.data;
   },
@@ -107,31 +107,31 @@ export const ownerService = {
       start_time?: string;
       end_time?: string;
       base_price?: number;
-    }
+    },
   ) => {
     const response = await api.patch<ApiResponse<{ pricingRule: PricingRule }>>(
       `/pricing-rules/${ruleId}`,
-      data
+      data,
     );
     return response.data;
   },
   deletePricingRule: async (ruleId: string) => {
     const response = await api.delete<ApiResponse<Record<string, never>>>(
-      `/pricing-rules/${ruleId}`
+      `/pricing-rules/${ruleId}`,
     );
     return response.data;
   },
   bulkDeletePricingRules: async (pricingRuleIds: string[]) => {
     const response = await api.post<ApiResponse<{ deletedCount: number }>>(
       `/pricing-rules/bulk-delete`,
-      { pricingRuleIds }
+      { pricingRuleIds },
     );
     return response.data;
   },
   copyPricingRules: async (
     subFieldId: string,
     sourceDay: number,
-    targetDays: number[]
+    targetDays: number[],
   ) => {
     const response = await api.post<
       ApiResponse<{
@@ -154,7 +154,7 @@ export const ownerService = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   },
@@ -164,17 +164,17 @@ export const ownerService = {
       subfield_name: string;
       sport_type: string;
       capacity: number;
-    }
+    },
   ) => {
     const response = await api.patch<ApiResponse<{ subfield: SubfieldDetail }>>(
       `/sub-fields/${subfieldId}`,
-      data
+      data,
     );
     return response.data;
   },
   deleteSubfield: async (subfieldId: string) => {
     const response = await api.delete<ApiResponse<Record<string, never>>>(
-      `/sub-fields/${subfieldId}`
+      `/sub-fields/${subfieldId}`,
     );
     return response.data;
   },
@@ -183,36 +183,36 @@ export const ownerService = {
     data: {
       complex_name?: string;
       complex_address?: string;
-    }
+    },
   ) => {
     const response = await api.patch<ApiResponse<{ complex: ComplexDetail }>>(
       `/complexes/${complexId}`,
-      data
+      data,
     );
     return response.data;
   },
   deleteComplex: async (complexId: string) => {
     const response = await api.delete<ApiResponse<Record<string, never>>>(
-      `/complexes/${complexId}`
+      `/complexes/${complexId}`,
     );
     return response.data;
   },
   reactivateComplex: async (complexId: string) => {
     const response = await api.post<ApiResponse<Record<string, never>>>(
-      `/complexes/${complexId}/reactivate`
+      `/complexes/${complexId}/reactivate`,
     );
     return response.data;
   },
   //stripe
   createStripeLink: async () => {
     const response = await api.post<ApiResponse<{ url: string }>>(
-      `/payments/stripe/connect-account`
+      `/payments/stripe/connect-account`,
     );
     return response.data.data;
   },
   getStripeStatus: async () => {
     const response = await api.get<ApiResponse<{ isComplete: boolean }>>(
-      `/payments/stripe/check-status`
+      `/payments/stripe/check-status`,
     );
     console.log("Stripe status response:", response.data);
     return response.data.data;
@@ -258,28 +258,28 @@ export const ownerService = {
 
   confirmBooking: async (bookingId: string) => {
     const response = await api.patch<ApiResponse<{ message: string }>>(
-      `/bookings/confirm/${bookingId}`
+      `/bookings/confirm/${bookingId}`,
     );
     return response.data;
   },
 
   confirmRecurringBooking: async (recurringBookingId: string) => {
     const response = await api.patch<ApiResponse<{ message: string }>>(
-      `/bookings/recurring/confirm/${recurringBookingId}`
+      `/bookings/recurring/confirm/${recurringBookingId}`,
     );
     return response.data;
   },
 
   cancelOwnerBooking: async (bookingId: string) => {
     const response = await api.patch<ApiResponse<{ message: string }>>(
-      `/bookings/cancel/${bookingId}`
+      `/bookings/cancel/${bookingId}`,
     );
     return response.data;
   },
 
   cancelOwnerRecurringBooking: async (recurringBookingId: string) => {
     const response = await api.patch<ApiResponse<{ message: string }>>(
-      `/bookings/recurring/cancel/${recurringBookingId}`
+      `/bookings/recurring/cancel/${recurringBookingId}`,
     );
     return response.data;
   },
@@ -299,7 +299,7 @@ export const ownerService = {
 
   getStatsMetrics: async () => {
     const response = await api.get<ApiResponse<StatsMetrics>>(
-      "/owner-dashboard/stats-metrics"
+      "/owner-dashboard/stats-metrics",
     );
     return response.data;
   },

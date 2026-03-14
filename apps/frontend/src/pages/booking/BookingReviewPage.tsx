@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   bookingService,
   type BookingReviewResponse,
 } from "@/services/booking.service";
 import { formatPrice } from "@/services/mockData";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, MapPin, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { Calendar, Clock, MapPin, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function BookingReviewPage() {

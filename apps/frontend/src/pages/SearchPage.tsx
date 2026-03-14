@@ -1,13 +1,13 @@
-import { useSearchParams } from "react-router-dom";
-import { publicService } from "@/services/public.service";
-import type { Complex, SubField, SportType } from "@/types";
 import { ComplexCard } from "@/components/shared/ComplexCard";
-import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { publicService } from "@/services/public.service";
+import type { Complex, SportType, SubField } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function SearchPage() {
@@ -85,7 +85,7 @@ export function SearchPage() {
             page: 1,
             limit: 8,
             totalPages: 0,
-          }
+          },
         );
 
         setSubFieldResults(subfieldsRes.data?.subfields || []);
@@ -95,7 +95,7 @@ export function SearchPage() {
             page: 1,
             limit: 8,
             totalPages: 0,
-          }
+          },
         );
       } catch (error) {
         toast.error("Đã có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại sau.");
@@ -195,7 +195,7 @@ export function SearchPage() {
                     }
                   >
                     <ChevronRight className="w-4 h-4" />
-                    Sau  
+                    Sau
                   </Button>
                 </div>
               )}

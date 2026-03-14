@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
-import type { Complex, SportType } from "@/types";
-import { getSportTypeLabel, formatPrice } from "@/services/mockData";
-import { MapPin } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatPrice, getSportTypeLabel } from "@/services/mockData";
+import type { Complex, SportType } from "@/types";
+import { MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ComplexCardProps {
   complex: Complex;
@@ -68,9 +68,8 @@ export function ComplexCard({ complex }: ComplexCardProps) {
             </div>
           </div>
 
-
           {sportTypes.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 min-h-[28px] max-h-[56px] overflow-hidden">
+            <div className="flex flex-wrap gap-1.5 min-h-7 max-h-14 overflow-hidden">
               {sportTypes.map((type) => (
                 <Badge
                   key={type}
@@ -82,13 +81,12 @@ export function ComplexCard({ complex }: ComplexCardProps) {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center min-h-[28px]">
+            <div className="flex items-center justify-center min-h-7">
               <span className="text-xs text-muted-foreground italic">
                 Chưa có sân
               </span>
             </div>
           )}
-
 
           <div className="pt-1 border-t mt-auto">
             <div className="flex items-center justify-between">
@@ -100,7 +98,7 @@ export function ComplexCard({ complex }: ComplexCardProps) {
                   {minPrice === maxPrice
                     ? formatPrice(minPrice!)
                     : `${formatPrice(minPrice!)}/h - ${formatPrice(
-                        maxPrice!
+                        maxPrice!,
                       )}/h`}
                 </span>
               ) : (

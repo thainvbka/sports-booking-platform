@@ -56,11 +56,11 @@ export interface ComplexBase {
   };
 }
 
-// 2. Dùng cho danh sách (Get All)
-export interface ComplexListItem extends ComplexBase {
-  // Backend trả về created_at là string (ISO), không phải Date
-  // created_at?: string;
-}
+// // 2. Dùng cho danh sách (Get All)
+// export interface ComplexListItem extends ComplexBase {
+//   // Backend trả về created_at là string (ISO), không phải Date
+//   // created_at?: string;
+// }
 
 // 3. Dùng cho chi tiết (Get Detail)
 export interface ComplexDetail extends ComplexBase {

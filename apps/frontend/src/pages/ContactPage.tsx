@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 export function ContactPage() {
   return (
@@ -130,7 +130,7 @@ export function ContactPage() {
                   <Textarea
                     id="message"
                     placeholder="Chi tiết vấn đề của bạn..."
-                    className="min-h-[150px]"
+                    className="min-h-37.5"
                   />
                 </div>
 

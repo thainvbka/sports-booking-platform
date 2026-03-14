@@ -1,17 +1,14 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  resetPasswordSchema,
-  type resetPasswordInput,
-} from "@/validations";
-import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services/auth.service";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { resetPasswordSchema, type resetPasswordInput } from "@/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -67,7 +64,7 @@ export function ResetPasswordPage() {
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col space-y-2 text-center mb-6">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Đặt lại mật khẩu
         </h1>
         <p className="text-sm text-muted-foreground">

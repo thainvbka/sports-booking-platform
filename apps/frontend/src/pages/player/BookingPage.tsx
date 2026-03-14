@@ -1,21 +1,12 @@
-import { formatPrice } from "@/services/mockData";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,34 +15,39 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Clock,
-  Repeat,
-  MapPin,
-  Eye,
-  CreditCard,
-  X,
-  MoreHorizontal,
-} from "lucide-react";
-import { BookingStatus, RecurringStatus } from "@/types";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { BookingResponse } from "@/services/booking.service";
 import { bookingService } from "@/services/booking.service";
+import { formatPrice } from "@/services/mockData";
+import { BookingStatus, RecurringStatus } from "@/types";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Eye,
+  MapPin,
+  MoreHorizontal,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import type {
-  BookingResponse,
-  RecurringBookingResponse,
-  SingleBookingResponse,
-} from "@/services/booking.service";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
 
 export function PlayerBookingsPage() {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
-    null
+    null,
   );
   const [selectedBookingType, setSelectedBookingType] = useState<
     "SINGLE" | "RECURRING"
@@ -78,7 +74,7 @@ export function PlayerBookingsPage() {
         setBookings(res.bookings || []);
         setTotalPages(res.pagination?.totalPages || 1);
       })
-      .catch((err) => {
+      .catch(() => {
         toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
         setBookings([]);
         setTotalPages(1);
@@ -200,8 +196,8 @@ export function PlayerBookingsPage() {
         prev.map((booking) =>
           booking.id === selectedBookingId && booking.type === "SINGLE"
             ? { ...booking, status: BookingStatus.CANCELED }
-            : booking
-        )
+            : booking,
+        ),
       );
     } else {
       // Với recurring booking, cập nhật cả nhóm
@@ -209,8 +205,8 @@ export function PlayerBookingsPage() {
         prev.map((booking) =>
           booking.id === selectedBookingId && booking.type === "RECURRING"
             ? { ...booking, status: BookingStatus.CANCELED }
-            : booking
-        )
+            : booking,
+        ),
       );
     }
 
@@ -261,12 +257,12 @@ export function PlayerBookingsPage() {
               <Table className="table-fixed w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[60px]">STT</TableHead>
-                    <TableHead className="w-[100px]">Loại</TableHead>
+                    <TableHead className="w-15">STT</TableHead>
+                    <TableHead className="w-25">Loại</TableHead>
                     <TableHead className="w-60">Sân</TableHead>
-                    <TableHead className="w-[220px]">Thời gian</TableHead>
-                    <TableHead className="w-[140px]">Giá tiền</TableHead>
-                    <TableHead className="w-[140px]">Trạng thái</TableHead>
+                    <TableHead className="w-55">Thời gian</TableHead>
+                    <TableHead className="w-35">Giá tiền</TableHead>
+                    <TableHead className="w-35">Trạng thái</TableHead>
                     <TableHead className="w-40"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -277,11 +273,11 @@ export function PlayerBookingsPage() {
                       className={loading ? "opacity-50" : ""}
                     >
                       {/* STT */}
-                      <TableCell className="w-[60px] font-medium text-muted-foreground">
+                      <TableCell className="w-15 font-medium text-muted-foreground">
                         {(page - 1) * 8 + index + 1}
                       </TableCell>
                       {/* Loại */}
-                      <TableCell className="w-[100px] whitespace-nowrap">
+                      <TableCell className="w-25 whitespace-nowrap">
                         {booking.type === "RECURRING" ? (
                           <div className="flex items-center gap-1 text-blue-600">
                             <span className="text-xs font-medium">
@@ -311,13 +307,13 @@ export function PlayerBookingsPage() {
                       </TableCell>
 
                       {/* Thời gian */}
-                      <TableCell className="w-[220px] whitespace-nowrap">
+                      <TableCell className="w-55 whitespace-nowrap">
                         {booking.type === "SINGLE" ? (
                           <div>
                             <div className="font-medium text-sm whitespace-nowrap">
                               {format(
                                 new Date(booking.start_time),
-                                "dd/MM/yyyy"
+                                "dd/MM/yyyy",
                               )}
                             </div>
                             <div className="text-sm text-muted-foreground whitespace-nowrap">
@@ -336,12 +332,12 @@ export function PlayerBookingsPage() {
                                 <div className="text-sm text-muted-foreground whitespace-nowrap">
                                   {format(
                                     new Date(booking.bookings[0].start_time),
-                                    "HH:mm"
+                                    "HH:mm",
                                   )}{" "}
                                   -{" "}
                                   {format(
                                     new Date(booking.bookings[0].end_time),
-                                    "HH:mm"
+                                    "HH:mm",
                                   )}
                                 </div>
                               )}
@@ -358,7 +354,7 @@ export function PlayerBookingsPage() {
                               <span className="text-xs whitespace-nowrap">
                                 {format(
                                   new Date(booking.expires_at),
-                                  "HH:mm dd/MM"
+                                  "HH:mm dd/MM",
                                 )}
                               </span>
                             </div>
@@ -366,14 +362,14 @@ export function PlayerBookingsPage() {
                       </TableCell>
 
                       {/* Giá tiền */}
-                      <TableCell className="w-[140px] whitespace-nowrap">
+                      <TableCell className="w-35 whitespace-nowrap">
                         <div className="font-bold text-green-700 whitespace-nowrap">
                           {formatPrice(booking.total_price)}
                         </div>
                       </TableCell>
 
                       {/* Trạng thái */}
-                      <TableCell className="w-[140px] whitespace-nowrap">
+                      <TableCell className="w-35 whitespace-nowrap">
                         <Badge
                           className={
                             booking.type === "SINGLE"
@@ -413,7 +409,7 @@ export function PlayerBookingsPage() {
                                         handlePayment([booking.id]);
                                       } else {
                                         handlePayment(
-                                          booking.bookings.map((b) => b.id)
+                                          booking.bookings.map((b) => b.id),
                                         );
                                       }
                                     }}
@@ -543,19 +539,19 @@ export function PlayerBookingsPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium ">
                         {getRecurrenceTypeLabel(
-                          selectedBooking.recurrence_type
+                          selectedBooking.recurrence_type,
                         )}
                       </span>
                       <span>•</span>
                       <span>
                         {format(
                           new Date(selectedBooking.start_date),
-                          "dd/MM/yyyy"
+                          "dd/MM/yyyy",
                         )}{" "}
                         -{" "}
                         {format(
                           new Date(selectedBooking.end_date),
-                          "dd/MM/yyyy"
+                          "dd/MM/yyyy",
                         )}
                       </span>
                     </div>
@@ -575,7 +571,7 @@ export function PlayerBookingsPage() {
                         {format(
                           new Date(selectedBooking.start_time),
                           "EEEE, dd/MM/yyyy",
-                          { locale: vi }
+                          { locale: vi },
                         )}
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -583,7 +579,7 @@ export function PlayerBookingsPage() {
                         <span>
                           {format(
                             new Date(selectedBooking.start_time),
-                            "HH:mm"
+                            "HH:mm",
                           )}{" "}
                           -{" "}
                           {format(new Date(selectedBooking.end_time), "HH:mm")}
@@ -630,7 +626,7 @@ export function PlayerBookingsPage() {
               )}
 
               {selectedBooking.type === "RECURRING" && (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                <div className="space-y-2 max-h-75 overflow-y-auto">
                   {selectedBooking.bookings.map((slot, idx) => (
                     <div
                       key={slot.id}
@@ -645,7 +641,7 @@ export function PlayerBookingsPage() {
                             {format(
                               new Date(slot.start_time),
                               "EEEE, dd/MM/yyyy",
-                              { locale: vi }
+                              { locale: vi },
                             )}
                           </div>
                           <div className="text-sm text-muted-foreground">

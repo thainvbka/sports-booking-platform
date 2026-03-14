@@ -1,12 +1,11 @@
 import { Separator } from "@/components/ui/separator";
-import { Eye, Lock, Server, Bell, UserCheck } from "lucide-react";
 
 export const PrivacyPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="space-y-6">
         <div className="text-center space-y-4 mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Chính sách bảo mật
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -18,7 +17,7 @@ export const PrivacyPage = () => {
         <div className="grid gap-8">
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 1. Thu thập thông tin
               </h2>
             </div>
@@ -36,7 +35,7 @@ export const PrivacyPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 2. Sử dụng thông tin
               </h2>
             </div>
@@ -57,7 +56,7 @@ export const PrivacyPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 3. Bảo mật thông tin
               </h2>
             </div>
@@ -72,7 +71,7 @@ export const PrivacyPage = () => {
           <Separator />
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               4. Chia sẻ thông tin
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -94,7 +93,7 @@ export const PrivacyPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 5. Quyền lợi người dùng
               </h2>
             </div>
@@ -111,7 +110,7 @@ export const PrivacyPage = () => {
 
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-blue-600">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 6. Liên hệ
               </h2>
             </div>

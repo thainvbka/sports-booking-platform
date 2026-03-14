@@ -1,7 +1,3 @@
-import { useState, useEffect, useMemo } from "react";
-import { format, addMonths } from "date-fns";
-import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -13,13 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -27,14 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
-import type { SubField, PricingRule } from "@/types";
-import { formatPrice } from "@/services/mockData";
 import { bookingService } from "@/services/booking.service";
+import { formatPrice } from "@/services/mockData";
 import { publicService } from "@/services/public.service";
+import { useAuthStore } from "@/store/useAuthStore";
+import type { PricingRule, SubField } from "@/types";
+import { addMonths, format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { TimeSlotsGrid } from "./TimeSlotsGrid";
 
 interface BookingModalProps {
@@ -55,11 +55,11 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   // States
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(
-    addMonths(new Date(), 1)
+    addMonths(new Date(), 1),
   );
-  const [selectedRule, setSelectedRule] = useState<PricingRule | null>(null);
+  const [, setSelectedRule] = useState<PricingRule | null>(null);
   const [recurringType, setRecurringType] = useState<"WEEKLY" | "MONTHLY">(
-    "WEEKLY"
+    "WEEKLY",
   );
 
   // Custom time selection
@@ -125,7 +125,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         });
         toast.success(
           response.message ||
-            "Đặt sân thành công! Vui lòng kiểm tra lại thông tin."
+            "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
         );
         setCreatedBookingId(response.booking_id);
         setIsRecurringBooking(false);
@@ -146,7 +146,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
             end_date: format(endDate, "yyyy-MM-dd"),
             recurring_type: recurringType,
             type: "RECURRING",
-          }
+          },
         );
         toast.success(response.message || "Đặt sân định kỳ thành công!");
         setCreatedBookingId(response.recurring_booking_id);
@@ -181,7 +181,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
     .filter((rule) => date && rule.day_of_week === getVietnamDayOfWeek(date))
     .sort(
       (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
     );
 
   function getVietnamDayOfWeek(date: Date): number {
@@ -190,14 +190,6 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   }
 
   // Calculate price based on duration
-  const calculateSlotPrice = (rule: PricingRule) => {
-    const start = new Date(rule.start_time);
-    const end = new Date(rule.end_time);
-    const startMin = start.getUTCHours() * 60 + start.getUTCMinutes();
-    const endMin = end.getUTCHours() * 60 + end.getUTCMinutes();
-    const durationHours = (endMin - startMin) / 60;
-    return Number(rule.base_price) * durationHours;
-  };
 
   // Helper format time - moved before useMemo to avoid hoisting issue
   const formatTime = (minutes: number) => {
@@ -222,7 +214,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
 
     const dayRules = availableRules.sort(
       (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
     );
 
     if (dayRules.length === 0) {
@@ -307,7 +299,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       options.push(
         `${hours.toString().padStart(2, "0")}:${minutes
           .toString()
-          .padStart(2, "0")}`
+          .padStart(2, "0")}`,
       );
     }
 
@@ -389,12 +381,14 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           ) : (
             <div className="flex-1 overflow-y-auto p-1">
               <div className="flex gap-6 md:flex-row flex-col">
-               {/* LEFT COLUMN: Time Grid */}
-               <div className="w-full md:w-1/3 border-r pr-4 flex flex-col">
+                {/* LEFT COLUMN: Time Grid */}
+                <div className="w-full md:w-1/3 border-r pr-4 flex flex-col">
                   {date && (
                     <>
-                      <Label className="mb-2 font-semibold">Tình trạng sân ({format(date, "dd/MM")})</Label>
-                      <TimeSlotsGrid 
+                      <Label className="mb-2 font-semibold">
+                        Tình trạng sân ({format(date, "dd/MM")})
+                      </Label>
+                      <TimeSlotsGrid
                         subFieldId={subField.id}
                         date={date}
                         pricingRules={availableRules}
@@ -403,327 +397,348 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                       />
                     </>
                   )}
-                  {!date && <div className="text-center text-muted-foreground mt-10">Vui lòng chọn ngày để xem lịch</div>}
-               </div>
-
-               {/* RIGHT COLUMN: Booking Form */}
-               <div className="flex-1 flex flex-col">
-                <Tabs
-                  defaultValue="single"
-                  value={bookingType}
-                  onValueChange={setBookingType}
-                  className="w-full flex flex-col"
-                >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="single">Đặt một lần</TabsTrigger>
-                    <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
-                  </TabsList>
-
-                  <div className="py-4 space-y-4 pr-2">
-                {/* Date Selection */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Ngày bắt đầu</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date ? (
-                            format(date, "dd/MM/yyyy", { locale: vi })
-                          ) : (
-                            <span>Chọn ngày</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-auto p-0"
-                        side="top"
-                        align="start"
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={(d) => {
-                            setDate(d);
-                            setSelectedRule(null); // Reset selection on date change
-                          }}
-                          initialFocus
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {bookingType === "recurring" && (
-                    <div className="grid gap-2">
-                      <Label>Ngày kết thúc</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !endDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {endDate ? (
-                              format(endDate, "dd/MM/yyyy", { locale: vi })
-                            ) : (
-                              <span>Chọn ngày</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto p-0"
-                          side="top"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={endDate}
-                            onSelect={setEndDate}
-                            initialFocus
-                            disabled={(d) =>
-                              date ? d <= date : d < new Date()
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
+                  {!date && (
+                    <div className="text-center text-muted-foreground mt-10">
+                      Vui lòng chọn ngày để xem lịch
                     </div>
                   )}
                 </div>
 
-                {bookingType === "recurring" && (
-                  <div className="grid gap-2">
-                    <Label>Loại lặp lại</Label>
-                    <Select
-                      value={recurringType}
-                      onValueChange={(val: any) => setRecurringType(val)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn loại lặp lại" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="WEEKLY">Hàng tuần</SelectItem>
-                        <SelectItem value="MONTHLY">Hàng tháng</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                {/* RIGHT COLUMN: Booking Form */}
+                <div className="flex-1 flex flex-col">
+                  <Tabs
+                    defaultValue="single"
+                    value={bookingType}
+                    onValueChange={setBookingType}
+                    className="w-full flex flex-col"
+                  >
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="single">Đặt một lần</TabsTrigger>
+                      <TabsTrigger value="recurring">Đặt định kỳ</TabsTrigger>
+                    </TabsList>
 
-                {/* Pricing Rules Display */}
-                {availableRules.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">
-                      Bảng giá (
-                      {date ? format(date, "EEEE", { locale: vi }) : ""})
-                    </Label>
-                    <div className="grid grid-cols-2 gap-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                      {availableRules.map((rule) => (
-                        <div
-                          key={rule.id}
-                          className="flex justify-between text-xs p-2 bg-white rounded border"
-                        >
-                          <span className="font-medium text-gray-700">
-                            {formatRuleTime(rule.start_time)} -{" "}
-                            {formatRuleTime(rule.end_time)}
-                          </span>
-                          <span className="text-blue-600 font-semibold">
-                            {Number(rule.base_price).toLocaleString("vi-VN")}₫/h
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Custom Time Selection */}
-                {availableRules.length > 0 && (
-                  <div className="space-y-3 p-4 border rounded-md bg-muted/20">
-                    <Label className="text-base font-semibold">
-                      Chọn giờ cụ thể (bội của 30 phút)
-                    </Label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label className="text-sm">Giờ bắt đầu</Label>
-                        <Select
-                          value={customStartTime}
-                          onValueChange={setCustomStartTime}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn giờ" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {generateTimeOptions().map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label className="text-sm">Giờ kết thúc</Label>
-                        <Select
-                          value={customEndTime}
-                          onValueChange={setCustomEndTime}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn giờ" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {generateTimeOptions().map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    {!validateCustomTime() &&
-                      customStartTime &&
-                      customEndTime && (
-                        <p className="text-sm text-red-500">
-                          Thời lượng không hợp lệ. Vui lòng chọn thời lượng là
-                          bội của 30 phút hoặc không có khoảng trống trong khung
-                          giờ.
-                        </p>
-                      )}
-                  </div>
-                )}
-
-                {/* Recurring Note */}
-                {bookingType === "recurring" &&
-                  date &&
-                  customStartTime &&
-                  customEndTime && (
-                    <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
-                      <p>
-                        Lịch sẽ được tạo{" "}
-                        {recurringType === "WEEKLY"
-                          ? "hàng tuần"
-                          : "hàng tháng"}{" "}
-                        vào{" "}
-                        <strong>{format(date, "EEEE", { locale: vi })}</strong>,
-                        từ {format(date, "dd/MM")} đến{" "}
-                        {endDate ? format(endDate, "dd/MM") : "..."}.
-                        <br />
-                        Thời gian:{" "}
-                        <strong>
-                          {customStartTime} - {customEndTime}
-                        </strong>
-                      </p>
-                    </div>
-                  )}
-
-                {/* Price Summary */}
-                {date &&
-                  customStartTime &&
-                  customEndTime &&
-                  validateCustomTime() && (
-                    <div className="rounded-lg bg-muted p-4 text-sm mt-4">
-                      <div className="flex justify-between mb-2">
-                        <span>Thời gian:</span>
-                        <span className="font-medium">
-                          {customStartTime} - {customEndTime}
-                        </span>
-                      </div>
-
-                      {/* Price Breakdown */}
-                      {priceCalculation.breakdown &&
-                        priceCalculation.breakdown.length > 1 && (
-                          <div className="mb-2">
-                            <div className="text-xs font-semibold mb-1 text-muted-foreground">
-                              Chi tiết giá:
-                            </div>
-                            {priceCalculation.breakdown.map((segment, idx) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between text-xs mb-1 pl-2"
+                    <div className="py-4 space-y-4 pr-2">
+                      {/* Date Selection */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Ngày bắt đầu</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !date && "text-muted-foreground",
+                                )}
                               >
-                                <span className="text-muted-foreground">
-                                  {segment.rule} ({segment.duration} phút)
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {date ? (
+                                  format(date, "dd/MM/yyyy", { locale: vi })
+                                ) : (
+                                  <span>Chọn ngày</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              side="top"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={(d) => {
+                                  setDate(d);
+                                  setSelectedRule(null); // Reset selection on date change
+                                }}
+                                initialFocus
+                                disabled={(date) =>
+                                  date <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {bookingType === "recurring" && (
+                          <div className="grid gap-2">
+                            <Label>Ngày kết thúc</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !endDate && "text-muted-foreground",
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {endDate ? (
+                                    format(endDate, "dd/MM/yyyy", {
+                                      locale: vi,
+                                    })
+                                  ) : (
+                                    <span>Chọn ngày</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                side="top"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={endDate}
+                                  onSelect={setEndDate}
+                                  initialFocus
+                                  disabled={(d) =>
+                                    date ? d <= date : d < new Date()
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        )}
+                      </div>
+
+                      {bookingType === "recurring" && (
+                        <div className="grid gap-2">
+                          <Label>Loại lặp lại</Label>
+                          <Select
+                            value={recurringType}
+                            onValueChange={(val: any) => setRecurringType(val)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn loại lặp lại" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="WEEKLY">Hàng tuần</SelectItem>
+                              <SelectItem value="MONTHLY">
+                                Hàng tháng
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      {/* Pricing Rules Display */}
+                      {availableRules.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold">
+                            Bảng giá (
+                            {date ? format(date, "EEEE", { locale: vi }) : ""})
+                          </Label>
+                          <div className="grid grid-cols-2 gap-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                            {availableRules.map((rule) => (
+                              <div
+                                key={rule.id}
+                                className="flex justify-between text-xs p-2 bg-white rounded border"
+                              >
+                                <span className="font-medium text-gray-700">
+                                  {formatRuleTime(rule.start_time)} -{" "}
+                                  {formatRuleTime(rule.end_time)}
                                 </span>
-                                <span>{formatPrice(segment.price)}</span>
+                                <span className="text-blue-600 font-semibold">
+                                  {Number(rule.base_price).toLocaleString(
+                                    "vi-VN",
+                                  )}
+                                  ₫/h
+                                </span>
                               </div>
                             ))}
                           </div>
-                        )}
-
-                      <div className="flex justify-between mb-2">
-                        <span>Thời lượng:</span>
-                        <span className="font-medium">
-                          {(() => {
-                            const [startH, startM] = customStartTime
-                              .split(":")
-                              .map(Number);
-                            const [endH, endM] = customEndTime
-                              .split(":")
-                              .map(Number);
-                            const durationMin =
-                              endH * 60 + endM - (startH * 60 + startM);
-                            const hours = Math.floor(durationMin / 60);
-                            const minutes = durationMin % 60;
-                            return `${hours > 0 ? hours + " giờ" : ""} ${
-                              minutes > 0 ? minutes + " phút" : ""
-                            }`.trim();
-                          })()}
-                        </span>
-                      </div>
-                      {bookingType === "recurring" && (
-                        <div className="flex justify-between mb-2">
-                          <span>Lưu ý:</span>
-                          <span className="text-muted-foreground italic text-xs">
-                            Giá trên mỗi buổi
-                          </span>
                         </div>
                       )}
-                      <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
-                        <span className="font-bold text-lg">Tổng tiền:</span>
-                        <span className="font-bold text-lg text-primary">
-                          {formatPrice(priceCalculation.totalPrice)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-              </div>
 
-              <DialogFooter className="mt-4 pt-4 border-t">
-                <Button
-                  onClick={handleBooking}
-                  className="w-full sm:w-auto"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Đang xử lý...
-                    </>
-                  ) : (
-                    "Đặt sân"
-                  )}
-                </Button>
-              </DialogFooter>
-            </Tabs>
+                      {/* Custom Time Selection */}
+                      {availableRules.length > 0 && (
+                        <div className="space-y-3 p-4 border rounded-md bg-muted/20">
+                          <Label className="text-base font-semibold">
+                            Chọn giờ cụ thể (bội của 30 phút)
+                          </Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                              <Label className="text-sm">Giờ bắt đầu</Label>
+                              <Select
+                                value={customStartTime}
+                                onValueChange={setCustomStartTime}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Chọn giờ" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {generateTimeOptions().map((time) => (
+                                    <SelectItem key={time} value={time}>
+                                      {time}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label className="text-sm">Giờ kết thúc</Label>
+                              <Select
+                                value={customEndTime}
+                                onValueChange={setCustomEndTime}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Chọn giờ" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {generateTimeOptions().map((time) => (
+                                    <SelectItem key={time} value={time}>
+                                      {time}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          {!validateCustomTime() &&
+                            customStartTime &&
+                            customEndTime && (
+                              <p className="text-sm text-red-500">
+                                Thời lượng không hợp lệ. Vui lòng chọn thời
+                                lượng là bội của 30 phút hoặc không có khoảng
+                                trống trong khung giờ.
+                              </p>
+                            )}
+                        </div>
+                      )}
+
+                      {/* Recurring Note */}
+                      {bookingType === "recurring" &&
+                        date &&
+                        customStartTime &&
+                        customEndTime && (
+                          <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+                            <p>
+                              Lịch sẽ được tạo{" "}
+                              {recurringType === "WEEKLY"
+                                ? "hàng tuần"
+                                : "hàng tháng"}{" "}
+                              vào{" "}
+                              <strong>
+                                {format(date, "EEEE", { locale: vi })}
+                              </strong>
+                              , từ {format(date, "dd/MM")} đến{" "}
+                              {endDate ? format(endDate, "dd/MM") : "..."}.
+                              <br />
+                              Thời gian:{" "}
+                              <strong>
+                                {customStartTime} - {customEndTime}
+                              </strong>
+                            </p>
+                          </div>
+                        )}
+
+                      {/* Price Summary */}
+                      {date &&
+                        customStartTime &&
+                        customEndTime &&
+                        validateCustomTime() && (
+                          <div className="rounded-lg bg-muted p-4 text-sm mt-4">
+                            <div className="flex justify-between mb-2">
+                              <span>Thời gian:</span>
+                              <span className="font-medium">
+                                {customStartTime} - {customEndTime}
+                              </span>
+                            </div>
+
+                            {/* Price Breakdown */}
+                            {priceCalculation.breakdown &&
+                              priceCalculation.breakdown.length > 1 && (
+                                <div className="mb-2">
+                                  <div className="text-xs font-semibold mb-1 text-muted-foreground">
+                                    Chi tiết giá:
+                                  </div>
+                                  {priceCalculation.breakdown.map(
+                                    (segment, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex justify-between text-xs mb-1 pl-2"
+                                      >
+                                        <span className="text-muted-foreground">
+                                          {segment.rule} ({segment.duration}{" "}
+                                          phút)
+                                        </span>
+                                        <span>
+                                          {formatPrice(segment.price)}
+                                        </span>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
+
+                            <div className="flex justify-between mb-2">
+                              <span>Thời lượng:</span>
+                              <span className="font-medium">
+                                {(() => {
+                                  const [startH, startM] = customStartTime
+                                    .split(":")
+                                    .map(Number);
+                                  const [endH, endM] = customEndTime
+                                    .split(":")
+                                    .map(Number);
+                                  const durationMin =
+                                    endH * 60 + endM - (startH * 60 + startM);
+                                  const hours = Math.floor(durationMin / 60);
+                                  const minutes = durationMin % 60;
+                                  return `${hours > 0 ? hours + " giờ" : ""} ${
+                                    minutes > 0 ? minutes + " phút" : ""
+                                  }`.trim();
+                                })()}
+                              </span>
+                            </div>
+                            {bookingType === "recurring" && (
+                              <div className="flex justify-between mb-2">
+                                <span>Lưu ý:</span>
+                                <span className="text-muted-foreground italic text-xs">
+                                  Giá trên mỗi buổi
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                              <span className="font-bold text-lg">
+                                Tổng tiền:
+                              </span>
+                              <span className="font-bold text-lg text-primary">
+                                {formatPrice(priceCalculation.totalPrice)}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+
+                    <DialogFooter className="mt-4 pt-4 border-t">
+                      <Button
+                        onClick={handleBooking}
+                        className="w-full sm:w-auto"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Đang xử lý...
+                          </>
+                        ) : (
+                          "Đặt sân"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </Tabs>
+                </div>
+              </div>
             </div>
-           </div>
-          </div>
           )}
         </DialogContent>
       </Dialog>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Đặt sân thành công!</DialogTitle>
             <DialogDescription className="space-y-2 pt-2">

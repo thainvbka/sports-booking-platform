@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { any, z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -10,14 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Plus, Trash2 } from "lucide-react";
-import { formatPrice } from "@/services/mockData";
 import { TimeInput } from "@/components/ui/time-input";
-import { toast } from "sonner";
+import { formatPrice } from "@/services/mockData";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Clock, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 // Format time from backend (handles both string and Date)
 // Always returns 24-hour format HH:MM for form input
@@ -78,7 +77,7 @@ const pricingRuleSchema = z.object({
         .refine((data) => data.start_time < data.end_time, {
           message: "Giờ bắt đầu phải trước giờ kết thúc",
           path: ["end_time"],
-        })
+        }),
     )
     .min(1, "Phải có ít nhất 1 khung giờ"),
 });
@@ -163,7 +162,7 @@ export function PricingRuleFormDialog({
     if (current.includes(dayValue)) {
       setValue(
         "days",
-        current.filter((d) => d !== dayValue)
+        current.filter((d) => d !== dayValue),
       );
     } else {
       setValue("days", [...current, dayValue]);
@@ -176,7 +175,7 @@ export function PricingRuleFormDialog({
     if (checked) {
       setValue(
         "days",
-        DAYS_OF_WEEK.map((d) => d.value)
+        DAYS_OF_WEEK.map((d) => d.value),
       );
     } else if (currentDay !== undefined) {
       setValue("days", [currentDay]);
@@ -196,7 +195,7 @@ export function PricingRuleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-137.5">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
@@ -283,7 +282,7 @@ export function PricingRuleFormDialog({
             </div>
 
             {/* Time Slots List - Compact */}
-            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {watch("time_slots")?.map((_, index) => (
                 <div
                   key={index}
@@ -377,7 +376,7 @@ export function PricingRuleFormDialog({
                         const currentSlots = watch("time_slots");
                         setValue(
                           "time_slots",
-                          currentSlots.filter((_, i) => i !== index)
+                          currentSlots.filter((_, i) => i !== index),
                         );
                       }}
                     >
@@ -409,8 +408,8 @@ export function PricingRuleFormDialog({
               {isSubmitting
                 ? "Đang xử lý..."
                 : mode === "create"
-                ? "Tạo khung giờ"
-                : "Cập nhật"}
+                  ? "Tạo khung giờ"
+                  : "Cập nhật"}
             </Button>
           </DialogFooter>
         </form>

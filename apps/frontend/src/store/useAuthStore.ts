@@ -1,9 +1,8 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { authService } from "@/services/auth.service";
 import type { loginInput, registerInput } from "@/validations";
-import { set } from "react-hook-form";
 import { toast } from "sonner";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface User {
   id: string;

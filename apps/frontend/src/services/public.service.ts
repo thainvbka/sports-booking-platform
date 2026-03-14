@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import type { ApiResponse, PaginationMeta, Complex, SubField } from "@/types";
+import type { ApiResponse, Complex, PaginationMeta, SubField } from "@/types";
 
 // Public response - use existing types from @/types
 interface GetPublicComplexesResponse {
@@ -35,18 +35,18 @@ export const publicService = {
   }) => {
     const response = await api.get<ApiResponse<GetPublicComplexesResponse>>(
       "/public/complexes",
-      { params }
+      { params },
     );
     return response.data;
   },
 
   getComplexById: async (
     id: string,
-    params?: { page?: number; limit?: number; search?: string }
+    params?: { page?: number; limit?: number; search?: string },
   ) => {
     const response = await api.get<ApiResponse<GetPublicComplexByIdResponse>>(
       `/public/complexes/${id}`,
-      { params }
+      { params },
     );
     return response.data;
   },
@@ -63,7 +63,7 @@ export const publicService = {
   }) => {
     const response = await api.get<ApiResponse<GetPublicSubfieldsResponse>>(
       "/public/subfields",
-      { params }
+      { params },
     );
     return response.data;
   },

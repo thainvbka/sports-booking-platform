@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useOwnerStore } from "@/store/useOwnerStore";
 import { Plus, Upload, X } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface ComplexFormData {
@@ -97,7 +97,7 @@ export function ComplexFormDialog() {
       toast.success("Khu phức hợp đã được tạo và đang chờ duyệt.");
     } catch (err) {
       toast.error(
-        "Đã có lỗi xảy ra khi tạo khu phức hợp. Vui lòng thử lại sau."
+        "Đã có lỗi xảy ra khi tạo khu phức hợp. Vui lòng thử lại sau.",
       );
       setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
     }
@@ -111,7 +111,7 @@ export function ComplexFormDialog() {
           Thêm Khu Phức Hợp
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Tạo Khu Phức Hợp Mới</DialogTitle>
           <DialogDescription>

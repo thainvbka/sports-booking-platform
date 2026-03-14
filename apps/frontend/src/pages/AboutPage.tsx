@@ -1,16 +1,16 @@
+import { aboutBg, teamPlaySport } from "@/assets";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  CheckCircle2,
-  Users,
-  Trophy,
   Building2,
-  UsersRound,
   Calendar,
+  CheckCircle2,
   Star,
+  Trophy,
+  Users,
+  UsersRound,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { teamPlaySport, aboutBg } from "@/assets";
 
 export function AboutPage() {
   return (
@@ -71,7 +71,7 @@ export function AboutPage() {
               </div>
             </div>
             <div className="order-1 md:order-2 relative">
-              <div className="relative h-[450px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative h-112.5 md:h-137.5 rounded-3xl overflow-hidden shadow-2xl">
                 <img
                   src={teamPlaySport}
                   alt="Team playing sports"

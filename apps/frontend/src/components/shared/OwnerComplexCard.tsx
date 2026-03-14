@@ -1,10 +1,9 @@
-import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import type { ComplexBase } from "@/types";
 import { ComplexStatus } from "@/types";
-import { MapPin, Building2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Building2, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface OwnerComplexCardProps {
   complex: ComplexBase;

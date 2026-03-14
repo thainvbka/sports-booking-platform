@@ -1,17 +1,14 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  forgotPasswordSchema,
-  type forgotPasswordInput,
-} from "@/validations";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services/auth.service";
-import { Loader2, ArrowLeft, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { forgotPasswordSchema, type forgotPasswordInput } from "@/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +46,7 @@ export function ForgotPasswordPage() {
             <Mail className="w-8 h-8 text-primary" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Kiểm tra email của bạn
             </h1>
             <p className="text-sm text-muted-foreground max-w-md">
@@ -74,7 +71,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col space-y-2 text-center mb-6">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Quên mật khẩu?
         </h1>
         <p className="text-sm text-muted-foreground">
