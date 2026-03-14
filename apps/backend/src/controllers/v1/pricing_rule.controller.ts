@@ -12,7 +12,7 @@ import {
 
 export const createPricingRuleController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   const data = req.body;
@@ -26,7 +26,7 @@ export const createPricingRuleController = async (
 
 export const getOwnerPricingRulesByDayController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   const { sub_field_id, day_of_week } = req.query as {
@@ -37,7 +37,7 @@ export const getOwnerPricingRulesByDayController = async (
   const pricingRules = await getOwnerPricingRulesByDay(
     ownerId,
     sub_field_id,
-    Number(day_of_week)
+    Number(day_of_week),
   );
 
   return new SuccessResponse({
@@ -48,16 +48,16 @@ export const getOwnerPricingRulesByDayController = async (
 
 export const updatePricingRuleController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const pricingRuleId = req.params.id;
+  const pricingRuleId = req.params.id as string;
   const data = req.body;
 
   const updatedPricingRule = await updatePricingRule(
     ownerId,
     pricingRuleId,
-    data
+    data,
   );
 
   return new SuccessResponse({
@@ -68,10 +68,10 @@ export const updatePricingRuleController = async (
 
 export const deletePricingRuleController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const pricingRuleId = req.params.id;
+  const pricingRuleId = req.params.id as string;
 
   await deletePricingRule(ownerId, pricingRuleId);
 
@@ -83,7 +83,7 @@ export const deletePricingRuleController = async (
 
 export const bulkDeletePricingRulesController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   const { pricingRuleIds } = req.body as { pricingRuleIds: string[] };
@@ -98,7 +98,7 @@ export const bulkDeletePricingRulesController = async (
 
 export const copyPricingRulesController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   const { sub_field_id, source_day, target_days } = req.body as {
@@ -111,7 +111,7 @@ export const copyPricingRulesController = async (
     ownerId,
     sub_field_id,
     source_day,
-    target_days
+    target_days,
   );
 
   return new SuccessResponse({

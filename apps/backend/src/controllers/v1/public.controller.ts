@@ -22,7 +22,7 @@ const parseStringArray = (value: unknown): string[] | undefined => {
 //complex public controllers
 export const getPublicComplexActiveController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 8;
@@ -56,9 +56,9 @@ export const getPublicComplexActiveController = async (
 
 export const getPublicComplexByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  const complexId = req.params.id;
+  const complexId = req.params.id as string;
 
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 8;
@@ -79,7 +79,7 @@ export const getPublicComplexByIdController = async (
 //subfield public controllers
 export const getAllPublicSubfieldsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 8;
@@ -123,9 +123,9 @@ export const getAllPublicSubfieldsController = async (
 
 export const getPublicSubfieldByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  const subfieldId = req.params.id;
+  const subfieldId = req.params.id as string;
   const result = await getPublicSubfieldById(subfieldId);
   return new SuccessResponse({
     message: "Get public subfield detail successfully",
@@ -135,9 +135,9 @@ export const getPublicSubfieldByIdController = async (
 
 export const getSubfieldAvailabilityController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  const subfieldId = req.params.id;
+  const subfieldId = req.params.id as string;
   const date = req.query.date as string;
 
   if (!date) {

@@ -12,7 +12,7 @@ import {
 /* owner controllers */
 
 export const createSubfieldController = async (req: Request, res: Response) => {
-  const complexId = req.params.id;
+  const complexId = req.params.id as string;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
   console.log("=== CREATE SUBFIELD DEBUG ===");
@@ -35,7 +35,7 @@ export const createSubfieldController = async (req: Request, res: Response) => {
     {
       ...req.body,
       files,
-    }
+    },
   );
 
   return new SuccessResponse({
@@ -49,7 +49,7 @@ export const createSubfieldController = async (req: Request, res: Response) => {
 //   res: Response
 // ) => {
 //   const ownerId = req.user?.profiles.ownerId as string;
-//   const complexId = req.params.id;
+//   const complexId = req.params.id as string;
 
 //   const subfields = await getOwnerSubfields(ownerId, complexId);
 
@@ -61,10 +61,10 @@ export const createSubfieldController = async (req: Request, res: Response) => {
 
 export const getOwnerSubfieldByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const subfieldId = req.params.id;
+  const subfieldId = req.params.id as string;
 
   const subfield = await getOwnerSubfieldById(ownerId, subfieldId);
 
@@ -76,7 +76,7 @@ export const getOwnerSubfieldByIdController = async (
 
 export const updateSubfieldController = async (req: Request, res: Response) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const subfieldId = req.params.id;
+  const subfieldId = req.params.id as string;
 
   const subfield = await updateSubfield(ownerId, subfieldId, req.body);
 
@@ -88,7 +88,7 @@ export const updateSubfieldController = async (req: Request, res: Response) => {
 
 export const deleteSubfieldController = async (req: Request, res: Response) => {
   const ownerId = req.user?.profiles.ownerId as string;
-  const subfieldId = req.params.id;
+  const subfieldId = req.params.id as string;
 
   await deleteSubfield(ownerId, subfieldId);
 

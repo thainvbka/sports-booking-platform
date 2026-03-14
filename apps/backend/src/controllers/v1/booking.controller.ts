@@ -24,7 +24,7 @@ import {
 
 export const createBookingController = async (req: Request, res: Response) => {
   const data = req.body; // { base_price, start_time, end_time,}
-  const sub_field_id = req.params.id; // subfield id
+  const sub_field_id = req.params.id as string; // subfield id
   const booking = await createBooking(
     req.user?.profiles.playerId as string,
     data,
@@ -37,7 +37,7 @@ export const createBookingController = async (req: Request, res: Response) => {
 };
 
 export const reviewBookingController = async (req: Request, res: Response) => {
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const booking = await reviewBooking(
     booking_id,
     req.user?.profiles.playerId as string,
@@ -49,7 +49,7 @@ export const reviewBookingController = async (req: Request, res: Response) => {
 };
 
 export const updateBookingController = async (req: Request, res: Response) => {
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const data = req.body;
   const booking = await updateBooking(
     req.user?.profiles.playerId as string,
@@ -64,7 +64,7 @@ export const updateBookingController = async (req: Request, res: Response) => {
 
 //player  hủy booking
 export const cancelBookingController = async (req: Request, res: Response) => {
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const result = await cancelBooking(
     booking_id,
     req.user?.profiles.playerId as string,
@@ -81,7 +81,7 @@ export const createRecurringBookingController = async (
   res: Response,
 ) => {
   const data = req.body; // { start_time, end_time, start_date, end_date, recurring_type }
-  const sub_field_id = req.params.id; // subfield id
+  const sub_field_id = req.params.id as string; // subfield id
   const recurringBooking = await createRecurringBookingService(
     req.user?.profiles.playerId as string,
     data,
@@ -97,7 +97,7 @@ export const reviewRecurringBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const booking_id = req.params.id; // recurringBookingId
+  const booking_id = req.params.id as string; // recurringBookingId
   const result = await reviewRecurringBookingService(
     booking_id,
     req.user?.profiles.playerId as string,
@@ -112,7 +112,7 @@ export const cancelRecurringBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const recurring_booking_id = req.params.id;
+  const recurring_booking_id = req.params.id as string;
   const result = await cancelRecurringBookingService(
     req.user?.profiles.playerId as string,
     recurring_booking_id,
@@ -143,7 +143,7 @@ export const ownerConfirmBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await ownerConfirmBooking(booking_id, ownerId);
   return new SuccessResponse({
@@ -156,7 +156,7 @@ export const ownerConfirmRecurringBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const recurring_booking_id = req.params.id;
+  const recurring_booking_id = req.params.id as string;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await ownerConfirmRecurringBookingService(
     recurring_booking_id,
@@ -172,7 +172,7 @@ export const ownerCancelBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await ownerCancelBooking(booking_id, ownerId);
   return new SuccessResponse({
@@ -185,7 +185,7 @@ export const ownerCancelRecurringBookingController = async (
   req: Request,
   res: Response,
 ) => {
-  const recurring_booking_id = req.params.id;
+  const recurring_booking_id = req.params.id as string;
   const ownerId = req.user?.profiles.ownerId as string;
   const result = await cancelRecurringBookingService(
     ownerId,
@@ -238,7 +238,7 @@ export const ownerGetBookingByIdController = async (
   res: Response,
 ) => {
   const owner_id = req.user?.profiles.ownerId as string;
-  const booking_id = req.params.id;
+  const booking_id = req.params.id as string;
   const booking = await ownerGetBookingById(booking_id, owner_id);
   return new SuccessResponse({
     message: "Owner booking retrieved successfully",

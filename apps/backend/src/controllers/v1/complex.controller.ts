@@ -53,7 +53,7 @@ export const createComplexController = async (req: Request, res: Response) => {
 
 export const getOwnerComplexesController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
 
@@ -71,10 +71,10 @@ export const getOwnerComplexesController = async (
 
 export const getOwnerComplexByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.id;
+  const ownerId = (req as any).user?.profiles.ownerId as string;
+  const complexId = req.params.id as string;
 
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 8;
@@ -93,8 +93,8 @@ export const getOwnerComplexByIdController = async (
 };
 
 export const updateComplexController = async (req: Request, res: Response) => {
-  const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.id;
+  const ownerId = (req as any).user?.profiles.ownerId as string;
+  const complexId = req.params.id as string;
 
   const updatedComplex = await updateComplex(ownerId, complexId, req.body);
 
@@ -105,8 +105,8 @@ export const updateComplexController = async (req: Request, res: Response) => {
 };
 
 export const deleteComplexController = async (req: Request, res: Response) => {
-  const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.id;
+  const ownerId = (req as any).user?.profiles.ownerId as string;
+  const complexId = req.params.id as string;
 
   await deleteComplex(complexId, ownerId);
 
@@ -118,10 +118,10 @@ export const deleteComplexController = async (req: Request, res: Response) => {
 
 export const reactivateComplexController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  const ownerId = req.user?.profiles.ownerId as string;
-  const complexId = req.params.id;
+  const ownerId = (req as any).user?.profiles.ownerId as string;
+  const complexId = req.params.id as string;
 
   await reactivateComplex(complexId, ownerId);
 
@@ -134,7 +134,7 @@ export const reactivateComplexController = async (
 //admin controllers
 export const getPendingComplexesController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const pendingComplexes = await getPendingComplexes();
 
@@ -145,7 +145,7 @@ export const getPendingComplexesController = async (
 };
 
 export const approveComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id;
+  const complexId = req.params.id as string;
 
   const approvedComplex = await approveComplex(complexId);
 
@@ -156,7 +156,7 @@ export const approveComplexController = async (req: Request, res: Response) => {
 };
 
 export const rejectComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id;
+  const complexId = req.params.id as string;
 
   const rejectedComplex = await rejectComplex(complexId);
 
@@ -167,7 +167,7 @@ export const rejectComplexController = async (req: Request, res: Response) => {
 };
 
 export const suspendComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id;
+  const complexId = req.params.id as string;
 
   const suspendedComplex = await suspendComplex(complexId);
 
@@ -179,7 +179,7 @@ export const suspendComplexController = async (req: Request, res: Response) => {
 
 export const getAllComplexesAdminController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const complexes = await getAllComplexesAdmin();
 
