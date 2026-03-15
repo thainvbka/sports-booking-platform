@@ -42,7 +42,7 @@ export const getOwnerPricingRulesByDayController = async (
 
   return new SuccessResponse({
     message: "Owner pricing rules retrieved successfully",
-    data: pricingRules,
+    data: { pricingRules },
   }).send(res);
 };
 

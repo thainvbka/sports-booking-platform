@@ -188,6 +188,7 @@ export function PricingRuleFormDialog({
       await onSubmit(data);
       onOpenChange(false);
     } catch (error) {
+      console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
     }

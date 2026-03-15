@@ -71,7 +71,7 @@ export const cancelBookingController = async (req: Request, res: Response) => {
   );
   return new SuccessResponse({
     message: "Booking canceled successfully",
-    data: result,
+    data: { booking: result },
   }).send(res);
 };
 
@@ -104,7 +104,7 @@ export const reviewRecurringBookingController = async (
   );
   return new SuccessResponse({
     message: "Recurring booking reviewed successfully",
-    data: result,
+    data: { recurringBooking: result },
   }).send(res);
 };
 
@@ -120,7 +120,7 @@ export const cancelRecurringBookingController = async (
   );
   return new SuccessResponse({
     message: "Recurring booking canceled successfully",
-    data: result,
+    data: { recurringBooking: result },
   }).send(res);
 };
 
@@ -148,7 +148,7 @@ export const ownerConfirmBookingController = async (
   const result = await ownerConfirmBooking(booking_id, ownerId);
   return new SuccessResponse({
     message: "Booking confirmed successfully",
-    data: result,
+    data: { booking: result },
   }).send(res);
 };
 
@@ -164,7 +164,7 @@ export const ownerConfirmRecurringBookingController = async (
   );
   return new SuccessResponse({
     message: "Recurring booking confirmed successfully",
-    data: result,
+    data: { recurringBooking: result },
   }).send(res);
 };
 
@@ -177,7 +177,7 @@ export const ownerCancelBookingController = async (
   const result = await ownerCancelBooking(booking_id, ownerId);
   return new SuccessResponse({
     message: "Booking canceled successfully",
-    data: result,
+    data: { booking: result },
   }).send(res);
 };
 
@@ -194,7 +194,7 @@ export const ownerCancelRecurringBookingController = async (
   );
   return new SuccessResponse({
     message: "Recurring booking canceled successfully by owner",
-    data: result,
+    data: { recurringBooking: result },
   }).send(res);
 };
 
@@ -255,6 +255,6 @@ export const ownerGetBookingStatsController = async (
   const stats = await getOwnerBookingStats(owner_id);
   return new SuccessResponse({
     message: "Owner booking stats retrieved successfully",
-    data: stats,
+    data: { stats },
   }).send(res);
 };

@@ -359,7 +359,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         <DialogTrigger asChild>
           {trigger || <Button size="sm">Đặt sân</Button>}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col h-[600px]">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col h-150">
           <DialogHeader>
             <DialogTitle>Đặt sân {subField.sub_field_name}</DialogTitle>
             <DialogDescription>

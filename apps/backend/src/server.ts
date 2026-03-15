@@ -1,14 +1,14 @@
-import express from "express";
-import { config } from "./configs";
-import morgan from "morgan";
-import cors from "cors";
-import helmet from "helmet";
-import routesV1 from "./routes/v1";
 import compression from "compression";
-import errorHandler from "./middlewares/errorHandler";
 import cookieParser from "cookie-parser";
-import { startCronJobs } from "./services/v1/cron.service";
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import { config, reasonPhrases, statusCodes } from "./configs";
 import { handleStripeWebhookController } from "./controllers/v1/payment.controller";
+import errorHandler from "./middlewares/errorHandler";
+import routesV1 from "./routes/v1";
+import { startCronJobs } from "./services/v1/cron.service";
 
 const app = express();
 
@@ -22,14 +22,14 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.use(morgan("dev"));
 
 app.post(
   "/api/v1/payments/webhook",
   express.raw({ type: "*/*" }),
-  handleStripeWebhookController
+  handleStripeWebhookController,
 );
 
 app.use(express.json());
@@ -40,23 +40,34 @@ app.use(cookieParser());
 app.use(
   compression({
     threshold: 1024, //only compress response larger than 1kb
-  })
+  }),
 );
 
 //use helmet to enhance security by settings various HTTP headers
 app.use(helmet());
 
 // Health check endpoint for Docker and load balancers
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+app.get("/api/health", (_req, res) => {
+  return res.status(statusCodes.OK).json({
+    success: true,
+    status: statusCodes.OK,
+    reason: reasonPhrases.OK,
+    message: "Service healthy",
+    data: { status: "ok", timestamp: new Date().toISOString() },
+  });
 });
 
 app.use("/api/v1", routesV1);
 
-app.use((req, res) => {
-  return res
-    .status(404)
-    .json({ error: "NotFound", message: "Route not found" });
+app.use((_req, res) => {
+  return res.status(statusCodes.NOT_FOUND).json({
+    success: false,
+    status: statusCodes.NOT_FOUND,
+    code: statusCodes.NOT_FOUND,
+    reason: reasonPhrases.NOT_FOUND,
+    message: "Route not found",
+    data: null,
+  });
 });
 
 app.use(errorHandler);

@@ -1,5 +1,5 @@
-import { statusCodes, reasonPhrases } from "../configs";
 import { Response } from "express";
+import { reasonPhrases, statusCodes } from "../configs";
 
 type SuccessResponseOptions = {
   message?: string;
@@ -23,7 +23,7 @@ export class SuccessResponse {
     this.message = message;
     this.status = status;
     this.reason = reason;
-    if (data) {
+    if (data !== undefined) {
       this.data = data;
     }
     // Set the prototype explicitly.
@@ -32,9 +32,11 @@ export class SuccessResponse {
 
   public send(res: Response) {
     return res.status(this.status).json({
+      success: true,
+      status: this.status,
       message: this.message,
       reason: this.reason,
-      data: this.data,
+      data: this.data ?? null,
     });
   }
 }

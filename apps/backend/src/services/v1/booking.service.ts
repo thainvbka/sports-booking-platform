@@ -1,17 +1,17 @@
-import { prisma } from "../../libs/prisma";
-import { CreateBookingInput } from "../../validations";
 import { BookingStatus } from "@prisma/client";
+import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
+import { CreateBookingInput } from "../../validations";
 
 import {
-  getVietnamMinutes,
-  getVietnamDayOfWeek,
-  getRawMinutes,
   formatTimeForDisplayErrBookingService,
+  getRawMinutes,
+  getVietnamDayOfWeek,
+  getVietnamMinutes,
 } from "../../helpers/time.helper";
 
 import { BOOKING_TIMEOUT } from "../../configs";
@@ -243,15 +243,9 @@ export const createBooking = async (
 
   return {
     message: "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
-    booking_id: booking.id,
-    start_time: booking.start_time,
-    end_time: booking.end_time,
-    total_price: booking.total_price,
-    status: booking.status,
-    expires_at: booking.expires_at,
+    booking,
   };
 };
-
 //review booking before payment
 export const reviewBooking = async (booking_id: string, player_id: string) => {
   const booking = await prisma.booking.findFirst({
@@ -320,7 +314,7 @@ export const reviewBooking = async (booking_id: string, player_id: string) => {
     total_price: booking.total_price,
     complex_name: booking.sub_field.complex.complex_name,
     complex_address: booking.sub_field.complex.complex_address,
-    sprot_type: booking.sub_field.sport_type,
+    sport_type: booking.sub_field.sport_type,
     sub_field_name: booking.sub_field.sub_field_name,
     expires_at: booking.expires_at,
   };
@@ -481,14 +475,7 @@ export const updateBooking = async (
     },
   });
 
-  return {
-    booking_id: booking.id,
-    start_time: booking.start_time,
-    end_time: booking.end_time,
-    total_price: booking.total_price,
-    status: booking.status,
-    expires_at: booking.expires_at,
-  };
+  return booking;
 };
 
 //player hủy booking
@@ -511,12 +498,10 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
     );
   }
 
-  await prisma.booking.update({
+  return await prisma.booking.update({
     where: { id: booking_id },
     data: { status: "CANCELED" },
   });
-
-  return { message: "Booking canceled successfully" };
 };
 
 //owner hủy booking
@@ -553,12 +538,10 @@ export const ownerCancelBooking = async (
     );
   }
 
-  await prisma.booking.update({
+  return await prisma.booking.update({
     where: { id: booking_id },
     data: { status: "CANCELED" },
   });
-
-  return { message: "Booking canceled successfully" };
 };
 
 //owner xác nhận booking
@@ -593,12 +576,10 @@ export const ownerConfirmBooking = async (
     throw new BadRequestError("Booking not found or cannot be confirmed");
   }
 
-  await prisma.booking.update({
+  return await prisma.booking.update({
     where: { id: booking_id },
     data: { status: "CONFIRMED" },
   });
-
-  return { message: "Booking confirmed successfully" };
 };
 
 // //owner get all bookings of his complex
@@ -1101,15 +1082,11 @@ export const ownerGetAllBookings = async (
   }
 
   //ngay bat dau va ket thuc loc
-  let startDate;
-  let endDate;
 
   if (filter.start_date) {
-    startDate = new Date(filter.start_date);
   }
 
   if (filter.end_date) {
-    endDate = new Date(filter.end_date);
   }
 
   //build where condition

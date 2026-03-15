@@ -1,19 +1,23 @@
 import { Router } from "express";
-import authRouter from "./auth.routes";
+import { apiLimiter, authLimiter } from "../../libs/rate_limit";
+import { SuccessResponse } from "../../utils/success.response";
 import accountRouter from "./account.routes";
+import authRouter from "./auth.routes";
+import bookingRouter from "./booking.routes";
 import complexRouter from "./complex.routes";
-import subfieldRouter from "./subfield.routes";
+import ownerDashboardRouter from "./owner_dashboard.routes";
+import paymentRouter from "./payment.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
 import publicRouter from "./public.routes";
-import bookingRouter from "./booking.routes";
-import paymentRouter from "./payment.routes";
-import ownerDashboardRouter from "./owner_dashboard.routes";
-import { authLimiter, apiLimiter } from "../../libs/rate_limit";
+import subfieldRouter from "./subfield.routes";
 
 const router = Router();
 
 router.get("/", (_req, res) => {
-  res.json({ message: "API v1 is running" });
+  return new SuccessResponse({
+    message: "API v1 is running",
+    data: {},
+  }).send(res);
 });
 
 router.use("/public", apiLimiter, publicRouter);

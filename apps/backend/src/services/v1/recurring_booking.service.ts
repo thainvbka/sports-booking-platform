@@ -1,28 +1,21 @@
-import { prisma } from "../../libs/prisma";
+import { addDays, addMonths, isBefore, setHours, setMinutes } from "date-fns";
+import { BOOKING_TIMEOUT } from "../../configs";
 import {
-  CreateRecurringBookingInput,
-  RecurringBookingType,
-} from "../../validations";
+  formatTimeForDisplayErrBookingService,
+  getRawMinutes,
+  getVietnamDayOfWeek,
+  getVietnamMinutes,
+} from "../../helpers/time.helper";
+import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
 import {
-  getVietnamDayOfWeek,
-  getVietnamMinutes,
-  getRawMinutes,
-  formatTimeForDisplayErrBookingService,
-} from "../../helpers/time.helper";
-import {
-  addDays,
-  addMonths,
-  isBefore,
-  setHours,
-  setMinutes,
-  startOfDay,
-} from "date-fns";
-import { BOOKING_TIMEOUT } from "../../configs";
+  CreateRecurringBookingInput,
+  RecurringBookingType,
+} from "../../validations";
 
 /**
  * 
@@ -448,14 +441,10 @@ export const cancelRecurringBookingService = async (
     data: { status: "CANCELED" },
   });
   // Cập nhật trạng thái Recurring Booking
-  await prisma.recurringBooking.update({
+  return await prisma.recurringBooking.update({
     where: { id: recurring_booking_id },
     data: { status: "CANCELED" },
   });
-  return {
-    message:
-      "Recurring booking cancelled successfully. Refunds processed if applicable.",
-  };
 };
 
 export const reviewRecurringBookingService = async (
@@ -616,14 +605,10 @@ export const ownerConfirmRecurringBookingService = async (
   });
 
   //cập nhật trạng thái recurring booking
-  await prisma.recurringBooking.update({
+  return await prisma.recurringBooking.update({
     where: { id: recurring_booking_id },
     data: {
       status: "CONFIRMED",
     },
   });
-
-  return {
-    message: "Recurring booking confirmed successfully by owner",
-  };
 };

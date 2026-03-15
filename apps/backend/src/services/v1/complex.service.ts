@@ -1,16 +1,11 @@
+import { uploadComplexImages } from "../../helpers";
 import { prisma } from "../../libs/prisma";
-import { CreateComplexInput, UpdateComplexInput } from "../../validations";
 import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
-import { uploadComplexImages } from "../../helpers";
-import { updateComplexCache } from "../../helpers/complexCache";
-
-interface CreateComplexData extends CreateComplexInput {
-  files: { [fieldname: string]: Express.Multer.File[] };
-}
+import { UpdateComplexInput } from "../../validations";
 
 /**
  * OWNER SERVICES

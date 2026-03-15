@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { SuccessResponse } from "../../utils/success.response";
 import {
   getPublicComplexActive,
   getPublicComplexById,
@@ -9,6 +8,8 @@ import {
   getPublicSubfieldById,
   getSubfieldAvailability,
 } from "../../services/v1/subfield.service";
+import { BadRequestError } from "../../utils/error.response";
+import { SuccessResponse } from "../../utils/success.response";
 
 // Helper function to parse string array from query params
 const parseStringArray = (value: unknown): string[] | undefined => {
@@ -129,7 +130,7 @@ export const getPublicSubfieldByIdController = async (
   const result = await getPublicSubfieldById(subfieldId);
   return new SuccessResponse({
     message: "Get public subfield detail successfully",
-    data: result,
+    data: { subfield: result },
   }).send(res);
 };
 
@@ -141,16 +142,15 @@ export const getSubfieldAvailabilityController = async (
   const date = req.query.date as string;
 
   if (!date) {
-    return res.status(400).json({
-      success: false,
-      message: "Date parameter is required (format: YYYY-MM-DD)",
-    });
+    throw new BadRequestError(
+      "Date parameter is required (format: YYYY-MM-DD)",
+    );
   }
 
   const result = await getSubfieldAvailability(subfieldId, date);
   return new SuccessResponse({
     message: "Get subfield availability successfully",
-    data: result,
+    data: { availability: result },
   }).send(res);
 };
 
