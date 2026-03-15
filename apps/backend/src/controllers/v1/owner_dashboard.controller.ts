@@ -13,6 +13,6 @@ export const getOwnerDashboardStatsMetricsController = async (
 
   return new SuccessResponse({
     message: "Owner dashboard stats metrics fetched successfully",
-    data: statsMetrics,
+    data: { stats: statsMetrics },
   }).send(res);
 };

@@ -34,6 +34,7 @@ export class SuccessResponse {
     return res.status(this.status).json({
       success: true,
       status: this.status,
+      code: this.status,
       message: this.message,
       reason: this.reason,
       data: this.data ?? null,
