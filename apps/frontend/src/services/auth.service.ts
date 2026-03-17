@@ -1,98 +1,72 @@
 import { api } from "@/lib/axios";
+import type {
+  ApiResponse,
+  AuthUserData,
+  ForgotPasswordData,
+  RegisterData,
+} from "@/types";
 import type { loginInput, registerInput } from "../validations";
 
-export interface AuthResponse {
-  message: string;
-  data: {
-    user: {
-      id: string;
-      email: string;
-      full_name: string;
-      phone_number: string;
-      avatar?: string;
-      roles: string[];
-    };
-    accessToken: string;
-  };
-}
-
-export interface RegisterResponse {
-  message: string;
-  data: {
-    // user: {
-    //   id: string;
-    //   email: string;
-    //   full_name: string;
-    //   phone_number: string;
-    //   avatar?: string;
-    //   roles: string[];
-    // };
-    // accessToken: string;
-    needVerify: boolean;
-  };
-}
-
-export interface ForgotPasswordResponse {
-  message: string;
-  data: {
-    message: string;
-  };
-}
-
+/**
+ * Service for Authentication-related API calls
+ * @author thainvbka
+ *
+ * @type {{ login: (data: loginInput) => unknown; register: (data: registerInput) => unknown; verifyEmail: (token: string) => unknown; logout: () => unknown; refreshToken: () => unknown; forgotPassword: (email: string) => unknown; resetPassword: (token: string, new_password: string) => unknown; getCurrentUser: () => unknown; }}
+ */
 export const authService = {
   login: async (data: loginInput) => {
-    const response = await api.post<AuthResponse>("/auth/login", data);
+    const response = await api.post<ApiResponse<AuthUserData>>(
+      "/auth/login",
+      data,
+    );
     return response.data;
   },
 
   register: async (data: registerInput) => {
-    // Backend expects 'signup' but standard is often register. Checking routes...
-    // Routes say: router.post("/signup", ...)
-    const response = await api.post<RegisterResponse>("/auth/signup", data);
+    const response = await api.post<ApiResponse<RegisterData>>(
+      "/auth/signup",
+      data,
+    );
     return response.data;
   },
 
   verifyEmail: async (token: string) => {
-    //token gửi ở param
-    const response = await api.post<AuthResponse>(
+    const response = await api.post<ApiResponse<AuthUserData>>(
       `/auth/verify-email/${token}`,
     );
     return response.data;
   },
 
   logout: async () => {
-    await api.post("/auth/logout");
+    const response = await api.post<ApiResponse<null>>("/auth/logout");
+    return response.data;
   },
 
   refreshToken: async () => {
-    const response = await api.post<{ data: { accessToken: string } }>(
+    const response = await api.post<ApiResponse<{ accessToken: string }>>(
       "/auth/refresh-token",
     );
     return response.data;
   },
 
   forgotPassword: async (email: string) => {
-    const response = await api.post<ForgotPasswordResponse>(
+    const response = await api.post<ApiResponse<ForgotPasswordData>>(
       "/auth/forgot-password",
-      {
-        email,
-      },
+      { email },
     );
-    return response.data.data;
+    return response.data;
   },
 
   resetPassword: async (token: string, new_password: string) => {
-    const response = await api.put<ForgotPasswordResponse>(
+    const response = await api.put<ApiResponse<null>>(
       `/auth/reset-password/${token}`,
-      {
-        new_password,
-      },
+      { new_password },
     );
     return response.data;
   },
 
   getCurrentUser: async () => {
-    const response = await api.get<AuthResponse>("/auth/me");
+    const response = await api.get<ApiResponse<AuthUserData>>("/auth/me");
     return response.data;
   },
 };

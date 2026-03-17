@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getSportTypeLabel } from "@/services/mockData";
-import { useOwnerStore } from "@/store/useOwnerStore";
+import { getSportTypeLabel } from "@/utils";
+import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import { SportType } from "@/types";
 import { Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
@@ -40,7 +40,7 @@ export function SubFieldFormDialog({
   complexId,
   trigger,
 }: SubFieldFormDialogProps) {
-  const { createSubfield, isLoading } = useOwnerStore();
+  const { createSubfield, isLoading } = useSubfieldStore();
   const [open, setOpen] = useState(false);
   const [sportType, setSportType] = useState<SportType | "">("");
   const [subfieldImage, setSubfieldImage] = useState<File | null>(null);
@@ -249,3 +249,6 @@ export function SubFieldFormDialog({
     </Dialog>
   );
 }
+
+
+

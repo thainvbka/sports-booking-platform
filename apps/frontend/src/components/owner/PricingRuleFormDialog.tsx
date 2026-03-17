@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TimeInput } from "@/components/ui/time-input";
-import { formatPrice } from "@/services/mockData";
+import { formatPrice } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Clock, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";

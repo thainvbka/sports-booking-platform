@@ -14,8 +14,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { ownerService } from "@/services/owner.service";
+import { useComplexStore } from "@/store/owner/useComplexStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useOwnerStore } from "@/store/useOwnerStore";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -45,7 +45,8 @@ import {
 import { toast } from "sonner";
 
 export function OwnerDashboardPage() {
-  const { isLoading, error, dashboardStats, getStatsMetrics } = useOwnerStore();
+  const { isLoading, error, dashboardStats, getStatsMetrics } =
+    useComplexStore();
   const { user: owner } = useAuthStore();
 
   const [isConnected, setIsConnected] = useState(false);
@@ -59,7 +60,7 @@ export function OwnerDashboardPage() {
     ownerService
       .getStripeStatus()
       .then((data) => {
-        setIsConnected(data.isComplete);
+        setIsConnected(data.data.isComplete);
       })
       .catch((error) => {
         toast.error(
@@ -71,14 +72,14 @@ export function OwnerDashboardPage() {
   console.log("isConnected:", isConnected);
 
   const stats = {
-    totalRevenue: dashboardStats?.overview.totalRevenue || 0,
-    revenueGrowth: dashboardStats?.overview.revenueGrowth || 0,
-    totalBookings: dashboardStats?.overview.totalBookings || 0,
-    newBookingsThisWeek: dashboardStats?.overview.newBookingsThisWeek || 0,
-    totalComplexes: dashboardStats?.overview.totalComplexes || 0,
-    activeSubFields: dashboardStats?.overview.activeSubFields || 0,
-    totalCustomers: dashboardStats?.overview.totalCustomers || 0,
-    newCustomers: dashboardStats?.overview.newCustomers || 0,
+    totalRevenue: dashboardStats?.overview?.totalRevenue || 0,
+    revenueGrowth: dashboardStats?.overview?.revenueGrowth || 0,
+    totalBookings: dashboardStats?.overview?.totalBookings || 0,
+    newBookingsThisWeek: dashboardStats?.overview?.newBookingsThisWeek || 0,
+    totalComplexes: dashboardStats?.overview?.totalComplexes || 0,
+    activeSubFields: dashboardStats?.overview?.activeSubFields || 0,
+    totalCustomers: dashboardStats?.overview?.totalCustomers || 0,
+    newCustomers: dashboardStats?.overview?.newCustomers || 0,
   };
   const isRevenueUp = stats.revenueGrowth >= 0;
 
@@ -164,7 +165,7 @@ export function OwnerDashboardPage() {
   const handleConnectStripe = async () => {
     try {
       const data = await ownerService.createStripeLink();
-      window.location.href = data.url; // Redirect sang Stripe
+      window.location.href = data.data.url; // Redirect sang Stripe
     } catch (error) {
       toast.error(
         "Đã có lỗi xảy ra khi kết nối với Stripe. Vui lòng thử lại sau.",
@@ -416,7 +417,11 @@ export function OwnerDashboardPage() {
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
-                    label={(props: any) =>
+                    label={(props: {
+                      payload?: { status?: string };
+                      name: string;
+                      value: number;
+                    }) =>
                       `${props.payload?.status || props.name}: ${props.value}`
                     }
                   />

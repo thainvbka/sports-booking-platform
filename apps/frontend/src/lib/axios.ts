@@ -1,15 +1,17 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
+import type { ApiResponse } from "@/types";
 
 const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
 export const api = axios.create({
   baseURL,
-  withCredentials: true, // Important for cookies (refresh token)
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
   paramsSerializer: {
-    indexes: null, // Send arrays as ?sport_types=TENNIS&sport_types=FOOTBALL instead of ?sport_types[0]=TENNIS
+    indexes: null,
   },
 });
 
@@ -21,32 +23,39 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (response) => {
+    // Backend returns { success: boolean, ... }
+    const res = response.data as ApiResponse<any>;
 
-    // Nếu là lỗi 401 và message là "Account has not been activated..." thì trả về cho UI xử lý
-    if (
-      error.response?.status === 401 &&
-      error.response?.data?.message ===
-        "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
-    ) {
-      return Promise.reject(error);
+    // Handle case where backend returns 200 but success is false
+    if (res && res.success === false) {
+      toast.error(res.message || "Đã có lỗi xảy ra");
+      return Promise.reject(res);
     }
 
-    // Prevent infinite loop
+    return response;
+  },
+  async (error: AxiosError<ApiResponse<any>>) => {
+    const originalRequest = error.config as any;
+    const data = error.response?.data;
+
+    // 1. Handle specialized 401 (e.g. account not activated)
+    if (
+      error.response?.status === 401 &&
+      data?.message === "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
+    ) {
+      return Promise.reject(data);
+    }
+
+    // 2. Handle Token Refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Call refresh token endpoint
-        // We use a separate instance or direct call to avoid interceptor loop if this fails
         const response = await axios.post(
           `${baseURL}/auth/refresh-token`,
           {},
@@ -56,17 +65,22 @@ api.interceptors.response.use(
         const { accessToken } = response.data.data;
         localStorage.setItem("accessToken", accessToken);
 
-        // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, logout user
         localStorage.removeItem("accessToken");
         window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error);
+    // 3. Global Error Toast
+    // Don't show toast for 401 because it's handled by refresh logic or redirect
+    if (error.response?.status !== 401) {
+      const errorMessage = data?.message || "Lỗi kết nối máy chủ";
+      toast.error(errorMessage);
+    }
+
+    return Promise.reject(data || error);
   },
 );

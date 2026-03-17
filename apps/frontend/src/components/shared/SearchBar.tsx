@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getSportTypeLabel } from "@/services/mockData";
+import { getSportTypeLabel } from "@/utils";
 import { SportType } from "@/types";
 import { MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";

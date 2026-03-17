@@ -5,7 +5,8 @@ import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useOwnerStore } from "@/store/useOwnerStore";
+import { useComplexStore } from "@/store/owner/useComplexStore";
+import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import type { ComplexDetail } from "@/types";
 import { ComplexStatus } from "@/types";
 import { AlertCircle, Edit, Plus, Trash2 } from "lucide-react";
@@ -14,27 +15,22 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function ComplexDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const initialPage = parseInt(searchParams.get("page") || "1");
-  const initialSearch = searchParams.get("search") || "";
-
   const {
     selectedComplex,
     isLoading,
     error,
-    subfields,
     fetchComplexById,
-    setSubfieldParams,
-    setSubfieldPage,
-    setSubfieldSearch,
-    subfieldPagination,
     updateComplex,
     deleteComplex,
     reactivateComplex,
-  } = useOwnerStore();
+  } = useComplexStore();
+  const {
+    subfields,
+    subfieldPagination,
+    setSubfieldParams,
+    setSubfieldPage,
+    setSubfieldSearch,
+  } = useSubfieldStore();
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -275,3 +271,6 @@ export function ComplexDetailPage() {
     </>
   );
 }
+
+
+

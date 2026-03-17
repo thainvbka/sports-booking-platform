@@ -28,10 +28,9 @@ export function ForgotPasswordPage() {
       await authService.forgotPassword(data.email);
       setEmailSent(true);
       toast.success("Vui lòng kiểm tra email của bạn để đặt lại mật khẩu");
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại sau.",
-      );
+    } catch (err: unknown) {
+      const apiError = err as { message?: string };
+      toast.error(apiError?.message || "Có lỗi xảy ra. Vui lòng thử lại sau.");
       console.error("Forgot password failed", err);
     } finally {
       setIsLoading(false);

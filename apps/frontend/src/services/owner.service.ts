@@ -2,38 +2,23 @@ import { api } from "@/lib/axios";
 import type {
   ApiResponse,
   ComplexDetail,
-  ComplexListItem,
+  CreateComplexResponse,
+  GetOwnerComplexByIdResponse,
+  GetOwnerComplexesResponse,
+  GetOwnerPricingRulesResponse,
   OwnerBookingResponse,
   PaginationMeta,
   PricingRule,
   StatsMetrics,
-  // SubField,
   SubfieldDetail,
 } from "@/types";
 
-//payload and response types
-interface GetOwnerComplexesResponse {
-  complexes: ComplexListItem[];
-  pagination: PaginationMeta;
-}
-
-interface GetOwnerComplexByIdResponse {
-  complex: ComplexDetail;
-  pagination: PaginationMeta;
-}
-
-interface CreateComplexResponse {
-  complex: ComplexListItem;
-}
-
-// interface GetOwnerSubfieldsResponse {
-//   subfields: SubField[];
-// }
-
-interface GetOwnerPricingRulesResponse {
-  pricingRules: PricingRule[];
-}
-
+/**
+ * Service for Owner-related API calls
+ * @author thainvbka
+ *
+ * @type {{ getComplexes: (params?: { page?: number; limit?: number; search?: string; }) => unknown; getComplexById: (id: string, params?: { page?: number; limit?: number; search?: string; }) => unknown; createComplex: (formData: FormData) => unknown; ... 21 more ...; getStatsMetrics: () => unknown; }}
+ */
 export const ownerService = {
   //complexes
   getComplexes: async (params?: {
@@ -45,7 +30,6 @@ export const ownerService = {
       "/complexes",
       { params },
     );
-    //response : { data : { message, status, reason, data: { complexes, pagination } } }
     return response.data;
   },
   getComplexById: async (
@@ -70,12 +54,6 @@ export const ownerService = {
     );
     return response.data;
   },
-  // getSubfields: async (complexId: string) => {
-  //   const response = await api.get<ApiResponse<GetOwnerSubfieldsResponse>>(
-  //     `/complexes/${complexId}/sub-fields`
-  //   );
-  //   return response.data;
-  // },
   getSubfieldById: async (id: string) => {
     const response = await api.get<ApiResponse<{ subfield: SubfieldDetail }>>(
       `/sub-fields/${id}`,
@@ -116,7 +94,7 @@ export const ownerService = {
     return response.data;
   },
   deletePricingRule: async (ruleId: string) => {
-    const response = await api.delete<ApiResponse<Record<string, never>>>(
+    const response = await api.delete<ApiResponse<null>>(
       `/pricing-rules/${ruleId}`,
     );
     return response.data;
@@ -173,7 +151,7 @@ export const ownerService = {
     return response.data;
   },
   deleteSubfield: async (subfieldId: string) => {
-    const response = await api.delete<ApiResponse<Record<string, never>>>(
+    const response = await api.delete<ApiResponse<null>>(
       `/sub-fields/${subfieldId}`,
     );
     return response.data;
@@ -192,13 +170,13 @@ export const ownerService = {
     return response.data;
   },
   deleteComplex: async (complexId: string) => {
-    const response = await api.delete<ApiResponse<Record<string, never>>>(
+    const response = await api.delete<ApiResponse<null>>(
       `/complexes/${complexId}`,
     );
     return response.data;
   },
   reactivateComplex: async (complexId: string) => {
-    const response = await api.post<ApiResponse<Record<string, never>>>(
+    const response = await api.post<ApiResponse<null>>(
       `/complexes/${complexId}/reactivate`,
     );
     return response.data;
@@ -208,14 +186,13 @@ export const ownerService = {
     const response = await api.post<ApiResponse<{ url: string }>>(
       `/payments/stripe/connect-account`,
     );
-    return response.data.data;
+    return response.data;
   },
   getStripeStatus: async () => {
     const response = await api.get<ApiResponse<{ isComplete: boolean }>>(
       `/payments/stripe/check-status`,
     );
-    console.log("Stripe status response:", response.data);
-    return response.data.data;
+    return response.data;
   },
 
   // Owner Booking Management
@@ -236,7 +213,6 @@ export const ownerService = {
     if (params?.page) queryParams.page = params.page.toString();
     if (params?.limit) queryParams.limit = params.limit.toString();
 
-    // Stringify filter object if provided
     if (params?.filter) {
       const filter = {
         ...params.filter,
@@ -287,18 +263,20 @@ export const ownerService = {
   getOwnerBookingStats: async () => {
     const response = await api.get<
       ApiResponse<{
-        total: number;
-        pending: number;
-        confirmed: number;
-        completed: number;
-        canceled: number;
+        stats: {
+          total: number;
+          pending: number;
+          confirmed: number;
+          completed: number;
+          canceled: number;
+        };
       }>
     >("/bookings/stats");
     return response.data;
   },
 
   getStatsMetrics: async () => {
-    const response = await api.get<ApiResponse<StatsMetrics>>(
+    const response = await api.get<ApiResponse<{ stats: StatsMetrics }>>(
       "/owner-dashboard/stats-metrics",
     );
     return response.data;

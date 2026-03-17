@@ -10,7 +10,7 @@ export function StripeRefreshPage() {
       try {
         const data = await ownerService.createStripeLink();
         // Redirect sang Stripe ngay lập tức
-        window.location.href = data.url;
+        window.location.href = data.data.url;
       } catch (error) {
         console.error("Lỗi refresh link:", error);
         // Nếu lỗi thì quay về dashboard

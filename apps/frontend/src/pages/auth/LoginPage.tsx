@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -29,16 +28,14 @@ export function LoginPage() {
 
       if (user?.roles.includes("ADMIN")) {
         navigate("/admin");
-      } else if (user?.roles.includes("PLAYER")) {
-        navigate("/");
       } else if (user?.roles.includes("OWNER")) {
         navigate("/owner");
+      } else {
+        navigate("/");
       }
-    } catch (err) {
-      toast.error(
-        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại.",
-      );
-      // Error is handled in store
+    } catch (err: unknown) {
+      // Error is already handled by Axios Interceptor (toast)
+      // and Auth Store (setting error state for the UI box)
       console.error("Login failed", err);
     }
   };

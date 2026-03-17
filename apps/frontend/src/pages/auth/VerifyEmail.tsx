@@ -10,26 +10,25 @@ export function VerifyEmailPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { verifyEmail, isLoading, error } = useAuthStore();
-  const calledRef = useRef(false); // Tránh React.StrictMode gọi API 2 lần
+  const calledRef = useRef(false);
 
   useEffect(() => {
     if (!token) return;
-    if (calledRef.current) return; // Đã gọi rồi thì thôi
+    if (calledRef.current) return;
 
     calledRef.current = true;
 
     // Gọi action trong store
     verifyEmail(token)
-      .then((user) => {
+      .then(() => {
+        const user = useAuthStore.getState().user;
         setTimeout(() => {
-          if (user.roles.includes("OWNER")) {
+          if (user?.roles.includes("OWNER")) {
             navigate("/owner");
-          }
-          if (user.roles.includes("PLAYER")) {
-            navigate("/");
-          }
-          if (user.roles.includes("ADMIN")) {
+          } else if (user?.roles.includes("ADMIN")) {
             navigate("/admin");
+          } else {
+            navigate("/");
           }
         }, 3000);
       })

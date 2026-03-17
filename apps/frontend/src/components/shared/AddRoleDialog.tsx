@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { accountService } from "@/services/account.service";
 import { useAuthStore } from "@/store/useAuthStore";
+import type { ApiError } from "@/types";
 import { Building2, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -69,10 +70,10 @@ export function AddRoleDialog({
       } else {
         window.location.href = "/";
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       toast.error(
-        error.response?.data?.message ||
-          "Không thể thêm vai trò. Vui lòng thử lại.",
+        apiError?.message || "Không thể thêm vai trò. Vui lòng thử lại.",
       );
     } finally {
       setIsLoading(false);

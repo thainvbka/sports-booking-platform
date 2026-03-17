@@ -4,9 +4,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   bookingService,
-  type RecurringBookingReviewResponse,
+  
 } from "@/services/booking.service";
-import { formatPrice } from "@/services/mockData";
+import type { RecurringBookingReviewResponse } from "@/types";
+import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -34,7 +35,7 @@ export default function RecurringBookingReviewPage() {
     const fetchBooking = async () => {
       try {
         const data = await bookingService.reviewRecurringBooking(id);
-        setBooking(data);
+        setBooking(data.data as RecurringBookingReviewResponse);
       } catch (error) {
         toast.error("Không thể tải thông tin đơn hàng định kỳ");
         navigate("/");
@@ -47,12 +48,12 @@ export default function RecurringBookingReviewPage() {
 
   const handlePayment = async () => {
     const result = await bookingService
-      .creatCheckoutSession([...booking!.slots.map((s) => s.id)])
+      .createCheckoutSession([...booking!.slots.map((s) => s.id)])
       .catch(() => {
         toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
       });
 
-    window.location.href = result.url;
+    window.location.href = result.data.url;
   };
 
   if (loading) {

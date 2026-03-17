@@ -1,29 +1,12 @@
 import { api } from "@/lib/axios";
-
-export interface AddRoleResponse {
-  message: string;
-  data: {
-    accessToken: string;
-    user: {
-      id: string;
-      email: string;
-      full_name: string;
-      phone_number: string;
-      avatar?: string;
-      roles: string[];
-      profiles: any;
-    };
-  };
-}
-
-export interface AddRoleRequest {
-  role: "PLAYER" | "OWNER";
-  company_name?: string;
-}
+import type { AddRoleRequest, ApiResponse, AuthUserData } from "@/types";
 
 export const accountService = {
   addRole: async (data: AddRoleRequest) => {
-    const response = await api.post<AddRoleResponse>("/account/roles", data);
+    const response = await api.post<ApiResponse<AuthUserData>>(
+      "/account/roles",
+      data,
+    );
     return response.data;
   },
 };

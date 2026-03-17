@@ -1,28 +1,13 @@
 import { api } from "@/lib/axios";
-import type { ApiResponse, Complex, PaginationMeta, SubField } from "@/types";
-
-// Public response - use existing types from @/types
-interface GetPublicComplexesResponse {
-  complexes: Complex[];
-  pagination: PaginationMeta;
-}
-
-interface GetPublicComplexByIdResponse {
-  complex: Complex;
-  pagination: PaginationMeta;
-}
-
-interface GetPublicSubfieldsResponse {
-  subfields: (SubField & { complex_name?: string; complex_address?: string })[];
-  pagination: PaginationMeta;
-}
-
-interface BookingSlot {
-  start: string;
-  end: string;
-  status: "PENDING" | "CONFIRMED" | "COMPLETED";
-  expiresAt: string | null;
-}
+import type {
+  ApiResponse,
+  GetPublicComplexByIdResponse,
+  GetPublicComplexesResponse,
+  GetPublicSubfieldsResponse,
+  PricingRule,
+  SubField,
+  SubfieldAvailabilityResponse,
+} from "@/types";
 
 export const publicService = {
   getComplexes: async (params?: {
@@ -70,14 +55,18 @@ export const publicService = {
 
   getSubfieldById: async (id: string) => {
     const response = await api.get<
-      ApiResponse<SubField & { complex_name: string; complex_address: string }>
+      ApiResponse<{
+        subfield: Omit<SubField, "status" | "createdAt" | "updatedAt"> & {
+          pricing_rules?: PricingRule[];
+        };
+      }>
     >(`/public/subfields/${id}`);
     return response.data;
   },
 
   getSubfieldAvailability: async (id: string, date: string) => {
     const response = await api.get<
-      ApiResponse<{ date: string; bookings: BookingSlot[] }>
+      ApiResponse<{ availability: SubfieldAvailabilityResponse }>
     >(`/public/subfields/${id}/availability`, { params: { date } });
     return response.data;
   },

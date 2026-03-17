@@ -175,11 +175,9 @@ export function RegisterPage() {
               className="h-11 bg-background/50 backdrop-blur-sm transition-all focus:ring-2 focus:ring-primary/20"
               {...register("company_name")}
             />
-            {/* @ts-ignore */}
-            {(errors as any).company_name && (
-              /* @ts-ignore */
+            {(errors as Record<string, { message?: string }>).company_name && (
               <p className="text-sm text-destructive font-medium animate-in slide-in-from-left-1">
-                {(errors as any).company_name.message}
+                {(errors as Record<string, { message?: string }>).company_name?.message}
               </p>
             )}
           </div>
@@ -235,3 +233,4 @@ export function RegisterPage() {
     </div>
   );
 }
+

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOwnerStore } from "@/store/useOwnerStore";
+import { useComplexStore } from "@/store/owner/useComplexStore";
 import { Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,7 @@ interface ComplexFormData {
 }
 
 export function ComplexFormDialog() {
-  const { createComplex, isLoading } = useOwnerStore();
+  const { createComplex, isLoading } = useComplexStore();
   const [open, setOpen] = useState(false);
   const [complexImage, setComplexImage] = useState<File | null>(null);
   const [verificationDocs, setVerificationDocs] = useState<File[]>([]);
@@ -267,3 +267,5 @@ export function ComplexFormDialog() {
     </Dialog>
   );
 }
+
+

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getSportTypeLabel } from "@/services/mockData";
+import { getSportTypeLabel } from "@/utils";
 import type { SubfieldDetail } from "@/types";
 import { SportType } from "@/types";
 import { useEffect, useState } from "react";

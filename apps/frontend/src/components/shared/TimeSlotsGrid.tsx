@@ -39,7 +39,7 @@ export function TimeSlotsGrid({
           subFieldId,
           fmtDate,
         );
-        setBookings(data.data.bookings);
+        setBookings(data.data.availability.bookings || []);
       } catch (error) {
         console.error("Failed to fetch availability", error);
       } finally {
@@ -59,8 +59,8 @@ export function TimeSlotsGrid({
       const start = new Date(rule.start_time);
       const end = new Date(rule.end_time);
       return [
-        start.getHours() * 60 + start.getMinutes(),
-        end.getHours() * 60 + end.getMinutes(),
+        start.getUTCHours() * 60 + start.getUTCMinutes(),
+        end.getUTCHours() * 60 + end.getUTCMinutes(),
       ];
     });
 

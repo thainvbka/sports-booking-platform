@@ -18,7 +18,7 @@ export function StripeReturnPage() {
         // lấy trạng thái oboarding từ backend
         const data = await ownerService.getStripeStatus();
 
-        if (data.isComplete) {
+        if (data.data.isComplete) {
           setStatus("success");
           setTimeout(() => navigate("/owner"), 2000);
         } else {
@@ -36,7 +36,7 @@ export function StripeReturnPage() {
     try {
       setStatus("loading");
       const data = await ownerService.createStripeLink();
-      window.location.href = data.url;
+      window.location.href = data.data.url;
     } catch (error) {
       toast.error(
         "Đã có lỗi xảy ra khi tạo liên kết Stripe. Vui lòng thử lại sau.",

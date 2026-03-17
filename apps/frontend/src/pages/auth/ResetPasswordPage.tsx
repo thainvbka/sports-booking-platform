@@ -30,14 +30,16 @@ export function ResetPasswordPage() {
 
   const newPassword = watch("new_password");
 
-  const onSubmit = async (data: resetPasswordInput) => {
+  const onSubmit = async (
+    data: resetPasswordInput & { confirmPassword: string },
+  ) => {
     if (!token) {
       toast.error("Token không hợp lệ");
       return;
     }
 
     // Validate password confirmation
-    if (data.new_password !== (data as any).confirmPassword) {
+    if (data.new_password !== data.confirmPassword) {
       toast.error("Mật khẩu xác nhận không khớp");
       return;
     }
@@ -51,9 +53,10 @@ export function ResetPasswordPage() {
       setTimeout(() => {
         navigate("/auth/login");
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(
-        err?.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.",
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Có lỗi xảy ra. Vui lòng thử lại.",
       );
       console.error("Reset password failed", err);
     } finally {

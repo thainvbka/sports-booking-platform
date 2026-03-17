@@ -1,10 +1,10 @@
 // import { useState } from "react";
 // import { Button } from "@/components/ui/button";
-// import { useOwnerStore } from "@/store/useOwnerStore";
+// import { useComplexStore } from "@/store/owner/useComplexStore";
 // import { CheckCircle2, Loader2 } from "lucide-react";
 
 // export function StripeOnboardingButton() {
-//   const owner = useOwnerStore((state) => state.owner);
+//   const owner = useComplexStore((state) => state.owner);
 //   const [isLoading, setIsLoading] = useState(false);
 
 //   const handleConnect = async () => {
@@ -51,3 +51,5 @@
 //     </Button>
 //   );
 // }
+
+

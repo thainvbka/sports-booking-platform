@@ -97,13 +97,13 @@ export function OwnerBookingsPage() {
     try {
       const response = await ownerService.getOwnerBookingStats();
       setStats({
-        total: response.data.total,
-        pending: response.data.pending,
-        canceled: response.data.canceled,
-        confirmed: response.data.confirmed,
-        completed: response.data.completed,
+        total: response.data.stats.total,
+        pending: response.data.stats.pending,
+        canceled: response.data.stats.canceled,
+        confirmed: response.data.stats.confirmed,
+        completed: response.data.stats.completed,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching stats:", error);
     }
   };
@@ -127,7 +127,7 @@ export function OwnerBookingsPage() {
     try {
       setLoading(true);
 
-      const filterParams: any = {};
+      const filterParams: Record<string, string | number | Date> = {};
 
       if (searchQuery.trim()) {
         filterParams.search = searchQuery.trim();
@@ -165,7 +165,7 @@ export function OwnerBookingsPage() {
       const params = new URLSearchParams();
       if (page > 1) params.set("page", String(page));
       setSearchParams(params);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
       setBookings([]);
       setTotalPages(1);
@@ -223,9 +223,10 @@ export function OwnerBookingsPage() {
       fetchStats();
       setConfirmDialogOpen(false);
       setSelectedBookingId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(
-        error.response?.data?.message || "Không thể xác nhận đặt sân",
+        (error as Error & { response?: { data?: { message?: string } } })
+          .response?.data?.message || "Không thể xác nhận đặt sân",
       );
     }
   };
@@ -244,8 +245,11 @@ export function OwnerBookingsPage() {
       fetchStats();
       setCancelDialogOpen(false);
       setSelectedBookingId(null);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Không thể hủy đặt sân");
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error & { response?: { data?: { message?: string } } })
+          .response?.data?.message || "Không thể hủy đặt sân",
+      );
     }
   };
 

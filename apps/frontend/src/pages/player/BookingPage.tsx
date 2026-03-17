@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table";
 import type { BookingResponse } from "@/services/booking.service";
 import { bookingService } from "@/services/booking.service";
-import { formatPrice } from "@/services/mockData";
+import { formatPrice } from "@/utils";
 import { BookingStatus, RecurringStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -71,8 +71,8 @@ export function PlayerBookingsPage() {
     bookingService
       .getAllBookings(page)
       .then((res) => {
-        setBookings(res.bookings || []);
-        setTotalPages(res.pagination?.totalPages || 1);
+        setBookings(res.data.bookings || []);
+        setTotalPages(res.data.pagination?.totalPages || 1);
       })
       .catch(() => {
         toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
@@ -166,8 +166,8 @@ export function PlayerBookingsPage() {
 
   const handlePayment = async (bookingIds: string[]) => {
     try {
-      const result = await bookingService.creatCheckoutSession(bookingIds);
-      window.location.href = result.url;
+      const result = await bookingService.createCheckoutSession(bookingIds);
+      window.location.href = result.data.url;
     } catch (err) {
       console.error("Create checkout session failed", err);
       toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");

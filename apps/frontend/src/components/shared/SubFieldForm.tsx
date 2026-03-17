@@ -3,9 +3,9 @@
 // import { Button } from "@/components/ui/button";
 // import { Input } from "@/components/ui/input";
 // import { Label } from "@/components/ui/label";
-// import { useOwnerStore } from "@/store/useOwnerStore";
+// import { useComplexStore } from "@/store/owner/useComplexStore";
 // import { SportType } from "@/types";
-// import { getSportTypeLabel } from "@/services/mockData";
+// import { getSportTypeLabel } from "@/utils";
 
 // interface SubFieldFormData {
 //   sub_field_name: string;
@@ -25,7 +25,7 @@
 //   onSuccess,
 //   onCancel,
 // }: SubFieldFormProps) {
-//   const addSubField = useOwnerStore((state) => state.addSubField);
+//   const addSubField = useComplexStore((state) => state.addSubField);
 //   const [isLoading, setIsLoading] = useState(false);
 
 //   const {
@@ -131,3 +131,5 @@
 //     </form>
 //   );
 // }
+
+

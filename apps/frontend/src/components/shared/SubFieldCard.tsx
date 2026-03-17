@@ -6,7 +6,7 @@ import {
   formatPrice,
   getPriceRange,
   getSportTypeLabel,
-} from "@/services/mockData";
+} from "@/utils";
 import type { SubField } from "@/types";
 import { MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";

@@ -25,10 +25,10 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { bookingService } from "@/services/booking.service";
-import { formatPrice } from "@/services/mockData";
 import { publicService } from "@/services/public.service";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { PricingRule, SubField } from "@/types";
+import { formatPrice } from "@/utils";
 import { addMonths, format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
@@ -79,7 +79,8 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       publicService
         .getSubfieldById(subField.id)
         .then((res) => {
-          setFullSubField(res.data);
+          console.log("Fetched subfield by id:", res.data);
+          setFullSubField(res.data.subfield as unknown as SubField);
         })
         .catch((err) => {
           console.error("Failed to fetch subfield details", err);
@@ -127,7 +128,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           response.message ||
             "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
         );
-        setCreatedBookingId(response.booking_id);
+        setCreatedBookingId(response.data.booking.id);
         setIsRecurringBooking(false);
         setIsOpen(false);
         setShowConfirmDialog(true);
@@ -149,7 +150,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
           },
         );
         toast.success(response.message || "Đặt sân định kỳ thành công!");
-        setCreatedBookingId(response.recurring_booking_id);
+        setCreatedBookingId(response.data.recurringBooking.id);
         setIsRecurringBooking(true);
         setIsOpen(false);
         setShowConfirmDialog(true);
@@ -178,7 +179,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   // Filter available slots based on selected date
   const now = new Date();
   const availableRules = (fullSubField.pricing_rules || [])
-    .filter((rule) => date && rule.day_of_week === getVietnamDayOfWeek(date))
+    .filter((rule) => {
+      const match = date && rule.day_of_week === getVietnamDayOfWeek(date);
+      return match;
+    })
     .sort(
       (a, b) =>
         new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),

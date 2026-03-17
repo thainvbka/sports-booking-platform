@@ -2,7 +2,7 @@ import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useOwnerStore } from "@/store/useOwnerStore";
+import { useComplexStore } from "@/store/owner/useComplexStore";
 import {
   AlertCircle,
   ChevronLeft,
@@ -22,7 +22,7 @@ export function ComplexesPage() {
     setSearch,
     queryParams,
     setParams,
-  } = useOwnerStore();
+  } = useComplexStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
   //lay gia tri ban dau tu URL neu co
@@ -139,3 +139,5 @@ export function ComplexesPage() {
     </div>
   );
 }
+
+

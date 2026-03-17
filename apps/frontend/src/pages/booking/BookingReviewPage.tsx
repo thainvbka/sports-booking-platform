@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   bookingService,
-  type BookingReviewResponse,
+  
 } from "@/services/booking.service";
-import { formatPrice } from "@/services/mockData";
+import type { BookingReviewResponse } from "@/types";
+import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar, Clock, MapPin, Trophy } from "lucide-react";
@@ -24,8 +25,9 @@ export default function BookingReviewPage() {
     const fetchBooking = async () => {
       try {
         const data = await bookingService.reviewBooking(id);
-        setBooking(data);
-      } catch (error) {
+        const payload = data.data as { booking: BookingReviewResponse }; setBooking(payload.booking);;
+      } catch (err: unknown) {
+        console.error("Fetch booking failed", err);
         toast.error("Không thể tải thông tin đơn hàng");
         navigate("/");
       } finally {
@@ -37,9 +39,9 @@ export default function BookingReviewPage() {
 
   const handlePayment = async () => {
     try {
-      const result = await bookingService.creatCheckoutSession([booking!.id]);
-      if (result?.url) {
-        window.location.href = result.url;
+      const result = await bookingService.createCheckoutSession([booking!.id]);
+      if (result?.data?.url) {
+        window.location.href = result.data.url;
       } else {
         toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");
       }

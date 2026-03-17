@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatPrice, getSportTypeLabel } from "@/services/mockData";
+import { formatPrice, getSportTypeLabel } from "@/utils";
 import type { Complex, SportType } from "@/types";
 import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
