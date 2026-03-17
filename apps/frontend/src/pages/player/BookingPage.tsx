@@ -22,10 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { BookingResponse } from "@/services/booking.service";
 import { bookingService } from "@/services/booking.service";
+import { type BookingResponse, BookingStatus, RecurringStatus } from "@/types";
 import { formatPrice } from "@/utils";
-import { BookingStatus, RecurringStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -63,7 +62,7 @@ export function PlayerBookingsPage() {
   useEffect(() => {
     const urlPage = parseInt(searchParams.get("page") || "1");
     setPage(urlPage);
-  }, []);
+  }, [searchParams]);
 
   // Fetch bookings khi page thay đổi
   useEffect(() => {
@@ -83,7 +82,7 @@ export function PlayerBookingsPage() {
     const params = new URLSearchParams();
     if (page > 1) params.set("page", String(page));
     setSearchParams(params);
-  }, [page]);
+  }, [page, setSearchParams]);
 
   const getStatusColor = (status: BookingStatus) => {
     switch (status) {
@@ -409,7 +408,9 @@ export function PlayerBookingsPage() {
                                         handlePayment([booking.id]);
                                       } else {
                                         handlePayment(
-                                          booking.bookings.map((b) => b.id),
+                                          booking.bookings.map(
+                                            (b: { id: string }) => b.id,
+                                          ),
                                         );
                                       }
                                     }}
@@ -627,39 +628,49 @@ export function PlayerBookingsPage() {
 
               {selectedBooking.type === "RECURRING" && (
                 <div className="space-y-2 max-h-75 overflow-y-auto">
-                  {selectedBooking.bookings.map((slot, idx) => (
-                    <div
-                      key={slot.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
-                          {idx + 1}
-                        </div>
-                        <div>
-                          <div className="font-medium">
-                            {format(
-                              new Date(slot.start_time),
-                              "EEEE, dd/MM/yyyy",
-                              { locale: vi },
-                            )}
+                  {selectedBooking.bookings.map(
+                    (
+                      slot: {
+                        id: string;
+                        start_time: string;
+                        end_time: string;
+                        total_price: number;
+                      },
+                      idx: number,
+                    ) => (
+                      <div
+                        key={slot.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+                            {idx + 1}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {format(new Date(slot.start_time), "HH:mm")} -{" "}
-                            {format(new Date(slot.end_time), "HH:mm")}
+                          <div>
+                            <div className="font-medium">
+                              {format(
+                                new Date(slot.start_time),
+                                "EEEE, dd/MM/yyyy",
+                                { locale: vi },
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(slot.start_time), "HH:mm")} -{" "}
+                              {format(new Date(slot.end_time), "HH:mm")}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        {/* <Badge className={getStatusColor(slot.status)}>
+                        <div className="text-right">
+                          {/* <Badge className={getStatusColor(slot.status)}>
                           {getStatusLabel(slot.status)}
                         </Badge> */}
-                        <div className="text-sm font-semibold text-green-700 mt-1">
-                          {formatPrice(slot.total_price)}
+                          <div className="text-sm font-semibold text-green-700 mt-1">
+                            {formatPrice(slot.total_price)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </div>

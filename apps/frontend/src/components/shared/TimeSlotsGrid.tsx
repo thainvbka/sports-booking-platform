@@ -59,8 +59,8 @@ export function TimeSlotsGrid({
       const start = new Date(rule.start_time);
       const end = new Date(rule.end_time);
       return [
-        start.getUTCHours() * 60 + start.getUTCMinutes(),
-        end.getUTCHours() * 60 + end.getUTCMinutes(),
+        start.getHours() * 60 + start.getMinutes(),
+        end.getHours() * 60 + end.getMinutes(),
       ];
     });
 

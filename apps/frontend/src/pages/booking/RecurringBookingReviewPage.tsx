@@ -2,10 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  bookingService,
-  
-} from "@/services/booking.service";
+import { bookingService } from "@/services/booking.service";
 import type { RecurringBookingReviewResponse } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
@@ -36,7 +33,7 @@ export default function RecurringBookingReviewPage() {
       try {
         const data = await bookingService.reviewRecurringBooking(id);
         setBooking(data.data as RecurringBookingReviewResponse);
-      } catch (error) {
+      } catch {
         toast.error("Không thể tải thông tin đơn hàng định kỳ");
         navigate("/");
       } finally {
@@ -47,13 +44,16 @@ export default function RecurringBookingReviewPage() {
   }, [id, navigate]);
 
   const handlePayment = async () => {
-    const result = await bookingService
-      .createCheckoutSession([...booking!.slots.map((s) => s.id)])
-      .catch(() => {
-        toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
-      });
-
-    window.location.href = result.data.url;
+    try {
+      const result = await bookingService.createCheckoutSession(
+        booking!.slots.map((s) => s.id),
+      );
+      if (result?.data?.url) {
+        window.location.href = result.data.url;
+      }
+    } catch {
+      toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+    }
   };
 
   if (loading) {
@@ -177,7 +177,9 @@ export default function RecurringBookingReviewPage() {
             </h4>
             <ScrollArea className="h-100 w-full pr-4">
               {booking.slots.map((slot, index) => {
-                const start = slot.startTime || (slot as any).date;
+                const start =
+                  slot.startTime ||
+                  (slot as unknown as Record<string, string>).date;
                 const end = slot.endTime;
 
                 // Debug log
