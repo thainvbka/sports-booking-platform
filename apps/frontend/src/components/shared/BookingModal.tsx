@@ -155,11 +155,14 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         setIsOpen(false);
         setShowConfirmDialog(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Booking Error Details:", error);
+      const err = error as {
+        response?: { data?: { message?: string; error?: string } };
+      };
       const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
+        err.response?.data?.message ||
+        err.response?.data?.error ||
         "Có lỗi xảy ra khi tạo lịch đặt sân";
 
       toast.error(errorMessage);
@@ -331,8 +334,51 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
 
   // Reset custom times when date or rules change
   useEffect(() => {
+    // Generate time options in 30-minute intervals across all rules
+    const generateTimeOptionsScoped = () => {
+      if (availableRules.length === 0) return [];
+
+      // Tìm min/max time của tất cả rules trong ngày
+      const allTimes = availableRules.flatMap((rule) => {
+        const start = new Date(rule.start_time);
+        const end = new Date(rule.end_time);
+        return [
+          start.getUTCHours() * 60 + start.getUTCMinutes(),
+          end.getUTCHours() * 60 + end.getUTCMinutes(),
+        ];
+      });
+
+      const minTime = Math.min(...allTimes);
+      const maxTime = Math.max(...allTimes);
+
+      // Nếu date là hôm nay, lọc ra các mốc thời gian đã qua
+      let effectiveStartMin = minTime;
+      const isToday =
+        date && format(date, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
+
+      if (isToday) {
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+        // Làm tròn lên mốc 30 phút tiếp theo
+        const nextSlot = Math.ceil(currentMin / 30) * 30;
+        effectiveStartMin = Math.max(minTime, nextSlot);
+      }
+
+      const options: string[] = [];
+      for (let min = effectiveStartMin; min <= maxTime; min += 30) {
+        const hours = Math.floor(min / 60);
+        const minutes = min % 60;
+        options.push(
+          `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}`,
+        );
+      }
+
+      return options;
+    };
+
     if (availableRules.length > 0) {
-      const timeOptions = generateTimeOptions();
+      const timeOptions = generateTimeOptionsScoped();
       if (timeOptions.length >= 2) {
         setCustomStartTime(timeOptions[0]);
         setCustomEndTime(timeOptions[1]);
@@ -341,7 +387,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       setCustomStartTime("");
       setCustomEndTime("");
     }
-  }, [date, availableRules.length]);
+  }, [date, availableRules, now]);
 
   const handlePayNow = () => {
     setShowConfirmDialog(false);
@@ -512,7 +558,9 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                           <Label>Loại lặp lại</Label>
                           <Select
                             value={recurringType}
-                            onValueChange={(val: any) => setRecurringType(val)}
+                            onValueChange={(val: "WEEKLY" | "MONTHLY") =>
+                              setRecurringType(val)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Chọn loại lặp lại" />
@@ -745,15 +793,17 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Đặt sân thành công!</DialogTitle>
-            <DialogDescription className="space-y-2 pt-2">
+            <DialogDescription className="space-y-2 pt-2" asChild>
               <div>
-                Booking của bạn đã được tạo thành công. Bạn có thể xem lại trong
-                mục <strong>Lịch đặt sân</strong> để thanh toán hoặc thanh toán
-                ngay bây giờ.
-              </div>
-              <div className="text-sm text-amber-600">
-                Lưu ý: Booking sẽ tự động hủy sau 5 phút nếu chưa thanh toán.
-                Xem chi tiết ở phần lịch đặt sân!
+                <div>
+                  Booking của bạn đã được tạo thành công. Bạn có thể xem lại
+                  trong mục <strong>Lịch đặt sân</strong> để thanh toán hoặc
+                  thanh toán ngay bây giờ.
+                </div>
+                <div className="text-sm text-amber-600">
+                  Lưu ý: Booking sẽ tự động hủy sau 5 phút nếu chưa thanh toán.
+                  Xem chi tiết ở phần lịch đặt sân!
+                </div>
               </div>
             </DialogDescription>
           </DialogHeader>

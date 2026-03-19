@@ -31,8 +31,10 @@ export default function RecurringBookingReviewPage() {
     if (!id) return;
     const fetchBooking = async () => {
       try {
-        const data = await bookingService.reviewRecurringBooking(id);
-        setBooking(data.data as RecurringBookingReviewResponse);
+        const response = await bookingService.reviewRecurringBooking(id);
+        setBooking(
+          response.data.recurringBooking as RecurringBookingReviewResponse,
+        );
       } catch {
         toast.error("Không thể tải thông tin đơn hàng định kỳ");
         navigate("/");
@@ -46,13 +48,18 @@ export default function RecurringBookingReviewPage() {
   const handlePayment = async () => {
     try {
       const result = await bookingService.createCheckoutSession(
-        booking!.slots.map((s) => s.id),
+        booking?.slots?.map((s) => s.id) || [],
       );
       if (result?.data?.url) {
         window.location.href = result.data.url;
       }
-    } catch {
-      toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+    } catch (error: unknown) {
+      console.error("Create checkout session failed", error);
+      const apiError = error as { message?: string };
+      toast.error(
+        apiError?.message ||
+          "Không thể tạo phiên thanh toán. Vui lòng thử lại sau.",
+      );
     }
   };
 
@@ -125,25 +132,34 @@ export default function RecurringBookingReviewPage() {
                     Thời gian áp dụng
                   </p>
                   <p className="font-medium text-sm">
-                    {format(new Date(booking.start_date), "dd/MM/yyyy")} -{" "}
-                    {format(new Date(booking.end_date), "dd/MM/yyyy")}
+                    {booking.start_date
+                      ? format(new Date(booking.start_date), "dd/MM/yyyy")
+                      : "N/A"}{" "}
+                    -{" "}
+                    {booking.end_date
+                      ? format(new Date(booking.end_date), "dd/MM/yyyy")
+                      : "N/A"}
                   </p>
                 </div>
               </div>
               {/* Hiển thị thời gian hết hạn thanh toán (không có giây) */}
-              {booking.expires_at && (
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-orange-500" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Hạn thanh toán
-                    </p>
-                    <p className="font-medium text-orange-600">
-                      {format(new Date(booking.expires_at), "HH:mm dd/MM/yyyy")}
-                    </p>
+              {booking.expires_at &&
+                !isNaN(new Date(booking.expires_at).getTime()) && (
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-4 h-4 text-orange-500" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Hạn thanh toán
+                      </p>
+                      <p className="font-medium text-orange-600">
+                        {format(
+                          new Date(booking.expires_at),
+                          "HH:mm dd/MM/yyyy",
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
 
             <Separator />
@@ -176,7 +192,7 @@ export default function RecurringBookingReviewPage() {
               <Clock className="w-4 h-4" /> Danh sách các buổi
             </h4>
             <ScrollArea className="h-100 w-full pr-4">
-              {booking.slots.map((slot, index) => {
+              {booking.slots?.map((slot, index) => {
                 const start =
                   slot.startTime ||
                   (slot as unknown as Record<string, string>).date;

@@ -1,6 +1,6 @@
-import axios, { AxiosError } from "axios";
-import { toast } from "sonner";
 import type { ApiResponse } from "@/types";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 
 const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
@@ -29,24 +29,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     // Backend returns { success: boolean, ... }
-    const res = response.data as ApiResponse<any>;
+    const res = response.data as ApiResponse<unknown>;
 
     // Handle case where backend returns 200 but success is false
     if (res && res.success === false) {
-      toast.error(res.message || "Đã có lỗi xảy ra");
+      console.log(res.message);
+
       return Promise.reject(res);
     }
 
     return response;
   },
-  async (error: AxiosError<ApiResponse<any>>) => {
-    const originalRequest = error.config as any;
+  async (error: AxiosError<ApiResponse<unknown>>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
     const data = error.response?.data;
 
     // 1. Handle specialized 401 (e.g. account not activated)
     if (
       error.response?.status === 401 &&
-      data?.message === "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
+      data?.message ===
+        "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn."
     ) {
       return Promise.reject(data);
     }

@@ -35,9 +35,9 @@ export const bookingService = {
   },
 
   reviewRecurringBooking: async (bookingId: string) => {
-    const response = await api.get<ApiResponse<RecurringBookingReviewResponse>>(
-      `/bookings/recurring/review/${bookingId}`,
-    );
+    const response = await api.get<
+      ApiResponse<{ recurringBooking: RecurringBookingReviewResponse }>
+    >(`/bookings/recurring/review/${bookingId}`);
     return response.data;
   },
 

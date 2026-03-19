@@ -1,11 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  bookingService,
-  
-} from "@/services/booking.service";
-import type { BookingReviewResponse } from "@/types";
+import { bookingService } from "@/services/booking.service";
+import type { ApiError, BookingReviewResponse } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -25,7 +22,8 @@ export default function BookingReviewPage() {
     const fetchBooking = async () => {
       try {
         const data = await bookingService.reviewBooking(id);
-        const payload = data.data as { booking: BookingReviewResponse }; setBooking(payload.booking);;
+        const payload = data.data as { booking: BookingReviewResponse };
+        setBooking(payload.booking);
       } catch (err: unknown) {
         console.error("Fetch booking failed", err);
         toast.error("Không thể tải thông tin đơn hàng");
@@ -45,9 +43,10 @@ export default function BookingReviewPage() {
       } else {
         toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Create checkout session failed", error);
-      toast.error("Không thể tạo phiên thanh toán. Vui lòng thử lại sau.");
+      const apiError = error as ApiError;
+      toast.error(apiError?.message || "Không thể tạo phiên thanh toán");
     }
   };
 

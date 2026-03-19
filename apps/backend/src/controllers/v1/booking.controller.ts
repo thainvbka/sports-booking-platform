@@ -1,38 +1,38 @@
 import { Request, Response } from "express";
-import { SuccessResponse } from "../../utils/success.response";
+import type { filter } from "../../services/v1/booking.service";
 import {
-  createBooking,
-  reviewBooking,
-  updateBooking,
   cancelBooking,
+  createBooking,
+  getOwnerBookingStats,
   getPlayerBookings,
   ownerCancelBooking,
   ownerConfirmBooking,
   ownerGetAllBookings,
   ownerGetBookingById,
-  getOwnerBookingStats,
+  reviewBooking,
+  updateBooking,
 } from "../../services/v1/booking.service";
-import type { filter } from "../../services/v1/booking.service";
+import { SuccessResponse } from "../../utils/success.response";
 import { ownerBookingFilterSchema } from "../../validations";
 
 import {
-  createRecurringBookingService,
-  reviewRecurringBookingService,
   cancelRecurringBookingService,
+  createRecurringBookingService,
   ownerConfirmRecurringBookingService,
+  reviewRecurringBookingService,
 } from "../../services/v1/recurring_booking.service";
 
 export const createBookingController = async (req: Request, res: Response) => {
   const data = req.body; // { base_price, start_time, end_time,}
   const sub_field_id = req.params.id as string; // subfield id
-  const booking = await createBooking(
+  const result = await createBooking(
     req.user?.profiles.playerId as string,
     data,
     sub_field_id,
   );
   return new SuccessResponse({
-    message: "Booking created successfully",
-    data: { booking },
+    message: result.message || "Booking created successfully",
+    data: { booking: result.booking },
   }).send(res);
 };
 
@@ -82,14 +82,20 @@ export const createRecurringBookingController = async (
 ) => {
   const data = req.body; // { start_time, end_time, start_date, end_date, recurring_type }
   const sub_field_id = req.params.id as string; // subfield id
-  const recurringBooking = await createRecurringBookingService(
+  const result = await createRecurringBookingService(
     req.user?.profiles.playerId as string,
     data,
     sub_field_id,
   );
   return new SuccessResponse({
-    message: "Recurring booking created successfully",
-    data: { recurringBooking },
+    message: result.message || "Recurring booking created successfully",
+    data: {
+      recurringBooking: {
+        id: result.recurring_booking_id,
+        total_slots: result.total_slots,
+        total_price: result.total_price,
+      },
+    },
   }).send(res);
 };
 

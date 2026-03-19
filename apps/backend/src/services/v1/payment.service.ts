@@ -30,18 +30,11 @@ export const createConnectAccount = async (ownerId: string) => {
 
   let striperAccountId = owner.stripe_account_id;
 
-  //check owner đã connect stripe account chưa
   if (!striperAccountId) {
-    // nếu chưa thì tạo mới
     const account = await stripe.accounts.create({
       type: "express",
       country: "US",
       email: owner.account.email,
-      // business_type: "individual", //la ca nhan
-      // capabilities: {
-      //   card_payments: { requested: true },
-      //   transfers: { requested: true },
-      // },
     });
 
     await prisma.owner.update({
@@ -147,7 +140,9 @@ export const createCheckoutSession = async (
     console.log(
       "ERROR: Mismatch in booking count. Some are missing or not PENDING.",
     );
-    throw new BadRequestError("Some bookings not found or not pending");
+    throw new BadRequestError(
+      "Môt số booking không hợp lệ hoặc đã được thanh toán",
+    );
   }
 
   //check owner đã hoàn thành onboarding stripe chưa
@@ -155,8 +150,8 @@ export const createCheckoutSession = async (
   const owner = firstBooking.sub_field.complex.owner;
 
   if (!owner.stripe_account_id || !owner.stripe_onboarding_complete) {
-    console.log("ERROR: Owner not ready.");
-    throw new BadRequestError("Owner has not connected Stripe account");
+    console.log("::: Chủ sân chưa hoàn thành thiết lập thanh toán.");
+    throw new BadRequestError("Chủ sân chưa hoàn thành thiết lập thanh toán");
   }
 
   //tạo line items cho stripe checkout
