@@ -71,7 +71,7 @@ export const usePricingStore = create<PricingState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await ownerService.getPricingRules(subFieldId, dayOfWeek);
-      set({ pricingRules: res.data, isLoading: false });
+      set({ pricingRules: res.data.pricingRules || [], isLoading: false });
     } catch (error: unknown) {
       const apiError = error as ApiError;
       set({

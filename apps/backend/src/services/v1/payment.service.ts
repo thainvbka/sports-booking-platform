@@ -154,22 +154,37 @@ export const createCheckoutSession = async (
     throw new BadRequestError("Chủ sân chưa hoàn thành thiết lập thanh toán");
   }
 
+  // Stripe currency VND is zero-decimal, so every amount must be an integer.
+  const normalizedBookings = bookings.map((booking) => {
+    const unitAmount = Math.round(Number(booking.total_price));
+    if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
+      throw new BadRequestError(
+        `Invalid booking amount for booking ${booking.id}`,
+      );
+    }
+
+    return {
+      ...booking,
+      unit_amount: unitAmount,
+    };
+  });
+
   //tạo line items cho stripe checkout
-  const line_items = bookings.map((booking) => ({
+  const line_items = normalizedBookings.map((booking) => ({
     price_data: {
       currency: "vnd",
       product_data: {
         name: `Sân ${booking.sub_field.sub_field_name}`,
         description: `Khu phức hợp ${booking.sub_field.complex.complex_name} - Địa chỉ: ${booking.sub_field.complex.complex_address}`,
       },
-      unit_amount: Number(booking.total_price),
+      unit_amount: booking.unit_amount,
     },
     quantity: 1,
   }));
 
   //tinh tong tien
-  const totalAmount = bookings.reduce(
-    (sum, booking) => sum + Number(booking.total_price),
+  const totalAmount = normalizedBookings.reduce(
+    (sum, booking) => sum + booking.unit_amount,
     0,
   );
 

@@ -11,6 +11,7 @@ import { create } from "zustand";
 interface ComplexState {
   complexes: ComplexListItem[];
   selectedComplex: ComplexDetail | null;
+  selectedComplexPagination: PaginationMeta | null;
   pagination: PaginationMeta | null;
   queryParams: {
     page: number;
@@ -53,6 +54,7 @@ interface ComplexState {
 export const useComplexStore = create<ComplexState>((set, get) => ({
   complexes: [],
   selectedComplex: null,
+  selectedComplexPagination: null,
   pagination: null,
   queryParams: {
     page: 1,
@@ -114,6 +116,7 @@ export const useComplexStore = create<ComplexState>((set, get) => ({
       const res = await ownerService.getComplexById(id, customParams);
       set({
         selectedComplex: res.data.complex,
+        selectedComplexPagination: res.data.pagination,
         isLoading: false,
       });
     } catch (error: unknown) {

@@ -27,8 +27,13 @@ import { cn } from "@/lib/utils";
 import { bookingService } from "@/services/booking.service";
 import { publicService } from "@/services/public.service";
 import { useAuthStore } from "@/store/useAuthStore";
-import type { PricingRule, SubField } from "@/types";
+import type { SubField } from "@/types";
 import { formatPrice } from "@/utils";
+import {
+  formatMinutesToTime,
+  getIsoDateTimeVn,
+  parseRuleTimeToMinutes,
+} from "@/utils/time.utils";
 import { addMonths, format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
@@ -52,24 +57,17 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
   const [createdBookingId, setCreatedBookingId] = useState<string>("");
   const [isRecurringBooking, setIsRecurringBooking] = useState(false);
 
-  // States
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(
     addMonths(new Date(), 1),
   );
-  const [, setSelectedRule] = useState<PricingRule | null>(null);
   const [recurringType, setRecurringType] = useState<"WEEKLY" | "MONTHLY">(
     "WEEKLY",
   );
-
-  // Custom time selection
   const [customStartTime, setCustomStartTime] = useState<string>("");
   const [customEndTime, setCustomEndTime] = useState<string>("");
-
-  // Data State for full details (pricing rules)
   const [fullSubField, setFullSubField] = useState<SubField>(subField);
 
-  // Fetch full details if pricing_rules are missing
   useEffect(() => {
     if (
       isOpen &&
@@ -79,7 +77,6 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       publicService
         .getSubfieldById(subField.id)
         .then((res) => {
-          console.log("Fetched subfield by id:", res.data);
           setFullSubField(res.data.subfield as unknown as SubField);
         })
         .catch((err) => {
@@ -97,12 +94,10 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       toast.error("Vui lòng đăng nhập để đặt sân");
       return;
     }
-
     if (!date) {
       toast.error("Vui lòng chọn ngày");
       return;
     }
-
     if (!customStartTime || !customEndTime) {
       toast.error("Vui lòng chọn giờ bắt đầu và kết thúc");
       return;
@@ -110,18 +105,11 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
 
     setIsLoading(true);
     try {
-      // Helper to combine date + custom time into ISO Booking Request
-      const getIsoDateTime = (baseDate: Date, timeStr: string) => {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        const newDate = new Date(baseDate);
-        newDate.setHours(hours, minutes, 0, 0);
-        return newDate.toISOString();
-      };
-
       if (bookingType === "single") {
         const response = await bookingService.createBooking(subField.id, {
-          start_time: getIsoDateTime(date, customStartTime),
-          end_time: getIsoDateTime(date, customEndTime),
+          // FIX: dùng getIsoDateTimeVn thay vì setHours (local time)
+          start_time: getIsoDateTimeVn(date, customStartTime),
+          end_time: getIsoDateTimeVn(date, customEndTime),
           type: "ONE_TIME",
         });
         toast.success(
@@ -141,8 +129,8 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         const response = await bookingService.createRecurringBooking(
           subField.id,
           {
-            start_time: getIsoDateTime(date, customStartTime),
-            end_time: getIsoDateTime(date, customEndTime),
+            start_time: getIsoDateTimeVn(date, customStartTime),
+            end_time: getIsoDateTimeVn(date, customEndTime),
             start_date: format(date, "yyyy-MM-dd"),
             end_date: format(endDate, "yyyy-MM-dd"),
             recurring_type: recurringType,
@@ -164,69 +152,60 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
         err.response?.data?.message ||
         err.response?.data?.error ||
         "Có lỗi xảy ra khi tạo lịch đặt sân";
-
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper to format time (HH:mm) from ISO string (Displaying Face Value)
   const formatRuleTime = (time: string | Date) => {
-    const d = new Date(time);
-    const hours = d.getUTCHours().toString().padStart(2, "0");
-    const minutes = d.getUTCMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
+    const mins = parseRuleTimeToMinutes(time);
+    if (mins === null) return "--:--";
+    return formatMinutesToTime(mins);
   };
 
-  // Filter available slots based on selected date
-  const now = new Date();
-  const availableRules = (fullSubField.pricing_rules || [])
-    .filter((rule) => {
-      const match = date && rule.day_of_week === getVietnamDayOfWeek(date);
-      return match;
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-    );
+  const toMinutes = (time: string) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
 
   function getVietnamDayOfWeek(date: Date): number {
-    // Local browser time usually suffices if user is in VN.
     return date.getDay();
   }
 
-  // Calculate price based on duration
+  const availableRules = useMemo(
+    () =>
+      (fullSubField.pricing_rules || [])
+        .filter(
+          (rule) => date && rule.day_of_week === getVietnamDayOfWeek(date),
+        )
+        .sort((a, b) => {
+          const aMin =
+            parseRuleTimeToMinutes(a.start_time) ?? Number.MAX_SAFE_INTEGER;
+          const bMin =
+            parseRuleTimeToMinutes(b.start_time) ?? Number.MAX_SAFE_INTEGER;
+          return aMin - bMin;
+        }),
+    [fullSubField.pricing_rules, date],
+  );
 
-  // Helper format time - moved before useMemo to avoid hoisting issue
-  const formatTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60)
-      .toString()
-      .padStart(2, "0");
-    const m = (minutes % 60).toString().padStart(2, "0");
-    return `${h}:${m}`;
-  };
-
-  // Calculate custom price based on selected time (supports multiple rules)
-  // Use useMemo to avoid infinite re-render loop
   const priceCalculation = useMemo(() => {
     if (!date || !customStartTime || !customEndTime) {
       return { totalPrice: 0, breakdown: null };
     }
 
-    const [startH, startM] = customStartTime.split(":").map(Number);
-    const [endH, endM] = customEndTime.split(":").map(Number);
-    const startMin = startH * 60 + startM;
-    const endMin = endH * 60 + endM;
+    const startMin = toMinutes(customStartTime);
+    const endMin = toMinutes(customEndTime);
 
-    const dayRules = availableRules.sort(
-      (a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-    );
+    const dayRules = [...availableRules].sort((a, b) => {
+      const aMin =
+        parseRuleTimeToMinutes(a.start_time) ?? Number.MAX_SAFE_INTEGER;
+      const bMin =
+        parseRuleTimeToMinutes(b.start_time) ?? Number.MAX_SAFE_INTEGER;
+      return aMin - bMin;
+    });
 
-    if (dayRules.length === 0) {
-      return { totalPrice: 0, breakdown: null };
-    }
+    if (dayRules.length === 0) return { totalPrice: 0, breakdown: null };
 
     let totalPrice = 0;
     let currentMin = startMin;
@@ -234,160 +213,105 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
       [];
 
     for (const rule of dayRules) {
-      const ruleStart = new Date(rule.start_time);
-      const ruleEnd = new Date(rule.end_time);
-      const ruleStartMin =
-        ruleStart.getUTCHours() * 60 + ruleStart.getUTCMinutes();
-      const ruleEndMin = ruleEnd.getUTCHours() * 60 + ruleEnd.getUTCMinutes();
+      const ruleStartMin = parseRuleTimeToMinutes(rule.start_time);
+      const ruleEndMin = parseRuleTimeToMinutes(rule.end_time);
+      if (ruleStartMin === null || ruleEndMin === null) continue;
 
-      // Tìm phần giao
       const segmentStart = Math.max(currentMin, ruleStartMin);
       const segmentEnd = Math.min(endMin, ruleEndMin);
 
       if (segmentStart < segmentEnd) {
         const duration = segmentEnd - segmentStart;
-        const hours = duration / 60;
-        const price = Number(rule.base_price) * hours;
+        const price = Number(rule.base_price) * (duration / 60);
 
         totalPrice += price;
         breakdown.push({
-          rule: `${formatTime(ruleStartMin)}-${formatTime(ruleEndMin)}`,
+          rule: `${formatMinutesToTime(ruleStartMin)}-${formatMinutesToTime(ruleEndMin)}`,
           duration,
           price,
         });
-
         currentMin = segmentEnd;
       }
 
       if (currentMin >= endMin) break;
     }
 
-    // Kiểm tra có gap không
-    if (currentMin < endMin) {
-      return { totalPrice: 0, breakdown: null }; // Có khoảng trống không có giá
-    }
+    if (currentMin < endMin) return { totalPrice: 0, breakdown: null };
 
     return { totalPrice, breakdown };
   }, [date, customStartTime, customEndTime, availableRules]);
 
-  // Generate time options in 30-minute intervals across all rules
-  const generateTimeOptions = () => {
+  const timeOptions = useMemo(() => {
     if (availableRules.length === 0) return [];
 
-    // Tìm min/max time của tất cả rules trong ngày
     const allTimes = availableRules.flatMap((rule) => {
-      const start = new Date(rule.start_time);
-      const end = new Date(rule.end_time);
-      return [
-        start.getUTCHours() * 60 + start.getUTCMinutes(),
-        end.getUTCHours() * 60 + end.getUTCMinutes(),
-      ];
+      const start = parseRuleTimeToMinutes(rule.start_time);
+      const end = parseRuleTimeToMinutes(rule.end_time);
+      if (start === null || end === null) return [];
+      return [start, end];
     });
+
+    if (allTimes.length === 0) return [];
 
     const minTime = Math.min(...allTimes);
     const maxTime = Math.max(...allTimes);
 
-    // Nếu date là hôm nay, lọc ra các mốc thời gian đã qua
     let effectiveStartMin = minTime;
+    const now = new Date();
     const isToday =
       date && format(date, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
 
     if (isToday) {
       const currentMin = now.getHours() * 60 + now.getMinutes();
-      // Làm tròn lên mốc 30 phút tiếp theo
       const nextSlot = Math.ceil(currentMin / 30) * 30;
       effectiveStartMin = Math.max(minTime, nextSlot);
     }
 
-    const options: string[] = [];
-    for (let min = effectiveStartMin; min <= maxTime; min += 30) {
-      const hours = Math.floor(min / 60);
-      const minutes = min % 60;
-      options.push(
-        `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}`,
-      );
-    }
-
-    return options;
-  };
-
-  // Validate custom time selection
-  const validateCustomTime = () => {
-    if (!customStartTime || !customEndTime) return true;
-
-    const [startH, startM] = customStartTime.split(":").map(Number);
-    const [endH, endM] = customEndTime.split(":").map(Number);
-    const startMin = startH * 60 + startM;
-    const endMin = endH * 60 + endM;
-    const duration = endMin - startMin;
-
-    // Check if duration is multiple of 30
-    if (duration <= 0 || duration % 30 !== 0) {
-      return false;
-    }
-
-    // Check if price can be calculated (no gaps in rules)
-    return priceCalculation.totalPrice > 0;
-  };
-
-  // Reset custom times when date or rules change
-  useEffect(() => {
-    // Generate time options in 30-minute intervals across all rules
-    const generateTimeOptionsScoped = () => {
-      if (availableRules.length === 0) return [];
-
-      // Tìm min/max time của tất cả rules trong ngày
-      const allTimes = availableRules.flatMap((rule) => {
-        const start = new Date(rule.start_time);
-        const end = new Date(rule.end_time);
-        return [
-          start.getUTCHours() * 60 + start.getUTCMinutes(),
-          end.getUTCHours() * 60 + end.getUTCMinutes(),
-        ];
+    // Chỉ giữ lại các mốc thời gian nằm trong ít nhất 1 rule
+    // Tránh user chọn start time tại gap giữa 2 rules liền kề
+    const isWithinAnyRule = (min: number) =>
+      availableRules.some((rule) => {
+        const rStart = parseRuleTimeToMinutes(rule.start_time);
+        const rEnd = parseRuleTimeToMinutes(rule.end_time);
+        if (rStart === null || rEnd === null) return false;
+        return min >= rStart && min < rEnd;
       });
 
-      const minTime = Math.min(...allTimes);
-      const maxTime = Math.max(...allTimes);
+    const options: string[] = [];
+    for (let min = effectiveStartMin; min <= maxTime; min += 30) {
+      // Include nếu là start của 1 rule (valid start) HOẶC end của 1 rule (valid end time)
+      const isRuleBoundary = availableRules.some((rule) => {
+        const rEnd = parseRuleTimeToMinutes(rule.end_time);
+        return rEnd === min;
+      });
 
-      // Nếu date là hôm nay, lọc ra các mốc thời gian đã qua
-      let effectiveStartMin = minTime;
-      const isToday =
-        date && format(date, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
-
-      if (isToday) {
-        const currentMin = now.getHours() * 60 + now.getMinutes();
-        // Làm tròn lên mốc 30 phút tiếp theo
-        const nextSlot = Math.ceil(currentMin / 30) * 30;
-        effectiveStartMin = Math.max(minTime, nextSlot);
+      if (isWithinAnyRule(min) || isRuleBoundary) {
+        options.push(formatMinutesToTime(min));
       }
+    }
+    return options;
+  }, [availableRules, date]);
 
-      const options: string[] = [];
-      for (let min = effectiveStartMin; min <= maxTime; min += 30) {
-        const hours = Math.floor(min / 60);
-        const minutes = min % 60;
-        options.push(
-          `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}`,
-        );
-      }
+  const validateCustomTime = () => {
+    if (!customStartTime || !customEndTime) return true;
+    const duration = toMinutes(customEndTime) - toMinutes(customStartTime);
+    return duration > 0 && duration % 30 === 0;
+  };
 
-      return options;
-    };
-
-    if (availableRules.length > 0) {
-      const timeOptions = generateTimeOptionsScoped();
-      if (timeOptions.length >= 2) {
-        setCustomStartTime(timeOptions[0]);
-        setCustomEndTime(timeOptions[1]);
-      }
+  useEffect(() => {
+    if (timeOptions.length >= 2) {
+      setCustomStartTime((prev) =>
+        prev && timeOptions.includes(prev) ? prev : timeOptions[0],
+      );
+      setCustomEndTime((prev) => {
+        if (prev && timeOptions.includes(prev)) return prev;
+        return timeOptions[1];
+      });
     } else {
       setCustomStartTime("");
       setCustomEndTime("");
     }
-  }, [date, availableRules, now]);
+  }, [timeOptions]);
 
   const handlePayNow = () => {
     setShowConfirmDialog(false);
@@ -499,7 +423,6 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                                 selected={date}
                                 onSelect={(d) => {
                                   setDate(d);
-                                  setSelectedRule(null); // Reset selection on date change
                                 }}
                                 initialFocus
                                 disabled={(date) =>
@@ -615,13 +538,24 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                               <Label className="text-sm">Giờ bắt đầu</Label>
                               <Select
                                 value={customStartTime}
-                                onValueChange={setCustomStartTime}
+                                onValueChange={(value) => {
+                                  setCustomStartTime(value);
+                                  if (
+                                    customEndTime &&
+                                    toMinutes(customEndTime) <= toMinutes(value)
+                                  ) {
+                                    const next = timeOptions.find(
+                                      (t) => toMinutes(t) > toMinutes(value),
+                                    );
+                                    setCustomEndTime(next || "");
+                                  }
+                                }}
                               >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Chọn giờ" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {generateTimeOptions().map((time) => (
+                                  {timeOptions.map((time) => (
                                     <SelectItem key={time} value={time}>
                                       {time}
                                     </SelectItem>
@@ -639,8 +573,16 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                                   <SelectValue placeholder="Chọn giờ" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {generateTimeOptions().map((time) => (
-                                    <SelectItem key={time} value={time}>
+                                  {timeOptions.map((time) => (
+                                    <SelectItem
+                                      key={time}
+                                      value={time}
+                                      disabled={
+                                        !!customStartTime &&
+                                        toMinutes(time) <=
+                                          toMinutes(customStartTime)
+                                      }
+                                    >
                                       {time}
                                     </SelectItem>
                                   ))}
@@ -653,8 +595,7 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                             customEndTime && (
                               <p className="text-sm text-red-500">
                                 Thời lượng không hợp lệ. Vui lòng chọn thời
-                                lượng là bội của 30 phút hoặc không có khoảng
-                                trống trong khung giờ.
+                                lượng là bội của 30 phút.
                               </p>
                             )}
                         </div>
@@ -699,7 +640,6 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                               </span>
                             </div>
 
-                            {/* Price Breakdown */}
                             {priceCalculation.breakdown &&
                               priceCalculation.breakdown.length > 1 && (
                                 <div className="mb-2">
@@ -729,14 +669,9 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                               <span>Thời lượng:</span>
                               <span className="font-medium">
                                 {(() => {
-                                  const [startH, startM] = customStartTime
-                                    .split(":")
-                                    .map(Number);
-                                  const [endH, endM] = customEndTime
-                                    .split(":")
-                                    .map(Number);
                                   const durationMin =
-                                    endH * 60 + endM - (startH * 60 + startM);
+                                    toMinutes(customEndTime) -
+                                    toMinutes(customStartTime);
                                   const hours = Math.floor(durationMin / 60);
                                   const minutes = durationMin % 60;
                                   return `${hours > 0 ? hours + " giờ" : ""} ${
@@ -769,7 +704,11 @@ export function BookingModal({ subField, trigger }: BookingModalProps) {
                       <Button
                         onClick={handleBooking}
                         className="w-full sm:w-auto"
-                        disabled={isLoading}
+                        disabled={
+                          isLoading ||
+                          !validateCustomTime() ||
+                          priceCalculation.breakdown === null
+                        }
                       >
                         {isLoading ? (
                           <>

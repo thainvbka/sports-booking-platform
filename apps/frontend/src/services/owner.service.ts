@@ -61,9 +61,9 @@ export const ownerService = {
     return response.data;
   },
   getPricingRules: async (subFieldId: string, dayOfWeek: number) => {
-    const response = await api.get<ApiResponse<PricingRule[]>>(
-      `/pricing-rules?sub_field_id=${subFieldId}&day_of_week=${dayOfWeek}`,
-    );
+    const response = await api.get<
+      ApiResponse<{ pricingRules: PricingRule[] }>
+    >(`/pricing-rules?sub_field_id=${subFieldId}&day_of_week=${dayOfWeek}`);
     return response.data;
   },
   createPricingRules: async (payload: {

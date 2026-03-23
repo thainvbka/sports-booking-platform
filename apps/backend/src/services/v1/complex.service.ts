@@ -5,7 +5,13 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
-import { UpdateComplexInput } from "../../validations";
+import { CreateComplexInput, UpdateComplexInput } from "../../validations";
+
+interface CreateComplexData extends CreateComplexInput {
+  files: {
+    [fieldname: string]: Express.Multer.File[];
+  };
+}
 
 /**
  * OWNER SERVICES

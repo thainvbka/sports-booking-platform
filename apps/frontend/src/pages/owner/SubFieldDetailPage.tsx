@@ -20,11 +20,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { formatPrice, getSportTypeLabel } from "@/utils";
-import { useComplexStore } from "@/store/owner/useComplexStore";
-import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import { usePricingStore } from "@/store/owner/usePricingStore";
+import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import type { PricingRule } from "@/types";
+import { formatPrice, getSportTypeLabel } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -96,9 +95,25 @@ const formatTime = (time: string | Date | unknown): string => {
 };
 
 export function SubFieldDetailPage() {
-  const { selectedComplex, fetchComplexById } = useComplexStore();
-  const { selectedSubfield, isLoading, error, fetchSubfieldById, updateSubfield, deleteSubfield } = useSubfieldStore();
-  const { pricingRules, fetchPricingRules, addPricingRule, updatePricingRule, deletePricingRule, bulkDeletePricingRules, copyPricingRules } = usePricingStore();
+  const {
+    selectedSubfield,
+    isLoading,
+    error,
+    fetchSubfieldById,
+    updateSubfield,
+    deleteSubfield,
+  } = useSubfieldStore();
+  const {
+    pricingRules,
+    fetchPricingRules,
+    addPricingRule,
+    updatePricingRule,
+    deletePricingRule,
+    bulkDeletePricingRules,
+    copyPricingRules,
+  } = usePricingStore();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   const [date, setDate] = useState<Date>(new Date());
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -616,6 +631,3 @@ export function SubFieldDetailPage() {
     </div>
   );
 }
-
-
-

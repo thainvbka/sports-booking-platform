@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
+import {
+  formatMinutesToTime,
+  parseBookingTimeToVnMinutes,
+  parseRuleTimeToMinutes,
+} from "@/utils/time.utils";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -50,19 +55,17 @@ export function TimeSlotsGrid({
     fetchAvailability();
   }, [subFieldId, date]);
 
-  // Generate 30-min slots based on the pricing rules range
   const timeSlots = useMemo(() => {
     if (!pricingRules || pricingRules.length === 0) return [];
 
-    // Find min and max time from rules
     const allTimes = pricingRules.flatMap((rule) => {
-      const start = new Date(rule.start_time);
-      const end = new Date(rule.end_time);
-      return [
-        start.getHours() * 60 + start.getMinutes(),
-        end.getHours() * 60 + end.getMinutes(),
-      ];
+      const start = parseRuleTimeToMinutes(rule.start_time);
+      const end = parseRuleTimeToMinutes(rule.end_time);
+      if (start === null || end === null) return [];
+      return [start, end];
     });
+
+    if (allTimes.length === 0) return [];
 
     const startOfDay = Math.min(...allTimes);
     const endOfDay = Math.max(...allTimes);
@@ -80,43 +83,29 @@ export function TimeSlotsGrid({
     const slotStartMin = slotMin;
     const slotEndMin = slotMin + 30;
 
-    // Check Selection
+    // Dùng <= để bôi đen cả slot tại end time (VD: 17:30-18:30 → highlight 17:30, 18:00, 18:30)
     if (selectedStart && selectedEnd) {
       const [sH, sM] = selectedStart.split(":").map(Number);
       const [eH, eM] = selectedEnd.split(":").map(Number);
       const selStartMin = sH * 60 + sM;
       const selEndMin = eH * 60 + eM;
 
-      // Inclusive start, exclusive end logic for selection visual
-      if (slotStartMin >= selStartMin && slotEndMin <= selEndMin) {
+      if (slotStartMin >= selStartMin && slotStartMin <= selEndMin) {
         return "SELECTED";
       }
     }
 
-    // Check Bookings
+    // FIX: dùng parseBookingTimeToVnMinutes (toZonedTime) thay vì getHours() (local time)
     for (const booking of bookings) {
-      const start = new Date(booking.start);
-      const end = new Date(booking.end);
-      const bStartMin = start.getHours() * 60 + start.getMinutes();
-      const bEndMin = end.getHours() * 60 + end.getMinutes();
+      const bStartMin = parseBookingTimeToVnMinutes(booking.start);
+      const bEndMin = parseBookingTimeToVnMinutes(booking.end);
 
-      // Check overlapping
-      // Slot: [slotStartMin, slotEndMin)
-      // Booking: [bStartMin, bEndMin)
       if (Math.max(slotStartMin, bStartMin) < Math.min(slotEndMin, bEndMin)) {
         return booking.status === "PENDING" ? "PENDING" : "BOOKED";
       }
     }
 
     return "AVAILABLE";
-  };
-
-  const formatTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60)
-      .toString()
-      .padStart(2, "0");
-    const m = (minutes % 60).toString().padStart(2, "0");
-    return `${h}:${m}`;
   };
 
   if (isLoading) {
@@ -172,7 +161,7 @@ export function TimeSlotsGrid({
                 key={time}
                 className={cn(
                   "relative flex flex-col items-center justify-center rounded-md border p-2 text-xs font-medium transition-all",
-                  "h-14", // Fixed height for consistency
+                  "h-14",
                   status === "AVAILABLE" &&
                     "bg-white hover:border-primary/50 hover:bg-slate-50 text-slate-700 shadow-sm",
                   status === "SELECTED" &&
@@ -192,7 +181,7 @@ export function TimeSlotsGrid({
                     : {}
                 }
               >
-                <span>{formatTime(time)}</span>
+                <span>{formatMinutesToTime(time)}</span>
                 <span
                   className={cn(
                     "text-[10px] font-normal",

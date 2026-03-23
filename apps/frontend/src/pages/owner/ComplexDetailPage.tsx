@@ -17,6 +17,7 @@ import { toast } from "sonner";
 export function ComplexDetailPage() {
   const {
     selectedComplex,
+    selectedComplexPagination,
     isLoading,
     error,
     fetchComplexById,
@@ -31,6 +32,12 @@ export function ComplexDetailPage() {
     setSubfieldPage,
     setSubfieldSearch,
   } = useSubfieldStore();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const initialSearch = searchParams.get("search") || "";
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -230,8 +237,8 @@ export function ComplexDetailPage() {
       <ComplexDetailView
         mode="owner"
         complex={complex}
-        subfields={subfields || []}
-        pagination={subfieldPagination}
+        subfields={complex?.sub_fields || subfields || []}
+        pagination={selectedComplexPagination || subfieldPagination}
         isLoading={isLoading}
         error={error}
         searchTerm={searchTerm}
@@ -271,6 +278,3 @@ export function ComplexDetailPage() {
     </>
   );
 }
-
-
-
