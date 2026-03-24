@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { ForbiddenError } from "../utils/error.response";
 
 const authorize = (allowedRoles: ("PLAYER" | "OWNER" | "ADMIN")[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     console.log("--- DEBUG AUTHORIZE ---");
     console.log("Method:", req.method);
     console.log("URL:", req.originalUrl);
@@ -17,7 +17,7 @@ const authorize = (allowedRoles: ("PLAYER" | "OWNER" | "ADMIN")[]) => {
     const hasRole = user.roles.some((role) => allowedRoles.includes(role));
     if (!hasRole) {
       throw new ForbiddenError(
-        "You do not have permission to access this resource"
+        "You do not have permission to access this resource",
       );
     }
 

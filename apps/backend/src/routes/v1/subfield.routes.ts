@@ -1,14 +1,13 @@
 import { Router } from "express";
-import asyncHandler from "../../utils/asyncHandler";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
-import { upload } from "../../middlewares/multer";
+import asyncHandler from "../../utils/asyncHandler";
 
 import {
+  deleteSubfieldController,
   getOwnerSubfieldByIdController,
   updateSubfieldController,
-  deleteSubfieldController,
 } from "../../controllers/v1/subfield.controller";
 import { updateSubfieldSchema } from "../../validations";
 

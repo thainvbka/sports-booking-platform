@@ -1,12 +1,12 @@
 import { Router } from "express";
-import asyncHandler from "../../utils/asyncHandler";
 import {
+  getAllPublicSubfieldsController,
   getPublicComplexActiveController,
   getPublicComplexByIdController,
-  getAllPublicSubfieldsController,
   getPublicSubfieldByIdController,
   getSubfieldAvailabilityController,
 } from "../../controllers/v1/public.controller";
+import asyncHandler from "../../utils/asyncHandler";
 
 const router = Router();
 
@@ -16,7 +16,7 @@ router.get("/subfields", asyncHandler(getAllPublicSubfieldsController));
 router.get("/subfields/:id", asyncHandler(getPublicSubfieldByIdController));
 router.get(
   "/subfields/:id/availability",
-  asyncHandler(getSubfieldAvailabilityController)
+  asyncHandler(getSubfieldAvailabilityController),
 );
 
 export default router;

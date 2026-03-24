@@ -1,5 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { BadRequestError } from "../utils/error.response";
+import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodTypeAny } from "zod";
 
 // Middleware này nhận một schema Zod làm đối số
@@ -17,9 +16,22 @@ export const validate =
         query: req.query,
         params: req.params,
       });
+
       if ((parsed as any).body) req.body = (parsed as any).body;
-      if ((parsed as any).query) req.query = (parsed as any).query as any;
-      if ((parsed as any).params) req.params = (parsed as any).params as any;
+      if ((parsed as any).query) {
+        Object.defineProperty(req, "query", {
+          value: (parsed as any).query,
+          writable: true,
+          configurable: true,
+        });
+      }
+      if ((parsed as any).params) {
+        Object.defineProperty(req, "params", {
+          value: (parsed as any).params,
+          writable: true,
+          configurable: true,
+        });
+      }
       return next();
     } catch (error) {
       if (error instanceof ZodError) {

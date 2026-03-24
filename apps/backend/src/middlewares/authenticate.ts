@@ -1,11 +1,11 @@
-import { verifyAccessToken, JwtPayload } from "../libs/jwt";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
+import { JwtPayload, verifyAccessToken } from "../libs/jwt";
 import { UnauthorizedError } from "../utils/error.response";
 
 const authenticate = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _res: Response,
+  next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 

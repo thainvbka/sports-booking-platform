@@ -3,9 +3,9 @@ import multer from "multer";
 const storage = multer.memoryStorage();
 
 const imageFilter = (
-  req: Express.Request,
+  _req: Express.Request,
   file: Express.Multer.File,
-  cb: multer.FileFilterCallback
+  cb: multer.FileFilterCallback,
 ) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);

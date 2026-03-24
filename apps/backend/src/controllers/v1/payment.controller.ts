@@ -1,22 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import { SuccessResponse } from "../../utils/success.response";
 import { BadRequestError } from "../../utils/error.response";
+import { SuccessResponse } from "../../utils/success.response";
 
 import {
-  createConnectAccount,
   checkStripeAccountStatus,
   createCheckoutSession,
+  createConnectAccount,
   handleStripeWebhook,
 } from "../../services/v1/payment.service";
 
 export const createConnectAccountController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   if (!ownerId) {
     throw new BadRequestError(
-      "Owner profile not found. Please ensure you have an owner role."
+      "Owner profile not found. Please ensure you have an owner role.",
     );
   }
   const result = await createConnectAccount(ownerId);
@@ -28,12 +28,12 @@ export const createConnectAccountController = async (
 
 export const checkStripeAccountStatusController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
   if (!ownerId) {
     throw new BadRequestError(
-      "Owner profile not found. Please ensure you have an owner role."
+      "Owner profile not found. Please ensure you have an owner role.",
     );
   }
   const result = await checkStripeAccountStatus(ownerId);
@@ -45,7 +45,7 @@ export const checkStripeAccountStatusController = async (
 
 export const createCheckoutSessionController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const playerId = req.user?.profiles.playerId as string;
   const bookingIds: string[] = req.body.booking_ids;
@@ -59,7 +59,7 @@ export const createCheckoutSessionController = async (
 export const handleStripeWebhookController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const sig = req.headers["stripe-signature"] as string;

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import asyncHandler from "../../utils/asyncHandler";
+import { getOwnerDashboardStatsMetricsController } from "../../controllers/v1/owner_dashboard.controller";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
-import { getOwnerDashboardStatsMetricsController } from "../../controllers/v1/owner_dashboard.controller";
+import asyncHandler from "../../utils/asyncHandler";
 
 const router = Router();
 
@@ -13,7 +13,7 @@ router.get(
   "/stats-metrics",
   authenticate,
   authorize(["OWNER"]),
-  asyncHandler(getOwnerDashboardStatsMetricsController)
+  asyncHandler(getOwnerDashboardStatsMetricsController),
 );
 
 export default router;

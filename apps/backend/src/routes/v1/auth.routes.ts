@@ -1,21 +1,21 @@
 import { Router } from "express";
 import {
-  signupController,
-  verifyEmailController,
+  forgotPasswordController,
+  getCurrentUserController,
   loginController,
   logoutController,
   refreshTokenController,
-  forgotPasswordController,
   resetPasswordController,
-  getCurrentUserController,
+  signupController,
+  verifyEmailController,
 } from "../../controllers/v1/auth.controller";
+import authenticate from "../../middlewares/authenticate";
 import { validate } from "../../middlewares/validate";
 import asyncHandler from "../../utils/asyncHandler";
-import authenticate from "../../middlewares/authenticate";
 import {
-  registerSchema,
-  loginSchema,
   forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
   resetPasswordSchema,
   verifyEmailSchema,
 } from "../../validations";

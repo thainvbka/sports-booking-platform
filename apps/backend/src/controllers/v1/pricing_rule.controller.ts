@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import { SuccessResponse } from "../../utils/success.response";
 
 import {
-  createPricingRule,
-  getOwnerPricingRulesByDay,
-  updatePricingRule,
-  deletePricingRule,
   bulkDeletePricingRules,
   copyPricingRules,
+  createPricingRule,
+  deletePricingRule,
+  getOwnerPricingRulesByDay,
+  updatePricingRule,
 } from "../../services/v1/pricing_rule.service";
 
 export const createPricingRuleController = async (

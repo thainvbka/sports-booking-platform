@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
+import { config } from "../../configs";
 import {
-  signUp,
-  verifyEmail,
+  forgotPassword,
+  getCurrentUser,
+  handlerRefreshToken,
   logIn,
   logOut,
-  handlerRefreshToken,
-  forgotPassword,
   resetPassword,
-  getCurrentUser,
+  signUp,
+  verifyEmail,
 } from "../../services/v1/auth.service";
 import { Created, SuccessResponse } from "../../utils/success.response";
-import { config } from "../../configs";
 
 export const signupController = async (req: Request, res: Response) => {
   const userData = req.body;

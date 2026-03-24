@@ -1,32 +1,31 @@
 import { Router } from "express";
-import asyncHandler from "../../utils/asyncHandler";
+import {
+  cancelBookingController,
+  cancelRecurringBookingController,
+  createBookingController,
+  createRecurringBookingController,
+  getPlayerBookingsController,
+  ownerCancelBookingController,
+  ownerCancelRecurringBookingController,
+  ownerConfirmBookingController,
+  ownerConfirmRecurringBookingController,
+  ownerGetAllBookingsController,
+  ownerGetBookingStatsController,
+  reviewBookingController,
+  reviewRecurringBookingController,
+  updateBookingController,
+} from "../../controllers/v1/booking.controller";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
+import asyncHandler from "../../utils/asyncHandler";
 import {
+  confirmBookingSchema,
   createBookingSchema,
   createRecurringBookingSchema,
-  confirmBookingSchema,
   ownerCancelBookingSchema,
   ownerGetBookingsQuerySchema,
 } from "../../validations";
-import {
-  createBookingController,
-  reviewBookingController,
-  updateBookingController,
-  cancelBookingController,
-  createRecurringBookingController,
-  reviewRecurringBookingController,
-  getPlayerBookingsController,
-  ownerConfirmBookingController,
-  ownerCancelBookingController,
-  ownerGetAllBookingsController,
-  ownerGetBookingByIdController,
-  ownerGetBookingStatsController,
-  cancelRecurringBookingController,
-  ownerConfirmRecurringBookingController,
-  ownerCancelRecurringBookingController,
-} from "../../controllers/v1/booking.controller";
 
 const router = Router();
 

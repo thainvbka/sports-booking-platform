@@ -5,7 +5,7 @@ import { getOwnerDashboardStatsMetrics } from "../../services/v1/owner_dashboard
 
 export const getOwnerDashboardStatsMetricsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const ownerId = req.user?.profiles.ownerId as string;
 

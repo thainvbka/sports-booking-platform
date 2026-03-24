@@ -1,8 +1,8 @@
 import { Router } from "express";
-import asyncHandler from "../../utils/asyncHandler";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
+import asyncHandler from "../../utils/asyncHandler";
 
 import {
   createPricingRuleSchema,
@@ -10,12 +10,12 @@ import {
 } from "../../validations";
 
 import {
-  createPricingRuleController,
-  getOwnerPricingRulesByDayController,
-  updatePricingRuleController,
-  deletePricingRuleController,
   bulkDeletePricingRulesController,
   copyPricingRulesController,
+  createPricingRuleController,
+  deletePricingRuleController,
+  getOwnerPricingRulesByDayController,
+  updatePricingRuleController,
 } from "../../controllers/v1/pricing_rule.controller";
 
 const router = Router();

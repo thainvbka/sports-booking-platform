@@ -4,13 +4,8 @@ import {
   createComplex,
   updateComplex,
   getOwnerComplexes,
-  getPendingComplexes,
   deleteComplex,
   reactivateComplex,
-  approveComplex,
-  rejectComplex,
-  suspendComplex,
-  getAllComplexesAdmin,
   getOwnerComplexById,
 } from "../../services/v1/complex.service";
 import { BadRequestError } from "../../utils/error.response";
@@ -128,63 +123,5 @@ export const reactivateComplexController = async (
   return new SuccessResponse({
     message: "Complex reactivated successfully",
     data: {},
-  }).send(res);
-};
-
-//admin controllers
-export const getPendingComplexesController = async (
-  req: Request,
-  res: Response,
-) => {
-  const pendingComplexes = await getPendingComplexes();
-
-  return new SuccessResponse({
-    message: "Pending complexes retrieved successfully",
-    data: { complexes: pendingComplexes },
-  }).send(res);
-};
-
-export const approveComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id as string;
-
-  const approvedComplex = await approveComplex(complexId);
-
-  return new SuccessResponse({
-    message: "Complex approved successfully",
-    data: { complex: approvedComplex },
-  }).send(res);
-};
-
-export const rejectComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id as string;
-
-  const rejectedComplex = await rejectComplex(complexId);
-
-  return new SuccessResponse({
-    message: "Complex rejected successfully",
-    data: { complex: rejectedComplex },
-  }).send(res);
-};
-
-export const suspendComplexController = async (req: Request, res: Response) => {
-  const complexId = req.params.id as string;
-
-  const suspendedComplex = await suspendComplex(complexId);
-
-  return new SuccessResponse({
-    message: "Complex suspended successfully",
-    data: { complex: suspendedComplex },
-  }).send(res);
-};
-
-export const getAllComplexesAdminController = async (
-  req: Request,
-  res: Response,
-) => {
-  const complexes = await getAllComplexesAdmin();
-
-  return new SuccessResponse({
-    message: "All complexes retrieved successfully",
-    data: { complexes },
   }).send(res);
 };

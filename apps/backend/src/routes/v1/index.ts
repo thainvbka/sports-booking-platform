@@ -2,6 +2,7 @@ import { Router } from "express";
 import { apiLimiter, authLimiter } from "../../libs/rate_limit";
 import { SuccessResponse } from "../../utils/success.response";
 import accountRouter from "./account.routes";
+import adminRouter from "./admin.routes";
 import authRouter from "./auth.routes";
 import bookingRouter from "./booking.routes";
 import complexRouter from "./complex.routes";
@@ -23,6 +24,7 @@ router.get("/", (_req, res) => {
 router.use("/public", apiLimiter, publicRouter);
 router.use("/auth", authLimiter, authRouter);
 router.use("/account", apiLimiter, accountRouter);
+router.use("/admin", apiLimiter, adminRouter);
 router.use("/complexes", apiLimiter, complexRouter);
 router.use("/sub-fields", apiLimiter, subfieldRouter);
 router.use("/pricing-rules", apiLimiter, pricingRuleRouter);
