@@ -1,3 +1,4 @@
+import { BaseLayout } from "@/layouts/AdminLayout";
 import { MainLayout } from "@/layouts/MainLayout";
 import { AboutPage } from "@/pages/AboutPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
@@ -167,22 +168,22 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  // {
-  //   path: "/admin",
-  //   element: <DashboardLayout />,
-  //   children: [
-  //     {
-  //       index: true,
-  //       element: <AdminDashboardPage />,
-  //     },
-  //     {
-  //       path: "complexes",
-  //       element: <ComplexVerificationPage />,
-  //     },
-  //     {
-  //       path: "users",
-  //       element: <UsersPage />,
-  //     },
-  //   ],
-  // },
+  {
+    path: "/admin",
+    element: <BaseLayout />,
+    // children: [
+    //   {
+    //     index: true,
+    //     element: <BaseLayout />,
+    //   },
+    // {
+    //   path: "complexes",
+    //   element: <ComplexVerificationPage />,
+    // },
+    // {
+    //   path: "users",
+    //   element: <UsersPage />,
+    // },
+    // ],
+  },
 ]);
