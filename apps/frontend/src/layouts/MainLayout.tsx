@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 // import { NotificationPopover } from "@/components/ui/NotificationPopover";
+import { Logo } from "@/components/admin/Logo";
 import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -89,9 +90,7 @@ export function MainLayout() {
             </Sheet>
 
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white font-bold text-lg">
-                T
-              </div>
+              <Logo size={24} className="text-current" />
               <span className="text-xl font-bold hidden sm:inline-block">
                 T-Sport
               </span>

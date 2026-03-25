@@ -7,21 +7,19 @@ export function SiteFooter() {
       <div className="px-4 py-6 lg:px-6">
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>Made with</span>
-            <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-            <span>by</span>
             <Link
-              to="https://shadcnstore.com"
+              to="http://localhost:5173"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-foreground hover:text-primary transition-colors"
             >
-              ShadcnStore Team
+              T-Sport
             </Link>
+            <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+            <span>Nền tảng đặt sân thể thao số 1 Đại Cồ Việt</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Building beautiful, accessible blocks, templates and dashboards for
-            modern web applications.
+            Kết nối đam mê, Đơn giản hóa trải nghiệm
           </p>
         </div>
       </div>

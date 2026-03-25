@@ -1,6 +1,5 @@
 "use client";
 
-import { ModeToggle } from "@/components/admin/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -47,7 +46,6 @@ export function SiteHeader() {
                 GitHub
               </a>
             </Button>
-            <ModeToggle />
           </div>
         </div>
       </header>

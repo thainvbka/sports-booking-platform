@@ -26,8 +26,8 @@ import {
 
 const data = {
   user: {
-    name: "ShadcnStore",
-    email: "store@example.com",
+    name: "thainvbka",
+    email: "nvthai2904@gmail.com",
     avatar: "",
   },
   navGroups: [
@@ -86,8 +86,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Logo size={24} className="text-current" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">T-Sports</span>
-                  <span className="truncate text-xs">Admin Dashboard</span>
+                  <span className="truncate font-medium">T-Sport</span>
+                  <span className="truncate text-xs">Sport Booking Admin</span>
                 </div>
               </Link>
             </SidebarMenuButton>
