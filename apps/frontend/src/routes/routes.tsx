@@ -1,6 +1,7 @@
 import { BaseLayout } from "@/layouts/AdminLayout";
 import { MainLayout } from "@/layouts/MainLayout";
 import { AboutPage } from "@/pages/AboutPage";
+import AdminLoginPage from "@/pages/auth/admin/LoginPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
@@ -131,6 +132,10 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: "/admin/login",
+    element: <AdminLoginPage />,
+  },
+  {
     path: "/owner",
     element: (
       <ProtectedRoute allowedRoles={["OWNER"]}>
@@ -170,7 +175,11 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <BaseLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <BaseLayout />
+      </ProtectedRoute>
+    ),
     // children: [
     //   {
     //     index: true,

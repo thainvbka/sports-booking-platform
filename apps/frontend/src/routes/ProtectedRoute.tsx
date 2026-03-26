@@ -12,9 +12,12 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
+  const loginPath = allowedRoles?.includes("ADMIN")
+    ? "/admin/login"
+    : "/auth/login";
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   if (allowedRoles && user) {

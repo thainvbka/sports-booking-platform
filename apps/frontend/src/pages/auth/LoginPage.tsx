@@ -23,7 +23,11 @@ export function LoginPage() {
 
   const onSubmit = async (data: loginInput) => {
     try {
-      await login(data);
+      const isSuccess = await login(data);
+      if (!isSuccess) {
+        return;
+      }
+
       const user = useAuthStore.getState().user;
 
       if (user?.roles.includes("ADMIN")) {

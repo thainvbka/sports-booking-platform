@@ -17,7 +17,7 @@ interface AuthState {
   currentRole: string | null;
   isLoading: boolean;
   error: string | null;
-  login: (data: loginInput) => Promise<void>;
+  login: (data: loginInput) => Promise<boolean>;
   register: (data: registerInput) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -59,12 +59,14 @@ export const useAuthStore = create<AuthState>()(
             currentRole: defaultRole,
             isLoading: false,
           });
+          return true;
         } catch (error: unknown) {
           const apiError = error as ApiError;
           set({
             error: apiError?.message || "Đăng nhập thất bại",
             isLoading: false,
           });
+          return false;
         }
       },
 
