@@ -10,6 +10,7 @@ import { SiteHeader } from "@/components/admin/SiteHeader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useSidebarConfig } from "@/hooks/use-sidebar-config";
 import * as React from "react";
+import { Outlet } from "react-router-dom";
 
 interface BaseLayoutProps {
   children?: React.ReactNode;
@@ -20,6 +21,7 @@ interface BaseLayoutProps {
 export function BaseLayout({ children, title, description }: BaseLayoutProps) {
   // const [themeCustomizerOpen, setThemeCustomizerOpen] = React.useState(false);
   const { config } = useSidebarConfig();
+  const content = children ?? <Outlet />;
 
   return (
     <SidebarProvider
@@ -56,7 +58,7 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
                       </div>
                     </div>
                   )}
-                  {children}
+                  {content}
                 </div>
               </div>
             </div>
@@ -82,7 +84,7 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
                       </div>
                     </div>
                   )}
-                  {children}
+                  {content}
                 </div>
               </div>
             </div>

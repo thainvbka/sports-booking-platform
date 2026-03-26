@@ -1,7 +1,9 @@
 import { BaseLayout } from "@/layouts/AdminLayout";
 import { MainLayout } from "@/layouts/MainLayout";
 import { AboutPage } from "@/pages/AboutPage";
-import AdminLoginPage from "@/pages/auth/admin/LoginPage";
+import AdminLoginPage from "@/pages/admin/auth/LoginPage";
+import AdminSignupPage from "@/pages/admin/auth/SignupPage";
+import Dashboard from "@/pages/admin/dashboard/Dashboard";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
@@ -136,6 +138,10 @@ export const router = createBrowserRouter([
     element: <AdminLoginPage />,
   },
   {
+    path: "/admin/signup",
+    element: <AdminSignupPage />,
+  },
+  {
     path: "/owner",
     element: (
       <ProtectedRoute allowedRoles={["OWNER"]}>
@@ -180,19 +186,23 @@ export const router = createBrowserRouter([
         <BaseLayout />
       </ProtectedRoute>
     ),
-    // children: [
-    //   {
-    //     index: true,
-    //     element: <BaseLayout />,
-    //   },
-    // {
-    //   path: "complexes",
-    //   element: <ComplexVerificationPage />,
-    // },
-    // {
-    //   path: "users",
-    //   element: <UsersPage />,
-    // },
-    // ],
+    children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      // {
+      //   path: "complexes",
+      //   element: <ComplexVerificationPage />,
+      // },
+      // {
+      //   path: "users",
+      //   element: <UsersPage />,
+      // },
+    ],
   },
 ]);

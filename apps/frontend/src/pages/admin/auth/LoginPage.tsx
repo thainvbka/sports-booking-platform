@@ -1,4 +1,4 @@
-import { LoginForm } from "@/pages/auth/admin/LoginForm";
+import { LoginForm } from "@/pages/admin/auth/LoginForm";
 
 export default function LoginPage() {
   return (
