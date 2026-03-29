@@ -1,115 +1,124 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import type { RevenueTrendPoint } from "@/types/admin.types";
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const salesData = [
-  { month: "Jan", sales: 12500, target: 15000 },
-  { month: "Feb", sales: 18200, target: 15000 },
-  { month: "Mar", sales: 16800, target: 15000 },
-  { month: "Apr", sales: 22400, target: 20000 },
-  { month: "May", sales: 24600, target: 20000 },
-  { month: "Jun", sales: 28200, target: 25000 },
-  { month: "Jul", sales: 31500, target: 25000 },
-  { month: "Aug", sales: 29800, target: 25000 },
-  { month: "Sep", sales: 33200, target: 30000 },
-  { month: "Oct", sales: 35100, target: 30000 },
-  { month: "Nov", sales: 38900, target: 35000 },
-  { month: "Dec", sales: 42300, target: 35000 },
-]
-
-const chartConfig = {
-  sales: {
-    label: "Sales",
-    color: "var(--primary)",
-  },
-  target: {
-    label: "Target",
-    color: "var(--primary)",
-  },
+interface SalesChartProps {
+  data: RevenueTrendPoint[] | undefined;
 }
 
-export function SalesChart() {
-  const [timeRange, setTimeRange] = useState("12m")
+const chartConfig = {
+  revenue: {
+    label: "Revenue",
+    color: "var(--chart-1)",
+  },
+  cancelRate: {
+    label: "Cancel Rate %",
+    color: "var(--chart-2)",
+  },
+  completionRate: {
+    label: "Completion Rate %",
+    color: "var(--chart-4)",
+  },
+};
 
+export function SalesChart({ data = [] }: SalesChartProps) {
   return (
-    <Card className="cursor-pointer">
+    <Card className="cursor-pointer h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>Sales Performance</CardTitle>
-          <CardDescription>Monthly sales vs targets</CardDescription>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32 cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="3m" className="cursor-pointer">Last 3 months</SelectItem>
-              <SelectItem value="6m" className="cursor-pointer">Last 6 months</SelectItem>
-              <SelectItem value="12m" className="cursor-pointer">Last 12 months</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" className="cursor-pointer">
-            Export
-          </Button>
+          <CardTitle>Revenue vs Booking Quality</CardTitle>
+          <CardDescription>
+            Track monthly revenue alongside cancel and completion rates
+          </CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="p-0 pt-6">
+      <CardContent className="p-0 pt-6 flex-1">
         <div className="px-6 pb-6">
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
-            <AreaChart data={salesData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-sales)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--color-sales)" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="colorTarget" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-target)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="var(--color-target)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
-              <XAxis 
-                dataKey="month" 
+          <ChartContainer config={chartConfig} className="h-87.5 w-full">
+            <ComposedChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted/30"
+              />
+              <XAxis
+                dataKey="name"
                 axisLine={false}
                 tickLine={false}
                 className="text-xs"
                 tick={{ fontSize: 12 }}
               />
-              <YAxis 
+              <YAxis
+                yAxisId="left"
                 axisLine={false}
                 tickLine={false}
                 className="text-xs"
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                axisLine={false}
+                tickLine={false}
+                className="text-xs"
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => `${value}%`}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
-                type="monotone"
-                dataKey="target"
-                stackId="1"
-                stroke="var(--color-target)"
-                fill="url(#colorTarget)"
-                strokeDasharray="5 5"
-                strokeWidth={1}
+              <ChartLegend content={<ChartLegendContent />} />
+              <Bar
+                yAxisId="left"
+                dataKey="revenue"
+                fill="var(--color-revenue)"
+                radius={[4, 4, 0, 0]}
+                barSize={26}
               />
-              <Area
+              <Line
+                yAxisId="right"
                 type="monotone"
-                dataKey="sales"
-                stackId="2"
-                stroke="var(--color-sales)"
-                fill="url(#colorSales)"
-                strokeWidth={1}
+                dataKey="cancelRate"
+                stroke="var(--color-cancelRate)"
+                strokeWidth={2}
+                dot={{ r: 3 }}
               />
-            </AreaChart>
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="completionRate"
+                stroke="var(--color-completionRate)"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={{ r: 3 }}
+              />
+            </ComposedChart>
           </ChartContainer>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

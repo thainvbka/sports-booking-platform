@@ -2,11 +2,10 @@
 
 import { Logo } from "@/components/admin/Logo";
 import {
+  Building2,
   Calendar,
-  CheckSquare,
+  CreditCard,
   LayoutPanelLeft,
-  Mail,
-  MessageCircle,
   Users,
 } from "lucide-react";
 import * as React from "react";
@@ -23,16 +22,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuthStore } from "@/store/useAuthStore";
 
-const data = {
-  user: {
-    name: "thainvbka",
-    email: "nvthai2904@gmail.com",
-    avatar: "",
-  },
-  navGroups: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuthStore();
+
+  const navGroups = [
     {
-      label: "Dashboards",
+      label: "General",
       items: [
         {
           title: "Dashboard",
@@ -42,39 +39,43 @@ const data = {
       ],
     },
     {
-      label: "Apps",
+      label: "Management",
       items: [
         {
-          title: "Mail",
-          url: "/mail",
-          icon: Mail,
-        },
-        {
-          title: "Tasks",
-          url: "/tasks",
-          icon: CheckSquare,
-        },
-        {
-          title: "Chat",
-          url: "/chat",
-          icon: MessageCircle,
-        },
-        {
-          title: "Calendar",
-          url: "/calendar",
-          icon: Calendar,
-        },
-        {
-          title: "Users",
-          url: "/users",
+          title: "User Management",
+          url: "/admin/users",
           icon: Users,
+        },
+        {
+          title: "Complex Verification",
+          url: "/admin/complexes",
+          icon: Building2,
         },
       ],
     },
-  ],
-};
+    {
+      label: "Monitoring",
+      items: [
+        {
+          title: "Bookings",
+          url: "/admin/bookings",
+          icon: Calendar,
+        },
+        {
+          title: "Payments",
+          url: "/admin/payments",
+          icon: CreditCard,
+        },
+      ],
+    },
+  ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const userData = {
+    name: user?.full_name || "Admin",
+    email: user?.email || "",
+    avatar: "",
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -95,12 +96,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {data.navGroups.map((group) => (
+        {navGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );

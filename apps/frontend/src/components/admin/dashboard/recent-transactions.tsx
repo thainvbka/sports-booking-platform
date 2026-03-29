@@ -1,131 +1,110 @@
-"use client"
+"use client";
 
-import { Eye, MoreHorizontal } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { assetUrl } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const transactions = [
-  {
-    id: "TXN-001",
-    customer: {
-      name: "Olivia Martin",
-      email: "olivia.martin@email.com",
-      avatar: assetUrl("https://notion-avatars.netlify.app/api/avatar/?preset=female-"),
-    },
-    amount: "$1,999.00",
-    status: "completed",
-    date: "2 hours ago",
-  },
-  {
-    id: "TXN-002",
-    customer: {
-      name: "Jackson Lee",
-      email: "jackson.lee@email.com",
-      avatar: assetUrl("https://notion-avatars.netlify.app/api/avatar/?preset=male-1"),
-    },
-    amount: "$2,999.00",
-    status: "pending",
-    date: "5 hours ago",
-  },
-  {
-    id: "TXN-003",
-    customer: {
-      name: "Isabella Nguyen",
-      email: "isabella.nguyen@email.com",
-      avatar: assetUrl("https://notion-avatars.netlify.app/api/avatar/?preset=female-2"),
-    },
-    amount: "$39.00",
-    status: "completed",
-    date: "1 day ago",
-  },
-  {
-    id: "TXN-004",
-    customer: {
-      name: "William Kim",
-      email: "will@email.com",
-      avatar: assetUrl("https://notion-avatars.netlify.app/api/avatar/?preset=male-5"),
-    },
-    amount: "$299.00",
-    status: "failed",
-    date: "2 days ago",
-  },
-  {
-    id: "TXN-005",
-    customer: {
-      name: "Sofia Davis",
-      email: "sofia.davis@email.com",
-      avatar: assetUrl("https://notion-avatars.netlify.app/api/avatar/?preset=female-4"),
-    },
-    amount: "$99.00",
-    status: "completed",
-    date: "3 days ago",
-  },
-]
+export interface RecentPayment {
+  id: string;
+  status: string;
+  amount: number;
+  created_at: string;
+  bookings?: Array<{
+    player?: {
+      account?: {
+        full_name?: string;
+        email?: string;
+      };
+    };
+  }>;
+}
 
-export function RecentTransactions() {
+interface RecentTransactionsProps {
+  payments: RecentPayment[] | undefined;
+}
+
+export function RecentTransactions({ payments = [] }: RecentTransactionsProps) {
   return (
-    <Card className="cursor-pointer">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <div>
-          <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>Latest customer transactions</CardDescription>
+    <Card className="h-full shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 pt-4 px-6">
+        <div className="space-y-0.5">
+          <CardTitle className="text-lg">Recent Activity</CardTitle>
+          <CardDescription className="text-[11px]">Latest platform payments</CardDescription>
         </div>
-        <Button variant="outline" size="sm" className="cursor-pointer">
-          <Eye className="h-4 w-4 mr-2" />
-          View All
+        <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest px-2" asChild>
+          <Link to="/admin/payments">
+            All <ArrowRight className="ml-1 h-3 w-3" />
+          </Link>
         </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {transactions.map((transaction) => (
-          <div key={transaction.id} >
-            <div className="flex p-3 rounded-lg border gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={transaction.customer.avatar} alt={transaction.customer.name} />
-                <AvatarFallback>{transaction.customer.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-1 items-center flex-wrap justify-between gap-1">
-                <div className="flex items-center space-x-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{transaction.customer.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{transaction.customer.email}</p>
+      <CardContent className="px-6 pb-4">
+        <div className="space-y-3">
+          {payments.slice(0, 8).map((payment) => {
+            const playerName =
+              payment.bookings?.[0]?.player?.account?.full_name ||
+              "Unknown Player";
+            const playerEmail =
+              payment.bookings?.[0]?.player?.account?.email || "";
+
+            return (
+              <div key={payment.id} className="flex items-center justify-between gap-3 p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar className="h-7 w-7 border shadow-sm">
+                    <AvatarImage
+                      src={`https://ui-avatars.com/api/?name=${playerName}&background=random`}
+                      alt={playerName}
+                    />
+                    <AvatarFallback className="text-[8px] font-black uppercase">
+                      {playerName.substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold truncate leading-none mb-0.5">{playerName}</p>
+                    <p className="text-[9px] text-muted-foreground truncate italic tracking-tighter">{playerEmail}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Badge
-                    variant={
-                      transaction.status === "completed" ? "default" :
-                      transaction.status === "pending" ? "secondary" : "destructive"
-                    }
-                    className="cursor-pointer"
-                  >
-                    {transaction.status}
-                  </Badge>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{transaction.amount}</p>
-                    <p className="text-xs text-muted-foreground">{transaction.date}</p>
+
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-black leading-none mb-1">
+                    {new Intl.NumberFormat("vi-VN").format(payment.amount)} ₫
+                  </p>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-tighter">
+                      {new Date(payment.created_at).toLocaleDateString("en-US", { day: "2-digit", month: "short" })}
+                    </span>
+                    <Badge
+                      variant={
+                        payment.status === "SUCCESS"
+                          ? "default"
+                          : payment.status === "PENDING"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                      className="h-3 px-1 text-[7px] font-black uppercase rounded-[2px]"
+                    >
+                      {payment.status}
+                    </Badge>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="cursor-pointer">View Details</DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">Download Receipt</DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">Contact Customer</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
+        {payments.length === 0 && (
+          <div className="text-center py-10 text-muted-foreground italic text-xs">
+             No recent activity found
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }

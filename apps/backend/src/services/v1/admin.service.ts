@@ -11,24 +11,592 @@ import { BadRequestError, NotFoundError } from "../../utils/error.response";
  * Dashboard Statistics
  */
 export const getStats = async () => {
-  const [totalUsers, totalComplexes, totalBookings, totalRevenue] =
-    await Promise.all([
-      prisma.account.count(),
-      prisma.complex.count(),
-      prisma.booking.count(),
-      prisma.payment.aggregate({
-        _sum: { amount: true },
-        where: { status: "SUCCESS" },
-      }),
-    ]);
+  const now = new Date();
+  const firstDayCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const [
+    totalUsers,
+    totalComplexes,
+    totalBookings,
+    totalRevenue,
+    pendingComplexesCount,
+    lastMonthRevenue,
+    lastMonthBookings,
+    lastMonthUsers,
+  ] = await Promise.all([
+    prisma.account.count(),
+    prisma.complex.count(),
+    prisma.booking.count(),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { status: "SUCCESS" },
+    }),
+    prisma.complex.count({ where: { status: "PENDING" } }),
+    // Last month revenue
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: {
+        status: "SUCCESS",
+        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
+      },
+    }),
+    // Last month bookings
+    prisma.booking.count({
+      where: {
+        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
+      },
+    }),
+    // Last month users
+    prisma.account.count({
+      where: {
+        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
+      },
+    }),
+  ]);
+
+  const currentRevenue = Number(totalRevenue._sum.amount) || 0;
+  const prevRevenue = Number(lastMonthRevenue._sum.amount) || 0;
+
+  // Calculate growth percentage
+  const calculateGrowth = (current: number, prev: number) => {
+    if (prev === 0) return current > 0 ? 100 : 0;
+    return Number((((current - prev) / prev) * 100).toFixed(1));
+  };
 
   return {
     totalUsers,
     totalComplexes,
     totalBookings,
-    totalRevenue: Number(totalRevenue._sum.amount) || 0,
+    totalRevenue: currentRevenue,
+    pendingComplexesCount,
+    revenueGrowth: calculateGrowth(currentRevenue, prevRevenue),
+    bookingGrowth: calculateGrowth(totalBookings, lastMonthBookings),
+    userGrowth: calculateGrowth(totalUsers, lastMonthUsers),
   };
 };
+
+/**
+ * Dashboard Analytics for Charts
+ */
+/**
+ * Dashboard Analytics — Deep Version
+ *
+ * 5 nhóm phân tích, 11 metrics, 0 trùng lặp.
+ * Tất cả query chạy song song qua Promise.all để giảm latency tối đa.
+ */
+export const getAnalytics = async () => {
+  const now = new Date();
+
+  // ─── Time windows ─────────────────────────────────────────────────────────
+  const sixMonthsAgo = new Date(
+    now.getFullYear(),
+    now.getMonth() - 5,
+    1,
+    0,
+    0,
+    0,
+    0,
+  );
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999,
+  );
+
+  // ─── Fetch tất cả data song song ──────────────────────────────────────────
+  const [
+    // KPIs: so sánh tháng này vs tháng trước
+    kpiThisRevenue,
+    kpiLastRevenue,
+    kpiThisBookings,
+    kpiLastBookings,
+    kpiThisUsers,
+    kpiLastUsers,
+
+    // Trend 6 tháng
+    payments6m,
+    bookings6m,
+
+    // Retention: tất cả booking 6 tháng để phân biệt new vs returning player
+    bookingsForRetention,
+
+    // Operations 30 ngày
+    recentBookingsOps,
+    bookingStatusCounts,
+
+    // Revenue by sport type (COMPLETED)
+    bookingsBySport,
+
+    // Addon upsell
+    addonAggregate,
+    baseRevenue30d,
+
+    // Complex performance
+    complexPerformance,
+
+    // Payment providers
+    paymentProviders,
+
+    // Rating distribution
+    ratingDistribution,
+    systemAvgRating,
+
+    // User growth monthly
+    accounts6m,
+  ] = await Promise.all([
+    // ── KPIs ──
+    prisma.payment.aggregate({
+      where: { status: "SUCCESS", created_at: { gte: startOfThisMonth } },
+      _sum: { amount: true },
+    }),
+    prisma.payment.aggregate({
+      where: {
+        status: "SUCCESS",
+        created_at: { gte: startOfLastMonth, lte: endOfLastMonth },
+      },
+      _sum: { amount: true },
+    }),
+    prisma.booking.count({ where: { created_at: { gte: startOfThisMonth } } }),
+    prisma.booking.count({
+      where: { created_at: { gte: startOfLastMonth, lte: endOfLastMonth } },
+    }),
+    prisma.account.count({ where: { created_at: { gte: startOfThisMonth } } }),
+    prisma.account.count({
+      where: { created_at: { gte: startOfLastMonth, lte: endOfLastMonth } },
+    }),
+
+    // ── Trend 6 tháng ──
+    prisma.payment.findMany({
+      where: { status: "SUCCESS", created_at: { gte: sixMonthsAgo } },
+      select: { amount: true, created_at: true },
+    }),
+    prisma.booking.findMany({
+      where: { created_at: { gte: sixMonthsAgo } },
+      select: { created_at: true, status: true },
+    }),
+
+    // ── Retention ──
+    prisma.booking.findMany({
+      where: { created_at: { gte: sixMonthsAgo } },
+      select: { player_id: true, created_at: true },
+      orderBy: { created_at: "asc" },
+    }),
+
+    // ── Operations ── (dùng start_time — khi sân ĐƯỢC ĐẶT, không phải khi booking tạo)
+    prisma.booking.findMany({
+      where: {
+        status: { in: ["CONFIRMED", "COMPLETED"] },
+        start_time: { gte: thirtyDaysAgo },
+      },
+      select: { start_time: true, total_price: true, end_time: true },
+    }),
+    prisma.booking.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      where: { created_at: { gte: thirtyDaysAgo } },
+    }),
+
+    // ── Sport revenue ──
+    prisma.booking.findMany({
+      where: { status: "COMPLETED", created_at: { gte: sixMonthsAgo } },
+      select: {
+        total_price: true,
+        sub_field: { select: { sport_type: true } },
+      },
+    }),
+
+    // ── Addon upsell ──
+    prisma.bookingAddon.aggregate({
+      where: { booking: { created_at: { gte: thirtyDaysAgo } } },
+      _sum: { unit_price: true },
+      _count: { id: true },
+    }),
+    prisma.payment.aggregate({
+      where: { status: "SUCCESS", created_at: { gte: thirtyDaysAgo } },
+      _sum: { amount: true },
+    }),
+
+    // ── Complex performance ──
+    prisma.complex.findMany({
+      where: { status: "ACTIVE" },
+      take: 10,
+      select: {
+        complex_name: true,
+        avg_rating: true,
+        total_reviews: true,
+        sub_fields: {
+          where: { isDelete: false },
+          select: {
+            bookings: {
+              where: { status: "COMPLETED", created_at: { gte: sixMonthsAgo } },
+              select: { total_price: true, start_time: true, end_time: true },
+            },
+          },
+        },
+      },
+    }),
+
+    // ── Payment providers ──
+    prisma.payment.groupBy({
+      by: ["provider"],
+      where: { status: "SUCCESS", created_at: { gte: thirtyDaysAgo } },
+      _count: { id: true },
+      _sum: { amount: true },
+    }),
+
+    // ── Ratings ──
+    prisma.review.groupBy({
+      by: ["rating"],
+      _count: { id: true },
+      where: { created_at: { gte: thirtyDaysAgo } },
+    }),
+    prisma.review.aggregate({ _avg: { rating: true } }),
+
+    // ── User growth ──
+    prisma.account.findMany({
+      where: { created_at: { gte: sixMonthsAgo } },
+      select: { created_at: true },
+    }),
+  ]);
+
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+  const MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  /** Tạo mảng 6 tháng gần nhất dưới dạng {month, year} */
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return {
+      month: d.getMonth(),
+      year: d.getFullYear(),
+      label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
+    };
+  });
+
+  const pct = (a: number, b: number) =>
+    b > 0 ? Math.round(((a - b) / b) * 100) : a > 0 ? 100 : 0;
+
+  // ─── 1. KPI Cards ─────────────────────────────────────────────────────────
+  const thisRev = Number(kpiThisRevenue._sum.amount) || 0;
+  const lastRev = Number(kpiLastRevenue._sum.amount) || 0;
+  const avgRating = Number(systemAvgRating._avg.rating?.toFixed(1)) || 0;
+  const addonRev = Number(addonAggregate._sum.unit_price) || 0;
+  const totalRev30d = Number(baseRevenue30d._sum.amount) || 0;
+
+  const kpis = {
+    revenue: {
+      thisMonth: thisRev,
+      lastMonth: lastRev,
+      growth: pct(thisRev, lastRev), // % tăng trưởng doanh thu MoM
+    },
+    bookings: {
+      thisMonth: kpiThisBookings,
+      lastMonth: kpiLastBookings,
+      growth: pct(kpiThisBookings, kpiLastBookings),
+    },
+    newUsers: {
+      thisMonth: kpiThisUsers,
+      lastMonth: kpiLastUsers,
+      growth: pct(kpiThisUsers, kpiLastUsers),
+    },
+    avgRating,
+    addonUpsell: {
+      revenue30d: addonRev,
+      // Tỉ lệ doanh thu từ addon so với tổng — đo hiệu quả upsell
+      revenueSharePct:
+        totalRev30d > 0 ? Math.round((addonRev / totalRev30d) * 100) : 0,
+      totalAddons: addonAggregate._count.id,
+    },
+  };
+
+  // ─── 2. Revenue Trend + Cancel Rate (6 tháng) ────────────────────────────
+  //  Kết hợp revenue + cancel rate trong 1 chart → thấy ngay correlation
+  const revenueTrend = last6Months.map(({ month, year, label }) => {
+    const revenue = payments6m
+      .filter((p) => {
+        const d = new Date(p.created_at);
+        return d.getMonth() === month && d.getFullYear() === year;
+      })
+      .reduce((sum, p) => sum + Number(p.amount), 0);
+
+    const monthBookings = bookings6m.filter((b) => {
+      const d = new Date(b.created_at);
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+    const total = monthBookings.length;
+    const canceled = monthBookings.filter(
+      (b) => b.status === "CANCELED",
+    ).length;
+    const completed = monthBookings.filter(
+      (b) => b.status === "COMPLETED",
+    ).length;
+
+    return {
+      name: label,
+      revenue,
+      bookings: total,
+      completed,
+      canceled,
+      cancelRate: total > 0 ? Math.round((canceled / total) * 100) : 0,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  });
+
+  // ─── 3. Retention: New vs Returning Players (6 tháng) ────────────────────
+  //  Một metric KPI về sức khoẻ cộng đồng — không thể thay bằng user growth
+  const firstBookingOf: Record<string, string> = {}; // player_id → month-year label
+  const retentionData = last6Months.map(({ month, year, label }) => {
+    const monthBookings = bookingsForRetention.filter((b) => {
+      const d = new Date(b.created_at);
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+
+    const seen = new Set<string>();
+    let newPlayers = 0,
+      returningPlayers = 0;
+
+    for (const b of monthBookings) {
+      if (seen.has(b.player_id)) continue;
+      seen.add(b.player_id);
+      if (!firstBookingOf[b.player_id]) {
+        firstBookingOf[b.player_id] = label;
+        newPlayers++;
+      } else {
+        returningPlayers++;
+      }
+    }
+
+    return { name: label, new: newPlayers, returning: returningPlayers };
+  });
+
+  // ─── 4. Conversion Funnel (30 ngày) ──────────────────────────────────────
+  //  Đo loss tại từng bước: created → confirmed → completed
+  const statusMap = Object.fromEntries(
+    bookingStatusCounts.map((s) => [s.status, s._count.id]),
+  );
+  const totalCreated = Object.values(statusMap).reduce((a, b) => a + b, 0);
+  const totalConfirmed =
+    (statusMap["CONFIRMED"] || 0) + (statusMap["COMPLETED"] || 0);
+  const totalCompleted = statusMap["COMPLETED"] || 0;
+  const totalCanceled = statusMap["CANCELED"] || 0;
+
+  const conversionFunnel = [
+    { stage: "Tạo booking", value: totalCreated, dropOffPct: 0 },
+    {
+      stage: "Confirmed",
+      value: totalConfirmed,
+      dropOffPct:
+        totalCreated > 0
+          ? Math.round(((totalCreated - totalConfirmed) / totalCreated) * 100)
+          : 0,
+    },
+    {
+      stage: "Completed",
+      value: totalCompleted,
+      dropOffPct:
+        totalConfirmed > 0
+          ? Math.round(
+              ((totalConfirmed - totalCompleted) / totalConfirmed) * 100,
+            )
+          : 0,
+    },
+    {
+      stage: "Canceled",
+      value: totalCanceled,
+      dropOffPct:
+        totalCreated > 0 ? Math.round((totalCanceled / totalCreated) * 100) : 0,
+    },
+  ];
+
+  // ─── 5. Peak Hours (dùng start_time — giờ SÂN HOẠT ĐỘNG, không phải giờ đặt) ──
+  const hourlyDistribution = Array.from({ length: 24 }, (_, h) => {
+    const booksAtHour = recentBookingsOps.filter(
+      (b) => new Date(b.start_time).getHours() === h,
+    );
+    return {
+      hour: h,
+      name: `${h}:00`,
+      bookings: booksAtHour.length,
+      revenue: booksAtHour.reduce((s, b) => s + Number(b.total_price), 0),
+    };
+  });
+
+  // ─── 6. Peak Days of Week ─────────────────────────────────────────────────
+  const dailyDistribution = DAYS.map((name, i) => {
+    const booksOnDay = recentBookingsOps.filter(
+      (b) => new Date(b.start_time).getDay() === i,
+    );
+    return {
+      name,
+      bookings: booksOnDay.length,
+      revenue: booksOnDay.reduce((s, b) => s + Number(b.total_price), 0),
+    };
+  });
+
+  // ─── 7. Revenue by Sport Type ─────────────────────────────────────────────
+  //  Không chỉ đếm subfield — mà so revenue + avg booking value để ưu tiên môn nào
+  const sportMap: Record<string, { revenue: number; bookings: number }> = {};
+  for (const b of bookingsBySport) {
+    const sport = b.sub_field.sport_type;
+    if (!sportMap[sport]) sportMap[sport] = { revenue: 0, bookings: 0 };
+    sportMap[sport].revenue += Number(b.total_price);
+    sportMap[sport].bookings += 1;
+  }
+  const sportRevenue = Object.entries(sportMap)
+    .map(([name, { revenue, bookings }]) => ({
+      name,
+      revenue,
+      bookings,
+      avgBookingValue: bookings > 0 ? Math.round(revenue / bookings) : 0,
+    }))
+    .sort((a, b) => b.revenue - a.revenue);
+
+  // ─── 8. Top 5 Complexes — Revenue + Rating + Utilization ─────────────────
+  //  Utilization rate = % giờ sân được đặt / tổng giờ khả dụng (ước tính 12h/day * 180 days)
+  const AVAILABLE_HOURS_PER_SUBFIELD = 12 * 180;
+
+  const topComplexes = complexPerformance
+    .map((c) => {
+      const allBookings = c.sub_fields.flatMap((sf) => sf.bookings);
+      const revenue = allBookings.reduce(
+        (s, b) => s + Number(b.total_price),
+        0,
+      );
+      const bookedHours = allBookings.reduce((s, b) => {
+        return (
+          s +
+          (new Date(b.end_time).getTime() - new Date(b.start_time).getTime()) /
+            3_600_000
+        );
+      }, 0);
+      const totalAvailable = c.sub_fields.length * AVAILABLE_HOURS_PER_SUBFIELD;
+
+      return {
+        name: c.complex_name,
+        revenue,
+        bookings: allBookings.length,
+        avgRating: Number(c.avg_rating) || 0,
+        totalReviews: c.total_reviews,
+        utilizationRate:
+          totalAvailable > 0
+            ? Math.min(100, Math.round((bookedHours / totalAvailable) * 100))
+            : 0,
+      };
+    })
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5);
+
+  // ─── 9. Payment Providers Breakdown (30 ngày) ────────────────────────────
+  const paymentProviderData = paymentProviders.map((p) => {
+    const revenue = Number(p._sum.amount) || 0;
+    const count = p._count.id;
+    return {
+      provider: p.provider,
+      revenue,
+      bookings: count,
+      avgTransaction: count > 0 ? Math.round(revenue / count) : 0,
+    };
+  });
+
+  // ─── 10. Rating Distribution 1–5 ─────────────────────────────────────────
+  //  Phân phối sao → phát hiện pattern (nhiều 1★ và 5★ = polarised, ít 3★ = healthy)
+  const ratingDist = [1, 2, 3, 4, 5].map((star) => ({
+    star,
+    count: ratingDistribution.find((r) => r.rating === star)?._count.id || 0,
+  }));
+
+  // ─── 11. User Growth (monthly) ───────────────────────────────────────────
+  const userGrowth = last6Months.map(({ month, year, label }) => ({
+    name: label,
+    newUsers: accounts6m.filter((u) => {
+      const d = new Date(u.created_at);
+      return d.getMonth() === month && d.getFullYear() === year;
+    }).length,
+  }));
+
+  // ─── Return ───────────────────────────────────────────────────────────────
+  return {
+    /**
+     * GROUP 1 — KPI Cards (hiện ở top dashboard)
+     * So sánh tháng này vs tháng trước, kèm % tăng trưởng
+     */
+    kpis,
+
+    /**
+     * GROUP 2 — Trends (Line chart kép)
+     * revenueTrend: Cột revenue + line cancelRate → thấy ngay doanh thu & chất lượng vận hành
+     * retentionData: Stacked bar New vs Returning → sức khoẻ cộng đồng player
+     */
+    revenueTrend,
+    retentionData,
+
+    /**
+     * GROUP 3 — Operations (30 ngày gần nhất)
+     * conversionFunnel: Mất khách ở bước nào?
+     * hourlyDistribution: Giờ cao điểm theo start_time thực tế (không phải giờ tạo booking)
+     * dailyDistribution: Ngày cao điểm trong tuần
+     */
+    conversionFunnel,
+    hourlyDistribution,
+    dailyDistribution,
+
+    /**
+     * GROUP 4 — Revenue breakdown
+     * sportRevenue: Môn nào đóng góp nhiều nhất + avg booking value
+     * kpis.addonUpsell: % doanh thu từ addon/sản phẩm (trong kpis)
+     */
+    sportRevenue,
+
+    /**
+     * GROUP 5 — Complex & System health
+     * topComplexes: Top 5 theo revenue + rating + utilization rate
+     * paymentProviderData: Phân phối cổng thanh toán + avg transaction
+     * ratingDist: Phân phối sao 1–5
+     * userGrowth: Tăng trưởng tài khoản mới theo tháng
+     */
+    topComplexes,
+    paymentProviderData,
+    ratingDist,
+    userGrowth,
+  };
+};
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 /**
  * User Management
@@ -66,7 +634,6 @@ export const getUsers = async (
         : { isNot: null };
     }
   } else if (status) {
-    // Nếu chỉ có status mà không có role, ta tìm kiếm status này ở cả 3 bảng liên quan
     where.OR = [
       ...(where.OR || []),
       { player: { status: status as PlayerStatus } },
@@ -191,9 +758,7 @@ export const updateComplexStatus = async (
 
   if (!complex) throw new NotFoundError("Complex not found");
 
-  // Logic nghiệp vụ (Guards)
   if (status === "ACTIVE" && complex.status === "PENDING") {
-    // Đây là hành động Approve
   } else if (status === "REJECTED" && complex.status !== "PENDING") {
     throw new BadRequestError("Only PENDING complexes can be rejected");
   } else if (status === "INACTIVE" && complex.status !== "ACTIVE") {
@@ -204,126 +769,6 @@ export const updateComplexStatus = async (
     where: { id: complexId },
     data: { status },
   });
-};
-
-/**
- * Dashboard Analytics for Charts
- */
-export const getAnalytics = async () => {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-  sixMonthsAgo.setDate(1);
-  sixMonthsAgo.setHours(0, 0, 0, 0);
-
-  // 1. Revenue Analytics (Last 6 months)
-  const payments = await prisma.payment.findMany({
-    where: {
-      status: "SUCCESS",
-      created_at: { gte: sixMonthsAgo },
-    },
-    select: {
-      amount: true,
-      created_at: true,
-    },
-  });
-
-  // 2. Booking Analytics (Last 30 days)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
-  thirtyDaysAgo.setHours(0, 0, 0, 0);
-
-  const bookings = await prisma.booking.findMany({
-    where: {
-      created_at: { gte: thirtyDaysAgo },
-    },
-    select: {
-      status: true,
-      created_at: true,
-    },
-  });
-
-  // 3. User Growth (Last 6 months)
-  const users = await prisma.account.findMany({
-    where: {
-      created_at: { gte: sixMonthsAgo },
-    },
-    select: {
-      created_at: true,
-    },
-  });
-
-  // Helper to group by Month
-  const groupByMonth = (data: any[], dateField: string, sumField?: string) => {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    const result: { [key: string]: number } = {};
-
-    // Initialize last 6 months
-    for (let i = 0; i < 6; i++) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const label = `${months[d.getMonth()]} ${d.getFullYear()}`;
-      result[label] = 0;
-    }
-
-    data.forEach((item) => {
-      const date = new Date(item[dateField]);
-      const label = `${months[date.getMonth()]} ${date.getFullYear()}`;
-      if (result[label] !== undefined) {
-        result[label] += sumField ? Number(item[sumField]) : 1;
-      }
-    });
-
-    return Object.entries(result)
-      .map(([name, value]) => ({ name, value }))
-      .reverse();
-  };
-
-  // 4. Sport Type Distribution (Total)
-  const complexStats = await prisma.complex.groupBy({
-    by: ["status"],
-    _count: { id: true },
-  });
-
-  return {
-    revenueChart: groupByMonth(payments, "created_at", "amount"),
-    userChart: groupByMonth(users, "created_at"),
-    bookingStatusDistribution: [
-      {
-        name: "Confirmed",
-        value: bookings.filter((b) => b.status === "CONFIRMED").length,
-      },
-      {
-        name: "Canceled",
-        value: bookings.filter((b) => b.status === "CANCELED").length,
-      },
-      {
-        name: "Pending",
-        value: bookings.filter((b) => b.status === "PENDING").length,
-      },
-      {
-        name: "Completed",
-        value: bookings.filter((b) => b.status === "COMPLETED").length,
-      },
-    ],
-    complexStatusDistribution: complexStats.map((stat) => ({
-      name: stat.status,
-      value: stat._count.id,
-    })),
-  };
 };
 
 /**
