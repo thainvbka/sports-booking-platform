@@ -90,10 +90,12 @@ export const getBookings = async (req: Request, res: Response) => {
 };
 
 export const getPayments = async (req: Request, res: Response) => {
-  const { page, limit } = req.query as any;
+  const { page, limit, search, status } = req.query as any;
   const paymentsData = await adminService.getPayments(
     parseInt(page) || 1,
     parseInt(limit) || 10,
+    search,
+    status,
   );
   return new SuccessResponse({
     message: "Get payments successfully",

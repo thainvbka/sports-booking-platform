@@ -45,6 +45,8 @@ export const adminService = {
   getPayments: async (params?: {
     page?: number;
     limit?: number;
+    search?: string;
+    status?: string;
   }): Promise<ApiResponse<any>> => {
     const res = await api.get<ApiResponse<any>>("/admin/payments", { params });
     return res.data;

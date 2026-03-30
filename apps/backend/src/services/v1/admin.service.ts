@@ -867,23 +867,57 @@ export const getBookings = async (
   };
 };
 
-export const getPayments = async (page: number = 1, limit: number = 10) => {
+export const getPayments = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  status?: string,
+) => {
   const skip = (page - 1) * limit;
+
+  const where: any = {};
+  if (search?.trim()) {
+    const searchStr = search.trim();
+    where.OR = [
+      { transaction_code: { contains: searchStr, mode: "insensitive" } },
+      {
+        bookings: {
+          some: {
+            player: {
+              account: {
+                OR: [
+                  { full_name: { contains: searchStr, mode: "insensitive" } },
+                  { email: { contains: searchStr, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
 
   const [payments, total] = await Promise.all([
     prisma.payment.findMany({
+      where,
       skip,
       take: limit,
       include: {
         bookings: {
           include: {
-            player: { include: { account: { select: { full_name: true } } } },
+            player: {
+              include: { account: { select: { full_name: true, email: true } } },
+            },
           },
         },
       },
       orderBy: { created_at: "desc" },
     }),
-    prisma.payment.count(),
+    prisma.payment.count({ where }),
   ]);
 
   return {
