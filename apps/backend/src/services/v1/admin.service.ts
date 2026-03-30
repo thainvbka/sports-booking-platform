@@ -619,27 +619,44 @@ export const getUsers = async (
     ];
   }
 
+  // Helper to map UI status to DB status
+  const getDbStatus = (s: string, r: string) => {
+    if (s === "ACTIVE") return "ACTIVE";
+    if (s === "INACTIVE" || s === "BANNED" || s === "SUSPENDED") {
+      if (r === "PLAYER") return "BANNED";
+      if (r === "OWNER") return "SUSPENDED";
+      if (r === "ADMIN") return "INACTIVE";
+    }
+    return null;
+  };
+
   if (role) {
-    if (role === "PLAYER") {
-      where.player = status
-        ? { status: status as PlayerStatus }
-        : { isNot: null };
-    } else if (role === "OWNER") {
-      where.owner = status
-        ? { status: status as OwnerStatus }
-        : { isNot: null };
-    } else if (role === "ADMIN") {
-      where.admin = status
-        ? { status: status as AdminStatus }
-        : { isNot: null };
+    if (status) {
+      const dbStatus = getDbStatus(status, role);
+      if (!dbStatus) {
+        return {
+          users: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        };
+      }
+      if (role === "PLAYER") where.player = { status: dbStatus as PlayerStatus };
+      else if (role === "OWNER")
+        where.owner = { status: dbStatus as OwnerStatus };
+      else if (role === "ADMIN")
+        where.admin = { status: dbStatus as AdminStatus };
+    } else {
+      if (role === "PLAYER") where.player = { isNot: null };
+      else if (role === "OWNER") where.owner = { isNot: null };
+      else if (role === "ADMIN") where.admin = { isNot: null };
     }
   } else if (status) {
+    // If no role but status is filtered, search across all roles with mapped values
     where.OR = [
       ...(where.OR || []),
-      { player: { status: status as PlayerStatus } },
-      { owner: { status: status as OwnerStatus } },
-      { admin: { status: status as AdminStatus } },
-    ];
+      { player: { status: (getDbStatus(status, "PLAYER") as PlayerStatus) || "ACTIVE" } },
+      { owner: { status: (getDbStatus(status, "OWNER") as OwnerStatus) || "ACTIVE" } },
+      { admin: { status: (getDbStatus(status, "ADMIN") as AdminStatus) || "ACTIVE" } },
+    ].filter(Boolean);
   }
 
   const [users, total] = await Promise.all([
@@ -674,21 +691,33 @@ export const updateUserStatus = async (
   status: string,
 ) => {
   if (role === "PLAYER") {
+    // Map Frontend status to PlayerStatus enum
+    let dbStatus: PlayerStatus = "ACTIVE";
+    if (status === "INACTIVE" || status === "BANNED") dbStatus = "BANNED";
+
     return await prisma.player.update({
       where: { account_id: accountId },
-      data: { status: status as PlayerStatus },
+      data: { status: dbStatus },
     });
   }
   if (role === "OWNER") {
+    // Map Frontend status to OwnerStatus enum
+    let dbStatus: OwnerStatus = "ACTIVE";
+    if (status === "INACTIVE" || status === "SUSPENDED") dbStatus = "SUSPENDED";
+
     return await prisma.owner.update({
       where: { account_id: accountId },
-      data: { status: status as OwnerStatus },
+      data: { status: dbStatus },
     });
   }
   if (role === "ADMIN") {
+    // Map Frontend status to AdminStatus enum
+    let dbStatus: AdminStatus = "ACTIVE";
+    if (status === "INACTIVE") dbStatus = "INACTIVE";
+
     return await prisma.admin.update({
       where: { account_id: accountId },
-      data: { status: status as AdminStatus },
+      data: { status: dbStatus },
     });
   }
   throw new BadRequestError("Invalid role");

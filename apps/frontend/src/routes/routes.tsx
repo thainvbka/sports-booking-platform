@@ -4,6 +4,7 @@ import { AboutPage } from "@/pages/AboutPage";
 import AdminLoginPage from "@/pages/admin/auth/LoginPage";
 import AdminSignupPage from "@/pages/admin/auth/SignupPage";
 import Dashboard from "@/pages/admin/dashboard/Dashboard";
+import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
@@ -195,10 +196,10 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: <Dashboard />,
       },
-      // {
-      //   path: "complexes",
-      //   element: <ComplexVerificationPage />,
-      // },
+      {
+        path: "users",
+        element: <AdminUsersPage />,
+      },
       // {
       //   path: "users",
       //   element: <UsersPage />,
