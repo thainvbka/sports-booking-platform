@@ -53,6 +53,8 @@ export const adminService = {
   getBookings: async (params?: {
     page?: number;
     limit?: number;
+    search?: string;
+    status?: string;
   }): Promise<ApiResponse<any>> => {
     const res = await api.get<ApiResponse<any>>("/admin/bookings", { params });
     return res.data;

@@ -153,12 +153,12 @@ export default function AdminUsersPage() {
                   Kích hoạt
                 </DropdownMenuItem>
               )}
-              {status !== "INACTIVE" && (
+              {status !== "INACTIVE" && status !== "BANNED" && status !== "SUSPENDED" && (
                 <DropdownMenuItem 
-                  onClick={() => handleStatusUpdate(user.id, role, "INACTIVE")}
+                  onClick={() => handleStatusUpdate(user.id, role, role === "OWNER" ? "SUSPENDED" : "INACTIVE")}
                   className="text-red-600"
                 >
-                  Khóa tài khoản
+                  {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
                 </DropdownMenuItem>
               )}
               {role === "OWNER" && status === "PENDING" && (

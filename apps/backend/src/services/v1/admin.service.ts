@@ -803,20 +803,62 @@ export const updateComplexStatus = async (
 /**
  * Monitoring
  */
-export const getBookings = async (page: number = 1, limit: number = 10) => {
+export const getBookings = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  status?: string,
+) => {
   const skip = (page - 1) * limit;
+
+  const where: any = {};
+  if (search?.trim()) {
+    const searchStr = search.trim();
+    where.OR = [
+      {
+        player: {
+          account: { full_name: { contains: searchStr, mode: "insensitive" } },
+        },
+      },
+      {
+        sub_field: {
+          complex: { complex_name: { contains: searchStr, mode: "insensitive" } },
+        },
+      },
+      {
+        sub_field: {
+          sub_field_name: { contains: searchStr, mode: "insensitive" }
+        }
+      }
+    ];
+  }
+
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
 
   const [bookings, total] = await Promise.all([
     prisma.booking.findMany({
+      where,
       skip,
       take: limit,
       include: {
-        player: { include: { account: { select: { full_name: true } } } },
-        sub_field: { include: { complex: { select: { complex_name: true } } } },
+        player: {
+          include: {
+            account: { select: { full_name: true, phone_number: true } },
+          },
+        },
+        sub_field: {
+          include: {
+            complex: {
+              select: { complex_name: true, owner: { select: { company_name: true } } },
+            },
+          },
+        },
       },
       orderBy: { created_at: "desc" },
     }),
-    prisma.booking.count(),
+    prisma.booking.count({ where }),
   ]);
 
   return {

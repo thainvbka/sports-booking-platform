@@ -3,6 +3,7 @@ import { MainLayout } from "@/layouts/MainLayout";
 import { AboutPage } from "@/pages/AboutPage";
 import AdminLoginPage from "@/pages/admin/auth/LoginPage";
 import AdminSignupPage from "@/pages/admin/auth/SignupPage";
+import AdminBookingsPage from "@/pages/admin/bookings/AdminBookingsPage";
 import Dashboard from "@/pages/admin/dashboard/Dashboard";
 import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
@@ -200,10 +201,10 @@ export const router = createBrowserRouter([
         path: "users",
         element: <AdminUsersPage />,
       },
-      // {
-      //   path: "users",
-      //   element: <UsersPage />,
-      // },
+      {
+        path: "bookings",
+        element: <AdminBookingsPage />,
+      },
     ],
   },
 ]);
