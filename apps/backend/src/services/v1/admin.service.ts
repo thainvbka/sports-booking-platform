@@ -912,6 +912,13 @@ export const getPayments = async (
             player: {
               include: { account: { select: { full_name: true, email: true } } },
             },
+            sub_field: {
+              include: {
+                complex: {
+                  select: { complex_name: true }
+                }
+              }
+            }
           },
         },
       },
