@@ -627,17 +627,32 @@ export const ownerGetAllBookings = async (
   };
 
   if (filter.search?.trim()) {
+    const searchStr = filter.search.trim();
     whereCondition.OR = [
       {
         sub_field: {
           complex: {
-            complex_name: { contains: filter.search, mode: "insensitive" },
+            complex_name: { contains: searchStr, mode: "insensitive" },
           },
         },
       },
       {
         sub_field: {
-          sub_field_name: { contains: filter.search, mode: "insensitive" },
+          sub_field_name: { contains: searchStr, mode: "insensitive" },
+        },
+      },
+      {
+        player: {
+          account: {
+            full_name: { contains: searchStr, mode: "insensitive" },
+          },
+        },
+      },
+      {
+        player: {
+          account: {
+            phone_number: { contains: searchStr, mode: "insensitive" },
+          },
         },
       },
     ];
