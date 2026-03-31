@@ -134,7 +134,7 @@ export const createBooking = async (
   };
 };
 
-export const reviewBooking = async (booking_id: string, player_id: string) => {
+export const getBookingCheckoutDetails = async (booking_id: string, player_id: string) => {
   const booking = await prisma.booking.findFirst({
     where: { id: booking_id, player_id, status: "PENDING" },
     include: {

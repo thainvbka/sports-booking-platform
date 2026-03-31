@@ -3,13 +3,13 @@ import type { filter } from "../../services/v1/booking.service";
 import {
   cancelBooking,
   createBooking,
+  getBookingCheckoutDetails,
   getOwnerBookingStats,
   getPlayerBookings,
   ownerCancelBooking,
   ownerConfirmBooking,
   ownerGetAllBookings,
   ownerGetBookingById,
-  reviewBooking,
   updateBooking,
 } from "../../services/v1/booking.service";
 import { SuccessResponse } from "../../utils/success.response";
@@ -38,12 +38,12 @@ export const createBookingController = async (req: Request, res: Response) => {
 
 export const reviewBookingController = async (req: Request, res: Response) => {
   const booking_id = req.params.id as string;
-  const booking = await reviewBooking(
+  const booking = await getBookingCheckoutDetails(
     booking_id,
     req.user?.profiles.playerId as string,
   );
   return new SuccessResponse({
-    message: "Booking reviewed successfully",
+    message: "Booking details for checkout retrieved successfully",
     data: { booking },
   }).send(res);
 };

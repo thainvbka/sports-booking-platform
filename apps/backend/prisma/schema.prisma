@@ -212,6 +212,8 @@ model SubField {
   sub_field_image   String?            @db.Text
   sport_type        SportType
   isDelete          Boolean            @default(false)
+  avg_rating        Decimal?           @db.Decimal(3, 2) // cache điểm trung bình, cập nhật mỗi khi có review mới
+  total_reviews     Int                @default(0) @db.Integer
   created_at        DateTime           @default(now()) @db.Timestamptz(0)
   updated_at        DateTime           @updatedAt @db.Timestamptz(0)
   recurringBookings RecurringBooking[]
@@ -222,6 +224,7 @@ model SubField {
   // Partial unique index: tên sân con là duy nhất trong 1 khu chỉ khi chưa bị xóa
   @@unique([complex_id, sub_field_name, isDelete], map: "SubField_complex_id_sub_field_name_key")
   @@index([complex_id])
+  @@index([avg_rating])
 }
 
 model PricingRule {
