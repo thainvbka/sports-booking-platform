@@ -10,6 +10,7 @@ import ownerDashboardRouter from "./owner_dashboard.routes";
 import paymentRouter from "./payment.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
 import publicRouter from "./public.routes";
+import reviewRouter from "./review.routes";
 import subfieldRouter from "./subfield.routes";
 
 const router = Router();
@@ -31,5 +32,6 @@ router.use("/pricing-rules", apiLimiter, pricingRuleRouter);
 router.use("/bookings", apiLimiter, bookingRouter);
 router.use("/payments", apiLimiter, paymentRouter);
 router.use("/owner-dashboard", apiLimiter, ownerDashboardRouter);
+router.use("/reviews", apiLimiter, reviewRouter);
 
 export default router;

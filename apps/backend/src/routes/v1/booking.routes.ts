@@ -4,6 +4,7 @@ import {
   cancelRecurringBookingController,
   createBookingController,
   createRecurringBookingController,
+  getBookingCheckoutDetailsController,
   getPlayerBookingsController,
   ownerCancelBookingController,
   ownerCancelRecurringBookingController,
@@ -11,7 +12,6 @@ import {
   ownerConfirmRecurringBookingController,
   ownerGetAllBookingsController,
   ownerGetBookingStatsController,
-  reviewBookingController,
   reviewRecurringBookingController,
   updateBookingController,
 } from "../../controllers/v1/booking.controller";
@@ -51,7 +51,7 @@ router.get(
   "/review/:id", //bookingId
   authenticate,
   authorize(["PLAYER"]),
-  asyncHandler(reviewBookingController),
+  asyncHandler(getBookingCheckoutDetailsController),
 );
 
 router.put(

@@ -43,6 +43,48 @@ export const updateComplexCache = async (complexId: string) => {
 };
 
 /**
+ * Update cached rating for a specific subfield
+ */
+export const updateSubfieldRatingCache = async (subfieldId: string) => {
+  const aggregate = await prisma.review.aggregate({
+    where: { subfield_id: subfieldId },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+
+  await prisma.subField.update({
+    where: { id: subfieldId },
+    data: {
+      avg_rating: aggregate._avg.rating,
+      total_reviews: aggregate._count.rating,
+    },
+  });
+};
+
+/**
+ * Update cached rating for a specific complex
+ */
+export const updateComplexRatingCache = async (complexId: string) => {
+  const aggregate = await prisma.review.aggregate({
+    where: {
+      subfield: {
+        complex_id: complexId,
+      },
+    },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+
+  await prisma.complex.update({
+    where: { id: complexId },
+    data: {
+      avg_rating: aggregate._avg.rating,
+      total_reviews: aggregate._count.rating,
+    },
+  });
+};
+
+/**
  * Batch update cache for multiple complexes
  */
 export const batchUpdateComplexCache = async (complexIds: string[]) => {
@@ -61,6 +103,7 @@ export const updateAllComplexCache = async () => {
 
   for (const complex of complexes) {
     await updateComplexCache(complex.id);
+    await updateComplexRatingCache(complex.id);
     console.log(`Updated cache for complex ${complex.id}`);
   }
 

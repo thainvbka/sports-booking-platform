@@ -36,7 +36,7 @@ export const createBookingController = async (req: Request, res: Response) => {
   }).send(res);
 };
 
-export const reviewBookingController = async (req: Request, res: Response) => {
+export const getBookingCheckoutDetailsController = async (req: Request, res: Response) => {
   const booking_id = req.params.id as string;
   const booking = await getBookingCheckoutDetails(
     booking_id,
