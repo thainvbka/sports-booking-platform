@@ -30,15 +30,15 @@ interface SalesChartProps {
 
 const chartConfig = {
   revenue: {
-    label: "Revenue",
+    label: "Doanh thu",
     color: "var(--chart-1)",
   },
   cancelRate: {
-    label: "Cancel Rate %",
+    label: "Tỷ lệ hủy (%)",
     color: "var(--chart-2)",
   },
   completionRate: {
-    label: "Completion Rate %",
+    label: "Tỷ lệ hoàn tất (%)",
     color: "var(--chart-4)",
   },
 };
@@ -48,9 +48,9 @@ export function SalesChart({ data = [] }: SalesChartProps) {
     <Card className="cursor-pointer h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>Revenue vs Booking Quality</CardTitle>
+          <CardTitle>Doanh thu vs chất lượng booking</CardTitle>
           <CardDescription>
-            Track monthly revenue alongside cancel and completion rates
+            Theo dõi doanh thu hàng tháng cùng tỷ lệ hủy và hoàn tất
           </CardDescription>
         </div>
       </CardHeader>

@@ -10,6 +10,12 @@ interface AdminPaymentFilters {
 interface AdminPaymentState {
   payments: any[];
   pagination: PaginationMeta | null;
+  stats: {
+    totalRevenue: number;
+    failedCount: number;
+    successCount: number;
+    refundedCount: number;
+  };
   queryParams: {
     page: number;
     limit: number;
@@ -27,6 +33,12 @@ interface AdminPaymentState {
 export const useAdminPaymentStore = create<AdminPaymentState>((set, get) => ({
   payments: [],
   pagination: null,
+  stats: {
+    totalRevenue: 0,
+    failedCount: 0,
+    successCount: 0,
+    refundedCount: 0
+  },
   queryParams: {
     page: 1,
     limit: 10,
@@ -48,6 +60,7 @@ export const useAdminPaymentStore = create<AdminPaymentState>((set, get) => ({
         set({
           payments: res.data.payments,
           pagination: res.data.pagination,
+          stats: res.data.stats,
           isLoading: false,
         });
       } else {

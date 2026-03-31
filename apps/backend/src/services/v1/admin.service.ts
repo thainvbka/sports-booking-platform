@@ -8,78 +8,6 @@ import prisma from "../../libs/prisma";
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
 
 /**
- * Dashboard Statistics
- */
-export const getStats = async () => {
-  const now = new Date();
-  const firstDayCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-  const [
-    totalUsers,
-    totalComplexes,
-    totalBookings,
-    totalRevenue,
-    pendingComplexesCount,
-    lastMonthRevenue,
-    lastMonthBookings,
-    lastMonthUsers,
-  ] = await Promise.all([
-    prisma.account.count(),
-    prisma.complex.count(),
-    prisma.booking.count(),
-    prisma.payment.aggregate({
-      _sum: { amount: true },
-      where: { status: "SUCCESS" },
-    }),
-    prisma.complex.count({ where: { status: "PENDING" } }),
-    // Last month revenue
-    prisma.payment.aggregate({
-      _sum: { amount: true },
-      where: {
-        status: "SUCCESS",
-        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
-      },
-    }),
-    // Last month bookings
-    prisma.booking.count({
-      where: {
-        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
-      },
-    }),
-    // Last month users
-    prisma.account.count({
-      where: {
-        created_at: { gte: firstDayLastMonth, lt: firstDayCurrentMonth },
-      },
-    }),
-  ]);
-
-  const currentRevenue = Number(totalRevenue._sum.amount) || 0;
-  const prevRevenue = Number(lastMonthRevenue._sum.amount) || 0;
-
-  // Calculate growth percentage
-  const calculateGrowth = (current: number, prev: number) => {
-    if (prev === 0) return current > 0 ? 100 : 0;
-    return Number((((current - prev) / prev) * 100).toFixed(1));
-  };
-
-  return {
-    totalUsers,
-    totalComplexes,
-    totalBookings,
-    totalRevenue: currentRevenue,
-    pendingComplexesCount,
-    revenueGrowth: calculateGrowth(currentRevenue, prevRevenue),
-    bookingGrowth: calculateGrowth(totalBookings, lastMonthBookings),
-    userGrowth: calculateGrowth(totalUsers, lastMonthUsers),
-  };
-};
-
-/**
- * Dashboard Analytics for Charts
- */
-/**
  * Dashboard Analytics — Deep Version
  *
  * 5 nhóm phân tích, 11 metrics, 0 trùng lặp.
@@ -100,6 +28,7 @@ export const getAnalytics = async () => {
   );
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(now.getDate() - 30);
+  thirtyDaysAgo.setHours(0, 0, 0, 0); // normalize về midnight, tránh lệch giờ với startOfThisMonth
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(
@@ -121,6 +50,13 @@ export const getAnalytics = async () => {
     kpiLastBookings,
     kpiThisUsers,
     kpiLastUsers,
+
+    // Totals
+    totalUsersCount,
+    totalComplexesCount,
+    totalBookingsCount,
+    totalRevenueCount,
+    pendingComplexesCount,
 
     // Trend 6 tháng
     payments6m,
@@ -174,6 +110,16 @@ export const getAnalytics = async () => {
       where: { created_at: { gte: startOfLastMonth, lte: endOfLastMonth } },
     }),
 
+    // ── Totals ──
+    prisma.account.count(),
+    prisma.complex.count(),
+    prisma.booking.count(),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { status: "SUCCESS" },
+    }),
+    prisma.complex.count({ where: { status: "PENDING" } }),
+
     // ── Trend 6 tháng ──
     prisma.payment.findMany({
       where: { status: "SUCCESS", created_at: { gte: sixMonthsAgo } },
@@ -205,9 +151,12 @@ export const getAnalytics = async () => {
       where: { created_at: { gte: thirtyDaysAgo } },
     }),
 
-    // ── Sport revenue ──
+    // ── Sport revenue ── (COMPLETED = đã TT chờ chủ sân + CONFIRMED = đã duyệt)
     prisma.booking.findMany({
-      where: { status: "COMPLETED", created_at: { gte: sixMonthsAgo } },
+      where: {
+        status: { in: ["COMPLETED", "CONFIRMED"] },
+        created_at: { gte: sixMonthsAgo },
+      },
       select: {
         total_price: true,
         sub_field: { select: { sport_type: true } },
@@ -237,7 +186,11 @@ export const getAnalytics = async () => {
           where: { isDelete: false },
           select: {
             bookings: {
-              where: { status: "COMPLETED", created_at: { gte: sixMonthsAgo } },
+              // COMPLETED + CONFIRMED = booking đã thanh toán (dù chủ sân đã duyệt hay chưa)
+              where: {
+                status: { in: ["COMPLETED", "CONFIRMED"] },
+                created_at: { gte: sixMonthsAgo },
+              },
               select: { total_price: true, start_time: true, end_time: true },
             },
           },
@@ -301,6 +254,7 @@ export const getAnalytics = async () => {
   // ─── 1. KPI Cards ─────────────────────────────────────────────────────────
   const thisRev = Number(kpiThisRevenue._sum.amount) || 0;
   const lastRev = Number(kpiLastRevenue._sum.amount) || 0;
+  const totalRev = Number(totalRevenueCount._sum.amount) || 0;
   const avgRating = Number(systemAvgRating._avg.rating?.toFixed(1)) || 0;
   const addonRev = Number(addonAggregate._sum.unit_price) || 0;
   const totalRev30d = Number(baseRevenue30d._sum.amount) || 0;
@@ -310,16 +264,23 @@ export const getAnalytics = async () => {
       thisMonth: thisRev,
       lastMonth: lastRev,
       growth: pct(thisRev, lastRev), // % tăng trưởng doanh thu MoM
+      total: totalRev,
     },
     bookings: {
       thisMonth: kpiThisBookings,
       lastMonth: kpiLastBookings,
       growth: pct(kpiThisBookings, kpiLastBookings),
+      total: totalBookingsCount,
     },
-    newUsers: {
+    users: {
       thisMonth: kpiThisUsers,
       lastMonth: kpiLastUsers,
       growth: pct(kpiThisUsers, kpiLastUsers),
+      total: totalUsersCount,
+    },
+    complexes: {
+      total: totalComplexesCount,
+      pending: pendingComplexesCount,
     },
     avgRating,
     addonUpsell: {
@@ -391,43 +352,31 @@ export const getAnalytics = async () => {
     return { name: label, new: newPlayers, returning: returningPlayers };
   });
 
-  // ─── 4. Conversion Funnel (30 ngày) ──────────────────────────────────────
-  //  Đo loss tại từng bước: created → confirmed → completed
+  // ─── 4. Phân bổ trạng thái booking (30 ngày) ────────────────────────────
+  //  Mỗi trạng thái là mutually exclusive → 4 nhóm cộng lại = totalCreated
+  //  Flow: PENDING (chưa TT) → COMPLETED (đã TT, chờ chủ sân) → CONFIRMED (đã duyệt)
+  //        └→ CANCELED (hủy ở bất kỳ bước nào)
   const statusMap = Object.fromEntries(
     bookingStatusCounts.map((s) => [s.status, s._count.id]),
   );
   const totalCreated = Object.values(statusMap).reduce((a, b) => a + b, 0);
-  const totalConfirmed =
-    (statusMap["CONFIRMED"] || 0) + (statusMap["COMPLETED"] || 0);
-  const totalCompleted = statusMap["COMPLETED"] || 0;
-  const totalCanceled = statusMap["CANCELED"] || 0;
+  const pendingCount   = statusMap["PENDING"]   || 0;  // chưa thanh toán
+  const completedCount = statusMap["COMPLETED"] || 0;  // đã TT, chờ chủ sân xác nhận
+  const confirmedCount = statusMap["CONFIRMED"] || 0;  // chủ sân đã xác nhận
+  const canceledCount  = statusMap["CANCELED"]  || 0;  // đã hủy
+  // Kiểm chứng: pendingCount + completedCount + confirmedCount + canceledCount = totalCreated
+
+  const pctOf = (n: number) =>
+    totalCreated > 0 ? Math.round((n / totalCreated) * 100) : 0;
 
   const conversionFunnel = [
-    { stage: "Tạo booking", value: totalCreated, dropOffPct: 0 },
-    {
-      stage: "Confirmed",
-      value: totalConfirmed,
-      dropOffPct:
-        totalCreated > 0
-          ? Math.round(((totalCreated - totalConfirmed) / totalCreated) * 100)
-          : 0,
-    },
-    {
-      stage: "Completed",
-      value: totalCompleted,
-      dropOffPct:
-        totalConfirmed > 0
-          ? Math.round(
-              ((totalConfirmed - totalCompleted) / totalConfirmed) * 100,
-            )
-          : 0,
-    },
-    {
-      stage: "Canceled",
-      value: totalCanceled,
-      dropOffPct:
-        totalCreated > 0 ? Math.round((totalCanceled / totalCreated) * 100) : 0,
-    },
+    // Stage 0: tổng tham chiếu
+    { stage: "Tạo booking", value: totalCreated, dropOffPct: 100 },
+    // 4 nhóm mutually exclusive — dropOffPct = % của tổng
+    { stage: "Chưa thanh toán", value: pendingCount,   dropOffPct: pctOf(pendingCount)   },
+    { stage: "Chờ xác nhận",    value: completedCount, dropOffPct: pctOf(completedCount) },
+    { stage: "Đã xác nhận",     value: confirmedCount, dropOffPct: pctOf(confirmedCount) },
+    { stage: "Đã hủy",          value: canceledCount,  dropOffPct: pctOf(canceledCount)  },
   ];
 
   // ─── 5. Peak Hours (dùng start_time — giờ SÂN HOẠT ĐỘNG, không phải giờ đặt) ──
@@ -583,21 +532,6 @@ export const getAnalytics = async () => {
   };
 };
 
-const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
 /**
  * User Management
  */
@@ -639,7 +573,8 @@ export const getUsers = async (
           pagination: { page, limit, total: 0, totalPages: 0 },
         };
       }
-      if (role === "PLAYER") where.player = { status: dbStatus as PlayerStatus };
+      if (role === "PLAYER")
+        where.player = { status: dbStatus as PlayerStatus };
       else if (role === "OWNER")
         where.owner = { status: dbStatus as OwnerStatus };
       else if (role === "ADMIN")
@@ -653,9 +588,21 @@ export const getUsers = async (
     // If no role but status is filtered, search across all roles with mapped values
     where.OR = [
       ...(where.OR || []),
-      { player: { status: (getDbStatus(status, "PLAYER") as PlayerStatus) || "ACTIVE" } },
-      { owner: { status: (getDbStatus(status, "OWNER") as OwnerStatus) || "ACTIVE" } },
-      { admin: { status: (getDbStatus(status, "ADMIN") as AdminStatus) || "ACTIVE" } },
+      {
+        player: {
+          status: (getDbStatus(status, "PLAYER") as PlayerStatus) || "ACTIVE",
+        },
+      },
+      {
+        owner: {
+          status: (getDbStatus(status, "OWNER") as OwnerStatus) || "ACTIVE",
+        },
+      },
+      {
+        admin: {
+          status: (getDbStatus(status, "ADMIN") as AdminStatus) || "ACTIVE",
+        },
+      },
     ].filter(Boolean);
   }
 
@@ -742,7 +689,7 @@ export const getComplexes = async (
     where.status = status;
   }
 
-  const [complexes, total] = await Promise.all([
+  const [complexes, total, complexStatusStats] = await Promise.all([
     prisma.complex.findMany({
       where,
       skip,
@@ -764,7 +711,16 @@ export const getComplexes = async (
       orderBy: { created_at: "desc" },
     }),
     prisma.complex.count({ where }),
+    prisma.complex.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    }),
   ]);
+
+  const statsMap = complexStatusStats.reduce(
+    (acc, item) => ({ ...acc, [item.status]: item._count.id }),
+    {} as Record<string, number>,
+  );
 
   return {
     complexes,
@@ -773,6 +729,14 @@ export const getComplexes = async (
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+    },
+    stats: {
+      total: Object.values(statsMap).reduce((sum, value) => sum + value, 0),
+      active: statsMap.ACTIVE || 0,
+      pending: statsMap.PENDING || 0,
+      inactive: statsMap.INACTIVE || 0,
+      rejected: statsMap.REJECTED || 0,
+      draft: statsMap.DRAFT || 0,
     },
   };
 };
@@ -811,10 +775,14 @@ export const getBookings = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  const where: any = {};
+  // whereSearch: search + SINGLE-only — dùng cho stats (không bao gồm status filter)
+  // → chỉ đếm booking đơn lẻ để nhất quán với bảng kết quả
+  const whereSearch: Record<string, unknown> = {
+    recurring_booking_id: null,
+  };
   if (search?.trim()) {
     const searchStr = search.trim();
-    where.OR = [
+    whereSearch.OR = [
       {
         player: {
           account: { full_name: { contains: searchStr, mode: "insensitive" } },
@@ -822,24 +790,29 @@ export const getBookings = async (
       },
       {
         sub_field: {
-          complex: { complex_name: { contains: searchStr, mode: "insensitive" } },
+          complex: {
+            complex_name: { contains: searchStr, mode: "insensitive" },
+          },
         },
       },
       {
         sub_field: {
-          sub_field_name: { contains: searchStr, mode: "insensitive" }
-        }
-      }
+          sub_field_name: { contains: searchStr, mode: "insensitive" },
+        },
+      },
     ];
   }
 
+  // whereTable: thêm status filter lên trên whereSearch (đã bao gồm SINGLE filter)
+  const whereTable: Record<string, unknown> = { ...whereSearch };
   if (status && status !== "ALL") {
-    where.status = status;
+    whereTable.status = status;
   }
 
-  const [bookings, total] = await Promise.all([
+  // Lấy danh sách, tổng số trang và thống kê trạng thái song song
+  const [bookingsData, total, statusStats] = await Promise.all([
     prisma.booking.findMany({
-      where,
+      where: whereTable,
       skip,
       take: limit,
       include: {
@@ -851,19 +824,43 @@ export const getBookings = async (
         sub_field: {
           include: {
             complex: {
-              select: { complex_name: true, owner: { select: { company_name: true } } },
+              select: {
+                complex_name: true,
+                owner: { select: { company_name: true } },
+              },
             },
           },
         },
       },
       orderBy: { created_at: "desc" },
     }),
-    prisma.booking.count({ where }),
+    // pagination.total theo đúng filter (bao gồm status + SINGLE)
+    prisma.booking.count({ where: whereTable }),
+    // stats dùng whereSearch (không lọc status) → hiển thị breakdown đầy đủ
+    prisma.booking.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      where: whereSearch,
+    }),
   ]);
+
+  const bookings = bookingsData;
+
+  const statsMap = statusStats.reduce(
+    (acc, s) => ({ ...acc, [s.status]: s._count.id }),
+    {} as Record<string, number>,
+  );
 
   return {
     bookings,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    stats: {
+      total: Object.values(statsMap).reduce((a, b) => a + b, 0),
+      confirmed: statsMap["CONFIRMED"] ?? 0,
+      completed: statsMap["COMPLETED"] ?? 0,
+      canceled: statsMap["CANCELED"] ?? 0,
+      pending: statsMap["PENDING"] ?? 0,
+    },
   };
 };
 
@@ -901,7 +898,7 @@ export const getPayments = async (
     where.status = status;
   }
 
-  const [payments, total] = await Promise.all([
+  const [payments, total, paymentStats] = await Promise.all([
     prisma.payment.findMany({
       where,
       skip,
@@ -910,25 +907,165 @@ export const getPayments = async (
         bookings: {
           include: {
             player: {
-              include: { account: { select: { full_name: true, email: true } } },
+              include: {
+                account: { select: { full_name: true, email: true } },
+              },
             },
             sub_field: {
               include: {
                 complex: {
-                  select: { complex_name: true }
-                }
-              }
-            }
+                  select: { complex_name: true },
+                },
+              },
+            },
           },
         },
       },
       orderBy: { created_at: "desc" },
     }),
     prisma.payment.count({ where }),
+    prisma.payment.aggregate({
+      where: { status: "SUCCESS" },
+      _sum: { amount: true },
+    }),
+    prisma.payment.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    }),
   ]);
+
+  // Thêm một query nữa để lấy tổng số lượng cho stats chính xác
+  const statusCounts = await prisma.payment.groupBy({
+    by: ["status"],
+    _count: { id: true },
+  });
+
+  const statsMap = statusCounts.reduce(
+    (acc, s) => ({ ...acc, [s.status]: s._count.id }),
+    {} as any,
+  );
 
   return {
     payments,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    stats: {
+      totalRevenue: Number(paymentStats._sum.amount) || 0,
+      failedCount: statsMap["FAILED"] || 0,
+      successCount: statsMap["SUCCESS"] || 0,
+      refundedCount: statsMap["REFUNDED"] || 0,
+    },
+  };
+};
+
+// ─── Recurring Bookings ───────────────────────────────────────────────────────
+
+export const getRecurringBookings = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  status?: string,
+) => {
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = {};
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
+  if (search?.trim()) {
+    const s = search.trim();
+    where.OR = [
+      {
+        player: {
+          account: { full_name: { contains: s, mode: "insensitive" } },
+        },
+      },
+      {
+        sub_field: {
+          complex: {
+            complex_name: { contains: s, mode: "insensitive" },
+          },
+        },
+      },
+      {
+        sub_field: {
+          sub_field_name: { contains: s, mode: "insensitive" },
+        },
+      },
+    ];
+  }
+
+  const [data, total, statusStats] = await Promise.all([
+    prisma.recurringBooking.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        player: {
+          include: {
+            account: { select: { full_name: true, phone_number: true } },
+          },
+        },
+        sub_field: {
+          include: {
+            complex: {
+              select: {
+                complex_name: true,
+                owner: { select: { company_name: true } },
+              },
+            },
+          },
+        },
+        bookings: {
+          select: {
+            id: true,
+            status: true,
+            total_price: true,
+            start_time: true,
+            end_time: true,
+          },
+          orderBy: { start_time: "asc" },
+        },
+      },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.recurringBooking.count({ where }),
+    prisma.recurringBooking.groupBy({
+      by: ["status"],
+      _count: { id: true },
+      where,
+    }),
+  ]);
+
+  const recurringBookings = data.map((rb) => ({
+    ...rb,
+    child_count: rb.bookings.length,
+    total_value: rb.bookings.reduce(
+      (sum, b) => sum + Number(b.total_price),
+      0,
+    ),
+    status_breakdown: rb.bookings.reduce(
+      (acc, b) => {
+        acc[b.status] = (acc[b.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
+  }));
+
+  const statsMap = statusStats.reduce(
+    (acc, s) => ({ ...acc, [s.status]: s._count.id }),
+    {} as Record<string, number>,
+  );
+
+  return {
+    recurringBookings,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    stats: {
+      total: Object.values(statsMap).reduce((a, b) => a + b, 0),
+      pending: statsMap["PENDING"] ?? 0,
+      confirmed: statsMap["CONFIRMED"] ?? 0,
+      completed: statsMap["COMPLETED"] ?? 0,
+      canceled: statsMap["CANCELED"] ?? 0,
+    },
   };
 };

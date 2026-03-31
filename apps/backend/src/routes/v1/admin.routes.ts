@@ -17,7 +17,6 @@ router.use(authenticate);
 router.use(authorize(["ADMIN"]));
 
 // Dashboard
-router.get("/stats", asyncHandler(adminController.getStats));
 router.get("/analytics", asyncHandler(adminController.getAnalytics));
 
 // User Management
@@ -49,6 +48,11 @@ router.get(
   "/bookings",
   validate(adminQuerySchema),
   asyncHandler(adminController.getBookings),
+);
+router.get(
+  "/bookings/recurring",
+  validate(adminQuerySchema),
+  asyncHandler(adminController.getRecurringBookings),
 );
 router.get(
   "/payments",

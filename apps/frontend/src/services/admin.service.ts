@@ -1,17 +1,12 @@
 import { api } from "@/lib/axios";
 import type {
   AdminAnalyticsResponse,
-  AdminStatsResponse,
+  AdminComplexesApiResponse,
   AdminUsersResponse,
 } from "@/types/admin.types";
 import type { ApiResponse } from "@/types/index";
 
 export const adminService = {
-  getStats: async (): Promise<AdminStatsResponse> => {
-    const res = await api.get<AdminStatsResponse>("/admin/stats");
-    return res.data;
-  },
-
   getAnalytics: async (): Promise<AdminAnalyticsResponse> => {
     const res = await api.get<AdminAnalyticsResponse>("/admin/analytics");
     return res.data;
@@ -59,6 +54,43 @@ export const adminService = {
     status?: string;
   }): Promise<ApiResponse<any>> => {
     const res = await api.get<ApiResponse<any>>("/admin/bookings", { params });
+    return res.data;
+  },
+
+  getRecurringBookings: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }): Promise<ApiResponse<any>> => {
+    const res = await api.get<ApiResponse<any>>("/admin/bookings/recurring", {
+      params,
+    });
+    return res.data;
+  },
+
+  getComplexes: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }): Promise<AdminComplexesApiResponse> => {
+    const res = await api.get<AdminComplexesApiResponse>("/admin/complexes", {
+      params,
+    });
+    return res.data;
+  },
+
+  updateComplexStatus: async (
+    id: string,
+    status: string,
+  ): Promise<ApiResponse<{ complex: unknown }>> => {
+    const res = await api.patch<ApiResponse<{ complex: unknown }>>(
+      `/admin/complexes/${id}/status`,
+      {
+        status,
+      },
+    );
     return res.data;
   },
 };

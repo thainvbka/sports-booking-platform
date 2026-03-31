@@ -3,14 +3,6 @@ import { Request, Response } from "express";
 import * as adminService from "../../services/v1/admin.service";
 import { SuccessResponse } from "../../utils/success.response";
 
-export const getStats = async (_req: Request, res: Response) => {
-  const stats = await adminService.getStats();
-  return new SuccessResponse({
-    message: "Get stats successfully",
-    data: { stats },
-  }).send(res);
-};
-
 export const getAnalytics = async (_req: Request, res: Response) => {
   const analytics = await adminService.getAnalytics();
   return new SuccessResponse({
@@ -86,6 +78,20 @@ export const getBookings = async (req: Request, res: Response) => {
   return new SuccessResponse({
     message: "Get bookings successfully",
     data: bookingsData,
+  }).send(res);
+};
+
+export const getRecurringBookings = async (req: Request, res: Response) => {
+  const { page, limit, search, status } = req.query as any;
+  const data = await adminService.getRecurringBookings(
+    parseInt(page) || 1,
+    parseInt(limit) || 10,
+    search,
+    status,
+  );
+  return new SuccessResponse({
+    message: "Get recurring bookings successfully",
+    data,
   }).send(res);
 };
 

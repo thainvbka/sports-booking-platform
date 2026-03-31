@@ -4,6 +4,7 @@ import { AboutPage } from "@/pages/AboutPage";
 import AdminLoginPage from "@/pages/admin/auth/LoginPage";
 import AdminSignupPage from "@/pages/admin/auth/SignupPage";
 import AdminBookingsPage from "@/pages/admin/bookings/AdminBookingsPage";
+import AdminComplexesPage from "@/pages/admin/complexes/AdminComplexesPage";
 import Dashboard from "@/pages/admin/dashboard/Dashboard";
 import AdminPaymentsPage from "@/pages/admin/payments/AdminPaymentsPage";
 import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
@@ -201,6 +202,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <AdminUsersPage />,
+      },
+      {
+        path: "complexes",
+        element: <AdminComplexesPage />,
       },
       {
         path: "bookings",

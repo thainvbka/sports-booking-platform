@@ -24,7 +24,9 @@ export default function Dashboard() {
   useEffect(() => {
     fetchAllData();
     fetchRecentPayments();
-  }, [fetchAllData]);
+    // fetchAllData is intentionally excluded — it changes on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchRecentPayments = async () => {
     try {
@@ -44,7 +46,7 @@ export default function Dashboard() {
     const totalDaily = daily.reduce((a, b) => a + b.bookings, 0) || 1;
 
     return hourly.map((row) => {
-      const result: any = { hour: row.hour };
+      const result: Record<string, number | string> = { hour: row.hour };
       const DAYS_NAME = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       DAYS_NAME.forEach((day) => {
         const dPoint = daily.find((d) => d.name === day) || { bookings: 0 };
@@ -81,24 +83,19 @@ export default function Dashboard() {
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 bg-slate-50/40 dark:bg-transparent min-h-screen">
       {/* ── HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b pb-6 border-slate-200/60 dark:border-slate-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 border-slate-200/60 dark:border-slate-800/60">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Dashboard
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1 font-medium">
-            Welcome back. Here is what's happening with the platform today.
-          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-3xl font-black tracking-tight text-foreground">
+              Bảng điều khiển quản trị
+            </h2>
+          </div>
         </div>
         <QuickActions />
       </div>
 
       {/* ── SECTION 1: PULSE (KPIs) ── */}
-      <KpiCards
-        kpis={analytics.kpis}
-        revenueTrend={analytics.revenueTrend}
-        retentionData={analytics.retentionData}
-      />
+      <KpiCards kpis={analytics.kpis} />
 
       {/* ── SECTION 2: PERFORMANCE CORE (12-Col Grid) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
@@ -110,39 +107,41 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── SECTION 3: OPERATIONAL INSIGHTS ── */}
+      {/* ── SECTION 3: ACTIVITY & MANAGEMENT ── */}
+      {/* Kéo lên cao vì admin cần check Top Complexes & Recent Transactions sớm nhất */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-7 xl:col-span-8">
-          <DemandHeatmap data={heatmapData} />
-        </div>
-        <div className="lg:col-span-5 xl:col-span-4">
-          <SportRevenueMix data={analytics.sportRevenue} />
-        </div>
-      </div>
-
-      {/* ── SECTION 4: MARKET & GROWTH ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-4">
-          <RatingDistribution
-            data={analytics.ratingDist}
-            avgRating={analytics.kpis.avgRating}
-          />
-        </div>
-        <div className="lg:col-span-4">
-          <PaymentProviders data={analytics.paymentProviderData} />
-        </div>
-        <div className="lg:col-span-4">
-          <PlayerGrowthChart data={analytics.retentionData} />
-        </div>
-      </div>
-
-      {/* ── SECTION 5: MANAGEMENT & ACTIVITY ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pb-10">
         <div className="lg:col-span-7 xl:col-span-8">
           <TopComplexes data={analytics.topComplexes} />
         </div>
         <div className="lg:col-span-5 xl:col-span-4">
           <RecentTransactions payments={recentPayments} />
+        </div>
+      </div>
+
+      {/* ── SECTION 4: GROWTH & QUALITY ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-5">
+          <PlayerGrowthChart data={analytics.retentionData} />
+        </div>
+        <div className="lg:col-span-4">
+          <SportRevenueMix data={analytics.sportRevenue} />
+        </div>
+        <div className="lg:col-span-3">
+          <RatingDistribution
+            data={analytics.ratingDist}
+            avgRating={analytics.kpis.avgRating}
+          />
+        </div>
+      </div>
+
+      {/* ── SECTION 5: DEEP ANALYTICS ── */}
+      {/* Phân tích chi tiết vận hành — đặt cuối vì không cần action ngay */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pb-10">
+        <div className="lg:col-span-7 xl:col-span-8">
+          <DemandHeatmap data={heatmapData} />
+        </div>
+        <div className="lg:col-span-5 xl:col-span-4">
+          <PaymentProviders data={analytics.paymentProviderData} />
         </div>
       </div>
     </div>

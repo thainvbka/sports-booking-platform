@@ -1,45 +1,42 @@
 import { adminService } from "@/services/admin.service";
+import type { AdminComplex, AdminComplexStats } from "@/types/admin.types";
 import type { PaginationMeta } from "@/types/index";
 import { create } from "zustand";
 
-interface AdminBookingFilters {
+interface AdminComplexFilters {
   search?: string;
   status?: string;
 }
 
-interface AdminBookingState {
-  bookings: any[];
+interface AdminComplexState {
+  complexes: AdminComplex[];
   pagination: PaginationMeta | null;
-  stats: {
-    total: number;
-    confirmed: number;
-    completed: number;
-    canceled: number;
-    pending: number;
-  };
+  stats: AdminComplexStats;
   queryParams: {
     page: number;
     limit: number;
   };
-  filters: AdminBookingFilters;
+  filters: AdminComplexFilters;
   isLoading: boolean;
   error: string | null;
 
   // Actions
-  fetchBookings: () => Promise<void>;
-  setFilters: (filters: Partial<AdminBookingFilters>) => void;
+  fetchComplexes: () => Promise<void>;
+  setFilters: (filters: Partial<AdminComplexFilters>) => void;
   setPage: (page: number) => void;
+  updateComplexStatus: (id: string, status: string) => Promise<void>;
 }
 
-export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
-  bookings: [],
+export const useAdminComplexStore = create<AdminComplexState>((set, get) => ({
+  complexes: [],
   pagination: null,
   stats: {
     total: 0,
-    confirmed: 0,
-    completed: 0,
-    canceled: 0,
-    pending: 0
+    active: 0,
+    pending: 0,
+    inactive: 0,
+    rejected: 0,
+    draft: 0,
   },
   queryParams: {
     page: 1,
@@ -49,18 +46,18 @@ export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchBookings: async () => {
+  fetchComplexes: async () => {
     set({ isLoading: true, error: null });
     const { queryParams, filters } = get();
     try {
-      const res = await adminService.getBookings({
+      const res = await adminService.getComplexes({
         page: queryParams.page,
         limit: queryParams.limit,
         ...filters,
       });
       if (res.success) {
         set({
-          bookings: res.data.bookings,
+          complexes: res.data.complexes,
           pagination: res.data.pagination,
           stats: res.data.stats,
           isLoading: false,
@@ -70,7 +67,7 @@ export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
       }
     } catch (error: any) {
       set({
-        error: error.message || "Failed to fetch system bookings",
+        error: error.message || "Failed to fetch complexes",
         isLoading: false,
       });
     }
@@ -81,13 +78,30 @@ export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
       filters: { ...state.filters, ...newFilters },
       queryParams: { ...state.queryParams, page: 1 },
     }));
-    get().fetchBookings();
+    get().fetchComplexes();
   },
 
   setPage: (page: number) => {
     set((state) => ({
       queryParams: { ...state.queryParams, page },
     }));
-    get().fetchBookings();
+    get().fetchComplexes();
+  },
+
+  updateComplexStatus: async (id, status) => {
+    set({ isLoading: true });
+    try {
+      const res = await adminService.updateComplexStatus(id, status as any);
+      if (res.success) {
+        await get().fetchComplexes();
+      } else {
+        throw new Error(res.message);
+      }
+    } catch (error: any) {
+      set({ error: error.message || "Failed to update complex status" });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
   },
 }));

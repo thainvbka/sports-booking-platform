@@ -1,6 +1,12 @@
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,12 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   ROLE_COLORS,
   ROLE_LABELS,
@@ -25,7 +25,14 @@ import { useAdminUserStore } from "@/store/admin/useAdminUserStore";
 import type { AdminUser } from "@/types/admin.types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { MoreVertical, Search, User, Mail, Phone, Calendar } from "lucide-react";
+import {
+  Calendar,
+  Mail,
+  MoreVertical,
+  Phone,
+  Search,
+  User,
+} from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -46,7 +53,11 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
-  const handleStatusUpdate = async (id: string, role: string, status: string) => {
+  const handleStatusUpdate = async (
+    id: string,
+    role: string,
+    status: string,
+  ) => {
     try {
       await updateUserStatus(id, role, status);
       toast.success("Cập nhật trạng thái thành công");
@@ -127,7 +138,9 @@ export default function AdminUsersPage() {
       cell: (user) => (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="w-4 h-4" />
-          <span>{format(new Date(user.created_at), "dd/MM/yyyy", { locale: vi })}</span>
+          <span>
+            {format(new Date(user.created_at), "dd/MM/yyyy", { locale: vi })}
+          </span>
         </div>
       ),
     },
@@ -137,7 +150,7 @@ export default function AdminUsersPage() {
       cell: (user) => {
         const role = getUserRole(user);
         const status = getUserStatus(user);
-        
+
         if (role === "ADMIN") return null;
 
         return (
@@ -149,20 +162,30 @@ export default function AdminUsersPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {status !== "ACTIVE" && (
-                <DropdownMenuItem onClick={() => handleStatusUpdate(user.id, role, "ACTIVE")}>
+                <DropdownMenuItem
+                  onClick={() => handleStatusUpdate(user.id, role, "ACTIVE")}
+                >
                   Kích hoạt
                 </DropdownMenuItem>
               )}
-              {status !== "INACTIVE" && status !== "BANNED" && status !== "SUSPENDED" && (
-                <DropdownMenuItem 
-                  onClick={() => handleStatusUpdate(user.id, role, role === "OWNER" ? "SUSPENDED" : "INACTIVE")}
-                  className="text-red-600"
-                >
-                  {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
-                </DropdownMenuItem>
-              )}
+              {status !== "INACTIVE" &&
+                status !== "BANNED" &&
+                status !== "SUSPENDED" && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleStatusUpdate(
+                        user.id,
+                        role,
+                        role === "OWNER" ? "SUSPENDED" : "INACTIVE",
+                      )
+                    }
+                    className="text-red-600"
+                  >
+                    {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
+                  </DropdownMenuItem>
+                )}
               {role === "OWNER" && status === "PENDING" && (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => handleStatusUpdate(user.id, role, "REJECTED")}
                   className="text-red-600"
                 >
@@ -179,7 +202,9 @@ export default function AdminUsersPage() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý người dùng</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Quản lý người dùng
+        </h1>
       </div>
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -190,17 +215,19 @@ export default function AdminUsersPage() {
             className="pl-9"
             defaultValue={filters.search}
             onChange={(e) => {
-                const timer = setTimeout(() => {
-                    setFilters({ search: e.target.value });
-                }, 500);
-                return () => clearTimeout(timer);
+              const timer = setTimeout(() => {
+                setFilters({ search: e.target.value });
+              }, 500);
+              return () => clearTimeout(timer);
             }}
           />
         </div>
         <div className="flex gap-2">
           <Select
             value={filters.role || "ALL"}
-            onValueChange={(value) => setFilters({ role: value === "ALL" ? undefined : value })}
+            onValueChange={(value) =>
+              setFilters({ role: value === "ALL" ? undefined : value })
+            }
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Vai trò" />
@@ -215,7 +242,9 @@ export default function AdminUsersPage() {
 
           <Select
             value={filters.status || "ALL"}
-            onValueChange={(value) => setFilters({ status: value === "ALL" ? undefined : value })}
+            onValueChange={(value) =>
+              setFilters({ status: value === "ALL" ? undefined : value })
+            }
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Trạng thái" />

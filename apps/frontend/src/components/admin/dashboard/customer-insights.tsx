@@ -21,11 +21,11 @@ interface CustomerInsightsProps {
 
 const chartConfig = {
   new: {
-    label: "New Players",
+    label: "Người chơi mới",
     color: "var(--chart-2)",
   },
   returning: {
-    label: "Returning Players",
+    label: "Người chơi quay lại",
     color: "var(--chart-5)",
   },
 };
@@ -34,9 +34,9 @@ export function CustomerInsights({ data = [] }: CustomerInsightsProps) {
   return (
     <Card className="cursor-pointer h-full flex flex-col">
       <CardHeader>
-        <CardTitle>Retention: New vs Returning</CardTitle>
+        <CardTitle>Giữ chân: Người mới vs quay lại</CardTitle>
         <CardDescription>
-          Community health across the last 6 months
+          Sức khỏe cộng đồng người chơi trong 6 tháng gần nhất
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1">
