@@ -1,4 +1,4 @@
-import { updateComplexCache } from "../../helpers/complexCache";
+import { updateComplexCache } from "../../helpers/cache";
 import { uploadSubfieldImage } from "../../helpers/upload";
 import { prisma } from "../../libs/prisma";
 import {

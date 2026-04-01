@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { getProductsBySubfieldController } from "../../controllers/v1/product.controller";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
@@ -9,9 +10,18 @@ import {
   getOwnerSubfieldByIdController,
   updateSubfieldController,
 } from "../../controllers/v1/subfield.controller";
-import { updateSubfieldSchema } from "../../validations";
+import {
+  getSubfieldProductsSchema,
+  updateSubfieldSchema,
+} from "../../validations";
 
 const router = Router();
+
+router.get(
+  "/:id/products",
+  validate(getSubfieldProductsSchema),
+  asyncHandler(getProductsBySubfieldController),
+);
 
 router.get(
   "/:id",

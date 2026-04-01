@@ -30,6 +30,9 @@ export const createRecurringBookingSchema = z
 
       // Nếu có thêm type để phân biệt đặt lẻ/cố định
       type: z.enum(["ONE_TIME", "RECURRING"]).optional(),
+
+      // Recurring booking không hỗ trợ addons ở bước tạo chuỗi.
+      addons: z.unknown().optional(),
     }),
     params: z.object({
       id: z.string().uuid(), // sub_field_id
@@ -45,7 +48,7 @@ export const createRecurringBookingSchema = z
     {
       message: "Không thể đặt lịch định kỳ cho ngày đã qua",
       path: ["body", "start_date"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -59,8 +62,12 @@ export const createRecurringBookingSchema = z
       message:
         "Thời lượng đặt sân phải là bội của 30 phút (0.5 giờ, 1 giờ, 1.5 giờ, ...)",
       path: ["body", "end_time"],
-    }
-  );
+    },
+  )
+  .refine((data) => data.body.addons === undefined, {
+    message: "ADDON_NOT_ALLOWED_FOR_RECURRING",
+    path: ["body", "addons"],
+  });
 
 export type CreateRecurringBookingInput = z.infer<
   typeof createRecurringBookingSchema

@@ -11,8 +11,10 @@ import {
   ownerConfirmBookingController,
   ownerConfirmRecurringBookingController,
   ownerGetAllBookingsController,
+  ownerGetBookingByIdController,
   ownerGetBookingStatsController,
   reviewRecurringBookingController,
+  updateBookingAddonsController,
   updateBookingController,
 } from "../../controllers/v1/booking.controller";
 import authenticate from "../../middlewares/authenticate";
@@ -25,6 +27,7 @@ import {
   createRecurringBookingSchema,
   ownerCancelBookingSchema,
   ownerGetBookingsQuerySchema,
+  syncBookingAddonsSchema,
 } from "../../validations";
 
 const router = Router();
@@ -60,6 +63,14 @@ router.put(
   authorize(["PLAYER"]),
   validate(createBookingSchema),
   asyncHandler(updateBookingController),
+);
+
+router.patch(
+  "/:id/addons", //bookingId
+  authenticate,
+  authorize(["PLAYER"]),
+  validate(syncBookingAddonsSchema),
+  asyncHandler(updateBookingAddonsController),
 );
 
 router.patch(
@@ -142,6 +153,13 @@ router.get(
   authorize(["OWNER"]),
   validate(ownerGetBookingsQuerySchema),
   asyncHandler(ownerGetAllBookingsController),
+);
+
+router.get(
+  "/:id", //owner booking detail
+  authenticate,
+  authorize(["OWNER"]),
+  asyncHandler(ownerGetBookingByIdController),
 );
 
 export default router;

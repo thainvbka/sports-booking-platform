@@ -8,7 +8,16 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.response";
-import { CreateBookingInput } from "../../validations";
+import {
+  CreateBookingInput,
+  UpdateBookingAddonsInput,
+} from "../../validations";
+import {
+  calculateAddonSubtotal,
+  getBookingAddonSubtotal,
+  normalizeBookingAddons,
+  restoreAddonStockForBooking,
+} from "./booking_addon.service";
 
 export interface filter {
   search?: string;
@@ -21,12 +30,15 @@ export interface filter {
 
 // Hard limit để tránh OOM — cần chuyển sang DB-level pagination trong tương lai
 const QUERY_HARD_LIMIT = 500;
+const ADDON_EDIT_BUFFER_MS = 5 * 60 * 1000;
 
 export const createBooking = async (
   player_id: string,
   data: CreateBookingInput,
   sub_field_id: string,
 ) => {
+  const normalizedAddons = normalizeBookingAddons(data.addons ?? []);
+
   const player = await prisma.player.findUnique({
     where: { id: player_id, status: "ACTIVE" },
   });
@@ -78,18 +90,27 @@ export const createBooking = async (
       ) {
         const updatedBooking = await prisma.booking.update({
           where: { id: overlappingBooking.id },
-          data: { expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL) },
+          data: {
+            expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
+          },
+          include: {
+            booking_addons: {
+              include: {
+                product: {
+                  select: {
+                    name: true,
+                    image: true,
+                  },
+                },
+              },
+            },
+          },
         });
 
         return {
           message:
             "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
-          booking_id: updatedBooking.id,
-          start_time: updatedBooking.start_time,
-          end_time: updatedBooking.end_time,
-          total_price: updatedBooking.total_price,
-          status: updatedBooking.status,
-          expires_at: updatedBooking.expires_at,
+          booking: updatedBooking,
         };
       }
 
@@ -116,16 +137,120 @@ export const createBooking = async (
   console.log("Price Breakdown:::::", breakdown);
   console.log("Total Price:::::", totalPrice);
 
-  const booking = await prisma.booking.create({
-    data: {
-      player_id,
-      sub_field_id,
-      start_time: data.start_time,
-      end_time: data.end_time,
-      total_price: totalPrice,
-      status: "PENDING",
-      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
-    },
+  const booking = await prisma.$transaction(async (tx) => {
+    const productIds = normalizedAddons.map((item) => item.product_id);
+    const products = productIds.length
+      ? await tx.product.findMany({
+          where: {
+            id: { in: productIds },
+            complex_id: subField.complex_id,
+            status: "ACTIVE",
+          },
+          select: {
+            id: true,
+            price: true,
+            stock: true,
+            sport_type: true,
+          },
+        })
+      : [];
+
+    const productMap = new Map(
+      products
+        .filter(
+          (product) =>
+            product.sport_type === null ||
+            product.sport_type === subField.sport_type,
+        )
+        .map((product) => [product.id, product]),
+    );
+
+    const unavailableProductIds = normalizedAddons
+      .filter((addon) => {
+        const product = productMap.get(addon.product_id);
+        return !product || product.stock < addon.quantity;
+      })
+      .map((addon) => addon.product_id);
+
+    if (unavailableProductIds.length > 0) {
+      throw new BadRequestError(
+        `ADDON_OUT_OF_STOCK: Một số add-on đã hết hàng hoặc không khả dụng. Products: ${Array.from(
+          new Set(unavailableProductIds),
+        ).join(",")}`,
+      );
+    }
+
+    const addonSubtotal = normalizedAddons.reduce((sum, addon) => {
+      const product = productMap.get(addon.product_id);
+      if (!product) return sum;
+      return sum + Number(product.price) * addon.quantity;
+    }, 0);
+
+    const createdBooking = await tx.booking.create({
+      data: {
+        player_id,
+        sub_field_id,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        total_price: totalPrice + addonSubtotal,
+        status: "PENDING",
+        expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
+      },
+    });
+
+    for (const addon of normalizedAddons) {
+      const updated = await tx.product.updateMany({
+        where: {
+          id: addon.product_id,
+          complex_id: subField.complex_id,
+          status: "ACTIVE",
+          stock: { gte: addon.quantity },
+          OR: [{ sport_type: null }, { sport_type: subField.sport_type }],
+        },
+        data: {
+          stock: { decrement: addon.quantity },
+        },
+      });
+
+      if (updated.count === 0) {
+        throw new BadRequestError(
+          `ADDON_OUT_OF_STOCK: Một số add-on đã hết hàng trong lúc xác nhận. Product: ${addon.product_id}`,
+        );
+      }
+    }
+
+    if (normalizedAddons.length > 0) {
+      await tx.bookingAddon.createMany({
+        data: normalizedAddons.map((addon) => ({
+          booking_id: createdBooking.id,
+          product_id: addon.product_id,
+          quantity: addon.quantity,
+          unit_price: productMap.get(addon.product_id)!.price,
+        })),
+      });
+    }
+
+    const createdWithAddons = await tx.booking.findUnique({
+      where: { id: createdBooking.id },
+      include: {
+        booking_addons: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!createdWithAddons) {
+      throw new NotFoundError("Booking not found after creation");
+    }
+
+    return createdWithAddons;
   });
 
   return {
@@ -134,10 +259,23 @@ export const createBooking = async (
   };
 };
 
-export const getBookingCheckoutDetails = async (booking_id: string, player_id: string) => {
+export const getBookingCheckoutDetails = async (
+  booking_id: string,
+  player_id: string,
+) => {
   const booking = await prisma.booking.findFirst({
     where: { id: booking_id, player_id, status: "PENDING" },
     include: {
+      booking_addons: {
+        include: {
+          product: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
+      },
       sub_field: {
         include: {
           complex: {
@@ -153,10 +291,17 @@ export const getBookingCheckoutDetails = async (booking_id: string, player_id: s
   }
 
   if (new Date() > booking.expires_at) {
-    await prisma.booking.update({
-      where: { id: booking_id },
-      data: { status: "CANCELED" },
+    await prisma.$transaction(async (tx) => {
+      const canceled = await tx.booking.updateMany({
+        where: { id: booking_id, status: "PENDING" },
+        data: { status: "CANCELED" },
+      });
+
+      if (canceled.count > 0) {
+        await restoreAddonStockForBooking(tx, booking_id);
+      }
     });
+
     throw new BadRequestError("Booking has expired and been canceled");
   }
 
@@ -186,6 +331,14 @@ export const getBookingCheckoutDetails = async (booking_id: string, player_id: s
     sport_type: booking.sub_field.sport_type,
     sub_field_name: booking.sub_field.sub_field_name,
     expires_at: booking.expires_at,
+    booking_addons: booking.booking_addons.map((addon) => ({
+      product_id: addon.product_id,
+      product_name: addon.product.name,
+      product_image: addon.product.image,
+      quantity: addon.quantity,
+      unit_price: addon.unit_price,
+      line_total: Number(addon.unit_price) * addon.quantity,
+    })),
   };
 };
 
@@ -238,6 +391,7 @@ export const updateBooking = async (
     data.start_time,
     data.end_time,
   );
+  const addonSubtotal = await getBookingAddonSubtotal(booking_id);
 
   console.log("Total Price:::::", totalPrice);
 
@@ -248,10 +402,218 @@ export const updateBooking = async (
       sub_field_id,
       start_time: data.start_time,
       end_time: data.end_time,
-      total_price: totalPrice,
+      total_price: totalPrice + addonSubtotal,
       status: "PENDING",
       expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
     },
+  });
+};
+
+export const updateBookingAddons = async (
+  player_id: string,
+  booking_id: string,
+  data: UpdateBookingAddonsInput,
+) => {
+  const normalizedAddons = normalizeBookingAddons(data.addons ?? []);
+
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: booking_id,
+      player_id,
+      status: "PENDING",
+    },
+    select: {
+      id: true,
+      total_price: true,
+      expires_at: true,
+      sub_field: {
+        select: {
+          complex_id: true,
+          sport_type: true,
+        },
+      },
+      booking_addons: {
+        select: {
+          product_id: true,
+          quantity: true,
+          unit_price: true,
+        },
+      },
+    },
+  });
+
+  if (!booking) {
+    throw new NotFoundError("Booking not found or cannot update addons");
+  }
+
+  if (booking.expires_at.getTime() <= Date.now() + ADDON_EDIT_BUFFER_MS) {
+    throw new BadRequestError(
+      `BOOKING_EXPIRING_SOON: Booking sắp hết hạn, vui lòng thanh toán ngay. Expires at: ${booking.expires_at.toISOString()}`,
+    );
+  }
+
+  const oldAddonMap = new Map(
+    booking.booking_addons.map((addon) => [addon.product_id, addon]),
+  );
+  const newAddonMap = new Map(
+    normalizedAddons.map((addon) => [addon.product_id, addon.quantity]),
+  );
+
+  const requestedProductIds = normalizedAddons.map((addon) => addon.product_id);
+  const products = requestedProductIds.length
+    ? await prisma.product.findMany({
+        where: {
+          id: { in: requestedProductIds },
+          complex_id: booking.sub_field.complex_id,
+        },
+        select: {
+          id: true,
+          price: true,
+          sport_type: true,
+          status: true,
+        },
+      })
+    : [];
+
+  const productMap = new Map(products.map((product) => [product.id, product]));
+
+  const invalidProducts = normalizedAddons
+    .filter((addon) => {
+      const product = productMap.get(addon.product_id);
+      const existedAddon = oldAddonMap.get(addon.product_id);
+
+      if (!product) return true;
+
+      const isSportCompatible =
+        product.sport_type === null ||
+        product.sport_type === booking.sub_field.sport_type;
+      if (!isSportCompatible) return true;
+
+      if (!existedAddon && product.status !== "ACTIVE") return true;
+
+      return false;
+    })
+    .map((addon) => addon.product_id);
+
+  if (invalidProducts.length > 0) {
+    throw new BadRequestError(
+      `ADDON_OUT_OF_STOCK: Một số add-on không còn khả dụng. Products: ${Array.from(
+        new Set(invalidProducts),
+      ).join(",")}`,
+    );
+  }
+
+  const oldAddonSubtotal = calculateAddonSubtotal(booking.booking_addons);
+  const basePrice = Math.max(Number(booking.total_price) - oldAddonSubtotal, 0);
+
+  return prisma.$transaction(async (tx) => {
+    const outOfStockIds: string[] = [];
+
+    for (const addon of normalizedAddons) {
+      const oldQty = oldAddonMap.get(addon.product_id)?.quantity ?? 0;
+      const delta = addon.quantity - oldQty;
+
+      if (delta <= 0) continue;
+
+      const updated = await tx.product.updateMany({
+        where: {
+          id: addon.product_id,
+          complex_id: booking.sub_field.complex_id,
+          status: "ACTIVE",
+          stock: { gte: delta },
+          OR: [
+            { sport_type: null },
+            { sport_type: booking.sub_field.sport_type },
+          ],
+        },
+        data: {
+          stock: { decrement: delta },
+        },
+      });
+
+      if (updated.count === 0) {
+        outOfStockIds.push(addon.product_id);
+      }
+    }
+
+    if (outOfStockIds.length > 0) {
+      throw new BadRequestError(
+        `ADDON_OUT_OF_STOCK: Một số add-on đã hết hàng trong lúc cập nhật. Products: ${Array.from(
+          new Set(outOfStockIds),
+        ).join(",")}`,
+      );
+    }
+
+    for (const oldAddon of booking.booking_addons) {
+      const newQty = newAddonMap.get(oldAddon.product_id) ?? 0;
+      const delta = newQty - oldAddon.quantity;
+
+      if (delta >= 0) continue;
+
+      await tx.product.update({
+        where: { id: oldAddon.product_id },
+        data: {
+          stock: { increment: Math.abs(delta) },
+        },
+      });
+    }
+
+    await tx.bookingAddon.deleteMany({
+      where: { booking_id },
+    });
+
+    if (normalizedAddons.length > 0) {
+      await tx.bookingAddon.createMany({
+        data: normalizedAddons.map((addon) => ({
+          booking_id,
+          product_id: addon.product_id,
+          quantity: addon.quantity,
+          unit_price:
+            oldAddonMap.get(addon.product_id)?.unit_price ??
+            productMap.get(addon.product_id)!.price,
+        })),
+      });
+    }
+
+    const refreshedAddons = await tx.bookingAddon.findMany({
+      where: { booking_id },
+      select: {
+        quantity: true,
+        unit_price: true,
+      },
+    });
+
+    const updatedTotalPrice =
+      basePrice + calculateAddonSubtotal(refreshedAddons);
+
+    await tx.booking.update({
+      where: { id: booking_id },
+      data: {
+        total_price: updatedTotalPrice,
+      },
+    });
+
+    const updatedBooking = await tx.booking.findUnique({
+      where: { id: booking_id },
+      include: {
+        booking_addons: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!updatedBooking) {
+      throw new NotFoundError("Booking not found after addon update");
+    }
+
+    return updatedBooking;
   });
 };
 
@@ -274,9 +636,37 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
     );
   }
 
-  return await prisma.booking.update({
-    where: { id: booking_id },
-    data: { status: "CANCELED" },
+  return await prisma.$transaction(async (tx) => {
+    if (booking.status === "PENDING") {
+      const canceled = await tx.booking.updateMany({
+        where: { id: booking_id, status: "PENDING" },
+        data: { status: "CANCELED" },
+      });
+
+      if (canceled.count === 0) {
+        throw new BadRequestError("Booking status has changed, please refresh");
+      }
+
+      await restoreAddonStockForBooking(tx, booking_id);
+    } else {
+      await tx.booking.updateMany({
+        where: {
+          id: booking_id,
+          status: { in: ["COMPLETED", "CONFIRMED"] },
+        },
+        data: { status: "CANCELED" },
+      });
+    }
+
+    const canceledBooking = await tx.booking.findUnique({
+      where: { id: booking_id },
+    });
+
+    if (!canceledBooking) {
+      throw new NotFoundError("Booking not found after cancel");
+    }
+
+    return canceledBooking;
   });
 };
 
@@ -308,9 +698,37 @@ export const ownerCancelBooking = async (
     );
   }
 
-  return await prisma.booking.update({
-    where: { id: booking_id },
-    data: { status: "CANCELED" },
+  return await prisma.$transaction(async (tx) => {
+    if (booking.status === "PENDING") {
+      const canceled = await tx.booking.updateMany({
+        where: { id: booking_id, status: "PENDING" },
+        data: { status: "CANCELED" },
+      });
+
+      if (canceled.count === 0) {
+        throw new BadRequestError("Booking status has changed, please refresh");
+      }
+
+      await restoreAddonStockForBooking(tx, booking_id);
+    } else {
+      await tx.booking.updateMany({
+        where: {
+          id: booking_id,
+          status: { in: ["COMPLETED", "CONFIRMED"] },
+        },
+        data: { status: "CANCELED" },
+      });
+    }
+
+    const canceledBooking = await tx.booking.findUnique({
+      where: { id: booking_id },
+    });
+
+    if (!canceledBooking) {
+      throw new NotFoundError("Booking not found after cancel");
+    }
+
+    return canceledBooking;
   });
 };
 
@@ -366,6 +784,19 @@ export const ownerGetBookingById = async (
       end_time: true,
       total_price: true,
       status: true,
+      booking_addons: {
+        select: {
+          product_id: true,
+          quantity: true,
+          unit_price: true,
+          product: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+        },
+      },
       player: {
         select: {
           account: {
@@ -400,7 +831,6 @@ export const ownerGetBookingById = async (
   return booking;
 };
 
-// FIX: 10 COUNT queries → 2 groupBy queries
 export const getOwnerBookingStats = async (owner_id: string) => {
   const owner = await prisma.owner.findUnique({
     where: { id: owner_id, status: "ACTIVE" },

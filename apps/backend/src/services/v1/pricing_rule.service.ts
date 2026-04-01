@@ -1,5 +1,5 @@
 import { formatTimeForDisplay, parseTime } from "../../helpers";
-import { updateComplexCache } from "../../helpers/complexCache";
+import { updateComplexCache } from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,

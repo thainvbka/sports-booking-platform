@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const bookingAddonItemSchema = z.object({
+  product_id: z.string().uuid("ID sản phẩm không hợp lệ"),
+  quantity: z.coerce
+    .number()
+    .int("Số lượng add-on phải là số nguyên")
+    .positive("Số lượng add-on phải lớn hơn 0"),
+});
+
 export const createBookingSchema = z
   .object({
     body: z.object({
@@ -10,6 +18,7 @@ export const createBookingSchema = z
       end_time: z.coerce.date({
         message: "Thời gian kết thúc không hợp lệ",
       }),
+      addons: z.array(bookingAddonItemSchema).optional(),
     }),
     params: z.object({
       id: z.string().uuid(), // sub_field_id
@@ -36,8 +45,19 @@ export const createBookingSchema = z
       message:
         "Thời lượng đặt sân phải là bội của 30 phút (0.5 giờ, 1 giờ, 1.5 giờ, ...)",
       path: ["body", "end_time"],
-    }
+    },
   );
+
+export const syncBookingAddonsSchema = z.object({
+  body: z.object({
+    addons: z.array(bookingAddonItemSchema).default([]),
+  }),
+  params: z.object({
+    id: z.string().uuid({
+      message: "ID booking không hợp lệ",
+    }),
+  }),
+});
 
 // owner booking filter schema
 
@@ -74,6 +94,10 @@ export const ownerCancelBookingSchema = z.object({
 });
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>["body"];
+export type BookingAddonInput = z.infer<typeof bookingAddonItemSchema>;
+export type UpdateBookingAddonsInput = z.infer<
+  typeof syncBookingAddonsSchema
+>["body"];
 
 export type OwnerBookingFilter = z.infer<typeof ownerBookingFilterSchema>;
 export type GetOwnerBookingsQuery = z.infer<typeof ownerGetBookingsQuerySchema>;

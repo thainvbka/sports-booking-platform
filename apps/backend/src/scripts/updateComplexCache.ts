@@ -1,4 +1,4 @@
-import { updateAllComplexCache } from "../helpers/complexCache";
+import { updateAllComplexCache } from "../helpers/cache";
 
 /**
  * Script to update all complex caches after adding new fields

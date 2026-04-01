@@ -18,12 +18,19 @@ import {
   CreateRecurringBookingInput,
   RecurringBookingType,
 } from "../../validations";
+import { restoreAddonStockForBookingIds } from "./booking_addon.service";
 
 export const createRecurringBookingService = async (
   player_id: string,
   data: CreateRecurringBookingInput,
   sub_field_id: string,
 ) => {
+  if ((data as { addons?: unknown }).addons !== undefined) {
+    throw new BadRequestError(
+      "ADDON_NOT_ALLOWED_FOR_RECURRING: Recurring booking không hỗ trợ addons ở bước tạo chuỗi",
+    );
+  }
+
   // FIX: dùng toZonedTime thay vì getHours() để đảm bảo đúng múi giờ VN
   const vnStart = toZonedTime(data.start_time, TIME_ZONE);
   const vnEnd = toZonedTime(data.end_time, TIME_ZONE);
@@ -318,14 +325,35 @@ export const cancelRecurringBookingService = async (
       );
   }
 
-  await prisma.booking.updateMany({
-    where: { recurring_booking_id },
-    data: { status: "CANCELED" },
-  });
+  return prisma.$transaction(async (tx) => {
+    const pendingBookings = await tx.booking.findMany({
+      where: {
+        recurring_booking_id,
+        status: "PENDING",
+      },
+      select: { id: true },
+    });
 
-  return await prisma.recurringBooking.update({
-    where: { id: recurring_booking_id },
-    data: { status: "CANCELED" },
+    const pendingBookingIds = pendingBookings.map((booking) => booking.id);
+
+    for (const bookingId of pendingBookingIds) {
+      const canceled = await tx.booking.updateMany({
+        where: {
+          id: bookingId,
+          status: "PENDING",
+        },
+        data: { status: "CANCELED" },
+      });
+
+      if (canceled.count > 0) {
+        await restoreAddonStockForBookingIds(tx, [bookingId]);
+      }
+    }
+
+    return tx.recurringBooking.update({
+      where: { id: recurring_booking_id },
+      data: { status: "CANCELED" },
+    });
   });
 };
 
@@ -354,16 +382,31 @@ export const reviewRecurringBookingService = async (
   const firstBooking = recurringBooking.bookings[0];
 
   if (new Date() > firstBooking.expires_at) {
-    await prisma.$transaction([
-      prisma.recurringBooking.update({
+    const pendingBookingIds = recurringBooking.bookings
+      .filter((booking) => booking.status === "PENDING")
+      .map((booking) => booking.id);
+
+    await prisma.$transaction(async (tx) => {
+      for (const bookingId of pendingBookingIds) {
+        const canceled = await tx.booking.updateMany({
+          where: {
+            id: bookingId,
+            status: "PENDING",
+          },
+          data: { status: "CANCELED" },
+        });
+
+        if (canceled.count > 0) {
+          await restoreAddonStockForBookingIds(tx, [bookingId]);
+        }
+      }
+
+      await tx.recurringBooking.update({
         where: { id: recurring_booking_id },
         data: { status: "CANCELED" },
-      }),
-      prisma.booking.updateMany({
-        where: { recurring_booking_id },
-        data: { status: "CANCELED" },
-      }),
-    ]);
+      });
+    });
+
     throw new BadRequestError("Recurring booking session has expired");
   }
 

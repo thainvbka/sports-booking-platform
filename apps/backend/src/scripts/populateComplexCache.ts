@@ -1,5 +1,5 @@
+import { updateComplexCache } from "../helpers/cache";
 import { prisma } from "../libs/prisma";
-import { updateComplexCache } from "../helpers/complexCache";
 
 /**
  * Script to populate cache for all existing complexes

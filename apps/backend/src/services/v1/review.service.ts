@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import {
   updateComplexRatingCache,
   updateSubfieldRatingCache,
-} from "../../helpers/complexCache";
+} from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,

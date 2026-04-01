@@ -121,6 +121,7 @@ export const createCheckoutSession = async (
           sub_field_name: true,
           complex: {
             select: {
+              id: true,
               complex_address: true,
               complex_name: true,
               owner: {
@@ -129,6 +130,17 @@ export const createCheckoutSession = async (
                   stripe_onboarding_complete: true,
                 },
               },
+            },
+          },
+        },
+      },
+      booking_addons: {
+        select: {
+          quantity: true,
+          unit_price: true,
+          product: {
+            select: {
+              name: true,
             },
           },
         },
@@ -149,44 +161,96 @@ export const createCheckoutSession = async (
   const firstBooking = bookings[0];
   const owner = firstBooking.sub_field.complex.owner;
 
+  const hasDifferentOwners = bookings.some(
+    (booking) =>
+      booking.sub_field.complex.owner.stripe_account_id !==
+      owner.stripe_account_id,
+  );
+
+  if (hasDifferentOwners) {
+    throw new BadRequestError(
+      "Không thể thanh toán booking của nhiều chủ sân trong cùng một giao dịch",
+    );
+  }
+
   if (!owner.stripe_account_id || !owner.stripe_onboarding_complete) {
     console.log("::: Chủ sân chưa hoàn thành thiết lập thanh toán.");
     throw new BadRequestError("Chủ sân chưa hoàn thành thiết lập thanh toán");
   }
 
-  // Stripe currency VND is zero-decimal, so every amount must be an integer.
-  const normalizedBookings = bookings.map((booking) => {
-    const unitAmount = Math.round(Number(booking.total_price));
-    if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
+  const line_items: any[] = [];
+  let totalAmount = 0;
+
+  for (const booking of bookings) {
+    const roundedBookingTotal = Math.round(Number(booking.total_price));
+    if (!Number.isFinite(roundedBookingTotal) || roundedBookingTotal <= 0) {
       throw new BadRequestError(
         `Invalid booking amount for booking ${booking.id}`,
       );
     }
 
-    return {
-      ...booking,
-      unit_amount: unitAmount,
-    };
-  });
+    const addonRoundedTotal = booking.booking_addons.reduce(
+      (sum, addon) =>
+        sum + Math.round(Number(addon.unit_price)) * addon.quantity,
+      0,
+    );
 
-  //tạo line items cho stripe checkout
-  const line_items = normalizedBookings.map((booking) => ({
-    price_data: {
-      currency: "vnd",
-      product_data: {
-        name: `Sân ${booking.sub_field.sub_field_name}`,
-        description: `Khu phức hợp ${booking.sub_field.complex.complex_name} - Địa chỉ: ${booking.sub_field.complex.complex_address}`,
+    const fieldAmount = roundedBookingTotal - addonRoundedTotal;
+
+    if (fieldAmount <= 0) {
+      throw new BadRequestError(
+        `INVALID_BOOKING_TOTAL: Tổng tiền sân không hợp lệ sau khi tách add-on. Booking: ${booking.id}`,
+      );
+    }
+
+    line_items.push({
+      price_data: {
+        currency: "vnd",
+        product_data: {
+          name: `Sân ${booking.sub_field.sub_field_name}`,
+          description: `Khu phức hợp ${booking.sub_field.complex.complex_name} - Địa chỉ: ${booking.sub_field.complex.complex_address}`,
+        },
+        unit_amount: fieldAmount,
       },
-      unit_amount: booking.unit_amount,
-    },
-    quantity: 1,
-  }));
+      quantity: 1,
+    });
 
-  //tinh tong tien
-  const totalAmount = normalizedBookings.reduce(
-    (sum, booking) => sum + booking.unit_amount,
+    totalAmount += fieldAmount;
+
+    for (const addon of booking.booking_addons) {
+      const addonUnitAmount = Math.round(Number(addon.unit_price));
+      if (!Number.isFinite(addonUnitAmount) || addonUnitAmount <= 0) {
+        throw new BadRequestError(
+          `Invalid addon amount in booking ${booking.id}`,
+        );
+      }
+
+      line_items.push({
+        price_data: {
+          currency: "vnd",
+          product_data: {
+            name: addon.product.name,
+            description: `Add-on cho booking ${booking.id}`,
+          },
+          unit_amount: addonUnitAmount,
+        },
+        quantity: addon.quantity,
+      });
+
+      totalAmount += addonUnitAmount * addon.quantity;
+    }
+  }
+
+  const expectedAmount = bookings.reduce(
+    (sum, booking) => sum + Math.round(Number(booking.total_price)),
     0,
   );
+
+  if (totalAmount !== expectedAmount) {
+    throw new BadRequestError(
+      `BOOKING_AMOUNT_MISMATCH: Tổng tiền line_items không khớp với booking total_price. Expected=${expectedAmount}, Actual=${totalAmount}`,
+    );
+  }
 
   //phí nền tảng (10%)
   const platformFee = Math.round(totalAmount * 0.1);
@@ -276,31 +340,59 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
     //check loại thanh toán
     if (session.metadata.type === "BOOKING_CHECKOUT") {
       // Parse dữ liệu từ metadata
-      const bookingIds = JSON.parse(session.metadata.bookingIds);
+      const bookingIds: string[] = JSON.parse(session.metadata.bookingIds);
       const transactionCode = session.id;
       const totalAmount = session.amount_total;
       console.log(` Webhook received for bookings: ${bookingIds}`);
 
-      // Lấy thông tin booking đầu tiên để check recurring
-      const firstBooking = await prisma.booking.findUnique({
+      const existingPayment = await prisma.payment.findUnique({
         where: {
-          id: bookingIds[0],
-        },
-        select: {
-          recurring_booking_id: true,
+          transaction_code: transactionCode,
         },
       });
 
-      const recurringBookingId = firstBooking?.recurring_booking_id;
+      if (existingPayment) {
+        console.log(`Webhook retried for ${transactionCode}, skipping`);
+        return;
+      }
 
       try {
         await prisma.$transaction(async (tx) => {
+          const pendingBookings = await tx.booking.findMany({
+            where: {
+              id: { in: bookingIds },
+              status: BookingStatus.PENDING,
+            },
+            select: {
+              id: true,
+              total_price: true,
+              recurring_booking_id: true,
+            },
+          });
+
+          if (pendingBookings.length !== bookingIds.length) {
+            throw new BadRequestError(
+              `BOOKING_STATE_INVALID: Một số booking không còn ở trạng thái PENDING. Bookings: ${bookingIds.join(",")}`,
+            );
+          }
+
+          const expectedAmount = pendingBookings.reduce(
+            (sum, booking) => sum + Math.round(Number(booking.total_price)),
+            0,
+          );
+
+          if (expectedAmount !== totalAmount) {
+            throw new BadRequestError(
+              `BOOKING_AMOUNT_MISMATCH: Số tiền webhook không khớp với total_price booking. Expected=${expectedAmount}, Stripe=${totalAmount}`,
+            );
+          }
+
           // Tạo payment record
           const newPayment = await tx.payment.create({
             data: {
               amount: totalAmount,
               provider: PaymentProvider.STRIPE,
-              transaction_code: session.id,
+              transaction_code: transactionCode,
               status: PaymentStatus.SUCCESS,
             },
           });
@@ -318,8 +410,15 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
             },
           });
 
-          // Nếu có recurring booking, kiểm tra và update status
-          if (recurringBookingId) {
+          const recurringBookingIds = Array.from(
+            new Set(
+              pendingBookings
+                .map((booking) => booking.recurring_booking_id)
+                .filter((value): value is string => Boolean(value)),
+            ),
+          );
+
+          for (const recurringBookingId of recurringBookingIds) {
             // Đếm số booking PENDING còn lại của recurring này
             const pendingCount = await tx.booking.count({
               where: {
