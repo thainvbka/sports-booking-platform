@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum SportType {
@@ -85,6 +84,8 @@ enum ProductStatus {
 enum MatchStatus {
   OPEN
   FULL
+  CLOSED
+  EXPIRED
   CANCELED
   COMPLETED
 }
@@ -93,6 +94,14 @@ enum ParticipantStatus {
   PENDING
   ACCEPTED
   REJECTED
+  WITHDRAWN
+  REMOVED
+}
+
+enum MatchSkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 model Account {
@@ -348,11 +357,15 @@ model Match {
   creator_id   String             @db.Uuid
   creator      Player             @relation(fields: [creator_id], references: [id], onDelete: Cascade)
   sport_type   SportType
+  skill_level  MatchSkillLevel    @default(INTERMEDIATE)
   title        String             @db.VarChar(200)
   description  String?            @db.Text
   slots_needed Int                @db.SmallInt  // tổng số người cần tìm
   slots_filled Int                @default(0) @db.SmallInt // số người đã được accept
+  join_deadline DateTime?         @db.Timestamptz(0)
   status       MatchStatus        @default(OPEN)
+  closed_reason String?           @db.VarChar(200)
+  version      Int                @default(0)
   created_at   DateTime           @default(now()) @db.Timestamptz(0)
   updated_at   DateTime           @updatedAt @db.Timestamptz(0)
   participants MatchParticipant[]
@@ -360,6 +373,7 @@ model Match {
   @@index([sport_type, status])
   @@index([status, created_at])
   @@index([creator_id])
+  @@index([join_deadline, status])
 }
 
 model MatchParticipant {
@@ -370,12 +384,14 @@ model MatchParticipant {
   player       Player            @relation(fields: [player_id], references: [id], onDelete: Cascade)
   status       ParticipantStatus @default(PENDING)
   introduction String?           @db.Text
+  responded_at DateTime?         @db.Timestamptz(0)
+  left_at      DateTime?         @db.Timestamptz(0)
   created_at   DateTime          @default(now()) @db.Timestamptz(0)
   updated_at   DateTime          @updatedAt @db.Timestamptz(0)
 
   @@unique([match_id, player_id])
-  @@index([match_id, status])
-  @@index([player_id])
+  @@index([match_id, status, created_at])
+  @@index([player_id, status, created_at])
 }
 
 model Review {
