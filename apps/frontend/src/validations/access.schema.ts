@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const baseAccountSchema = z.object({
+const baseAccountSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
   full_name: z.string().min(5, "Họ và tên là bắt buộc"),
@@ -36,12 +36,6 @@ export const loginSchema = z.object({
   body: z.object({
     email: z.string().email("Email không hợp lệ"),
     password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
-  }),
-});
-
-export const verifyEmailSchema = z.object({
-  params: z.object({
-    token: z.string(),
   }),
 });
 

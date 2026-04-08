@@ -26,11 +26,11 @@ export const ComplexStatus = {
 } as const;
 export type ComplexStatus = (typeof ComplexStatus)[keyof typeof ComplexStatus];
 
-export const RecurrenceType = {
+const RecurrenceType = {
   WEEKLY: "WEEKLY",
   MONTHLY: "MONTHLY",
 } as const;
-export type RecurrenceType =
+type RecurrenceType =
   (typeof RecurrenceType)[keyof typeof RecurrenceType];
 
 export const RecurringStatus = {

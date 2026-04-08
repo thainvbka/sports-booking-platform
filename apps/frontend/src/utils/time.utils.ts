@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
-export const VN_TIMEZONE = "Asia/Ho_Chi_Minh";
+const VN_TIMEZONE = "Asia/Ho_Chi_Minh";
 
 /**
  * Parse pricing rule time (string "HH:MM" hoặc Date từ Prisma @db.Time)

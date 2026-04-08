@@ -65,7 +65,7 @@ export function MomBadge({ growth, className = "" }: MomBadgeProps) {
 // ─── DarkTip ─────────────────────────────────────────────────────────────────
 // Generic dark-themed Recharts tooltip, used across all dashboard charts.
 
-export interface TipPayloadItem {
+interface TipPayloadItem {
   name: string;
   value: number;
   color?: string;
