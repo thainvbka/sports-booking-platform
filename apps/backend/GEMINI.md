@@ -21,7 +21,7 @@ This is the core backend service for the Sports Booking Platform, built with a r
 - **Multi-Role RBAC:** Supports Admin, Owner, and Player roles with specialized controllers and profiles.
 - **Complex & Sub-field Management:** Owners can manage sports complexes and their individual sub-fields (Football, Basketball, Tennis, etc.).
 - **Dynamic Pricing Engine:** Advanced pricing rules based on time segments and days of the week.
-- **Booking System:** 
+- **Booking System:**
   - Real-time availability checking with overlap prevention.
   - Support for single and recurring (weekly/monthly) bookings.
   - Automated expiration and cleanup of pending bookings via `expires_at`.
@@ -48,6 +48,7 @@ This is the core backend service for the Sports Booking Platform, built with a r
 All API endpoints return a consistent JSON structure via the `SuccessResponse` and `errorHandler` middleware.
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -60,6 +61,7 @@ All API endpoints return a consistent JSON structure via the `SuccessResponse` a
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
@@ -74,9 +76,11 @@ All API endpoints return a consistent JSON structure via the `SuccessResponse` a
 ### Authentication
 
 Protected routes require a Bearer token in the `Authorization` header.
+
 ```http
 Authorization: Bearer <access_token>
 ```
+
 The `authenticate` middleware attaches the user and their profiles (playerId, ownerId, adminId) to `req.user`.
 
 ## Development Workflow

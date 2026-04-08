@@ -165,6 +165,8 @@ export const createBooking = async (
         .map((product) => [product.id, product]),
     );
 
+    console.log("Product Map:::::", productMap);
+
     const unavailableProductIds = normalizedAddons
       .filter((addon) => {
         const product = productMap.get(addon.product_id);

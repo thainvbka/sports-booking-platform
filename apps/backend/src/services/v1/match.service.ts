@@ -1,0 +1,1275 @@
+import {
+  BookingStatus,
+  MatchSkillLevel,
+  MatchStatus,
+  ParticipantStatus,
+  Prisma,
+} from "@prisma/client";
+import { prisma } from "../../libs/prisma";
+import {
+  BadRequestError,
+  ConflictRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../utils/error.response";
+import {
+  CreateMatchInput,
+  MatchParticipantsQuery,
+  MyMatchesQuery,
+  PublicMatchesQuery,
+} from "../../validations";
+
+const DEFAULT_JOIN_DEADLINE_MINUTES = 30;
+const SERIALIZABLE_MAX_ATTEMPTS = 3;
+const SERIALIZATION_FAILURE_CODE = "P2034";
+
+const isSerializableRetryableError = (error: unknown) => {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === SERIALIZATION_FAILURE_CODE
+  );
+};
+
+const runSerializableWithRetry = async <T>(
+  operation: () => Promise<T>,
+): Promise<T> => {
+  for (let attempt = 1; attempt <= SERIALIZABLE_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (
+        !isSerializableRetryableError(error) ||
+        attempt === SERIALIZABLE_MAX_ATTEMPTS
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  throw new ConflictRequestError("SERIALIZATION_RETRY_FAILED: Please retry");
+};
+
+const matchListSelect = {
+  id: true,
+  status: true,
+  sport_type: true,
+  skill_level: true,
+  title: true,
+  description: true,
+  slots_needed: true,
+  slots_filled: true,
+  join_deadline: true,
+  created_at: true,
+  booking: {
+    select: {
+      id: true,
+      start_time: true,
+      end_time: true,
+      sub_field: {
+        select: {
+          id: true,
+          sub_field_name: true,
+          complex: {
+            select: {
+              id: true,
+              complex_name: true,
+              complex_address: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  creator: {
+    select: {
+      id: true,
+      account: {
+        select: {
+          full_name: true,
+          avatar: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.MatchSelect;
+
+type MatchListRecord = Prisma.MatchGetPayload<{
+  select: typeof matchListSelect;
+}>;
+
+const mapMatchListItem = (match: MatchListRecord) => {
+  const slotsLeft = Math.max(match.slots_needed - match.slots_filled, 0);
+
+  return {
+    id: match.id,
+    status: match.status,
+    sport_type: match.sport_type,
+    skill_level: match.skill_level,
+    title: match.title,
+    description: match.description,
+    slots_needed: match.slots_needed,
+    slots_filled: match.slots_filled,
+    slots_left: slotsLeft,
+    join_deadline: match.join_deadline,
+    created_at: match.created_at,
+    booking: {
+      id: match.booking.id,
+      start_time: match.booking.start_time,
+      end_time: match.booking.end_time,
+      sub_field_id: match.booking.sub_field.id,
+      sub_field_name: match.booking.sub_field.sub_field_name,
+      complex_id: match.booking.sub_field.complex.id,
+      complex_name: match.booking.sub_field.complex.complex_name,
+      complex_address: match.booking.sub_field.complex.complex_address,
+    },
+    creator: {
+      player_id: match.creator.id,
+      full_name: match.creator.account.full_name,
+      avatar: match.creator.account.avatar,
+    },
+  };
+};
+
+const parseMatchSort = (
+  sort?: PublicMatchesQuery["sort"],
+): Prisma.MatchOrderByWithRelationInput => {
+  if (sort === "start_time:asc") {
+    return {
+      booking: {
+        start_time: "asc",
+      },
+    };
+  }
+
+  if (sort === "start_time:desc") {
+    return {
+      booking: {
+        start_time: "desc",
+      },
+    };
+  }
+
+  return {
+    created_at: "desc",
+  };
+};
+
+const buildPublicMatchWhere = (
+  query: PublicMatchesQuery,
+): Prisma.MatchWhereInput => {
+  const where: Prisma.MatchWhereInput = {};
+
+  if (query.status) {
+    where.status = query.status as MatchStatus;
+  } else {
+    where.status = MatchStatus.OPEN;
+  }
+
+  if (query.sport_type) {
+    where.sport_type = query.sport_type;
+  }
+
+  if (query.skill_level) {
+    where.skill_level = query.skill_level as MatchSkillLevel;
+  }
+
+  if (query.q) {
+    where.OR = [
+      {
+        title: {
+          contains: query.q,
+          mode: "insensitive",
+        },
+      },
+      {
+        description: {
+          contains: query.q,
+          mode: "insensitive",
+        },
+      },
+      {
+        booking: {
+          is: {
+            sub_field: {
+              complex: {
+                complex_name: {
+                  contains: query.q,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  const bookingAnd: Prisma.BookingWhereInput[] = [];
+
+  if (query.from_time || query.to_time) {
+    bookingAnd.push({
+      start_time: {
+        ...(query.from_time ? { gte: query.from_time } : {}),
+        ...(query.to_time ? { lte: query.to_time } : {}),
+      },
+    });
+  }
+
+  if (query.sub_field_id) {
+    bookingAnd.push({
+      sub_field_id: query.sub_field_id,
+    });
+  }
+
+  if (query.complex_id) {
+    bookingAnd.push({
+      sub_field: {
+        complex_id: query.complex_id,
+      },
+    });
+  }
+
+  if (query.province) {
+    bookingAnd.push({
+      sub_field: {
+        complex: {
+          complex_address: {
+            contains: query.province,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+  }
+
+  if (query.district) {
+    bookingAnd.push({
+      sub_field: {
+        complex: {
+          complex_address: {
+            contains: query.district,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+  }
+
+  if (bookingAnd.length > 0) {
+    where.booking = {
+      is: {
+        AND: bookingAnd,
+      },
+    };
+  }
+
+  return where;
+};
+
+export const getPublicMatches = async (query: PublicMatchesQuery) => {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 20;
+  const skip = (page - 1) * limit;
+
+  const where = buildPublicMatchWhere(query);
+  const orderBy = parseMatchSort(query.sort);
+
+  const [total, matches] = await prisma.$transaction([
+    prisma.match.count({ where }),
+    prisma.match.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      select: matchListSelect,
+    }),
+  ]);
+
+  console.log("::::total_matches::::", total);
+
+  return {
+    items: matches.map(mapMatchListItem),
+    pagination: {
+      page,
+      limit,
+      total_items: total,
+      total_pages: Math.ceil(total / limit),
+      has_next: page * limit < total,
+    },
+  };
+};
+
+export const getPublicMatchById = async (matchId: string) => {
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: {
+      id: true,
+      status: true,
+      sport_type: true,
+      skill_level: true,
+      title: true,
+      description: true,
+      slots_needed: true,
+      slots_filled: true,
+      join_deadline: true,
+      created_at: true,
+      updated_at: true,
+      booking: {
+        select: {
+          id: true,
+          start_time: true,
+          end_time: true,
+          sub_field: {
+            select: {
+              id: true,
+              sub_field_name: true,
+              sport_type: true,
+              complex: {
+                select: {
+                  id: true,
+                  complex_name: true,
+                  complex_address: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      creator: {
+        select: {
+          id: true,
+          account: {
+            select: {
+              full_name: true,
+              avatar: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found");
+  }
+
+  const [accepted_count, pending_count] = await prisma.$transaction([
+    prisma.matchParticipant.count({
+      where: {
+        match_id: match.id,
+        status: ParticipantStatus.ACCEPTED,
+      },
+    }),
+    prisma.matchParticipant.count({
+      where: {
+        match_id: match.id,
+        status: ParticipantStatus.PENDING,
+      },
+    }),
+  ]);
+
+  return {
+    ...mapMatchListItem(match),
+    updated_at: match.updated_at,
+    participant_summary: {
+      accepted_count,
+      pending_count,
+      slots_left: Math.max(match.slots_needed - match.slots_filled, 0),
+    },
+  };
+};
+
+export const createMatch = async (playerId: string, data: CreateMatchInput) => {
+  const now = new Date();
+
+  return prisma.$transaction(async (tx) => {
+    const booking = await tx.booking.findFirst({
+      where: {
+        id: data.booking_id,
+        player_id: playerId,
+        status: {
+          in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED],
+        },
+        start_time: {
+          gt: now,
+        },
+      },
+      select: {
+        id: true,
+        start_time: true,
+        sub_field: {
+          select: {
+            sport_type: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new BadRequestError(
+        "Booking not found, not yours, not paid/confirmed, or already started",
+      );
+    }
+
+    const existingMatch = await tx.match.findUnique({
+      where: {
+        booking_id: data.booking_id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingMatch) {
+      throw new ConflictRequestError("A match already exists for this booking");
+    }
+
+    const fallbackDeadline = new Date(
+      booking.start_time.getTime() - DEFAULT_JOIN_DEADLINE_MINUTES * 60 * 1000,
+    );
+    const joinDeadline = data.join_deadline ?? fallbackDeadline;
+
+    if (joinDeadline <= now) {
+      throw new BadRequestError("join_deadline must be in the future");
+    }
+
+    if (joinDeadline >= booking.start_time) {
+      throw new BadRequestError(
+        "join_deadline must be earlier than booking start_time",
+      );
+    }
+
+    const createdMatch = await tx.match.create({
+      data: {
+        booking_id: data.booking_id,
+        creator_id: playerId,
+        sport_type: booking.sub_field.sport_type,
+        skill_level: (data.skill_level ?? "INTERMEDIATE") as MatchSkillLevel,
+        title: data.title,
+        description: data.description,
+        slots_needed: data.slots_needed,
+        slots_filled: 0,
+        join_deadline: joinDeadline,
+        status: MatchStatus.OPEN,
+      },
+      select: {
+        id: true,
+        booking_id: true,
+        status: true,
+        sport_type: true,
+        skill_level: true,
+        title: true,
+        description: true,
+        slots_needed: true,
+        slots_filled: true,
+        join_deadline: true,
+        created_at: true,
+      },
+    });
+
+    return createdMatch;
+  });
+};
+
+export const joinMatch = async (
+  playerId: string,
+  matchId: string,
+  introduction?: string,
+) => {
+  const now = new Date();
+
+  return runSerializableWithRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const match = await tx.match.findUnique({
+          where: {
+            id: matchId,
+          },
+          select: {
+            id: true,
+            creator_id: true,
+            status: true,
+            join_deadline: true,
+            booking: {
+              select: {
+                start_time: true,
+              },
+            },
+          },
+        });
+
+        if (!match) {
+          throw new NotFoundError("Match not found");
+        }
+
+        if (match.creator_id === playerId) {
+          throw new ForbiddenError("You cannot join your own match");
+        }
+
+        if (match.status !== MatchStatus.OPEN) {
+          throw new ConflictRequestError("MATCH_NOT_OPEN: Match is not open");
+        }
+
+        if (match.join_deadline && match.join_deadline <= now) {
+          throw new BadRequestError(
+            "MATCH_JOIN_DEADLINE_PASSED: Join deadline passed",
+          );
+        }
+
+        if (match.booking.start_time <= now) {
+          throw new BadRequestError(
+            "MATCH_STARTED: Cannot join a started match",
+          );
+        }
+
+        const existing = await tx.matchParticipant.findUnique({
+          where: {
+            match_id_player_id: {
+              match_id: matchId,
+              player_id: playerId,
+            },
+          },
+        });
+
+        if (existing) {
+          if (
+            existing.status === ParticipantStatus.PENDING ||
+            existing.status === ParticipantStatus.ACCEPTED
+          ) {
+            return existing;
+          }
+
+          return tx.matchParticipant.update({
+            where: {
+              id: existing.id,
+            },
+            data: {
+              status: ParticipantStatus.PENDING,
+              introduction,
+              responded_at: null,
+              left_at: null,
+            },
+          });
+        }
+
+        return tx.matchParticipant.create({
+          data: {
+            match_id: matchId,
+            player_id: playerId,
+            status: ParticipantStatus.PENDING,
+            introduction,
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    ),
+  );
+};
+
+export const leaveMatch = async (playerId: string, matchId: string) => {
+  const now = new Date();
+
+  return runSerializableWithRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const participant = await tx.matchParticipant.findUnique({
+          where: {
+            match_id_player_id: {
+              match_id: matchId,
+              player_id: playerId,
+            },
+          },
+          include: {
+            match: {
+              select: {
+                id: true,
+                status: true,
+                slots_filled: true,
+                version: true,
+                booking: {
+                  select: {
+                    start_time: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (!participant) {
+          throw new NotFoundError("Join request not found");
+        }
+
+        if (
+          participant.status === ParticipantStatus.WITHDRAWN ||
+          participant.status === ParticipantStatus.REJECTED ||
+          participant.status === ParticipantStatus.REMOVED
+        ) {
+          return participant;
+        }
+
+        if (participant.match.booking.start_time <= now) {
+          throw new BadRequestError(
+            "MATCH_STARTED: Cannot leave after match starts",
+          );
+        }
+
+        if (
+          participant.match.status === MatchStatus.CANCELED ||
+          participant.match.status === MatchStatus.COMPLETED ||
+          participant.match.status === MatchStatus.EXPIRED
+        ) {
+          throw new BadRequestError(
+            "MATCH_CLOSED: Cannot leave this match anymore",
+          );
+        }
+
+        const updatedParticipant = await tx.matchParticipant.update({
+          where: {
+            id: participant.id,
+          },
+          data: {
+            status: ParticipantStatus.WITHDRAWN,
+            left_at: now,
+          },
+        });
+
+        if (participant.status === ParticipantStatus.ACCEPTED) {
+          const matchData: Prisma.MatchUpdateManyMutationInput = {
+            slots_filled: {
+              decrement: 1,
+            },
+            version: {
+              increment: 1,
+            },
+          };
+
+          if (participant.match.status === MatchStatus.FULL) {
+            matchData.status = MatchStatus.OPEN;
+          }
+
+          const updated = await tx.match.updateMany({
+            where: {
+              id: participant.match.id,
+              version: participant.match.version,
+              slots_filled: {
+                gt: 0,
+              },
+            },
+            data: matchData,
+          });
+
+          if (updated.count === 0) {
+            throw new ConflictRequestError(
+              "MATCH_SLOT_UPDATE_FAILED: Please retry",
+            );
+          }
+        }
+
+        return updatedParticipant;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    ),
+  );
+};
+
+export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const skip = (page - 1) * limit;
+
+  const where: Prisma.MatchWhereInput = {};
+
+  if (query.status) {
+    where.status = query.status as MatchStatus;
+  }
+
+  if (query.type === "created") {
+    where.creator_id = playerId;
+  }
+
+  if (query.type === "joined") {
+    where.participants = {
+      some: {
+        player_id: playerId,
+        status: ParticipantStatus.ACCEPTED,
+      },
+    };
+  }
+
+  if (query.type === "pending") {
+    where.participants = {
+      some: {
+        player_id: playerId,
+        status: ParticipantStatus.PENDING,
+      },
+    };
+  }
+
+  const [total, matches] = await prisma.$transaction([
+    prisma.match.count({ where }),
+    prisma.match.findMany({
+      where,
+      orderBy: {
+        created_at: "desc",
+      },
+      skip,
+      take: limit,
+      select: {
+        ...matchListSelect,
+        participants: {
+          where: {
+            player_id: playerId,
+          },
+          select: {
+            status: true,
+          },
+          take: 1,
+        },
+      },
+    }),
+  ]);
+
+  return {
+    items: matches.map((match) => ({
+      ...mapMatchListItem(match),
+      my_participation_status: match.participants[0]?.status ?? null,
+    })),
+    pagination: {
+      page,
+      limit,
+      total_items: total,
+      total_pages: Math.ceil(total / limit),
+      has_next: page * limit < total,
+    },
+  };
+};
+
+export const getMatchParticipants = async (
+  creatorId: string,
+  matchId: string,
+  query: MatchParticipantsQuery,
+) => {
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      creator_id: creatorId,
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      slots_needed: true,
+      slots_filled: true,
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found or you are not the creator");
+  }
+
+  const page = query.page ?? 1;
+  const limit = query.limit ?? 10;
+  const skip = (page - 1) * limit;
+
+  const where: Prisma.MatchParticipantWhereInput = {
+    match_id: matchId,
+  };
+
+  if (query.status) {
+    where.status = query.status as ParticipantStatus;
+  }
+
+  if (query.q) {
+    where.player = {
+      account: {
+        full_name: {
+          contains: query.q,
+          mode: "insensitive",
+        },
+      },
+    };
+  }
+
+  const [total, participants] = await prisma.$transaction([
+    prisma.matchParticipant.count({ where }),
+    prisma.matchParticipant.findMany({
+      where,
+      orderBy: {
+        created_at: "desc",
+      },
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        status: true,
+        introduction: true,
+        created_at: true,
+        responded_at: true,
+        left_at: true,
+        player: {
+          select: {
+            id: true,
+            account: {
+              select: {
+                full_name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    match,
+    participants: participants.map((participant) => ({
+      id: participant.id,
+      status: participant.status,
+      introduction: participant.introduction,
+      created_at: participant.created_at,
+      responded_at: participant.responded_at,
+      left_at: participant.left_at,
+      player: {
+        id: participant.player.id,
+        full_name: participant.player.account.full_name,
+        avatar: participant.player.account.avatar,
+      },
+    })),
+    pagination: {
+      page,
+      limit,
+      total_items: total,
+      total_pages: Math.ceil(total / limit),
+      has_next: page * limit < total,
+    },
+  };
+};
+
+export const acceptMatchParticipant = async (
+  creatorId: string,
+  matchId: string,
+  participantId: string,
+) => {
+  const now = new Date();
+
+  return runSerializableWithRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const match = await tx.match.findFirst({
+          where: {
+            id: matchId,
+            creator_id: creatorId,
+          },
+          select: {
+            id: true,
+            status: true,
+            slots_needed: true,
+            slots_filled: true,
+            version: true,
+            booking: {
+              select: {
+                start_time: true,
+              },
+            },
+          },
+        });
+
+        if (!match) {
+          throw new NotFoundError("Match not found or you are not the creator");
+        }
+
+        if (match.booking.start_time <= now) {
+          throw new BadRequestError(
+            "MATCH_STARTED: Cannot accept after match starts",
+          );
+        }
+
+        if (
+          match.status === MatchStatus.CANCELED ||
+          match.status === MatchStatus.COMPLETED ||
+          match.status === MatchStatus.EXPIRED ||
+          match.status === MatchStatus.CLOSED
+        ) {
+          throw new BadRequestError(
+            "MATCH_NOT_OPEN: Cannot accept in current status",
+          );
+        }
+
+        const participant = await tx.matchParticipant.findFirst({
+          where: {
+            id: participantId,
+            match_id: matchId,
+          },
+        });
+
+        if (!participant) {
+          throw new NotFoundError("Participant request not found");
+        }
+
+        if (participant.status === ParticipantStatus.ACCEPTED) {
+          return participant;
+        }
+
+        if (participant.status !== ParticipantStatus.PENDING) {
+          throw new BadRequestError("Only pending requests can be accepted");
+        }
+
+        const slotUpdated = await tx.match.updateMany({
+          where: {
+            id: matchId,
+            status: MatchStatus.OPEN,
+            version: match.version,
+            slots_filled: {
+              lt: match.slots_needed,
+            },
+          },
+          data: {
+            slots_filled: {
+              increment: 1,
+            },
+            version: {
+              increment: 1,
+            },
+          },
+        });
+
+        if (slotUpdated.count === 0) {
+          throw new ConflictRequestError("MATCH_FULL: Match already full");
+        }
+
+        const updatedParticipant = await tx.matchParticipant.update({
+          where: {
+            id: participant.id,
+          },
+          data: {
+            status: ParticipantStatus.ACCEPTED,
+            responded_at: now,
+          },
+        });
+
+        if (match.slots_filled + 1 >= match.slots_needed) {
+          const markedFull = await tx.match.updateMany({
+            where: {
+              id: matchId,
+              status: MatchStatus.OPEN,
+              version: match.version + 1,
+              slots_filled: {
+                gte: match.slots_needed,
+              },
+            },
+            data: {
+              status: MatchStatus.FULL,
+              version: {
+                increment: 1,
+              },
+            },
+          });
+
+          if (markedFull.count === 0) {
+            throw new ConflictRequestError(
+              "MATCH_STATE_CHANGED: Please retry",
+            );
+          }
+        }
+
+        return updatedParticipant;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    ),
+  );
+};
+
+export const rejectMatchParticipant = async (
+  creatorId: string,
+  matchId: string,
+  participantId: string,
+) => {
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      creator_id: creatorId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found or you are not the creator");
+  }
+
+  const participant = await prisma.matchParticipant.findFirst({
+    where: {
+      id: participantId,
+      match_id: matchId,
+    },
+  });
+
+  if (!participant) {
+    throw new NotFoundError("Participant request not found");
+  }
+
+  if (participant.status === ParticipantStatus.REJECTED) {
+    return participant;
+  }
+
+  if (participant.status !== ParticipantStatus.PENDING) {
+    throw new BadRequestError("Only pending requests can be rejected");
+  }
+
+  return prisma.matchParticipant.update({
+    where: {
+      id: participant.id,
+    },
+    data: {
+      status: ParticipantStatus.REJECTED,
+      responded_at: new Date(),
+    },
+  });
+};
+
+export const closeMatch = async (creatorId: string, matchId: string) => {
+  const now = new Date();
+
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      creator_id: creatorId,
+    },
+    select: {
+      id: true,
+      status: true,
+      version: true,
+      booking: {
+        select: {
+          start_time: true,
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found or you are not the creator");
+  }
+
+  if (match.booking.start_time <= now) {
+    throw new BadRequestError("Cannot close a match that has started");
+  }
+
+  if (
+    match.status === MatchStatus.CANCELED ||
+    match.status === MatchStatus.COMPLETED ||
+    match.status === MatchStatus.EXPIRED
+  ) {
+    throw new BadRequestError("Match cannot be closed in current status");
+  }
+
+  if (match.status === MatchStatus.CLOSED) {
+    return prisma.match.findUnique({ where: { id: matchId } });
+  }
+
+  const updated = await prisma.match.updateMany({
+    where: {
+      id: match.id,
+      version: match.version,
+    },
+    data: {
+      status: MatchStatus.CLOSED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  if (updated.count === 0) {
+    throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
+  }
+
+  return prisma.match.findUnique({ where: { id: match.id } });
+};
+
+export const reopenMatch = async (creatorId: string, matchId: string) => {
+  const now = new Date();
+
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      creator_id: creatorId,
+    },
+    select: {
+      id: true,
+      status: true,
+      slots_needed: true,
+      slots_filled: true,
+      version: true,
+      join_deadline: true,
+      booking: {
+        select: {
+          start_time: true,
+        },
+      },
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found or you are not the creator");
+  }
+
+  if (match.status !== MatchStatus.CLOSED) {
+    throw new BadRequestError("Only CLOSED match can be reopened");
+  }
+
+  if (match.booking.start_time <= now) {
+    throw new BadRequestError("Cannot reopen match after start time");
+  }
+
+  if (match.join_deadline && match.join_deadline <= now) {
+    throw new BadRequestError("Cannot reopen match after join deadline");
+  }
+
+  const nextStatus =
+    match.slots_filled >= match.slots_needed
+      ? MatchStatus.FULL
+      : MatchStatus.OPEN;
+
+  const updated = await prisma.match.updateMany({
+    where: {
+      id: match.id,
+      version: match.version,
+    },
+    data: {
+      status: nextStatus,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  if (updated.count === 0) {
+    throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
+  }
+
+  return prisma.match.findUnique({ where: { id: match.id } });
+};
+
+export const cancelMatch = async (creatorId: string, matchId: string) => {
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      creator_id: creatorId,
+    },
+    select: {
+      id: true,
+      status: true,
+      version: true,
+    },
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found or you are not the creator");
+  }
+
+  if (
+    match.status === MatchStatus.CANCELED ||
+    match.status === MatchStatus.COMPLETED
+  ) {
+    throw new BadRequestError("Match cannot be canceled in current status");
+  }
+
+  const updated = await prisma.match.updateMany({
+    where: {
+      id: match.id,
+      version: match.version,
+    },
+    data: {
+      status: MatchStatus.CANCELED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  if (updated.count === 0) {
+    throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
+  }
+
+  return prisma.match.findUnique({ where: { id: match.id } });
+};
+
+export const syncMatchStatusesByTime = async () => {
+  const now = new Date();
+
+  await prisma.match.updateMany({
+    where: {
+      status: {
+        in: [MatchStatus.OPEN, MatchStatus.CLOSED],
+      },
+      OR: [
+        {
+          join_deadline: {
+            lt: now,
+          },
+        },
+        {
+          booking: {
+            start_time: {
+              lte: now,
+            },
+          },
+        },
+      ],
+    },
+    data: {
+      status: MatchStatus.EXPIRED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  await prisma.match.updateMany({
+    where: {
+      status: {
+        in: [MatchStatus.FULL, MatchStatus.CLOSED],
+      },
+      booking: {
+        end_time: {
+          lte: now,
+        },
+      },
+    },
+    data: {
+      status: MatchStatus.COMPLETED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+};
+
+export const cancelMatchesByCanceledBookings = async () => {
+  await prisma.match.updateMany({
+    where: {
+      status: {
+        not: MatchStatus.CANCELED,
+      },
+      booking: {
+        status: BookingStatus.CANCELED,
+      },
+    },
+    data: {
+      status: MatchStatus.CANCELED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+};

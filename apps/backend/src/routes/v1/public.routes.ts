@@ -1,5 +1,9 @@
 import { Router } from "express";
 import {
+  getPublicMatchByIdController,
+  getPublicMatchesController,
+} from "../../controllers/v1/match.controller";
+import {
   getAllPublicSubfieldsController,
   getPublicComplexActiveController,
   getPublicComplexByIdController,
@@ -23,5 +27,7 @@ router.get(
   "/subfields/:id/reviews",
   asyncHandler(getSubfieldReviewsController),
 );
+router.get("/matches", asyncHandler(getPublicMatchesController));
+router.get("/matches/:id", asyncHandler(getPublicMatchByIdController));
 
 export default router;

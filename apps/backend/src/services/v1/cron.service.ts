@@ -4,6 +4,10 @@ import {
   restoreAddonStockForBooking,
   restoreAddonStockForBookingIds,
 } from "./booking_addon.service";
+import {
+  cancelMatchesByCanceledBookings,
+  syncMatchStatusesByTime,
+} from "./match.service";
 
 export const cleanupExpiredBookings = async () => {
   try {
@@ -199,5 +203,11 @@ export const startCronJobs = () => {
   //chay moi 5 phut để hủy recurring booking het han
   cron.schedule("*/5 * * * *", () => {
     expiredRecurringBookings();
+  });
+
+  // chay moi phut de dong/huy/completed match theo booking va thoi gian
+  cron.schedule("*/1 * * * *", async () => {
+    await cancelMatchesByCanceledBookings();
+    await syncMatchStatusesByTime();
   });
 };
