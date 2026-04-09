@@ -153,7 +153,7 @@ export function TimeSlotsGrid({
       </div>
 
       <div className="w-full">
-        <div className="grid grid-cols-4 gap-2 pb-4">
+        <div className="grid grid-cols-6 gap-2 pb-4">
           {timeSlots.map((time) => {
             const status = getSlotStatus(time);
             return (
@@ -161,7 +161,7 @@ export function TimeSlotsGrid({
                 key={time}
                 className={cn(
                   "relative flex flex-col items-center justify-center rounded-md border p-2 text-xs font-medium transition-all",
-                  "h-14",
+                  "h-10",
                   status === "AVAILABLE" &&
                     "bg-white hover:border-primary/50 hover:bg-slate-50 text-slate-700 shadow-sm",
                   status === "SELECTED" &&
@@ -182,22 +182,22 @@ export function TimeSlotsGrid({
                 }
               >
                 <span>{formatMinutesToTime(time)}</span>
-                <span
-                  className={cn(
-                    "text-[10px] font-normal",
-                    status === "SELECTED"
-                      ? "text-primary-foreground/80"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {status === "AVAILABLE"
-                    ? "Trống"
-                    : status === "SELECTED"
+                {status !== "AVAILABLE" ? (
+                  <span
+                    className={cn(
+                      "text-[10px] font-normal",
+                      status === "SELECTED"
+                        ? "text-primary-foreground/80"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {status === "SELECTED"
                       ? "Chọn"
                       : status === "PENDING"
                         ? "Chờ"
                         : "Đã đặt"}
-                </span>
+                  </span>
+                ) : null}
               </div>
             );
           })}

@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { getVietnamMinutes } from "../helpers/time.helper";
+
+const isHalfHourAlignedInVietnam = (date: Date): boolean => {
+  return getVietnamMinutes(date) % 30 === 0;
+};
 
 export const RecurringBookingType = {
   WEEKLY: "WEEKLY",
@@ -50,6 +55,14 @@ export const createRecurringBookingSchema = z
       path: ["body", "start_date"],
     },
   )
+  .refine((data) => isHalfHourAlignedInVietnam(data.body.start_time), {
+    message: "Giờ bắt đầu phải là mốc 30 phút (ví dụ: 19:00, 19:30)",
+    path: ["body", "start_time"],
+  })
+  .refine((data) => isHalfHourAlignedInVietnam(data.body.end_time), {
+    message: "Giờ kết thúc phải là mốc 30 phút (ví dụ: 20:00, 20:30)",
+    path: ["body", "end_time"],
+  })
   .refine(
     (data) => {
       // Validate thời lượng phải là bội của 30 phút

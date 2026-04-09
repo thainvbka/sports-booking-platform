@@ -3,7 +3,7 @@ import type { BookingStatus, PaginationMeta } from "./index";
 export interface CreateBookingData {
   start_time: string; // ISO string
   end_time: string; // ISO string
-  type: "ONE_TIME" | "RECURRING";
+  type?: "ONE_TIME" | "RECURRING";
 }
 
 export interface CreateRecurringBookingData {
@@ -25,6 +25,21 @@ export interface BookingReviewResponse {
   sport_type: string;
   sub_field_name: string;
   expires_at: string;
+  booking_addons?: {
+    product_id: string;
+    product_name: string;
+    product_image?: string | null;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+  }[];
+}
+
+export interface SyncBookingAddonsData {
+  addons: {
+    product_id: string;
+    quantity: number;
+  }[];
 }
 
 export interface SingleBookingResponse {

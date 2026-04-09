@@ -1,15 +1,14 @@
-import { BookingModal } from "@/components/shared/BookingModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  formatPrice,
-  getPriceRange,
-  getSportTypeLabel,
-} from "@/utils";
 import type { SubField } from "@/types";
+import {
+    formatPrice,
+    getPriceRange,
+    getSportTypeLabel,
+} from "@/utils";
 import { MapPin, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface SubFieldCardProps {
   subField: SubField & { complex_name?: string; complex_address?: string };
@@ -22,6 +21,8 @@ export function SubFieldCard({
   showComplexInfo = false,
   mode = "player",
 }: SubFieldCardProps) {
+  const navigate = useNavigate();
+
   // Use min_price from backend if available, otherwise try to get from pricing_rules
   const minPrice =
     subField.min_price ||
@@ -102,14 +103,23 @@ export function SubFieldCard({
             )}
           </div>
           {mode === "player" ? (
-            <BookingModal
-              subField={subField}
-              trigger={
-                <Button size="sm" className="h-8 text-xs">
-                  Đặt sân ngay
-                </Button>
-              }
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                onClick={() => navigate(`/subfields/${subField.id}`)}
+              >
+                Xem chi tiết
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => navigate(`/booking/${subField.id}`)}
+              >
+                Đặt sân ngay
+              </Button>
+            </div>
           ) : (
             <span className="text-primary font-medium text-xs hover:underline">
               Xem chi tiết →

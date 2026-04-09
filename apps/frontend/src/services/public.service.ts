@@ -4,8 +4,10 @@ import type {
   GetPublicComplexByIdResponse,
   GetPublicComplexesResponse,
   GetPublicSubfieldsResponse,
-  PricingRule,
-  SubField,
+  GetSubfieldProductsResponse,
+  GetSubfieldReviewsParams,
+  GetSubfieldReviewsResponse,
+  PublicSubfieldDetail,
   SubfieldAvailabilityResponse,
 } from "@/types";
 
@@ -54,13 +56,9 @@ export const publicService = {
   },
 
   getSubfieldById: async (id: string) => {
-    const response = await api.get<
-      ApiResponse<{
-        subfield: Omit<SubField, "status" | "createdAt" | "updatedAt"> & {
-          pricing_rules?: PricingRule[];
-        };
-      }>
-    >(`/public/subfields/${id}`);
+    const response = await api.get<ApiResponse<{ subfield: PublicSubfieldDetail }>>(
+      `/public/subfields/${id}`,
+    );
     return response.data;
   },
 
@@ -68,6 +66,21 @@ export const publicService = {
     const response = await api.get<
       ApiResponse<{ availability: SubfieldAvailabilityResponse }>
     >(`/public/subfields/${id}/availability`, { params: { date } });
+    return response.data;
+  },
+
+  getSubfieldReviews: async (id: string, params?: GetSubfieldReviewsParams) => {
+    const response = await api.get<ApiResponse<GetSubfieldReviewsResponse>>(
+      `/public/subfields/${id}/reviews`,
+      { params },
+    );
+    return response.data;
+  },
+
+  getSubfieldProducts: async (id: string) => {
+    const response = await api.get<ApiResponse<GetSubfieldProductsResponse>>(
+      `/sub-fields/${id}/products`,
+    );
     return response.data;
   },
 };

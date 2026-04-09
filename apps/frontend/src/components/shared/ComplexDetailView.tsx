@@ -104,17 +104,17 @@ export function ComplexDetailView({
       {onBack ? (
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 text-base text-muted-foreground hover:text-primary transition-colors font-medium"
+          className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="h-4 w-4" />
           {backLabel}
         </button>
       ) : backLink ? (
         <Link
           to={backLink}
-          className="inline-flex items-center gap-2 text-base text-muted-foreground hover:text-primary transition-colors font-medium"
+          className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="h-4 w-4" />
           {backLabel}
         </Link>
       ) : null}

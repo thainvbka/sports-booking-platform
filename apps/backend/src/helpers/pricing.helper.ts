@@ -40,6 +40,18 @@ export const calculatePrice = (
 ): PriceCalculationResult => {
   const bookingStartMin = getVietnamMinutes(startTime);
   const bookingEndMin = getVietnamMinutes(endTime);
+  const bookingDurationMin = bookingEndMin - bookingStartMin;
+
+  if (
+    bookingDurationMin <= 0 ||
+    bookingStartMin % 30 !== 0 ||
+    bookingEndMin % 30 !== 0 ||
+    bookingDurationMin % 30 !== 0
+  ) {
+    throw new BadRequestError(
+      "Khung giờ đặt phải theo bước 30 phút và giờ kết thúc phải sau giờ bắt đầu.",
+    );
+  }
 
   const overlappingRules = rules
     .filter((rule) => {
@@ -62,13 +74,17 @@ export const calculatePrice = (
   for (const rule of overlappingRules) {
     const ruleStartMin = getRawMinutes(rule.start_time);
     const ruleEndMin = getRawMinutes(rule.end_time);
+    const ruleDurationMin = ruleEndMin - ruleStartMin;
+
+    if (ruleDurationMin <= 0) continue;
 
     const segmentStart = Math.max(currentMin, ruleStartMin);
     const segmentEnd = Math.min(bookingEndMin, ruleEndMin);
 
     if (segmentStart < segmentEnd) {
       const duration_min = segmentEnd - segmentStart;
-      const segment_price = Number(rule.base_price) * (duration_min / 60);
+      const segment_price =
+        Number(rule.base_price) * (duration_min / ruleDurationMin);
 
       totalPrice += segment_price;
       breakdown.push({

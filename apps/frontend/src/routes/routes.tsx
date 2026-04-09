@@ -11,6 +11,7 @@ import AdminUsersPage from "@/pages/admin/users/AdminUsersPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "@/pages/auth/VerifyEmail";
+import BookingPage from "@/pages/booking/BookingPage";
 import BookingReviewPage from "@/pages/booking/BookingReviewPage";
 import RecurringBookingReviewPage from "@/pages/booking/RecurringBookingReviewPage";
 import { ContactPage } from "@/pages/ContactPage";
@@ -26,6 +27,7 @@ import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
 import { PlayerBookingsPage } from "@/pages/player/BookingPage";
 import { PublicComplexDetailPage } from "@/pages/public/PublicComplexDetailPage";
+import { PublicSubfieldDetailPage } from "@/pages/public/PublicSubfieldDetailPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
 import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
@@ -52,6 +54,14 @@ export const router = createBrowserRouter([
       {
         path: "complexes/:id",
         element: <PublicComplexDetailPage />,
+      },
+      {
+        path: "subfields/:id",
+        element: <PublicSubfieldDetailPage />,
+      },
+      {
+        path: "booking/:subfieldId",
+        element: <BookingPage />,
       },
       {
         path: "bookings",
