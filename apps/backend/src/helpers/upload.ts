@@ -13,6 +13,10 @@ interface UploadProductImageResult {
   product_image?: string;
 }
 
+type MulterFiles = {
+  [fieldname: string]: Express.Multer.File[];
+};
+
 // Upload ảnh đại diện và giấy tờ của Complex
 export const uploadComplexImages = async (
   files: { [fieldname: string]: Express.Multer.File[] },
@@ -65,9 +69,7 @@ export const uploadSubfieldImage = async (
 };
 
 export const uploadProductImage = async (
-  files: {
-    [fieldname: string]: Express.Multer.File[];
-  },
+  files: MulterFiles,
   complex_id: string
 ): Promise<UploadProductImageResult> => {
   let product_image: string | undefined;
@@ -82,4 +84,16 @@ export const uploadProductImage = async (
   return {
     product_image,
   };
+};
+
+export const uploadReviewImages = async (
+  files: MulterFiles,
+  subfield_id: string
+): Promise<string[]> => {
+  if (!files.images || files.images.length === 0) {
+    return [];
+  }
+
+  const imageBuffers = files.images.map((file) => file.buffer);
+  return uploadImages(imageBuffers, `subfields/${subfield_id}/reviews`);
 };

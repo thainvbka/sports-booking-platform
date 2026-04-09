@@ -1,28 +1,34 @@
 import { Prisma } from "@prisma/client";
 import {
-  updateComplexRatingCache,
-  updateSubfieldRatingCache,
+    updateComplexRatingCache,
+    updateSubfieldRatingCache,
 } from "../../helpers/cache";
+import { uploadReviewImages } from "../../helpers/upload";
 import { prisma } from "../../libs/prisma";
 import {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError,
 } from "../../utils/error.response";
 import {
-  CreateReviewInput,
-  ReviewQueryInput,
-  UpdateReviewInput,
+    CreateReviewInput,
+    ReviewQueryInput,
+    UpdateReviewInput,
 } from "../../validations";
+
+type MulterFiles = {
+  [fieldname: string]: Express.Multer.File[];
+};
 
 /**
  * Player creates a review for a completed booking
  */
 export const createReview = async (
   player_id: string,
-  data: CreateReviewInput & { images?: string[] },
+  data: CreateReviewInput,
+  files?: MulterFiles,
 ) => {
-  const { booking_id, rating, comment, images } = data;
+  const { booking_id, rating, comment } = data;
 
   const [booking, existingReview] = await Promise.all([
     prisma.booking.findFirst({
@@ -50,6 +56,10 @@ export const createReview = async (
     throw new BadRequestError("This booking has already been reviewed.");
   }
 
+  const images = files
+    ? await uploadReviewImages(files, booking.sub_field_id)
+    : [];
+
   const review = await prisma.review.create({
     data: {
       booking_id,
@@ -75,7 +85,8 @@ export const createReview = async (
 export const updateReview = async (
   review_id: string,
   player_id: string,
-  data: UpdateReviewInput & { images?: string[] },
+  data: UpdateReviewInput,
+  files?: MulterFiles,
 ) => {
   const existingReview = await prisma.review.findFirst({
     where: { id: review_id, player_id },
@@ -86,12 +97,16 @@ export const updateReview = async (
     throw new NotFoundError("Review not found or not yours to update.");
   }
 
+  const uploadedImages = files
+    ? await uploadReviewImages(files, existingReview.subfield_id)
+    : undefined;
+
   const updatedReview = await prisma.review.update({
     where: { id: review_id },
     data: {
-      rating: data.rating,
-      comment: data.comment,
-      images: data.images,
+      ...(data.rating !== undefined ? { rating: data.rating } : {}),
+      ...(data.comment !== undefined ? { comment: data.comment } : {}),
+      ...(uploadedImages !== undefined ? { images: uploadedImages } : {}),
     },
   });
 

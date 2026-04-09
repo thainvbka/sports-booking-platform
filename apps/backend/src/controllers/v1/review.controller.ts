@@ -6,6 +6,7 @@ import {
   ownerDeleteReview,
   updateReview,
 } from "../../services/v1/review.service";
+import { BadRequestError } from "../../utils/error.response";
 import { SuccessResponse } from "../../utils/success.response";
 import { reviewQuerySchema } from "../../validations";
 
@@ -14,15 +15,14 @@ import { reviewQuerySchema } from "../../validations";
  */
 export const createReviewController = async (req: Request, res: Response) => {
   const playerId = req.user?.profiles.playerId as string;
+  const files = (req.files as { [fieldname: string]: Express.Multer.File[] }) ??
+    {};
 
-  // Xử lý files theo kiểu object (fields) giống Complex
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  const images = files?.images?.map((file) => file.path) || [];
-
-  const review = await createReview(playerId, {
-    ...req.body,
-    images,
-  });
+  const review = await createReview(
+    playerId,
+    req.body,
+    files.images?.length ? files : undefined,
+  );
 
   return new SuccessResponse({
     message: "Review created successfully",
@@ -36,16 +36,19 @@ export const createReviewController = async (req: Request, res: Response) => {
 export const updateReviewController = async (req: Request, res: Response) => {
   const playerId = req.user?.profiles.playerId as string;
   const reviewId = req.params.id as string;
+  const files = (req.files as { [fieldname: string]: Express.Multer.File[] }) ??
+    {};
 
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  const images = files?.images
-    ? files.images.map((file) => file.path)
-    : undefined;
+  if (Object.keys(req.body || {}).length === 0 && !files.images?.length) {
+    throw new BadRequestError("Cần ít nhất một trường hoặc ảnh để cập nhật");
+  }
 
-  const review = await updateReview(reviewId, playerId, {
-    ...req.body,
-    images,
-  });
+  const review = await updateReview(
+    reviewId,
+    playerId,
+    req.body,
+    files.images?.length ? files : undefined,
+  );
 
   return new SuccessResponse({
     message: "Review updated successfully",
