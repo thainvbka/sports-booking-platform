@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Package,
   Settings,
   UserPlus,
   Users,
@@ -34,6 +35,7 @@ export function DashboardLayout() {
       path: "/owner/complexes",
     },
     { icon: Calendar, label: "Quản lý lịch đặt sân", path: "/owner/bookings" },
+    { icon: Package, label: "Quản lý sản phẩm", path: "/owner/products" },
     { icon: Settings, label: "Cài đặt", path: "/owner/settings" },
   ];
 

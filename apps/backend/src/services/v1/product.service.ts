@@ -1,4 +1,5 @@
 import { ProductStatus, SportType } from "@prisma/client";
+import { uploadProductImage } from "../../helpers";
 import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
@@ -11,6 +12,10 @@ import {
   UpdateProductInput,
   UpdateProductStockInput,
 } from "../../validations";
+
+type MulterFiles = {
+  [fieldname: string]: Express.Multer.File[];
+};
 
 const ensureOwnerActive = async (owner_id: string) => {
   const owner = await prisma.owner.findUnique({
@@ -179,9 +184,14 @@ export const ownerGetProducts = async (
 export const ownerCreateProduct = async (
   owner_id: string,
   data: CreateProductInput,
+  files?: MulterFiles,
 ) => {
   await ensureOwnerActive(owner_id);
   await ensureComplexOwnership(owner_id, data.complex_id);
+
+  const { product_image } = files
+    ? await uploadProductImage(files, data.complex_id)
+    : { product_image: undefined };
 
   const created = await prisma.product.create({
     data: {
@@ -192,7 +202,7 @@ export const ownerCreateProduct = async (
       stock: data.stock,
       sport_type: data.sport_type as SportType | null | undefined,
       status: data.status ?? ProductStatus.ACTIVE,
-      image: data.image,
+      image: product_image ?? data.image,
     },
   });
 
@@ -203,6 +213,7 @@ export const ownerUpdateProduct = async (
   owner_id: string,
   product_id: string,
   data: UpdateProductInput,
+  files?: MulterFiles,
 ) => {
   await ensureOwnerActive(owner_id);
 
@@ -234,6 +245,12 @@ export const ownerUpdateProduct = async (
     throw new BadRequestError("Cannot update product under inactive complex");
   }
 
+  const { product_image } = files
+    ? await uploadProductImage(files, existing.complex_id)
+    : { product_image: undefined };
+
+  const nextImage = product_image ?? data.image;
+
   return prisma.product.update({
     where: { id: product_id },
     data: {
@@ -247,7 +264,7 @@ export const ownerUpdateProduct = async (
         ? { sport_type: data.sport_type as SportType | null }
         : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
-      ...(data.image !== undefined ? { image: data.image } : {}),
+      ...(nextImage !== undefined ? { image: nextImage } : {}),
     },
   });
 };

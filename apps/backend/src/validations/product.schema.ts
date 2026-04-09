@@ -1,6 +1,14 @@
 import { ProductStatus, SportType } from "@prisma/client";
 import { z } from "zod";
 
+const nullableSportTypeSchema = z.preprocess((value) => {
+  if (value === "" || value === "null" || value === null) {
+    return null;
+  }
+
+  return value;
+}, z.nativeEnum(SportType).nullable().optional());
+
 const baseProductBody = z.object({
   complex_id: z.string().uuid("Complex ID không hợp lệ"),
   name: z.string().trim().min(1, "Tên sản phẩm là bắt buộc").max(200),
@@ -10,7 +18,7 @@ const baseProductBody = z.object({
     .number()
     .int("Số lượng tồn kho phải là số nguyên")
     .min(0, "Tồn kho không được âm"),
-  sport_type: z.nativeEnum(SportType).nullable().optional(),
+  sport_type: nullableSportTypeSchema,
   status: z.nativeEnum(ProductStatus).optional(),
   image: z.string().trim().optional(),
 });
@@ -21,12 +29,7 @@ export const createProductSchema = z.object({
 
 export const updateProductSchema = z
   .object({
-    body: baseProductBody
-      .partial()
-      .refine(
-        (payload) => Object.keys(payload).length > 0,
-        "Cần ít nhất một trường để cập nhật",
-      ),
+    body: baseProductBody.partial(),
     params: z.object({
       id: z.string().uuid("Product ID không hợp lệ"),
     }),

@@ -22,6 +22,7 @@ import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 import { ComplexesPage } from "@/pages/owner/ComplexPage";
 import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
 import { OwnerBookingsPage } from "@/pages/owner/OwnerBookingsPage";
+import { ProductManagementPage } from "@/pages/owner/ProductManagementPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
@@ -182,6 +183,10 @@ export const router = createBrowserRouter([
       {
         path: "bookings",
         element: <OwnerBookingsPage />,
+      },
+      {
+        path: "products",
+        element: <ProductManagementPage />,
       },
       {
         path: "stripe/return",

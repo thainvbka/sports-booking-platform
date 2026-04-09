@@ -1,4 +1,4 @@
-import { BookingStatus, SportType } from "@/types";
+import { BookingStatus, ProductStatus, SportType } from "@/types";
 
 export const SPORT_TYPE_LABELS: Record<SportType, string> = {
   [SportType.FOOTBALL]: "Bóng đá",
@@ -88,4 +88,14 @@ export const COMPLEX_STATUS_COLORS: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-800",
   REJECTED: "bg-red-100 text-red-800",
   INACTIVE: "bg-orange-100 text-orange-800",
+};
+
+export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+};
+
+export const PRODUCT_STATUS_COLORS: Record<ProductStatus, string> = {
+  ACTIVE: "bg-green-100 text-green-800 hover:bg-green-200",
+  INACTIVE: "bg-gray-100 text-gray-700 hover:bg-gray-200",
 };

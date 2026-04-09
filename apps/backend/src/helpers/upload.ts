@@ -9,6 +9,10 @@ interface UploadSubfieldImageResult {
   subfield_image: string;
 }
 
+interface UploadProductImageResult {
+  product_image?: string;
+}
+
 // Upload ảnh đại diện và giấy tờ của Complex
 export const uploadComplexImages = async (
   files: { [fieldname: string]: Express.Multer.File[] },
@@ -57,5 +61,25 @@ export const uploadSubfieldImage = async (
 
   return {
     subfield_image,
+  };
+};
+
+export const uploadProductImage = async (
+  files: {
+    [fieldname: string]: Express.Multer.File[];
+  },
+  complex_id: string
+): Promise<UploadProductImageResult> => {
+  let product_image: string | undefined;
+
+  if (files.product_image && files.product_image[0]) {
+    product_image = await uploadImage(
+      files.product_image[0].buffer,
+      `complexes/${complex_id}/products`
+    );
+  }
+
+  return {
+    product_image,
   };
 };

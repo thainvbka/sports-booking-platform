@@ -1,42 +1,42 @@
 import { BookingFilters } from "@/components/owner/BookingFilters";
+import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { DataTable, type Column } from "@/components/shared/DataTable";
 import {
-  BOOKING_STATUS_COLORS,
-  BOOKING_STATUS_LABELS,
-  RECURRENCE_TYPE_LABELS,
-  SPORT_TYPE_LABELS,
+    BOOKING_STATUS_COLORS,
+    BOOKING_STATUS_LABELS,
+    RECURRENCE_TYPE_LABELS,
+    SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { useBookingStore } from "@/store/owner/useBookingStore";
 import type { OwnerBookingResponse } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-  Calendar,
-  CalendarRange,
-  Clock,
-  MapPin,
-  MoreVertical,
-  Phone,
-  Search,
-  User,
+    Calendar,
+    CalendarRange,
+    Clock,
+    MapPin,
+    MoreVertical,
+    Phone,
+    Search,
+    User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -207,7 +207,7 @@ export function OwnerBookingsPage() {
         <div className="space-y-1">
           <div className="font-medium truncate">{booking.complex_name}</div>
           <div className="text-xs text-muted-foreground truncate">
-            {booking.sub_field_name} • {SPORT_TYPE_LABELS[booking.sport_type as any]}
+            {booking.sub_field_name} • {SPORT_TYPE_LABELS[booking.sport_type as keyof typeof SPORT_TYPE_LABELS] ?? booking.sport_type}
           </div>
         </div>
       ),
@@ -390,7 +390,9 @@ export function OwnerBookingsPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{selectedBooking.sub_field_name}</span>
                     <span>•</span>
-                    <span>{SPORT_TYPE_LABELS[selectedBooking.sport_type as any]}</span>
+                    <span>
+                      {SPORT_TYPE_LABELS[selectedBooking.sport_type as keyof typeof SPORT_TYPE_LABELS] ?? selectedBooking.sport_type}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="w-4 h-4" />

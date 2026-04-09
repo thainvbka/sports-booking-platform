@@ -1,14 +1,14 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export interface Column<T> {
   header: string;

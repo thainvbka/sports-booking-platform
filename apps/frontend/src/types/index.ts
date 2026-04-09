@@ -26,6 +26,12 @@ export const ComplexStatus = {
 } as const;
 export type ComplexStatus = (typeof ComplexStatus)[keyof typeof ComplexStatus];
 
+export const ProductStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
+
 const RecurrenceType = {
   WEEKLY: "WEEKLY",
   MONTHLY: "MONTHLY",
@@ -87,6 +93,7 @@ export * from "./auth.types";
 export * from "./booking.types";
 export * from "./common.types";
 export * from "./owner.types";
+export * from "./product.types";
 export * from "./public.types";
 export * from "./user.types";
 

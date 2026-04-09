@@ -7,6 +7,7 @@ import {
 } from "../../controllers/v1/product.controller";
 import authenticate from "../../middlewares/authenticate";
 import authorize from "../../middlewares/authorize";
+import { upload } from "../../middlewares/multer";
 import { validate } from "../../middlewares/validate";
 import asyncHandler from "../../utils/asyncHandler";
 import {
@@ -30,6 +31,7 @@ router.post(
   "/",
   authenticate,
   authorize(["OWNER"]),
+  upload.fields([{ name: "product_image", maxCount: 1 }]),
   validate(createProductSchema),
   asyncHandler(ownerCreateProductController),
 );
@@ -38,6 +40,7 @@ router.patch(
   "/:id",
   authenticate,
   authorize(["OWNER"]),
+  upload.fields([{ name: "product_image", maxCount: 1 }]),
   validate(updateProductSchema),
   asyncHandler(ownerUpdateProductController),
 );
