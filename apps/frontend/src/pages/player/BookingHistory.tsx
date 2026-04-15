@@ -21,7 +21,7 @@ import {
   SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { bookingService } from "@/services/booking.service";
-import { BookingStatus, type BookingResponse } from "@/types";
+import { BookingStatus, type BookingResponse, type ReviewItem } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import {
@@ -40,8 +40,15 @@ type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;
 const PAGE_SIZE = 8;
 
 export function PlayerBookingsPage() {
-  const { bookings, loading, page, totalPages, setPage, updateBookingStatus } =
-    useBookings({ pageSize: PAGE_SIZE });
+  const {
+    bookings,
+    loading,
+    page,
+    totalPages,
+    setPage,
+    updateBookingStatus,
+    updateSingleBookingReview,
+  } = useBookings({ pageSize: PAGE_SIZE });
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
@@ -56,9 +63,6 @@ export function PlayerBookingsPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [selectedReviewBooking, setSelectedReviewBooking] =
     useState<SingleBooking | null>(null);
-  const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(
-    new Set(),
-  );
 
   const getStatusColor = (status: BookingStatus) => {
     return BOOKING_STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
@@ -139,16 +143,32 @@ export function PlayerBookingsPage() {
     return new Date(booking.start_date) > new Date();
   };
 
-  const canReviewBooking = (booking: BookingResponse): booking is SingleBooking => {
+  const canCreateReviewBooking = (
+    booking: BookingResponse,
+  ): booking is SingleBooking => {
     return (
       booking.type === "SINGLE" &&
       booking.status === BookingStatus.CONFIRMED &&
-      !reviewedBookingIds.has(booking.id)
+      !booking.review
+    );
+  };
+
+  const canUpdateReviewBooking = (
+    booking: BookingResponse,
+  ): booking is SingleBooking => {
+    return (
+      booking.type === "SINGLE" &&
+      booking.status === BookingStatus.CONFIRMED &&
+      !!booking.review
     );
   };
 
   const handleOpenReviewDialog = (booking: BookingResponse) => {
-    if (!canReviewBooking(booking)) {
+    if (booking.type !== "SINGLE") {
+      return;
+    }
+
+    if (booking.status !== BookingStatus.CONFIRMED) {
       return;
     }
 
@@ -156,12 +176,8 @@ export function PlayerBookingsPage() {
     setReviewDialogOpen(true);
   };
 
-  const handleReviewSuccess = (bookingId: string) => {
-    setReviewedBookingIds((prev) => {
-      const next = new Set(prev);
-      next.add(bookingId);
-      return next;
-    });
+  const handleReviewSuccess = (bookingId: string, review: ReviewItem) => {
+    updateSingleBookingReview(bookingId, review);
   };
 
   const columns: Column<BookingResponse>[] = [
@@ -313,12 +329,22 @@ export function PlayerBookingsPage() {
                 <span>Xem chi tiết</span>
               </DropdownMenuItem>
 
-              {canReviewBooking(booking) && (
+              {canCreateReviewBooking(booking) && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleOpenReviewDialog(booking)}>
                     <Star className="w-4 h-4 mr-2" />
                     <span>Đánh giá sân</span>
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              {canUpdateReviewBooking(booking) && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleOpenReviewDialog(booking)}>
+                    <Star className="w-4 h-4 mr-2" />
+                    <span>Xem/Cập nhật đánh giá</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -380,6 +406,7 @@ export function PlayerBookingsPage() {
       <ReviewDialog
         open={reviewDialogOpen}
         booking={selectedReviewBooking}
+        existingReview={selectedReviewBooking?.review ?? null}
         onOpenChange={(open) => {
           setReviewDialogOpen(open);
           if (!open) {

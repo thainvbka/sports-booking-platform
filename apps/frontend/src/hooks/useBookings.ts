@@ -1,5 +1,5 @@
 import { bookingService } from "@/services/booking.service";
-import { type BookingResponse, BookingStatus } from "@/types";
+import { type BookingResponse, type BookingReviewSummary, BookingStatus } from "@/types";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -18,6 +18,10 @@ interface UseBookingsResult {
     bookingId: string,
     bookingType: "SINGLE" | "RECURRING",
     status: BookingStatus,
+  ) => void;
+  updateSingleBookingReview: (
+    bookingId: string,
+    review: BookingReviewSummary,
   ) => void;
 }
 
@@ -88,6 +92,19 @@ export function useBookings({
     [],
   );
 
+  const updateSingleBookingReview = useCallback(
+    (bookingId: string, review: BookingReviewSummary) => {
+      setBookings((previousBookings) =>
+        previousBookings.map((booking) =>
+          booking.type === "SINGLE" && booking.id === bookingId
+            ? { ...booking, review }
+            : booking,
+        ),
+      );
+    },
+    [],
+  );
+
   return {
     bookings,
     loading,
@@ -95,5 +112,6 @@ export function useBookings({
     totalPages,
     setPage,
     updateBookingStatus,
+    updateSingleBookingReview,
   };
 }

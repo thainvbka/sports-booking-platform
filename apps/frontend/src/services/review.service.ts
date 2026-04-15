@@ -15,4 +15,18 @@ export const reviewService = {
 
     return response.data;
   },
+
+  updateReview: async (reviewId: string, formData: FormData) => {
+    const response = await api.patch<ApiResponse<{ review: ReviewItem }>>(
+      `/reviews/${reviewId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    return response.data;
+  },
 };

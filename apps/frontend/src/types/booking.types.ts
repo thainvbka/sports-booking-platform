@@ -42,6 +42,18 @@ export interface SyncBookingAddonsData {
   }[];
 }
 
+export interface BookingReviewSummary {
+  id: string;
+  booking_id: string;
+  player_id: string;
+  subfield_id: string;
+  rating: number;
+  comment?: string | null;
+  images: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SingleBookingResponse {
   type: "SINGLE";
   id: string;
@@ -55,6 +67,7 @@ export interface SingleBookingResponse {
   sub_field_name: string;
   expires_at: string | null;
   created_at: string;
+  review?: BookingReviewSummary | null;
 }
 
 export interface RecurringBookingResponse {

@@ -983,6 +983,19 @@ export const getPlayerBookings = async (
         status: true,
         expires_at: true,
         created_at: true,
+        review: {
+          select: {
+            id: true,
+            booking_id: true,
+            player_id: true,
+            subfield_id: true,
+            rating: true,
+            comment: true,
+            images: true,
+            created_at: true,
+            updated_at: true,
+          },
+        },
         sub_field: {
           select: {
             sub_field_name: true,
@@ -1017,6 +1030,7 @@ export const getPlayerBookings = async (
     complex_address: b.sub_field.complex.complex_address,
     expires_at: b.expires_at,
     created_at: b.created_at,
+    review: b.review,
   }));
 
   const formattedRecurring = recurringBookings.map((r) =>

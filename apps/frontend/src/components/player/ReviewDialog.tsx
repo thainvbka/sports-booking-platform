@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { reviewService } from "@/services/review.service";
-import type { BookingResponse } from "@/types";
+import type { BookingResponse, BookingReviewSummary, ReviewItem } from "@/types";
 import {
   createReviewFormSchema,
   type CreateReviewFormInput,
@@ -25,8 +25,9 @@ import { toast } from "sonner";
 interface ReviewDialogProps {
   open: boolean;
   booking: BookingResponse | null;
+  existingReview?: BookingReviewSummary | null;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (bookingId: string) => void;
+  onSuccess?: (bookingId: string, review: ReviewItem) => void;
 }
 
 type SelectedImage = {
@@ -40,6 +41,7 @@ const MAX_REVIEW_IMAGES = 5;
 export function ReviewDialog({
   open,
   booking,
+  existingReview,
   onOpenChange,
   onSuccess,
 }: ReviewDialogProps) {
@@ -61,16 +63,21 @@ export function ReviewDialog({
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isUpdateMode = Boolean(existingReview?.id);
+
   const rating = watch("rating");
   const comment = watch("comment") || "";
 
   useEffect(() => {
     if (!open) return;
 
-    reset({ rating: 0, comment: "" });
+    reset({
+      rating: existingReview?.rating ?? 0,
+      comment: existingReview?.comment ?? "",
+    });
     setHoveredRating(0);
     setSelectedImages([]);
-  }, [open, reset, booking?.id]);
+  }, [open, reset, booking?.id, existingReview]);
 
   useEffect(() => {
     return () => {
@@ -147,26 +154,35 @@ export function ReviewDialog({
 
     try {
       const formData = new FormData();
-      formData.append("booking_id", booking.id);
       formData.append("rating", String(data.rating));
 
       const normalizedComment = data.comment?.trim();
-      if (normalizedComment) {
+      if (isUpdateMode) {
+        formData.append("comment", normalizedComment || "");
+      } else if (normalizedComment) {
         formData.append("comment", normalizedComment);
+      }
+
+      if (!isUpdateMode) {
+        formData.append("booking_id", booking.id);
       }
 
       selectedImages.forEach((image) => {
         formData.append("images", image.file);
       });
 
-      await reviewService.createReview(formData);
+      const response = isUpdateMode
+        ? await reviewService.updateReview(existingReview!.id, formData)
+        : await reviewService.createReview(formData);
 
-      toast.success("Đánh giá sân thành công");
-      onSuccess?.(booking.id);
+      toast.success(
+        isUpdateMode ? "Cập nhật đánh giá thành công" : "Đánh giá sân thành công",
+      );
+      onSuccess?.(booking.id, response.data.review);
       onOpenChange(false);
     } catch (error) {
-      console.error("Create review failed", error);
-      toast.error("Không thể gửi đánh giá. Vui lòng thử lại.");
+      console.error("Review submit failed", error);
+      toast.error("Không thể lưu đánh giá. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -176,9 +192,13 @@ export function ReviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Đánh giá sân</DialogTitle>
+          <DialogTitle>
+            {isUpdateMode ? "Xem/Cập nhật đánh giá" : "Đánh giá sân"}
+          </DialogTitle>
           <DialogDescription>
-            Chia sẻ trải nghiệm của bạn sau khi sử dụng sân
+            {isUpdateMode
+              ? "Bạn có thể xem lại hoặc cập nhật đánh giá đã gửi"
+              : "Chia sẻ trải nghiệm của bạn sau khi sử dụng sân"}
           </DialogDescription>
         </DialogHeader>
 
@@ -256,6 +276,29 @@ export function ReviewDialog({
               <p className="text-xs text-muted-foreground">{imageCountText}</p>
             </div>
 
+            {isUpdateMode && (existingReview?.images?.length || 0) > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Ảnh hiện tại</p>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {existingReview?.images.map((url) => (
+                    <div
+                      key={url}
+                      className="relative aspect-square overflow-hidden rounded-md border"
+                    >
+                      <img
+                        src={url}
+                        alt="Review image"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Chọn ảnh mới sẽ thay thế ảnh hiện tại.
+                </p>
+              </div>
+            )}
+
             <Input
               id="review-images"
               type="file"
@@ -309,10 +352,10 @@ export function ReviewDialog({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang gửi...
+                  Đang lưu...
                 </>
               ) : (
-                "Gửi đánh giá"
+                isUpdateMode ? "Cập nhật đánh giá" : "Gửi đánh giá"
               )}
             </Button>
           </DialogFooter>
