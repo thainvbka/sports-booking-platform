@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
 } from "@/components/ui/chart";
 import { ownerService } from "@/services/owner.service";
 import { useComplexStore } from "@/store/owner/useComplexStore";
@@ -19,28 +19,28 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-  Building2,
-  Calendar,
-  CheckCircle,
-  DollarSign,
-  Plus,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
+    Building2,
+    Calendar,
+    CheckCircle,
+    DollarSign,
+    Plus,
+    TrendingDown,
+    TrendingUp,
+    Users,
+    Wallet,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Pie,
+    PieChart,
+    XAxis,
+    YAxis,
 } from "recharts";
 import { toast } from "sonner";
 
@@ -91,7 +91,7 @@ export function OwnerDashboardPage() {
     const dist = dashboardStats.bookingStatusDistribution;
     return [
       {
-        status: "Hoàn thành",
+        status: "Chờ xác nhận",
         value: dist.completed,
         fill: "url(#completedGradient)",
       },
@@ -101,7 +101,7 @@ export function OwnerDashboardPage() {
         fill: "url(#confirmedGradient)",
       },
       {
-        status: "Chờ xử lý",
+        status: "Chưa thanh toán",
         value: dist.pending,
         fill: "url(#pendingGradient)",
       },
@@ -335,9 +335,9 @@ export function OwnerDashboardPage() {
             {bookingStatusData.length > 0 ? (
               <ChartContainer
                 config={{
-                  "Hoàn thành": { label: "Hoàn thành", color: "#10b981" },
+                  "Chờ xác nhận": { label: "Chờ xác nhận", color: "#10b981" },
                   "Đã xác nhận": { label: "Đã xác nhận", color: "#3b82f6" },
-                  "Chờ xử lý": { label: "Chờ xử lý", color: "#f59e0b" },
+                  "Chưa thanh toán": { label: "Chưa thanh toán", color: "#f59e0b" },
                   "Đã hủy": { label: "Đã hủy", color: "#ef4444" },
                 }}
                 className="h-75"

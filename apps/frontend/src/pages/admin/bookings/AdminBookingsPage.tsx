@@ -1,26 +1,26 @@
 import { StatsGrid } from "@/components/admin/StatsGrid";
 import {
-  AdminDetailDialog,
-  DetailInfoCard,
-  DetailSummaryRow,
+    AdminDetailDialog,
+    DetailInfoCard,
+    DetailSummaryRow,
 } from "@/components/admin/details/AdminDetailDialog";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import {
-  BOOKING_STATUS_COLORS,
-  BOOKING_STATUS_LABELS,
-  RECURRENCE_TYPE_LABELS,
-  RECURRING_STATUS_COLORS,
-  RECURRING_STATUS_LABELS,
-  SPORT_TYPE_LABELS,
+    BOOKING_STATUS_COLORS,
+    BOOKING_STATUS_LABELS,
+    RECURRENCE_TYPE_LABELS,
+    RECURRING_STATUS_COLORS,
+    RECURRING_STATUS_LABELS,
+    SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { fmtVND } from "@/lib/format";
 import { useAdminBookingStore } from "@/store/admin/useAdminBookingStore";
@@ -28,19 +28,19 @@ import { useAdminRecurringBookingStore } from "@/store/admin/useAdminRecurringBo
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-  Calendar,
-  CalendarRange,
-  Clock,
-  Info,
-  LayoutDashboard,
-  LayoutList,
-  MapPin,
-  Repeat2,
-  Search,
-  Tag,
-  Timer,
-  User,
-  XCircle,
+    Calendar,
+    CalendarRange,
+    Clock,
+    Info,
+    LayoutDashboard,
+    LayoutList,
+    MapPin,
+    Repeat2,
+    Search,
+    Tag,
+    Timer,
+    User,
+    XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -219,13 +219,13 @@ export default function AdminBookingsPage() {
       // variant: "solid" as const,
     },
     {
-      label: "Chờ xác nhận",
+      label: "Chưa thanh toán",
       value: recurringStats.pending,
       icon: Clock,
       color: "orange" as const,
     },
     {
-      label: "Đang hoạt động",
+      label: "Đã xác nhận",
       value: recurringStats.confirmed,
       icon: CalendarRange,
       color: "green" as const,

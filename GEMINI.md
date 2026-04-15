@@ -1,147 +1,99 @@
 # Sports Booking Platform - Project Overview
 
-A comprehensive sports facility booking platform built with a modern TypeScript monorepo architecture. The project supports multiple user roles (Admin, Owner, Player) and various sports (Football, Basketball, Tennis, Badminton, Volleyball, Pickleball).
+A comprehensive sports facility booking platform built with a modern TypeScript architecture. The project supports multiple user roles (Admin, Owner, Player) and various sports (Football, Basketball, Tennis, Badminton, Volleyball, Pickleball).
 
-## Architecture
+## Project Structure
 
-This is an **npm workspaces monorepo** with the following structure:
+This project is organized into two main applications and shared infrastructure:
 
-- `apps/backend`: Express.js server, Prisma ORM, PostgreSQL.
-- `apps/frontend`: React (Vite), Tailwind CSS, Shadcn UI, Zustand.
-- `packages/db`: Shared Prisma client.
-- `packages/validation`: Shared Zod validation schemas.
-- `docker/`: Infrastructure orchestration.
+- `apps/backend`: Express.js server (v5.1.0), Prisma ORM, PostgreSQL.
+- `apps/frontend`: React 19 (Vite), Tailwind CSS 4, Shadcn UI, Zustand, React Router 7.
+- `docker-compose.yml`: Orchestration for local development (Postgres, Backend, Frontend).
+- `docs/`: Technical design documents and feature plans.
 
 ## Tech Stack
 
-- **Backend:** Node.js, Express, Prisma (PostgreSQL), JWT, Stripe (Payments), Cloudinary (Image storage), Nodemailer (Email), Node-cron (Background tasks).
-- **Frontend:** React, TypeScript, Vite, Tailwind CSS, Radix UI, Shadcn UI, React Hook Form, Zod, Axios.
-- **Infrastructure:** Docker, Nginx (for production).
+### Backend
+- **Framework:** Express.js (v5.1.0)
+- **Language:** TypeScript
+- **ORM:** Prisma with PostgreSQL
+- **Authentication:** JWT with refresh token support (stored in HTTP-only cookies and database)
+- **Validation:** Zod for strict request/response validation
+- **Storage:** Cloudinary for image uploads
+- **Payments:** Stripe integration with webhook support
+- **Background Tasks:** node-cron for automated cleanup of expired bookings and system maintenance
+- **Time Management:** date-fns and date-fns-tz (Primary timezone: `Asia/Ho_Chi_Minh`)
 
-## Getting Started
+### Frontend
+- **Framework:** React 19 + Vite 7
+- **Routing:** React Router 7 (using `createBrowserRouter`)
+- **State Management:** Zustand (feature-based stores)
+- **Styling:** Tailwind CSS 4 with Shadcn UI (Radix UI primitives)
+- **API Client:** Axios with centralized interceptors for token refresh and global error handling
+- **Forms:** React Hook Form + Zod
+
+## Building and Running
 
 ### Prerequisites
-
 - Node.js (v18+)
 - Docker and Docker Compose
-- `.env` file (see `.env.example` at the root)
+- `.env` file (copied from `.env.example` at the root and within apps)
 
-### Installation
-
+### Using Docker (Recommended)
 ```bash
-# Install dependencies for the entire monorepo
-npm install
-```
-
-### Running the Project
-
-**Using Docker (Recommended for Development):**
-
-```bash
-# Start the database, backend, and frontend
+# Start all services (Postgres, Backend, Frontend)
 docker-compose up -d
 ```
 
-**Manual (Local Development):**
-
+### Manual Local Development
+**Backend:**
 ```bash
-# Root: Start backend in watch mode
 cd apps/backend
-npm run dev
-
-# Root: Start frontend in dev mode
-cd apps/frontend
+npm install
+npx prisma generate
+npx prisma migrate dev
 npm run dev
 ```
 
-### Database Management
-
-The project uses Prisma for database management. The schema is located in `apps/backend/prisma/schema.prisma`.
-
+**Frontend:**
 ```bash
-# Generate Prisma Client
-npx prisma generate --schema=apps/backend/prisma/schema.prisma
-
-# Run migrations
-npx prisma migrate dev --schema=apps/backend/prisma/schema.prisma
-
-# Open Prisma Studio (GUI)
-npx prisma studio --schema=apps/backend/prisma/schema.prisma
+cd apps/frontend
+npm install
+npm run dev
 ```
 
-## Key Features
-
-- **Multi-Role Access Control:** Admin dashboard, Owner facility management, Player booking experience.
-- **Facility Management:** Owners can create "Complexes" and "Sub-fields" with specific sport types and pricing rules.
-- **Booking System:** Support for both single and recurring bookings.
-- **Payment Integration:** Stripe integration for secure payments and refunds.
-- **Authentication:** JWT-based auth with refresh tokens and social login support.
-- **Notifications:** Email and in-app notifications.
+## Core Features
+- **Multi-Role RBAC:** Dedicated dashboards for Admin, Owner (Facility Manager), and Player (Customer).
+- **Facility Management:** Owners can manage "Complexes" (venues) and "Sub-fields" with specific sport types and capacity.
+- **Dynamic Pricing Engine:** Advanced pricing rules based on `day_of_week` and time segments.
+- **Booking System:**
+  - Support for single and recurring (weekly/monthly) bookings.
+  - Automated expiration of pending bookings.
+  - Integration with Stripe for secure payments and refunds.
+- **Matchmaking:** Players can create or join matches to find teammates or opponents.
+- **Reviews & Ratings:** Comprehensive review system for facilities.
+- **Notification System:** In-app and email notifications via Nodemailer.
 
 ## Development Conventions
 
-- **Validation:** Use the shared Zod schemas in `packages/validation` for both backend and frontend.
-- **Database:** Access the database through the shared client in `packages/db`.
-- **API Design:** All endpoints follow a `/api/v1` versioning scheme.
-- **Error Handling:** Use the `asyncHandler` and `errorHandler` middleware in the backend.
-- **Styling:** Follow the existing Shadcn UI and Tailwind CSS patterns in the frontend.
+### Standardized API Response
+The backend returns a consistent JSON structure via the `SuccessResponse` class and `errorHandler` middleware:
+- **Success:** `{ success: true, status: 200, code: 200, message: "...", data: { ... }, reason: "..." }`
+- **Failure:** `{ success: false, status: 4xx/5xx, code: 4xx/5xx, message: "...", data: null, reason: "..." }`
 
-## Environment Variables
+### Error Handling
+- **Backend:** Use `asyncHandler` for all route handlers. Throw specialized error classes (e.g., `BadRequestError`, `NotFoundError`) from `src/utils/error.response.ts`.
+- **Frontend:** Axios interceptor in `src/lib/axios.ts` automatically handles 401 Unauthorized errors by attempting a token refresh and redirects to login if it fails. It also provides global error notifications via `sonner` toasts.
 
+### Database Patterns
+- Access the database using the singleton Prisma client in `apps/backend/src/libs/prisma.ts`.
+- Use Enums for all status and type fields (e.g., `SportType`, `BookingStatus`, `PaymentStatus`).
+- Implement caching at the database level for frequent lookups (e.g., `min_price`, `max_price`, `avg_rating` in the `Complex` model).
+
+### Environment Variables
 Key variables required in `.env`:
-
-- `DATABASE_URL`: PostgreSQL connection string.
-- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`: Auth secrets.
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: For image uploads.
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`: For payments.
-- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS`: For email notifications.
-
-### Standardized Response Format
-
-Backend trả về format đồng nhất cho tất cả các endpoint:
-
-- **Thành công:** `{ success: true, status: 200, code: 200, message: "...", data: { ... }, reason: "..." }`
-- **Thất bại:** `{ success: false, status: 4xx/5xx, code: 4xx/5xx, message: "...", data: null, reason: "..." }`
-
-### Frontend API & Error Handling Conventions
-
-Để tận dụng format đồng nhất từ Backend, Frontend tuân thủ các quy tắc sau:
-
-1.  **Axios Interceptor (`lib/axios.ts`):**
-    - Tự động bắt lỗi và hiển thị `toast` với `message` từ Backend khi `success: false` hoặc HTTP status lỗi.
-    - Xử lý Auto Refresh Token khi gặp lỗi 401.
-    - Trả về `Promise.reject(response.data)` để Store/Component có thể catch lỗi và lấy đầy đủ thông tin `code`, `message`.
-
-2.  **API Services:**
-    - Luôn trả về toàn bộ đối tượng `response.data` (kiểu `ApiResponse<T>`).
-    - Sử dụng `type-only import` cho các Interface từ `@/types` (để tương thích với `verbatimModuleSyntax`).
-
-    ```typescript
-    // Ví dụ trong Service
-    getComplexes: async (params?: object) => {
-      const res = await api.get<ApiResponse<DataType>>("/url", { params });
-      return res.data; // Trả về ApiResponse object
-    };
-    ```
-
-3.  **Zustand Stores / Components:**
-    - Sử dụng `try...catch` với kiểu `unknown` cho biến error, sau đó ép kiểu sang `ApiError`.
-    - Kiểm tra `res.success` nếu cần xử lý logic rẽ nhánh dựa trên kết quả.
-    - Dữ liệu thực tế nằm trong `res.data`.
-
-    ```typescript
-    // Ví dụ trong Store
-    try {
-      const res = await service.getData();
-      if (res.success) {
-        set({ data: res.data, isLoading: false });
-      }
-    } catch (error: unknown) {
-      const apiError = error as ApiError;
-      set({ error: apiError.message, isLoading: false });
-    }
-    ```
-
-4.  **Types chuẩn hóa (`types/index.ts`):**
-    - `ApiResponse<T>`: Định nghĩa cấu trúc response thành công.
-    - `ApiError`: Định nghĩa cấu trúc response lỗi (không có trường `data`).
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`: Secrets for authentication
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: For image management
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`: For payment processing
+- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS`: For email notifications

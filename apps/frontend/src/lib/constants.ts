@@ -29,8 +29,8 @@ export const RECURRENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 export const RECURRING_STATUS_LABELS: Record<string, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đang hoạt động",
+  PENDING: "Chưa thanh toán",
+  CONFIRMED: "Đã xác nhận",
   COMPLETED: "Chờ xác nhận",
   CANCELED: "Đã hủy",
 };

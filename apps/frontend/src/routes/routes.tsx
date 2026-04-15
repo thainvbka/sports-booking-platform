@@ -26,7 +26,7 @@ import { ProductManagementPage } from "@/pages/owner/ProductManagementPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
-import { PlayerBookingsPage } from "@/pages/player/BookingPage";
+import { PlayerBookingsPage } from "@/pages/player/BookingHistory";
 import { PublicComplexDetailPage } from "@/pages/public/PublicComplexDetailPage";
 import { PublicSubfieldDetailPage } from "@/pages/public/PublicSubfieldDetailPage";
 import { SearchPage } from "@/pages/SearchPage";

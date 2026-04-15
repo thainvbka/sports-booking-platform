@@ -1,19 +1,19 @@
 import { Prisma } from "@prisma/client";
 import {
-    updateComplexRatingCache,
-    updateSubfieldRatingCache,
+  updateComplexRatingCache,
+  updateSubfieldRatingCache,
 } from "../../helpers/cache";
 import { uploadReviewImages } from "../../helpers/upload";
 import { prisma } from "../../libs/prisma";
 import {
-    BadRequestError,
-    ForbiddenError,
-    NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
 } from "../../utils/error.response";
 import {
-    CreateReviewInput,
-    ReviewQueryInput,
-    UpdateReviewInput,
+  CreateReviewInput,
+  ReviewQueryInput,
+  UpdateReviewInput,
 } from "../../validations";
 
 type MulterFiles = {
@@ -21,7 +21,7 @@ type MulterFiles = {
 };
 
 /**
- * Player creates a review for a completed booking
+ * Player creates a review for a confirmed booking
  */
 export const createReview = async (
   player_id: string,
@@ -35,7 +35,7 @@ export const createReview = async (
       where: {
         id: booking_id,
         player_id,
-        status: "COMPLETED",
+        status: "CONFIRMED",
       },
       include: {
         sub_field: true,
@@ -47,12 +47,14 @@ export const createReview = async (
   ]);
 
   if (!booking) {
+    console.log("Booking not found or not confirmed:", { booking_id, player_id });
     throw new BadRequestError(
-      "Booking not found, not completed, or not yours to review.",
+      "Booking not found, not confirmed, or not yours to review.",
     );
   }
 
   if (existingReview) {
+    console.log("Review already exists for this booking:", { booking_id });
     throw new BadRequestError("This booking has already been reviewed.");
   }
 

@@ -95,6 +95,7 @@ export * from "./common.types";
 export * from "./owner.types";
 export * from "./product.types";
 export * from "./public.types";
+export * from "./review.types";
 export * from "./user.types";
 
 // Interfaces
