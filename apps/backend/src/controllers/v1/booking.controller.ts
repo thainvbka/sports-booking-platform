@@ -11,7 +11,6 @@ import {
   ownerGetAllBookings,
   ownerGetBookingById,
   updateBooking,
-  updateBookingAddons,
 } from "../../services/v1/booking.service";
 import { SuccessResponse } from "../../utils/success.response";
 import { ownerBookingFilterSchema } from "../../validations";
@@ -62,23 +61,6 @@ export const updateBookingController = async (req: Request, res: Response) => {
   );
   return new SuccessResponse({
     message: "Booking updated successfully",
-    data: { booking },
-  }).send(res);
-};
-
-export const updateBookingAddonsController = async (
-  req: Request,
-  res: Response,
-) => {
-  const booking_id = req.params.id as string;
-  const booking = await updateBookingAddons(
-    req.user?.profiles.playerId as string,
-    booking_id,
-    req.body,
-  );
-
-  return new SuccessResponse({
-    message: "Booking addons updated successfully",
     data: { booking },
   }).send(res);
 };

@@ -4,6 +4,10 @@ export interface CreateBookingData {
   start_time: string; // ISO string
   end_time: string; // ISO string
   type?: "ONE_TIME" | "RECURRING";
+  addons?: {
+    product_id: string;
+    quantity: number;
+  }[];
 }
 
 export interface CreateRecurringBookingData {
@@ -32,13 +36,6 @@ export interface BookingReviewResponse {
     quantity: number;
     unit_price: number;
     line_total: number;
-  }[];
-}
-
-export interface SyncBookingAddonsData {
-  addons: {
-    product_id: string;
-    quantity: number;
   }[];
 }
 

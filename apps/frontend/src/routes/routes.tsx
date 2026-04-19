@@ -18,6 +18,8 @@ import { ContactPage } from "@/pages/ContactPage";
 import { HomePage } from "@/pages/HomePage";
 import { PrivacyPage } from "@/pages/legal/PrivacyPage";
 import { TermsPage } from "@/pages/legal/TermsPage";
+import { MatchDetailPage } from "@/pages/matches/MatchDetailPage";
+import { MatchListPage } from "@/pages/matches/MatchListPage";
 import { ComplexDetailPage } from "@/pages/owner/ComplexDetailPage";
 import { ComplexesPage } from "@/pages/owner/ComplexPage";
 import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
@@ -27,17 +29,21 @@ import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
 import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
 import { PlayerBookingsPage } from "@/pages/player/BookingHistory";
+import { MatchManagePage } from "@/pages/player/matches/MatchManagePage";
+import { MyMatchesPage } from "@/pages/player/matches/MyMatchesPage";
 import { PublicComplexDetailPage } from "@/pages/public/PublicComplexDetailPage";
 import { PublicSubfieldDetailPage } from "@/pages/public/PublicSubfieldDetailPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
 import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute";
+
+
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +59,14 @@ export const router = createBrowserRouter([
         element: <SearchPage />,
       },
       {
+        path: "matches",
+        element: <MatchListPage />,
+      },
+      {
+        path: "matches/:id",
+        element:<MatchDetailPage />,
+      },
+      {
         path: "complexes/:id",
         element: <PublicComplexDetailPage />,
       },
@@ -66,6 +80,38 @@ export const router = createBrowserRouter([
       },
       {
         path: "bookings",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <PlayerBookingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "player",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <Navigate to="/player/matches" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "player/matches",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <MyMatchesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "player/matches/:id/manage",
+        element: (
+          <ProtectedRoute allowedRoles={["PLAYER"]}>
+            <MatchManagePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "player/bookings",
         element: (
           <ProtectedRoute allowedRoles={["PLAYER"]}>
             <PlayerBookingsPage />

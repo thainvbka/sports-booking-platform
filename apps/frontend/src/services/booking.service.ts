@@ -1,12 +1,11 @@
 import { api } from "@/lib/axios";
 import type {
-    ApiResponse,
-    BookingListResponse,
-    BookingReviewResponse,
-    CreateBookingData,
-    CreateRecurringBookingData,
-    RecurringBookingReviewResponse,
-    SyncBookingAddonsData,
+  ApiResponse,
+  BookingListResponse,
+  BookingReviewResponse,
+  CreateBookingData,
+  CreateRecurringBookingData,
+  RecurringBookingReviewResponse,
 } from "@/types";
 
 export const bookingService = {
@@ -39,13 +38,6 @@ export const bookingService = {
     const response = await api.get<
       ApiResponse<{ recurringBooking: RecurringBookingReviewResponse }>
     >(`/bookings/recurring/review/${bookingId}`);
-    return response.data;
-  },
-
-  syncBookingAddons: async (bookingId: string, data: SyncBookingAddonsData) => {
-    const response = await api.patch<
-      ApiResponse<{ booking: { id: string; total_price: number } }>
-    >(`/bookings/${bookingId}/addons`, data);
     return response.data;
   },
 

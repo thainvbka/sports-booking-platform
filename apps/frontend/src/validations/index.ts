@@ -1,4 +1,5 @@
 export * from "./access.schema";
+export * from "./match.validation";
 export * from "./product.schema";
 export * from "./review.schema";
 

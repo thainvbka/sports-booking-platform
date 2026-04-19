@@ -61,17 +61,6 @@ export const createBookingSchema = z
     },
   );
 
-export const syncBookingAddonsSchema = z.object({
-  body: z.object({
-    addons: z.array(bookingAddonItemSchema).default([]),
-  }),
-  params: z.object({
-    id: z.string().uuid({
-      message: "ID booking không hợp lệ",
-    }),
-  }),
-});
-
 // owner booking filter schema
 
 export const ownerBookingFilterSchema = z.object({
@@ -108,9 +97,6 @@ export const ownerCancelBookingSchema = z.object({
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>["body"];
 export type BookingAddonInput = z.infer<typeof bookingAddonItemSchema>;
-export type UpdateBookingAddonsInput = z.infer<
-  typeof syncBookingAddonsSchema
->["body"];
 
 export type OwnerBookingFilter = z.infer<typeof ownerBookingFilterSchema>;
 export type GetOwnerBookingsQuery = z.infer<typeof ownerGetBookingsQuerySchema>;
