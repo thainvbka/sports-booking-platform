@@ -93,8 +93,44 @@ const matchListSelect = {
   },
 } satisfies Prisma.MatchSelect;
 
+const matchDetailSelect = {
+  ...matchListSelect,
+  updated_at: true,
+} satisfies Prisma.MatchSelect;
+
+const participantResponseSelect = {
+  id: true,
+  match_id: true,
+  player_id: true,
+  status: true,
+  introduction: true,
+  created_at: true,
+  responded_at: true,
+  left_at: true,
+  player: {
+    select: {
+      id: true,
+      account: {
+        select: {
+          full_name: true,
+          avatar: true,
+          phone_number: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.MatchParticipantSelect;
+
 type MatchListRecord = Prisma.MatchGetPayload<{
   select: typeof matchListSelect;
+}>;
+
+type MatchDetailRecord = Prisma.MatchGetPayload<{
+  select: typeof matchDetailSelect;
+}>;
+
+type ParticipantResponseRecord = Prisma.MatchParticipantGetPayload<{
+  select: typeof participantResponseSelect;
 }>;
 
 const mapMatchListItem = (match: MatchListRecord) => {
@@ -128,6 +164,73 @@ const mapMatchListItem = (match: MatchListRecord) => {
       avatar: match.creator.account.avatar,
     },
   };
+};
+
+const mapMatchDetailItem = (
+  match: MatchDetailRecord,
+  acceptedCount: number,
+  pendingCount: number,
+) => {
+  const slotsLeft = Math.max(match.slots_needed - match.slots_filled, 0);
+
+  return {
+    ...mapMatchListItem(match),
+    updated_at: match.updated_at,
+    accepted_count: acceptedCount,
+    pending_count: pendingCount,
+    participant_summary: {
+      accepted_count: acceptedCount,
+      pending_count: pendingCount,
+      slots_left: slotsLeft,
+    },
+  };
+};
+
+const mapParticipantItem = (participant: ParticipantResponseRecord) => {
+  return {
+    id: participant.id,
+    match_id: participant.match_id,
+    player_id: participant.player_id,
+    status: participant.status,
+    introduction: participant.introduction,
+    requested_at: participant.created_at,
+    created_at: participant.created_at,
+    responded_at: participant.responded_at,
+    left_at: participant.left_at,
+    player: {
+      id: participant.player.id,
+      full_name: participant.player.account.full_name,
+      avatar: participant.player.account.avatar,
+      phone: participant.player.account.phone_number,
+      skill_level: null,
+    },
+  };
+};
+
+const getMappedMatchById = async (matchId: string) => {
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: matchListSelect,
+  });
+
+  if (!match) {
+    throw new NotFoundError("Match not found");
+  }
+
+  return mapMatchListItem(match);
+};
+
+const getMappedParticipantById = async (participantId: string) => {
+  const participant = await prisma.matchParticipant.findUnique({
+    where: { id: participantId },
+    select: participantResponseSelect,
+  });
+
+  if (!participant) {
+    throw new NotFoundError("Participant request not found");
+  }
+
+  return mapParticipantItem(participant);
 };
 
 const parseMatchSort = (
@@ -285,8 +388,6 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
     }),
   ]);
 
-  console.log("::::total_matches::::", total);
-
   return {
     items: matches.map(mapMatchListItem),
     pagination: {
@@ -302,51 +403,7 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
 export const getPublicMatchById = async (matchId: string) => {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    select: {
-      id: true,
-      status: true,
-      sport_type: true,
-      skill_level: true,
-      title: true,
-      description: true,
-      slots_needed: true,
-      slots_filled: true,
-      join_deadline: true,
-      created_at: true,
-      updated_at: true,
-      booking: {
-        select: {
-          id: true,
-          start_time: true,
-          end_time: true,
-          sub_field: {
-            select: {
-              id: true,
-              sub_field_name: true,
-              sport_type: true,
-              complex: {
-                select: {
-                  id: true,
-                  complex_name: true,
-                  complex_address: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      creator: {
-        select: {
-          id: true,
-          account: {
-            select: {
-              full_name: true,
-              avatar: true,
-            },
-          },
-        },
-      },
-    },
+    select: matchDetailSelect,
   });
 
   if (!match) {
@@ -368,21 +425,37 @@ export const getPublicMatchById = async (matchId: string) => {
     }),
   ]);
 
-  return {
-    ...mapMatchListItem(match),
-    updated_at: match.updated_at,
-    participant_summary: {
-      accepted_count,
-      pending_count,
-      slots_left: Math.max(match.slots_needed - match.slots_filled, 0),
+  return mapMatchDetailItem(match, accepted_count, pending_count);
+};
+
+export const getMatchByIdForPlayer = async (
+  playerId: string,
+  matchId: string,
+) => {
+  const match = await getPublicMatchById(matchId);
+
+  const myParticipation = await prisma.matchParticipant.findUnique({
+    where: {
+      match_id_player_id: {
+        match_id: matchId,
+        player_id: playerId,
+      },
     },
+    select: {
+      status: true,
+    },
+  });
+
+  return {
+    ...match,
+    my_participation_status: myParticipation?.status ?? null,
   };
 };
 
 export const createMatch = async (playerId: string, data: CreateMatchInput) => {
   const now = new Date();
 
-  return prisma.$transaction(async (tx) => {
+  const createdMatchId = await prisma.$transaction(async (tx) => {
     const booking = await tx.booking.findFirst({
       where: {
         id: data.booking_id,
@@ -454,21 +527,13 @@ export const createMatch = async (playerId: string, data: CreateMatchInput) => {
       },
       select: {
         id: true,
-        booking_id: true,
-        status: true,
-        sport_type: true,
-        skill_level: true,
-        title: true,
-        description: true,
-        slots_needed: true,
-        slots_filled: true,
-        join_deadline: true,
-        created_at: true,
       },
     });
 
-    return createdMatch;
+    return createdMatch.id;
   });
+
+  return getMappedMatchById(createdMatchId);
 };
 
 export const joinMatch = async (
@@ -478,7 +543,7 @@ export const joinMatch = async (
 ) => {
   const now = new Date();
 
-  return runSerializableWithRetry(() =>
+  const participantId = await runSerializableWithRetry(() =>
     prisma.$transaction(
       async (tx) => {
         const match = await tx.match.findUnique({
@@ -536,10 +601,10 @@ export const joinMatch = async (
             existing.status === ParticipantStatus.PENDING ||
             existing.status === ParticipantStatus.ACCEPTED
           ) {
-            return existing;
+            return existing.id;
           }
 
-          return tx.matchParticipant.update({
+          const updatedParticipant = await tx.matchParticipant.update({
             where: {
               id: existing.id,
             },
@@ -550,9 +615,11 @@ export const joinMatch = async (
               left_at: null,
             },
           });
+
+          return updatedParticipant.id;
         }
 
-        return tx.matchParticipant.create({
+        const createdParticipant = await tx.matchParticipant.create({
           data: {
             match_id: matchId,
             player_id: playerId,
@@ -560,18 +627,22 @@ export const joinMatch = async (
             introduction,
           },
         });
+
+        return createdParticipant.id;
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     ),
   );
+
+  return getMappedParticipantById(participantId);
 };
 
 export const leaveMatch = async (playerId: string, matchId: string) => {
   const now = new Date();
 
-  return runSerializableWithRetry(() =>
+  const participantId = await runSerializableWithRetry(() =>
     prisma.$transaction(
       async (tx) => {
         const participant = await tx.matchParticipant.findUnique({
@@ -607,7 +678,7 @@ export const leaveMatch = async (playerId: string, matchId: string) => {
           participant.status === ParticipantStatus.REJECTED ||
           participant.status === ParticipantStatus.REMOVED
         ) {
-          return participant;
+          return participant.id;
         }
 
         if (participant.match.booking.start_time <= now) {
@@ -668,13 +739,15 @@ export const leaveMatch = async (playerId: string, matchId: string) => {
           }
         }
 
-        return updatedParticipant;
+        return updatedParticipant.id;
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     ),
   );
+
+  return getMappedParticipantById(participantId);
 };
 
 export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
@@ -804,43 +877,13 @@ export const getMatchParticipants = async (
       },
       skip,
       take: limit,
-      select: {
-        id: true,
-        status: true,
-        introduction: true,
-        created_at: true,
-        responded_at: true,
-        left_at: true,
-        player: {
-          select: {
-            id: true,
-            account: {
-              select: {
-                full_name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
+      select: participantResponseSelect,
     }),
   ]);
 
   return {
     match,
-    participants: participants.map((participant) => ({
-      id: participant.id,
-      status: participant.status,
-      introduction: participant.introduction,
-      created_at: participant.created_at,
-      responded_at: participant.responded_at,
-      left_at: participant.left_at,
-      player: {
-        id: participant.player.id,
-        full_name: participant.player.account.full_name,
-        avatar: participant.player.account.avatar,
-      },
-    })),
+    participants: participants.map(mapParticipantItem),
     pagination: {
       page,
       limit,
@@ -858,7 +901,7 @@ export const acceptMatchParticipant = async (
 ) => {
   const now = new Date();
 
-  return runSerializableWithRetry(() =>
+  const resolvedParticipantId = await runSerializableWithRetry(() =>
     prisma.$transaction(
       async (tx) => {
         const match = await tx.match.findFirst({
@@ -875,6 +918,7 @@ export const acceptMatchParticipant = async (
             booking: {
               select: {
                 start_time: true,
+                end_time: true,
               },
             },
           },
@@ -913,11 +957,43 @@ export const acceptMatchParticipant = async (
         }
 
         if (participant.status === ParticipantStatus.ACCEPTED) {
-          return participant;
+          return participant.id;
         }
 
         if (participant.status !== ParticipantStatus.PENDING) {
           throw new BadRequestError("Only pending requests can be accepted");
+        }
+
+        const overlapAccepted = await tx.matchParticipant.findFirst({
+          where: {
+            player_id: participant.player_id,
+            status: ParticipantStatus.ACCEPTED,
+            match_id: {
+              not: matchId,
+            },
+            match: {
+              status: {
+                not: MatchStatus.CANCELED,
+              },
+              booking: {
+                start_time: {
+                  lt: match.booking.end_time,
+                },
+                end_time: {
+                  gt: match.booking.start_time,
+                },
+              },
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        if (overlapAccepted) {
+          throw new ConflictRequestError(
+            "MATCH_TIME_CONFLICT: Player already accepted in overlapping time",
+          );
         }
 
         const slotUpdated = await tx.match.updateMany({
@@ -978,13 +1054,15 @@ export const acceptMatchParticipant = async (
           }
         }
 
-        return updatedParticipant;
+        return updatedParticipant.id;
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     ),
   );
+
+  return getMappedParticipantById(resolvedParticipantId);
 };
 
 export const rejectMatchParticipant = async (
@@ -992,48 +1070,93 @@ export const rejectMatchParticipant = async (
   matchId: string,
   participantId: string,
 ) => {
-  const match = await prisma.match.findFirst({
-    where: {
-      id: matchId,
-      creator_id: creatorId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  const now = new Date();
 
-  if (!match) {
-    throw new NotFoundError("Match not found or you are not the creator");
-  }
+  const resolvedParticipantId = await runSerializableWithRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const match = await tx.match.findFirst({
+          where: {
+            id: matchId,
+            creator_id: creatorId,
+          },
+          select: {
+            id: true,
+            status: true,
+            booking: {
+              select: {
+                start_time: true,
+              },
+            },
+          },
+        });
 
-  const participant = await prisma.matchParticipant.findFirst({
-    where: {
-      id: participantId,
-      match_id: matchId,
-    },
-  });
+        if (!match) {
+          throw new NotFoundError("Match not found or you are not the creator");
+        }
 
-  if (!participant) {
-    throw new NotFoundError("Participant request not found");
-  }
+        if (match.booking.start_time <= now) {
+          throw new BadRequestError(
+            "MATCH_STARTED: Cannot reject after match starts",
+          );
+        }
 
-  if (participant.status === ParticipantStatus.REJECTED) {
-    return participant;
-  }
+        if (
+          match.status === MatchStatus.CANCELED ||
+          match.status === MatchStatus.COMPLETED ||
+          match.status === MatchStatus.EXPIRED ||
+          match.status === MatchStatus.CLOSED
+        ) {
+          throw new BadRequestError(
+            "MATCH_NOT_OPEN: Cannot reject in current status",
+          );
+        }
 
-  if (participant.status !== ParticipantStatus.PENDING) {
-    throw new BadRequestError("Only pending requests can be rejected");
-  }
+        const participant = await tx.matchParticipant.findFirst({
+          where: {
+            id: participantId,
+            match_id: matchId,
+          },
+        });
 
-  return prisma.matchParticipant.update({
-    where: {
-      id: participant.id,
-    },
-    data: {
-      status: ParticipantStatus.REJECTED,
-      responded_at: new Date(),
-    },
-  });
+        if (!participant) {
+          throw new NotFoundError("Participant request not found");
+        }
+
+        if (participant.status === ParticipantStatus.REJECTED) {
+          return participant.id;
+        }
+
+        if (participant.status !== ParticipantStatus.PENDING) {
+          throw new BadRequestError("Only pending requests can be rejected");
+        }
+
+        const updated = await tx.matchParticipant.updateMany({
+          where: {
+            id: participant.id,
+            status: ParticipantStatus.PENDING,
+          },
+          data: {
+            status: ParticipantStatus.REJECTED,
+            responded_at: now,
+          },
+        });
+
+        if (updated.count === 0) {
+          throw new ConflictRequestError(
+            "PARTICIPANT_STATE_CHANGED: Please retry",
+          );
+        }
+
+        return participant.id;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    ),
+  );
+
+  return getMappedParticipantById(resolvedParticipantId);
 };
 
 export const closeMatch = async (creatorId: string, matchId: string) => {
@@ -1073,7 +1196,7 @@ export const closeMatch = async (creatorId: string, matchId: string) => {
   }
 
   if (match.status === MatchStatus.CLOSED) {
-    return prisma.match.findUnique({ where: { id: matchId } });
+    return getMappedMatchById(matchId);
   }
 
   const updated = await prisma.match.updateMany({
@@ -1093,7 +1216,7 @@ export const closeMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return prisma.match.findUnique({ where: { id: match.id } });
+  return getMappedMatchById(match.id);
 };
 
 export const reopenMatch = async (creatorId: string, matchId: string) => {
@@ -1157,10 +1280,12 @@ export const reopenMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return prisma.match.findUnique({ where: { id: match.id } });
+  return getMappedMatchById(match.id);
 };
 
 export const cancelMatch = async (creatorId: string, matchId: string) => {
+  const now = new Date();
+
   const match = await prisma.match.findFirst({
     where: {
       id: matchId,
@@ -1170,6 +1295,11 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
       id: true,
       status: true,
       version: true,
+      booking: {
+        select: {
+          start_time: true,
+        },
+      },
     },
   });
 
@@ -1182,6 +1312,10 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
     match.status === MatchStatus.COMPLETED
   ) {
     throw new BadRequestError("Match cannot be canceled in current status");
+  }
+
+  if (match.booking.start_time <= now) {
+    throw new BadRequestError("Cannot cancel match after start time");
   }
 
   const updated = await prisma.match.updateMany({
@@ -1201,11 +1335,30 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return prisma.match.findUnique({ where: { id: match.id } });
+  return getMappedMatchById(match.id);
 };
 
 export const syncMatchStatusesByTime = async () => {
   const now = new Date();
+
+  await prisma.match.updateMany({
+    where: {
+      status: {
+        in: [MatchStatus.FULL, MatchStatus.CLOSED],
+      },
+      booking: {
+        end_time: {
+          lte: now,
+        },
+      },
+    },
+    data: {
+      status: MatchStatus.COMPLETED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
 
   await prisma.match.updateMany({
     where: {
@@ -1229,25 +1382,6 @@ export const syncMatchStatusesByTime = async () => {
     },
     data: {
       status: MatchStatus.EXPIRED,
-      version: {
-        increment: 1,
-      },
-    },
-  });
-
-  await prisma.match.updateMany({
-    where: {
-      status: {
-        in: [MatchStatus.FULL, MatchStatus.CLOSED],
-      },
-      booking: {
-        end_time: {
-          lte: now,
-        },
-      },
-    },
-    data: {
-      status: MatchStatus.COMPLETED,
       version: {
         increment: 1,
       },

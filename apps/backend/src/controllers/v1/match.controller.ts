@@ -4,6 +4,7 @@ import {
   cancelMatch,
   closeMatch,
   createMatch,
+  getMatchByIdForPlayer,
   getMatchParticipants,
   getMyMatches,
   getPublicMatchById,
@@ -41,6 +42,19 @@ export const getPublicMatchByIdController = async (
   res: Response,
 ) => {
   const match = await getPublicMatchById(req.params.id as string);
+
+  return new SuccessResponse({
+    message: "Match detail retrieved successfully",
+    data: { match },
+  }).send(res);
+};
+
+export const getMatchByIdForPlayerController = async (
+  req: Request,
+  res: Response,
+) => {
+  const playerId = req.user?.profiles.playerId as string;
+  const match = await getMatchByIdForPlayer(playerId, req.params.id as string);
 
   return new SuccessResponse({
     message: "Match detail retrieved successfully",

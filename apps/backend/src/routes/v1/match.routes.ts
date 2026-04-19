@@ -4,6 +4,7 @@ import {
   cancelMatchController,
   closeMatchController,
   createMatchController,
+  getMatchByIdForPlayerController,
   getMatchParticipantsController,
   getMyMatchesController,
   joinMatchController,
@@ -40,6 +41,14 @@ router.get(
   authorize(["PLAYER"]),
   validate(getMyMatchesQuerySchema),
   asyncHandler(getMyMatchesController),
+);
+
+router.get(
+  "/:id",
+  authenticate,
+  authorize(["PLAYER"]),
+  validate(matchIdParamSchema),
+  asyncHandler(getMatchByIdForPlayerController),
 );
 
 router.post(
