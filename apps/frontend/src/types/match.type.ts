@@ -46,6 +46,18 @@ export const MATCH_SORT_OPTIONS = [
 
 export type MatchSortOption = (typeof MATCH_SORT_OPTIONS)[number];
 
+export const MATCH_DEFAULT_SORT: MatchSortOption = "created_at:desc";
+
+export const MY_MATCH_TYPES = ["created", "joined", "pending"] as const;
+
+export type MyMatchType = (typeof MY_MATCH_TYPES)[number];
+
+export const MY_MATCH_TYPE_LABELS: Record<MyMatchType, string> = {
+  created: "Kèo tôi tạo",
+  joined: "Kèo đã vào",
+  pending: "Đang chờ duyệt",
+};
+
 export const MATCH_SKILL_LABELS: Record<SkillLevel, string> = {
   BEGINNER: "Mới bắt đầu",
   INTERMEDIATE: "Trung cấp",
@@ -60,8 +72,8 @@ export const MATCH_SORT_LABELS: Record<MatchSortOption, string> = {
 
 export const MATCH_SKILL_BADGE_STYLES: Record<SkillLevel, string> = {
   BEGINNER: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  INTERMEDIATE: "border-blue-200 bg-blue-50 text-blue-700",
-  ADVANCED: "border-purple-200 bg-purple-50 text-purple-700",
+  INTERMEDIATE: "border-teal-200 bg-teal-50 text-teal-700",
+  ADVANCED: "border-rose-200 bg-rose-50 text-rose-700",
 };
 
 export const MATCH_STATUS_BADGE_CONFIG: Record<
@@ -74,18 +86,18 @@ export const MATCH_STATUS_BADGE_CONFIG: Record<
 > = {
   OPEN: {
     label: "Đang mở",
-    container: "bg-green-100 text-green-800 border-green-200",
-    dot: "bg-green-600",
+    container: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    dot: "bg-emerald-600",
   },
   FULL: {
     label: "Đủ người",
-    container: "bg-blue-100 text-blue-800 border-blue-200",
-    dot: "bg-blue-600",
+    container: "bg-rose-100 text-rose-800 border-rose-200",
+    dot: "bg-rose-600",
   },
   CLOSED: {
     label: "Đã đóng",
-    container: "bg-gray-100 text-gray-600 border-gray-200",
-    dot: "bg-gray-500",
+    container: "bg-slate-100 text-slate-600 border-slate-200",
+    dot: "bg-slate-500",
   },
   EXPIRED: {
     label: "Hết hạn",
@@ -94,15 +106,24 @@ export const MATCH_STATUS_BADGE_CONFIG: Record<
   },
   CANCELED: {
     label: "Đã hủy",
-    container: "bg-red-100 text-red-700 border-red-200",
-    dot: "bg-red-600",
+    container: "bg-rose-100 text-rose-700 border-rose-200",
+    dot: "bg-rose-600",
   },
   COMPLETED: {
     label: "Hoàn thành",
-    container: "bg-purple-100 text-purple-700 border-purple-200",
-    dot: "bg-purple-600",
+    container: "bg-teal-100 text-teal-700 border-teal-200",
+    dot: "bg-teal-600",
   },
 };
+
+export const MATCH_STATUS_OPTIONS: MatchStatus[] = [
+  "OPEN",
+  "FULL",
+  "CLOSED",
+  "EXPIRED",
+  "CANCELED",
+  "COMPLETED",
+];
 
 export const PARTICIPANT_STATUS_BADGE_CONFIG: Record<
   ParticipantStatus,
@@ -133,6 +154,11 @@ export const PARTICIPANT_STATUS_BADGE_CONFIG: Record<
   },
 };
 
+export const MATCH_LEAVABLE_PARTICIPATION_STATUSES: ParticipantStatus[] = [
+  "PENDING",
+  "ACCEPTED",
+];
+
 export interface MatchBooking {
   id: string;
   start_time: string; // ISO datetime
@@ -145,6 +171,12 @@ export interface MatchBooking {
 }
 
 export interface MatchCreator {
+  player_id: string;
+  full_name: string;
+  avatar: string | null;
+}
+
+export interface MatchParticipantPreview {
   player_id: string;
   full_name: string;
   avatar: string | null;
@@ -165,6 +197,7 @@ export interface Match {
   booking: MatchBooking;
   creator: MatchCreator;
   my_participation_status: ParticipantStatus | null;
+  participants_preview?: MatchParticipantPreview[];
 }
 
 // Detail has additional counts

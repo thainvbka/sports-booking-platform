@@ -27,6 +27,20 @@ interface AuthState {
   refreshUser: () => Promise<void>;
 }
 
+const normalizeUser = (user: User): User => {
+  const profiles = user.profiles;
+
+  return {
+    ...user,
+    profiles: {
+      ...profiles,
+      playerId: profiles?.playerId ?? profiles?.player?.id,
+      ownerId: profiles?.ownerId ?? profiles?.owner?.id,
+      adminId: profiles?.adminId ?? profiles?.admin?.id,
+    },
+  };
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -36,7 +50,11 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: (user) =>
+        set({
+          user: user ? normalizeUser(user) : null,
+          isAuthenticated: !!user,
+        }),
 
       login: async (data) => {
         set({ isLoading: true, error: null });
@@ -54,7 +72,7 @@ export const useAuthStore = create<AuthState>()(
           const defaultRole = sortedRoles[0] || "PLAYER";
 
           set({
-            user,
+            user: normalizeUser(user),
             isAuthenticated: true,
             currentRole: defaultRole,
             isLoading: false,
@@ -100,7 +118,7 @@ export const useAuthStore = create<AuthState>()(
           const defaultRole = sortedRoles[0] || "PLAYER";
 
           set({
-            user,
+            user: normalizeUser(user),
             isAuthenticated: true,
             currentRole: defaultRole,
             isLoading: false,
@@ -177,7 +195,7 @@ export const useAuthStore = create<AuthState>()(
           const defaultRole = sortedRoles[0] || "PLAYER";
 
           set({
-            user,
+            user: normalizeUser(user),
             isAuthenticated: true,
             currentRole: defaultRole,
           });

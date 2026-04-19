@@ -35,10 +35,15 @@ export function MainLayout() {
   const NavItems = ({ mobile = false }: { mobile?: boolean }) => {
     const items = [
       { label: "Tìm sân", href: "/search" },
+      { label: "Kèo đấu", href: "/matches" },
       { label: "Lịch đặt sân", href: "/bookings" },
       { label: "Về chúng tôi", href: "/about" },
       { label: "Liên hệ", href: "/contact" },
     ];
+
+    if (user?.roles.includes("PLAYER")) {
+      items.splice(2, 0, { label: "Kèo của tôi", href: "/player/matches" });
+    }
 
     return (
       <>

@@ -5,10 +5,12 @@ import type {
   MatchBooking,
   MatchCreator,
   MatchDetail,
+  MatchParticipantPreview,
   MatchParticipantsResult,
   MatchParticipantsSummary,
   MatchSortOption,
   MatchStatus,
+  MyMatchType,
   PaginatedResult,
   Pagination,
   Participant,
@@ -35,7 +37,7 @@ export interface PublicMatchesQuery {
 }
 
 export interface MyMatchesQuery {
-  type?: "created" | "joined" | "pending";
+  type?: MyMatchType;
   status?: MatchStatus;
   page?: number;
   limit?: number;
@@ -101,6 +103,46 @@ const asNumber = (value: unknown, fallback: number = 0): number => {
   return typeof value === "number" ? value : fallback;
 };
 
+const toParticipantPreviewList = (
+  rawParticipants: unknown,
+): MatchParticipantPreview[] => {
+  if (!Array.isArray(rawParticipants)) {
+    return [];
+  }
+
+  return rawParticipants
+    .map((item) => {
+      const raw = isRecord(item) ? item : {};
+      const rawPlayer = isRecord(raw.player) ? raw.player : {};
+      const rawAccount = isRecord(rawPlayer.account) ? rawPlayer.account : {};
+
+      const playerId = asString(
+        raw.player_id,
+        asString(rawPlayer.id, asString(raw.id)),
+      );
+      const fullName = asString(
+        raw.full_name,
+        asString(rawPlayer.full_name, asString(rawAccount.full_name)),
+      );
+      const avatar = asNullableString(
+        raw.avatar ?? rawPlayer.avatar ?? rawAccount.avatar,
+      );
+
+      if (!playerId || !fullName) {
+        return null;
+      }
+
+      return {
+        player_id: playerId,
+        full_name: fullName,
+        avatar,
+      };
+    })
+    .filter((participant): participant is MatchParticipantPreview =>
+      Boolean(participant),
+    );
+};
+
 const toParticipantsSummary = (rawSummary: unknown): MatchParticipantsSummary => {
   const raw = isRecord(rawSummary) ? rawSummary : {};
 
@@ -137,6 +179,11 @@ const toMatch = (
     booking: (raw.booking as MatchBooking | undefined) ?? EMPTY_BOOKING,
     creator: (raw.creator as MatchCreator | undefined) ?? EMPTY_CREATOR,
     my_participation_status: raw.my_participation_status ?? null,
+    participants_preview: toParticipantPreviewList(
+      (raw as { participants_preview?: unknown; participants?: unknown })
+        .participants_preview ??
+        (raw as { participants?: unknown }).participants,
+    ),
   };
 };
 
