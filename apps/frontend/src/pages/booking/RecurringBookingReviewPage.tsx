@@ -1,9 +1,11 @@
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingState } from "@/components/shared/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { bookingService } from "@/services/booking.service";
-import type { RecurringBookingReviewResponse } from "@/types";
+import type { ApiError, RecurringBookingReviewResponse } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -26,6 +28,7 @@ export default function RecurringBookingReviewPage() {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -46,56 +49,87 @@ export default function RecurringBookingReviewPage() {
   }, [id, navigate]);
 
   const handlePayment = async () => {
+    if (!booking || booking.slots.length === 0) {
+      toast.error("Không có buổi nào khả dụng để thanh toán.");
+      return;
+    }
+
+    setIsPaying(true);
+
     try {
-      const result = await bookingService.createCheckoutSession(
-        booking?.slots?.map((s) => s.id) || [],
-      );
+      const result = await bookingService.createCheckoutSession(booking.slots.map((slot) => slot.id));
       if (result?.data?.url) {
         window.location.href = result.data.url;
+      } else {
+        toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");
       }
     } catch (error: unknown) {
       console.error("Create checkout session failed", error);
-      const apiError = error as { message?: string };
+      const apiError = error as ApiError;
       toast.error(
         apiError?.message ||
           "Không thể tạo phiên thanh toán. Vui lòng thử lại sau.",
       );
+    } finally {
+      setIsPaying(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Đang tải...
+      <div className="container mx-auto max-w-4xl px-4 py-10">
+        <LoadingState text="Đang tải thông tin đặt sân định kỳ..." className="py-16" />
       </div>
     );
   }
 
-  if (!booking) return null;
+  if (!booking) {
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-10">
+        <EmptyState
+          title="Không tìm thấy booking định kỳ"
+          description="Thông tin lịch đặt định kỳ không còn khả dụng hoặc đã hết hạn thanh toán."
+          actionLabel="Quay lại"
+          onAction={() => navigate(-1)}
+          className="py-16"
+        />
+      </div>
+    );
+  }
+
+  const expiresAtDate = booking.expires_at ? new Date(booking.expires_at) : null;
+  const hasValidExpiresAt = expiresAtDate && !Number.isNaN(expiresAtDate.getTime());
+  const slots = booking.slots || [];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Card>
-        <CardHeader className="relative">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <Card className="shadow-card">
+        <CardHeader className="space-y-3 pb-4">
           <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-6 top-6"
+            variant="outline"
+            size="sm"
+            className="w-fit rounded-full"
             onClick={() => navigate(-1)}
+            disabled={isPaying}
+            aria-label="Quay lại trang trước"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="h-4 w-4" /> Quay lại
           </Button>
-          <CardTitle className="text-2xl font-bold text-center">
-            Xác nhận đặt sân định kỳ
-          </CardTitle>
+
+          <div className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">Xác nhận đặt sân định kỳ</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Thanh toán một lần cho toàn bộ lịch đặt đã tạo.
+            </p>
+          </div>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2">
+
+        <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-6">
-            {/* Complex Info */}
-            <div className="space-y-2">
+            <div className="space-y-2 rounded-lg border bg-muted/40 p-4">
               <h3 className="font-semibold text-lg">{booking.complex_name}</h3>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="h-4 w-4" />
                 <span>{booking.complex_address}</span>
               </div>
             </div>
@@ -104,7 +138,7 @@ export default function RecurringBookingReviewPage() {
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-primary" />
+                <Trophy className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Sân</p>
                   <p className="font-medium">
@@ -114,7 +148,7 @@ export default function RecurringBookingReviewPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Repeat className="w-5 h-5 text-primary" />
+                <Repeat className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Loại định kỳ</p>
                   <p className="font-medium">
@@ -126,7 +160,7 @@ export default function RecurringBookingReviewPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-primary" />
+                <Calendar className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Thời gian áp dụng
@@ -142,91 +176,88 @@ export default function RecurringBookingReviewPage() {
                   </p>
                 </div>
               </div>
-              {/* Hiển thị thời gian hết hạn thanh toán (không có giây) */}
-              {booking.expires_at &&
-                !isNaN(new Date(booking.expires_at).getTime()) && (
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-4 h-4 text-orange-500" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Hạn thanh toán
-                      </p>
-                      <p className="font-medium text-orange-600">
-                        {format(
-                          new Date(booking.expires_at),
-                          "HH:mm dd/MM/yyyy",
-                        )}
-                      </p>
-                    </div>
+
+              {hasValidExpiresAt ? (
+                <div className="flex items-center gap-3">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Hạn thanh toán</p>
+                    <p className="font-medium text-orange-600">
+                      {format(expiresAtDate, "HH:mm dd/MM/yyyy")}
+                    </p>
                   </div>
-                )}
+                </div>
+              ) : null}
             </div>
 
             <Separator />
 
-            {/* Payment Summary */}
-            <div className="space-y-2 bg-muted/30 p-4 rounded-lg border">
-              <div className="flex justify-between items-center text-sm">
+            <div className="space-y-2 rounded-lg border bg-muted/30 p-4">
+              <div className="flex items-center justify-between text-sm">
                 <span>Số buổi</span>
                 <span className="font-medium">{booking.total_slots} buổi</span>
               </div>
               <Separator className="my-2" />
-              <div className="flex justify-between items-center text-lg font-bold">
+              <div className="flex items-center justify-between text-lg font-bold">
                 <span>Tổng thanh toán</span>
-                <span className="text-primary text-xl">
-                  {formatPrice(booking.total_price)}
-                </span>
+                <span className="text-xl text-primary">{formatPrice(booking.total_price)}</span>
               </div>
             </div>
+
             <Button
-              className="w-full text-lg py-6 mt-2"
+              className="mt-2 w-full text-base"
               onClick={handlePayment}
+              loading={isPaying}
+              loadingText="Đang chuyển thanh toán..."
+              disabled={slots.length === 0}
             >
               Thanh toán ngay
             </Button>
           </div>
 
-          {/* Slots Detail List */}
-          <div className="border rounded-lg p-4">
-            <h4 className="font-semibold mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4" /> Danh sách các buổi
+          <div className="rounded-lg border p-4">
+            <h4 className="mb-4 flex items-center gap-2 font-semibold">
+              <Clock className="h-4 w-4" /> Danh sách các buổi
             </h4>
-            <ScrollArea className="h-100 w-full pr-4">
-              {booking.slots?.map((slot, index) => {
-                const start =
-                  slot.startTime ||
-                  (slot as unknown as Record<string, string>).date;
-                const end = slot.endTime;
 
-                // Debug log
-                if (index === 0) console.log("Slot data:", slot);
+            {slots.length > 0 ? (
+              <ScrollArea className="h-112 w-full pr-4">
+                <div className="space-y-2">
+                  {slots.map((slot) => {
+                    const startDate = new Date(slot.startTime);
+                    const endDate = new Date(slot.endTime);
+                    const hasValidDate =
+                      !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime());
 
-                const startDate = start ? new Date(start) : null;
-                const endDate = end ? new Date(end) : null;
-                const isValidDate = startDate && !isNaN(startDate.getTime());
+                    return (
+                      <div
+                        key={slot.id}
+                        className="flex items-start justify-between gap-2 rounded-md bg-muted/50 p-3 text-sm"
+                      >
+                        <span className="font-medium">
+                          {hasValidDate
+                            ? `${format(startDate, "EEEE, dd/MM/yyyy", {
+                                locale: vi,
+                              })} | ${format(startDate, "HH:mm")} - ${format(endDate, "HH:mm")}`
+                            : "Đang cập nhật..."}
+                        </span>
+                        <span className="shrink-0 font-semibold text-primary">
+                          {formatPrice(slot.price)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            ) : (
+              <EmptyState
+                title="Chưa có buổi khả dụng"
+                description="Hiện chưa có slot nào để thanh toán cho lịch đặt định kỳ này."
+                className="py-10"
+              />
+            )}
 
-                return (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-3 bg-muted/50 rounded-md text-sm"
-                  >
-                    <span className="font-medium">
-                      {isValidDate
-                        ? `${format(startDate, "EEEE, dd/MM/yyyy", {
-                            locale: vi,
-                          })} | ${format(startDate, "HH:mm")} - ${
-                            endDate ? format(endDate, "HH:mm") : "..."
-                          }`
-                        : "Đang cập nhật..."}
-                    </span>
-                    <span className="text-primary font-semibold">
-                      {formatPrice(slot.price)}
-                    </span>
-                  </div>
-                );
-              })}
-            </ScrollArea>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
+            <p className="mt-4 text-center text-xs text-muted-foreground">
               Các buổi đã được kiểm tra tình trạng sân trống.
             </p>
           </div>

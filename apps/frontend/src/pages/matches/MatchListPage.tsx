@@ -3,262 +3,472 @@ import {
   MatchFilterBar,
   type MatchFilterValues,
 } from "@/components/matches/MatchFilterBar";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useMatchStore } from "@/store/useMatchStore";
 import { MATCH_DEFAULT_SORT } from "@/types/match.type";
-import { ArrowRight, CircleAlert, Clock3, Flame, Sparkles, Trophy, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  CircleAlert,
+  Flame,
+  Sparkles,
+  Trophy,
+  UsersRound,
+  Zap,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 const PAGE_SIZE = 8;
+const DEFAULT_FILTER: MatchFilterValues = { q: "", sort: MATCH_DEFAULT_SORT };
 
-const DEFAULT_FILTER_VALUES: MatchFilterValues = {
-  q: "",
-  sort: MATCH_DEFAULT_SORT,
-};
+// ── Scoreboard chip (used in cinematic hero) ──────────────────────────────
+interface ScoreboardChipProps {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  accent?: "default" | "primary" | "danger" | "success";
+  hint?: string;
+}
 
+function ScoreboardChip({
+  label,
+  value,
+  icon,
+  accent = "default",
+  hint,
+}: ScoreboardChipProps) {
+  const accentRing: Record<NonNullable<ScoreboardChipProps["accent"]>, string> =
+    {
+      default: "ring-white/10",
+      primary: "ring-primary/50",
+      danger: "ring-rose-400/60",
+      success: "ring-accent-sport/60",
+    };
+  const accentValue: Record<NonNullable<ScoreboardChipProps["accent"]>, string> =
+    {
+      default: "text-white",
+      primary: "text-primary-foreground",
+      danger: "text-rose-300",
+      success: "text-accent-sport",
+    };
+  const accentIcon: Record<NonNullable<ScoreboardChipProps["accent"]>, string> =
+    {
+      default: "text-white/60",
+      primary: "text-primary-foreground/80",
+      danger: "text-rose-300/80",
+      success: "text-accent-sport/80",
+    };
+
+  return (
+    <div
+      className={cn(
+        "relative flex min-w-[128px] flex-col gap-1 rounded-xl bg-white/5 px-4 py-3 ring-1 backdrop-blur-sm",
+        accentRing[accent],
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
+          accentIcon[accent],
+        )}
+      >
+        {icon}
+        {label}
+      </div>
+      <p
+        className={cn(
+          "font-display text-3xl font-black italic leading-none tabular-nums",
+          accentValue[accent],
+        )}
+      >
+        {value}
+      </p>
+      {hint ? (
+        <p className="text-[11px] text-white/50">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+// ── Hero section (cinematic matchday) ─────────────────────────────────────
+interface MatchesHeroProps {
+  total: number;
+  openCount: number;
+  almostFullCount: number;
+  totalSlotsLeft: number;
+  isAuthenticated: boolean;
+}
+
+function MatchesHero({
+  total,
+  openCount,
+  almostFullCount,
+  totalSlotsLeft,
+  isAuthenticated,
+}: MatchesHeroProps) {
+  return (
+    <section className="relative overflow-hidden bg-slate-950 text-white">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,hsl(142_76%_36%/0.35),transparent_55%),radial-gradient(circle_at_85%_30%,hsl(217_91%_60%/0.4),transparent_60%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 sports-field-pattern opacity-[0.08]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 top-1/3 size-72 rounded-full bg-primary/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-accent-sport/25 blur-3xl"
+      />
+
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          {/* LEFT — headline */}
+          <div className="flex max-w-2xl flex-col gap-5">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70">
+              <span className="relative flex size-2.5">
+                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-accent-sport" />
+              </span>
+              Matchday · Live wire
+            </div>
+
+            <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+              Kèo đấu{" "}
+              <span className="bg-gradient-to-r from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text text-transparent">
+                sôi động
+              </span>
+              <br className="hidden sm:block" />
+              mỗi ngày, mỗi trận
+            </h1>
+
+            <p className="max-w-xl text-base text-white/70 sm:text-lg">
+              Chọn kèo theo môn, trình độ và khung giờ. Danh sách cập nhật
+              realtime để bạn vào đội nhanh trước khi đội đối thủ kịp chào sân.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Badge
+                variant="outline"
+                className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+              >
+                <Sparkles data-icon="inline-start" />
+                Match discovery
+              </Badge>
+              <span className="inline-flex items-center gap-1.5 text-sm text-white/70">
+                <UsersRound className="size-4 text-accent-sport" />
+                <span className="font-display font-black italic tabular-nums text-white">
+                  {totalSlotsLeft}
+                </span>
+                <span className="text-white/60">chỗ trống đang chờ bạn</span>
+              </span>
+
+              {!isAuthenticated && (
+                <Button
+                  asChild
+                  size="sm"
+                  className="ml-auto bg-white text-slate-950 hover:bg-white/90"
+                >
+                  <Link to="/auth/login">
+                    Đăng nhập để tham gia
+                    <ArrowRight data-icon="inline-end" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT — scoreboard */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-xl">
+            <ScoreboardChip
+              label="Tổng kèo"
+              value={total}
+              icon={<Trophy className="size-3" />}
+              hint="Trên toàn hệ thống"
+            />
+            <ScoreboardChip
+              label="Đang mở"
+              value={openCount}
+              icon={<Zap className="size-3" />}
+              accent="success"
+              hint="Ở trang này"
+            />
+            <ScoreboardChip
+              label="Sắp full"
+              value={almostFullCount}
+              icon={<Flame className="size-3" />}
+              accent="danger"
+              hint="≤ 2 chỗ còn lại"
+            />
+            <ScoreboardChip
+              label="Chỗ trống"
+              value={totalSlotsLeft}
+              icon={<UsersRound className="size-3" />}
+              accent="primary"
+              hint="Ở trang này"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom fade into page */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background"
+      />
+    </section>
+  );
+}
+
+// ── Skeleton card ─────────────────────────────────────────────────────────
+function MatchCardSkeleton() {
+  return (
+    <div className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-9 rounded-full" />
+        <div className="flex flex-1 flex-col gap-1.5">
+          <Skeleton className="h-2.5 w-12" />
+          <Skeleton className="h-3.5 w-32" />
+        </div>
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+      <Skeleton className="h-px w-full" />
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-1.5">
+          <Skeleton className="h-5 w-16 rounded-md" />
+          <Skeleton className="h-5 w-20 rounded-md" />
+        </div>
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-2/3" />
+        <div className="grid grid-cols-2 gap-2">
+          <Skeleton className="h-14 rounded-lg" />
+          <Skeleton className="h-14 rounded-lg" />
+        </div>
+        <Skeleton className="h-14 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <MatchCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+// ── Pagination (shadcn, consistent with SearchPage) ───────────────────────
+interface PaginationBarProps {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  disabled?: boolean;
+}
+
+function PaginationBar({
+  page,
+  totalPages,
+  onPageChange,
+  disabled,
+}: PaginationBarProps) {
+  if (totalPages <= 1) return null;
+
+  const items = buildPageList(page, totalPages);
+
+  const go = (event: React.MouseEvent, target: number) => {
+    event.preventDefault();
+    if (disabled) return;
+    if (target < 1 || target > totalPages || target === page) return;
+    onPageChange(target);
+  };
+
+  return (
+    <Pagination className="pt-2">
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            aria-disabled={page === 1 || disabled}
+            className={cn(
+              (page === 1 || disabled) && "pointer-events-none opacity-50",
+            )}
+            onClick={(event) => go(event, page - 1)}
+          />
+        </PaginationItem>
+        {items.map((item, idx) =>
+          item === "ellipsis" ? (
+            <PaginationItem key={`ellipsis-${idx}`}>
+              <PaginationEllipsis />
+            </PaginationItem>
+          ) : (
+            <PaginationItem key={item}>
+              <PaginationLink
+                href="#"
+                isActive={item === page}
+                onClick={(event) => go(event, item)}
+              >
+                {item}
+              </PaginationLink>
+            </PaginationItem>
+          ),
+        )}
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            aria-disabled={page === totalPages || disabled}
+            className={cn(
+              (page === totalPages || disabled) &&
+                "pointer-events-none opacity-50",
+            )}
+            onClick={(event) => go(event, page + 1)}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}
+
+function buildPageList(
+  current: number,
+  total: number,
+): (number | "ellipsis")[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const items: (number | "ellipsis")[] = [1];
+  if (current > 3) items.push("ellipsis");
+  const from = Math.max(2, current - 1);
+  const to = Math.min(total - 1, current + 1);
+  for (let i = from; i <= to; i++) items.push(i);
+  if (current < total - 2) items.push("ellipsis");
+  items.push(total);
+  return items;
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────
 export function MatchListPage() {
   const { user, isAuthenticated } = useAuthStore();
-  const { matches, pagination, isLoading, error, fetchPublicMatches } = useMatchStore();
+  const { matches, pagination, isLoading, error, fetchPublicMatches } =
+    useMatchStore();
 
-  const [filters, setFilters] = useState<MatchFilterValues>(DEFAULT_FILTER_VALUES);
+  const [filters, setFilters] = useState<MatchFilterValues>(DEFAULT_FILTER);
   const [appliedFilters, setAppliedFilters] =
-    useState<MatchFilterValues>(DEFAULT_FILTER_VALUES);
+    useState<MatchFilterValues>(DEFAULT_FILTER);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    void fetchPublicMatches({
-      ...appliedFilters,
-      page,
-      limit: PAGE_SIZE,
-    });
+    void fetchPublicMatches({ ...appliedFilters, page, limit: PAGE_SIZE });
   }, [appliedFilters, page, fetchPublicMatches]);
 
   const hasData = matches.length > 0;
   const isPlayer = Boolean(user?.roles.includes("PLAYER"));
 
-  const canGoPrevious = useMemo(() => page > 1, [page]);
-  const canGoNext = useMemo(() => pagination?.has_next ?? false, [pagination]);
-  const openMatches = useMemo(
-    () => matches.filter((match) => match.status === "OPEN").length,
+  const openCount = useMemo(
+    () => matches.filter((m) => m.status === "OPEN").length,
+    [matches],
+  );
+  const almostFullCount = useMemo(
+    () => matches.filter((m) => m.slots_left > 0 && m.slots_left <= 2).length,
     [matches],
   );
   const totalSlotsLeft = useMemo(
-    () => matches.reduce((total, match) => total + match.slots_left, 0),
-    [matches],
-  );
-  const almostFullMatches = useMemo(
-    () => matches.filter((match) => match.slots_left > 0 && match.slots_left <= 2).length,
+    () => matches.reduce((s, m) => s + m.slots_left, 0),
     [matches],
   );
 
-  const totalResults = pagination?.total_items ?? matches.length;
+  const total = pagination?.total_items ?? matches.length;
+  const currentPage = pagination?.page ?? page;
+  const totalPages = Math.max(pagination?.total_pages ?? 1, 1);
+
+  const handleApply = () => {
+    setPage(1);
+    setAppliedFilters(filters);
+  };
+  const handleReset = () => {
+    setPage(1);
+    setFilters(DEFAULT_FILTER);
+    setAppliedFilters(DEFAULT_FILTER);
+  };
 
   return (
-    <div className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-linear-to-b from-emerald-50 via-green-50/70 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 sports-field-pattern opacity-80" />
+    <div className="flex min-h-[60vh] flex-col bg-background">
+      <MatchesHero
+        total={total}
+        openCount={openCount}
+        almostFullCount={almostFullCount}
+        totalSlotsLeft={totalSlotsLeft}
+        isAuthenticated={isAuthenticated}
+      />
 
-      <div className="container relative mx-auto space-y-8 px-4 py-6 md:space-y-10 md:py-10">
-        <section className="sports-glow-success relative overflow-hidden rounded-[30px] border border-emerald-200/90 bg-white/95 p-6 shadow-lg shadow-emerald-900/10 md:p-10">
-          <div className="pointer-events-none absolute inset-0 sports-field-pattern opacity-70" />
-          <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-emerald-300/35 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-rose-300/25 blur-3xl" />
+      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-6">
+          <MatchFilterBar
+            values={filters}
+            onValuesChange={setFilters}
+            onApply={handleApply}
+            onReset={handleReset}
+            isLoading={isLoading}
+          />
 
-          <div className="relative space-y-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="space-y-3">
-                <Badge className="border-0 bg-linear-to-r from-emerald-500 to-green-600 px-3 py-1 text-white">
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                  Match Discovery
-                </Badge>
+          {error && (
+            <Alert variant="destructive">
+              <CircleAlert />
+              <AlertTitle>Không thể tải danh sách kèo</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-                <div className="space-y-3">
-                  <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-5xl">
-                    Kèo đấu sôi động mỗi ngày
-                  </h1>
-                  <p className="max-w-2xl text-sm leading-relaxed text-slate-700 md:text-lg">
-                    Chọn kèo theo môn, trình độ và lịch trống của bạn. Tất cả kèo được hiển thị
-                    realtime để bạn vào đội nhanh hơn.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600">
-                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
-                      1. Chọn bộ lọc
-                    </span>
-                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1">
-                      2. Xem kèo phù hợp
-                    </span>
-                    <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700">
-                      3. Tham gia trong 1 chạm
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {isLoading && !hasData && <SkeletonGrid />}
 
-              {!isAuthenticated ? (
-                <Button
-                  asChild
-                  className="h-11 bg-linear-to-r from-emerald-500 to-green-600 px-5 text-white shadow-lg shadow-emerald-500/35 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/45"
-                >
-                  <Link to="/auth/login">
-                    Đăng nhập để tham gia ngay
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              ) : null}
+          {!isLoading && !hasData && !error && (
+            <EmptyState
+              title="Không có kèo phù hợp"
+              description="Không tìm thấy kèo nào với bộ lọc hiện tại. Hãy thử thay đổi điều kiện tìm kiếm."
+              actionLabel="Đặt lại bộ lọc"
+              onAction={handleReset}
+            />
+          )}
+
+          {hasData && (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {matches.map((match) => (
+                <MatchCard key={match.id} match={match} isPlayer={isPlayer} />
+              ))}
             </div>
+          )}
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Tổng kèo</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{totalResults}</p>
-              </div>
-
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/85 p-4 shadow-sm">
-                <p className="flex items-center gap-1 text-xs uppercase tracking-[0.14em] text-emerald-600">
-                  <Trophy className="h-3.5 w-3.5" />
-                  Đang mở
-                </p>
-                <p className="mt-2 text-2xl font-bold text-emerald-700">{openMatches}</p>
-              </div>
-
-              <div className="rounded-2xl border border-rose-200 bg-rose-50/85 p-4 shadow-sm">
-                <p className="flex items-center gap-1 text-xs uppercase tracking-[0.14em] text-rose-600">
-                  <Flame className="h-3.5 w-3.5" />
-                  Kèo sắp full
-                </p>
-                <p className="mt-2 text-2xl font-bold text-rose-700">{almostFullMatches}</p>
-                <p className="mt-1 text-xs text-rose-600">Còn 1-2 slot, vào nhanh để giữ chỗ.</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
-                <UsersRound className="h-3.5 w-3.5" />
-                {totalSlotsLeft} chỗ trống đang chờ bạn
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-medium text-slate-700">
-                <Clock3 className="h-3.5 w-3.5" />
-                Danh sách cập nhật liên tục theo thời gian thực
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <MatchFilterBar
-          values={filters}
-          onValuesChange={setFilters}
-          onApply={() => {
-            setPage(1);
-            setAppliedFilters(filters);
-          }}
-          onReset={() => {
-            setPage(1);
-            setFilters(DEFAULT_FILTER_VALUES);
-            setAppliedFilters(DEFAULT_FILTER_VALUES);
-          }}
-          isLoading={isLoading}
-        />
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
-            Hiển thị <span className="font-semibold text-slate-900">{matches.length}</span> kèo
-            trong trang này.
-          </p>
-
-          <div className="flex items-center gap-2">
-            {appliedFilters.q ? (
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                Từ khóa: {appliedFilters.q}
-              </Badge>
-            ) : null}
-            {isPlayer ? (
-              <Button asChild variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                <Link to="/player/matches">Kèo của tôi</Link>
-              </Button>
-            ) : null}
-          </div>
+          {pagination ? (
+            <PaginationBar
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              disabled={isLoading}
+            />
+          ) : null}
         </div>
-
-        {error && (
-          <Alert variant="destructive">
-            <CircleAlert className="h-4 w-4" />
-            <AlertTitle>Không thể tải danh sách kèo</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {isLoading && !hasData ? (
-          <p className="text-sm text-slate-500">Đang tải danh sách kèo...</p>
-        ) : null}
-
-        {!isLoading && !hasData ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
-            <p className="text-sm text-slate-600">
-              Không có kèo nào phù hợp với bộ lọc hiện tại.
-            </p>
-          </div>
-        ) : null}
-
-        {hasData ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {matches.map((match) => {
-              const canJoinNow = isPlayer && match.status === "OPEN";
-
-              return (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  actions={
-                    <>
-                      <Button asChild variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                        <Link to={`/matches/${match.id}`}>Xem chi tiết</Link>
-                      </Button>
-                      {canJoinNow ? (
-                        <Button
-                          asChild
-                          size="sm"
-                          className="bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-md shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/40"
-                        >
-                          <Link to={`/matches/${match.id}`}>Tham gia ngay</Link>
-                        </Button>
-                      ) : null}
-                    </>
-                  }
-                />
-              );
-            })}
-          </div>
-        ) : null}
-
-        {pagination ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-3 shadow-sm">
-            <p className="text-sm text-slate-600">
-              Trang {pagination.page}/{Math.max(pagination.total_pages, 1)}
-            </p>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-                disabled={!canGoPrevious || isLoading}
-              >
-                Trang trước
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setPage((previous) => previous + 1)}
-                disabled={!canGoNext || isLoading}
-              >
-                Trang sau
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </div>
+      </section>
     </div>
   );
 }

@@ -22,48 +22,97 @@ export function BookingStepper({
   steps = DEFAULT_STEPS,
 }: BookingStepperProps) {
   return (
-    <div className="mb-6 rounded-lg border bg-card p-4">
-      <div className="flex items-start">
+    <div
+      className="relative overflow-hidden rounded-2xl border border-border/70 bg-background/80 p-4 shadow-sm backdrop-blur-sm md:p-5"
+      role="region"
+      aria-label="Tiến trình đặt sân"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-primary/5 to-transparent"
+      />
+      <ol className="relative flex items-center" aria-label="Các bước đặt sân">
         {steps.map((step, index) => {
           const isActive = currentStep === step.number;
           const isDone = currentStep > step.number;
+          const isFuture = !isActive && !isDone;
           const showConnector = index < steps.length - 1;
 
           return (
-            <div key={step.number} className="flex min-w-0 flex-1 items-start">
-              <div className="flex min-w-18 flex-col items-center gap-2">
+            <li
+              key={step.number}
+              className="flex min-w-0 flex-1 items-center"
+              aria-current={isActive ? "step" : undefined}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                {/* Step badge */}
                 <div
                   className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold",
-                    isDone && "border-emerald-600 bg-emerald-600 text-white",
-                    isActive && "border-primary bg-primary text-primary-foreground",
-                    !isDone && !isActive && "border-gray-300 bg-background text-gray-500",
+                    "relative flex size-9 shrink-0 items-center justify-center rounded-full border font-display text-sm font-black italic tabular-nums transition-all",
+                    isDone &&
+                      "border-primary bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_theme(colors.primary.DEFAULT)]",
+                    isActive &&
+                      "border-transparent bg-gradient-to-br from-primary to-accent-sport text-primary-foreground shadow-[0_8px_20px_-8px_theme(colors.primary.DEFAULT)]",
+                    isFuture &&
+                      "border-border bg-background text-muted-foreground",
                   )}
                 >
-                  {isDone ? <Check className="h-3.5 w-3.5" /> : step.number}
+                  {isDone ? (
+                    <>
+                      <Check className="size-4" strokeWidth={3} />
+                      <span className="sr-only">Đã hoàn thành</span>
+                    </>
+                  ) : (
+                    step.number
+                  )}
+                  {isActive ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-primary/20 blur-md"
+                    />
+                  ) : null}
                 </div>
-                <span
-                  className={cn(
-                    "text-center text-xs",
-                    isActive ? "font-medium text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {step.label}
-                </span>
+
+                <div className="min-w-0">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    Bước {step.number}
+                  </p>
+                  <p
+                    className={cn(
+                      "truncate text-xs font-semibold md:text-sm",
+                      isActive
+                        ? "font-display italic text-foreground"
+                        : isDone
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                    )}
+                  >
+                    {step.label}
+                  </p>
+                </div>
               </div>
 
               {showConnector ? (
                 <div
                   className={cn(
-                    "mt-3 h-px flex-1",
-                    currentStep > step.number ? "bg-emerald-500" : "bg-border",
+                    "relative mx-3 h-0.5 flex-1 overflow-hidden rounded-full bg-border/70",
                   )}
-                />
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute inset-y-0 left-0 rounded-full transition-[width] duration-500",
+                      currentStep > step.number
+                        ? "w-full bg-gradient-to-r from-primary to-accent-sport"
+                        : "w-0 bg-transparent",
+                    )}
+                  />
+                </div>
               ) : null}
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </div>
   );
 }

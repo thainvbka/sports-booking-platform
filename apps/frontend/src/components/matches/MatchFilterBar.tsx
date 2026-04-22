@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SPORT_TYPE_LABELS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import {
   MATCH_SORT_LABELS,
   MATCH_SORT_OPTIONS,
@@ -18,7 +20,14 @@ import {
   type MatchStatus,
   type SportType,
 } from "@/types/match.type";
-import { ArrowUpDown, Search, Trophy } from "lucide-react";
+import {
+  ArrowUpDown,
+  RotateCcw,
+  Search,
+  Sparkles,
+  Trophy,
+  X,
+} from "lucide-react";
 
 export interface MatchFilterValues {
   q: string;
@@ -35,25 +44,14 @@ interface MatchFilterBarProps {
   isLoading?: boolean;
 }
 
-const parseSportType = (value: string): SportType | undefined => {
-  if (value === "ALL") {
-    return undefined;
-  }
+const parseSportType = (v: string): SportType | undefined =>
+  v === "ALL" ? undefined : MATCH_SPORT_TYPES.find((s) => s === v);
 
-  return MATCH_SPORT_TYPES.find((item) => item === value);
-};
+const parseMatchStatus = (v: string): MatchStatus | undefined =>
+  v === "ALL" ? undefined : MATCH_STATUS_OPTIONS.find((s) => s === v);
 
-const parseMatchStatus = (value: string): MatchStatus | undefined => {
-  if (value === "ALL") {
-    return undefined;
-  }
-
-  return MATCH_STATUS_OPTIONS.find((item) => item === value);
-};
-
-const parseMatchSort = (value: string): MatchSortOption | undefined => {
-  return MATCH_SORT_OPTIONS.find((item) => item === value);
-};
+const parseMatchSort = (v: string): MatchSortOption | undefined =>
+  MATCH_SORT_OPTIONS.find((s) => s === v);
 
 export function MatchFilterBar({
   values,
@@ -62,124 +60,221 @@ export function MatchFilterBar({
   onReset,
   isLoading,
 }: MatchFilterBarProps) {
-  return (
-    <div className="sports-glow-success rounded-3xl border border-emerald-200/80 bg-white/90 p-5 shadow-lg shadow-emerald-900/10 backdrop-blur-sm md:p-6">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-base font-bold text-slate-900 md:text-xl">
-            Tinh chỉnh tìm kiếm kèo
-          </h2>
-          <p className="text-xs text-slate-600 md:text-sm">
-            Lọc theo môn, trạng thái và cách sắp xếp để tìm kèo phù hợp nhanh hơn.
-          </p>
-        </div>
-      </div>
+  const activeCount =
+    Number(Boolean(values.q.trim())) +
+    Number(Boolean(values.sport_type)) +
+    Number(Boolean(values.status));
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1.1fr_repeat(3,minmax(0,1fr))_auto]">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+  const update = (patch: Partial<MatchFilterValues>) =>
+    onValuesChange({ ...values, ...patch });
+
+  const clear = (key: "q" | "sport_type" | "status") => {
+    if (key === "q") update({ q: "" });
+    else update({ [key]: undefined } as Partial<MatchFilterValues>);
+    onApply();
+  };
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {/* Compact control row */}
+      <div className="group flex flex-wrap items-center gap-2 rounded-full border border-border/80 bg-card/60 p-1.5 pl-3 shadow-sm backdrop-blur-sm focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/15">
+        {/* Eyebrow icon */}
+        <span className="hidden items-center gap-1.5 pl-1 pr-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:inline-flex">
+          <Sparkles className="size-3 text-primary" />
+          Lọc
+        </span>
+
+        {/* Search */}
+        <div className="relative flex min-w-0 flex-1 items-center">
+          <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
           <Input
             value={values.q}
-            placeholder="Tìm theo tiêu đề, sân hoặc khu phức hợp"
-            className="h-11 border-emerald-200 bg-white pl-9 shadow-xs focus-visible:border-emerald-400 focus-visible:ring-emerald-300"
-            onChange={(event) =>
-              onValuesChange({
-                ...values,
-                q: event.target.value,
-              })
-            }
+            placeholder="Tìm kèo, sân, khu phức hợp…"
+            className="h-9 min-w-0 border-0 bg-transparent pl-9 shadow-none focus-visible:ring-0"
+            onChange={(e) => update({ q: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onApply();
+              }
+            }}
           />
+          {values.q && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                update({ q: "" });
+                onApply();
+              }}
+              aria-label="Xóa từ khóa"
+            >
+              <X />
+            </Button>
+          )}
         </div>
 
+        {/* Divider */}
+        <span
+          aria-hidden
+          className="hidden h-6 w-px bg-border md:inline-block"
+        />
+
+        {/* Sport */}
         <Select
           value={values.sport_type ?? "ALL"}
-          onValueChange={(value) =>
-            onValuesChange({
-              ...values,
-              sport_type: parseSportType(value),
-            })
-          }
+          onValueChange={(v) => update({ sport_type: parseSportType(v) })}
         >
-          <SelectTrigger className="h-11 border-emerald-200 bg-white">
-            <div className="flex items-center gap-2 text-slate-700">
-              <Trophy className="h-4 w-4 text-emerald-600" />
-              <SelectValue placeholder="Chọn môn" />
-            </div>
+          <SelectTrigger
+            size="sm"
+            className="h-8 gap-1.5 rounded-full border-border/60 bg-background pl-3 pr-2 text-xs font-medium"
+          >
+            <Trophy className="size-3 text-muted-foreground" />
+            <SelectValue placeholder="Môn" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">Tất cả môn</SelectItem>
-            {MATCH_SPORT_TYPES.map((sportType) => (
-              <SelectItem key={sportType} value={sportType}>
-                {SPORT_TYPE_LABELS[sportType]}
+            {MATCH_SPORT_TYPES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {SPORT_TYPE_LABELS[s]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
+        {/* Status */}
         <Select
           value={values.status ?? "ALL"}
-          onValueChange={(value) =>
-            onValuesChange({
-              ...values,
-              status: parseMatchStatus(value),
-            })
-          }
+          onValueChange={(v) => update({ status: parseMatchStatus(v) })}
         >
-          <SelectTrigger className="h-11 border-emerald-200 bg-white">
+          <SelectTrigger
+            size="sm"
+            className="h-8 gap-1.5 rounded-full border-border/60 bg-background pl-3 pr-2 text-xs font-medium"
+          >
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-            {MATCH_STATUS_OPTIONS.map((status) => (
-              <SelectItem key={status} value={status}>
-                {MATCH_STATUS_BADGE_CONFIG[status].label}
+            {MATCH_STATUS_OPTIONS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {MATCH_STATUS_BADGE_CONFIG[s].label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
+        {/* Sort */}
         <Select
           value={values.sort}
-          onValueChange={(value) =>
-            onValuesChange({
-              ...values,
-              sort: parseMatchSort(value) ?? values.sort,
-            })
+          onValueChange={(v) =>
+            update({ sort: parseMatchSort(v) ?? values.sort })
           }
         >
-          <SelectTrigger className="h-11 border-emerald-200 bg-white">
-            <div className="flex items-center gap-2 text-slate-700">
-              <ArrowUpDown className="h-4 w-4 text-emerald-600" />
-              <SelectValue placeholder="Sắp xếp" />
-            </div>
+          <SelectTrigger
+            size="sm"
+            className="h-8 gap-1.5 rounded-full border-border/60 bg-background pl-3 pr-2 text-xs font-medium"
+          >
+            <ArrowUpDown className="size-3 text-muted-foreground" />
+            <SelectValue placeholder="Sắp xếp" />
           </SelectTrigger>
-          <SelectContent>
-            {MATCH_SORT_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {MATCH_SORT_LABELS[option]}
+          <SelectContent align="end">
+            {MATCH_SORT_OPTIONS.map((o) => (
+              <SelectItem key={o} value={o}>
+                {MATCH_SORT_LABELS[o]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-2 lg:justify-end">
+        {/* Actions */}
+        <div className="ml-auto flex items-center gap-1.5">
+          {activeCount > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
+              onClick={onReset}
+              disabled={isLoading}
+            >
+              <RotateCcw data-icon="inline-start" />
+              Đặt lại
+            </Button>
+          )}
           <Button
-            className="h-11 min-w-24 bg-linear-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40"
+            type="button"
+            size="sm"
+            className="h-8 rounded-full px-4 text-xs font-semibold"
             onClick={onApply}
             disabled={isLoading}
           >
             Áp dụng
-          </Button>
-          <Button
-            variant="outline"
-            className="h-11 border-rose-200 text-rose-600 hover:bg-rose-50"
-            onClick={onReset}
-            disabled={isLoading}
-          >
-            Đặt lại
+            {activeCount > 0 && (
+              <span className="ml-1 inline-flex size-4 items-center justify-center rounded-full bg-primary-foreground/20 text-[10px] font-bold tabular-nums">
+                {activeCount}
+              </span>
+            )}
           </Button>
         </div>
       </div>
+
+      {/* Active filter chips — only when active */}
+      {activeCount > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 px-1">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            Đang lọc
+          </span>
+          {values.q.trim() && (
+            <ActiveChip
+              label={`Từ khóa: "${values.q.trim()}"`}
+              onRemove={() => clear("q")}
+            />
+          )}
+          {values.sport_type && (
+            <ActiveChip
+              label={`Môn: ${SPORT_TYPE_LABELS[values.sport_type]}`}
+              onRemove={() => clear("sport_type")}
+            />
+          )}
+          {values.status && (
+            <ActiveChip
+              label={`Trạng thái: ${MATCH_STATUS_BADGE_CONFIG[values.status].label}`}
+              onRemove={() => clear("status")}
+            />
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+// ── Active filter chip ───────────────────────────────────────────────────
+function ActiveChip({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "group/chip h-6 gap-1 rounded-full border-border/70 bg-background pl-2.5 pr-1 text-[11px] font-medium",
+        "hover:border-primary/30 hover:bg-primary/5",
+      )}
+    >
+      <span className="truncate">{label}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="inline-flex size-4 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        aria-label={`Xóa bộ lọc ${label}`}
+      >
+        <X className="size-3" />
+      </button>
+    </Badge>
   );
 }

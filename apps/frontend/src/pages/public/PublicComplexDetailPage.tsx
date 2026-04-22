@@ -1,14 +1,13 @@
-import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
+import { PublicComplexDetailView } from "@/components/shared/PublicComplexDetailView";
 import { publicService } from "@/services/public.service";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function PublicComplexDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const initialPage = parseInt(searchParams.get("page") || "1");
   const initialSearch = searchParams.get("search") || "";
@@ -59,19 +58,25 @@ export function PublicComplexDetailPage() {
       });
 
       if (response.data) {
-        const complexData = response.data.complex as any;
+        const complexData = response.data.complex as unknown as ComplexDetail & {
+          _count?: { sub_fields: number };
+        };
         setComplex({
           ...complexData,
           _count: complexData._count || {
             sub_fields: complexData.sub_fields?.length || 0,
           },
-        } as ComplexDetail);
+        });
         setSubfields(complexData.sub_fields || []);
         setPagination(response.data.pagination);
       }
-    } catch (err: any) {
+    } catch (err) {
+      const apiError = err as {
+        response?: { data?: { message?: string } };
+      };
       const errorMessage =
-        err.response?.data?.message || "Không thể tải thông tin khu phức hợp";
+        apiError?.response?.data?.message ||
+        "Không thể tải thông tin khu phức hợp";
       setError(errorMessage);
       toast.error(
         "Có lỗi xảy ra khi tải thông tin khu phức hợp. Vui lòng thử lại sau.",
@@ -89,25 +94,17 @@ export function PublicComplexDetailPage() {
     setCurrentPage(page);
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <ComplexDetailView
-        mode="public"
-        complex={complex}
-        subfields={subfields}
-        pagination={pagination}
-        isLoading={isLoading}
-        error={error}
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
-        onPageChange={handlePageChange}
-        onBack={handleBack}
-        backLabel="Quay lại"
-      />
-    </div>
+    <PublicComplexDetailView
+      complex={complex}
+      subfields={subfields}
+      pagination={pagination}
+      isLoading={isLoading}
+      error={error}
+      searchTerm={searchTerm}
+      onSearchChange={handleSearchChange}
+      onPageChange={handlePageChange}
+      onRetry={fetchComplexData}
+    />
   );
 }

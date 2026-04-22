@@ -10,6 +10,14 @@ interface ParticipantStatusBadgeProps {
   className?: string;
 }
 
+const PARTICIPANT_STATUS_DOT: Record<ParticipantStatus, string> = {
+  PENDING: "bg-amber-500",
+  ACCEPTED: "bg-emerald-500",
+  REJECTED: "bg-rose-500",
+  WITHDRAWN: "bg-slate-400",
+  REMOVED: "bg-slate-400",
+};
+
 export function ParticipantStatusBadge({
   status,
   className,
@@ -19,11 +27,12 @@ export function ParticipantStatusBadge({
   return (
     <Badge
       className={cn(
-        "border px-2.5 py-1 text-xs font-semibold",
+        "gap-1.5 border px-2.5 py-1 text-xs font-semibold",
         config.className,
         className,
       )}
     >
+      <span className={cn("h-1.5 w-1.5 rounded-full", PARTICIPANT_STATUS_DOT[status])} />
       {config.label}
     </Badge>
   );

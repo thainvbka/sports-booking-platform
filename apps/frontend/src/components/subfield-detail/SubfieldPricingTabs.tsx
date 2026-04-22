@@ -3,17 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
 import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
+import { Clock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-
-const dayNames: Record<number, string> = {
-  0: "Chủ nhật",
-  1: "Thứ 2",
-  2: "Thứ 3",
-  3: "Thứ 4",
-  4: "Thứ 5",
-  5: "Thứ 6",
-  6: "Thứ 7",
-};
 
 const dayTabLabels: Record<number, string> = {
   0: "CN",
@@ -79,50 +70,73 @@ export function SubfieldPricingTabs({
   }, [rulesByDay]);
 
   const tabsContent = (
-    <Tabs value={activePricingDay} onValueChange={setActivePricingDay}>
-      <TabsList className="grid h-8 w-full grid-cols-7 gap-1 rounded-md bg-muted/50 p-1">
-        {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-          <TabsTrigger
-            key={day}
-            value={String(day)}
-            className="h-6 rounded-sm px-1 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-none sm:text-xs"
-          >
-            {dayTabLabels[day]}
-          </TabsTrigger>
-        ))}
+    <Tabs
+      value={activePricingDay}
+      onValueChange={setActivePricingDay}
+      className="gap-3"
+    >
+      <TabsList className="grid h-auto w-full grid-cols-7 gap-1 rounded-full bg-surface-2/70 p-1">
+        {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+          const hasRules = rulesByDay[day].length > 0;
+          return (
+            <TabsTrigger
+              key={day}
+              value={String(day)}
+              className={cn(
+                "relative h-8 rounded-full bg-transparent text-xs font-semibold text-muted-foreground transition-colors",
+                "hover:text-foreground",
+                "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm",
+              )}
+            >
+              {dayTabLabels[day]}
+              {hasRules ? (
+                <span
+                  aria-hidden
+                  className="absolute right-1 top-1 size-1.5 rounded-full bg-accent-sport data-[state=active]:bg-accent-sport"
+                />
+              ) : null}
+            </TabsTrigger>
+          );
+        })}
       </TabsList>
 
       {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-        <TabsContent key={day} value={String(day)} className="mt-3">
-          <p className="mb-2 text-xs font-medium text-foreground/90">{dayNames[day]}</p>
-
+        <TabsContent key={day} value={String(day)} className="m-0">
           {rulesByDay[day].length > 0 ? (
-            <div className="overflow-hidden rounded-md border border-border/70">
-              <table className="w-full text-xs">
-                <thead className="bg-muted/50 text-left">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Khung giờ</th>
-                    <th className="px-3 py-2 text-right font-medium">Giá</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rulesByDay[day].map((rule) => (
-                    <tr key={rule.id} className="border-t transition-colors hover:bg-muted/20">
-                      <td className="px-3 py-2 font-medium text-foreground/90">
-                        {formatRuleTime(rule.start_time)} - {formatRuleTime(rule.end_time)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-semibold text-primary">
-                        {Number(rule.base_price).toLocaleString("vi-VN")}đ/h
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ul className="flex flex-col gap-2">
+              {rulesByDay[day].map((rule) => (
+                <li
+                  key={rule.id}
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5 transition-colors hover:border-primary/30 hover:bg-surface-2/40"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <span className="flex size-7 items-center justify-center rounded-lg border border-border/60 bg-surface-2/60 text-muted-foreground transition-colors group-hover:border-primary/30 group-hover:text-primary">
+                      <Clock className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="font-display font-semibold tracking-tight tabular-nums">
+                      {formatRuleTime(rule.start_time)}
+                      <span className="mx-1 text-muted-foreground/50">→</span>
+                      {formatRuleTime(rule.end_time)}
+                    </span>
+                  </span>
+                  <span className="font-display text-sm font-black italic tracking-tight text-foreground tabular-nums">
+                    {Number(rule.base_price).toLocaleString("vi-VN")}
+                    <span className="ml-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground not-italic">
+                      đ/h
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <p className="rounded-md border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-              Chưa có bảng giá cho {dayNames[day]}.
-            </p>
+            <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed border-border/70 bg-surface-2/30 px-3 py-5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
+                Nghỉ
+              </span>
+              <p className="text-sm text-muted-foreground">
+                Chưa có bảng giá cho ngày này.
+              </p>
+            </div>
           )}
         </TabsContent>
       ))}
@@ -130,17 +144,21 @@ export function SubfieldPricingTabs({
   );
 
   if (embedded) {
-    return <div className={cn("space-y-3", className)}>{tabsContent}</div>;
+    return <div className={cn("flex flex-col gap-3", className)}>{tabsContent}</div>;
   }
 
   return (
-    <section className={cn("space-y-2", className)}>
-      <Card className="border-border/60 shadow-sm">
-        <CardHeader className="space-y-0.5 p-4 pb-2">
-          <CardTitle className="text-base">Bảng giá theo ngày</CardTitle>
-          <p className="text-xs text-muted-foreground">Giá theo khung giờ.</p>
+    <section className={cn(className)}>
+      <Card className="rounded-3xl border-border/70 shadow-sm">
+        <CardHeader className="gap-1 px-5 pt-5 pb-2">
+          <CardTitle className="font-display text-base font-semibold">
+            Bảng giá theo ngày
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Giá theo từng khung giờ.</p>
         </CardHeader>
-        <CardContent className="space-y-3 p-4 pt-2">{tabsContent}</CardContent>
+        <CardContent className="flex flex-col gap-3 px-5 pt-1 pb-5">
+          {tabsContent}
+        </CardContent>
       </Card>
     </section>
   );

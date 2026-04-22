@@ -2,13 +2,12 @@ import { MatchParticipantsAvatarGroup } from "@/components/matches/MatchParticip
 import { MatchStatusBadge } from "@/components/matches/MatchStatusBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { SPORT_TYPE_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -17,248 +16,279 @@ import {
   MATCH_SKILL_LABELS,
   type Match,
   type MatchStatus,
+  type SportType,
 } from "@/types/match.type";
 import { getNameInitials } from "@/utils/review.utils";
-import { CalendarClock, Clock3, MapPin, Timer, Users } from "lucide-react";
+import {
+  CalendarClock,
+  CheckCircle2,
+  Hourglass,
+  MapPin,
+  Timer,
+} from "lucide-react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 interface MatchCardProps {
   match: Match;
+  /** Custom footer actions — when omitted, a default footer is rendered. */
   actions?: ReactNode;
+  /** Whether the viewer is a player (affects default CTA). */
+  isPlayer?: boolean;
 }
 
-const MATCH_STATUS_ACCENT: Record<MatchStatus, string> = {
-  OPEN: "from-emerald-500 via-green-500 to-lime-500",
-  FULL: "from-amber-500 via-orange-500 to-yellow-500",
-  CLOSED: "from-slate-500 via-slate-600 to-slate-700",
-  EXPIRED: "from-orange-500 via-red-500 to-rose-500",
-  CANCELED: "from-rose-500 via-red-500 to-red-600",
-  COMPLETED: "from-emerald-700 via-cyan-600 to-blue-600",
+const STATUS_ACCENT: Record<MatchStatus, string> = {
+  OPEN: "from-accent-sport to-emerald-400",
+  FULL: "from-amber-400 to-amber-300",
+  CLOSED: "from-slate-400 to-slate-300",
+  EXPIRED: "from-orange-400 to-orange-300",
+  CANCELED: "from-rose-500 to-rose-400",
+  COMPLETED: "from-blue-500 to-cyan-400",
 };
 
-const formatDateTime = (value: string | null) => {
-  if (!value) return "Không có";
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return parsed.toLocaleString("vi-VN");
+const STATUS_PROGRESS: Record<MatchStatus, string> = {
+  OPEN: "bg-accent-sport",
+  FULL: "bg-amber-500",
+  CLOSED: "bg-slate-400",
+  EXPIRED: "bg-orange-500",
+  CANCELED: "bg-rose-500",
+  COMPLETED: "bg-blue-500",
 };
 
-const getJoinCountdown = (joinDeadline: string | null) => {
-  if (!joinDeadline) {
-    return {
-      label: "Không giới hạn",
-      urgent: false,
-      expired: false,
-    };
-  }
+const SPORT_TINT: Record<SportType, string> = {
+  FOOTBALL: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  BASKETBALL: "bg-orange-100 text-orange-700 border-orange-200",
+  TENNIS: "bg-lime-100 text-lime-700 border-lime-200",
+  BADMINTON: "bg-sky-100 text-sky-700 border-sky-200",
+  VOLLEYBALL: "bg-amber-100 text-amber-700 border-amber-200",
+  PICKLEBALL: "bg-teal-100 text-teal-700 border-teal-200",
+};
 
-  const parsed = new Date(joinDeadline).getTime();
-  if (Number.isNaN(parsed)) {
-    return {
-      label: joinDeadline,
-      urgent: false,
-      expired: false,
-    };
-  }
+const formatShortTime = (value: string | null): string => {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  const time = d.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const date = d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+  return `${time} · ${date}`;
+};
 
-  const diff = parsed - Date.now();
-  if (diff <= 0) {
-    return {
-      label: "Đã hết hạn",
-      urgent: true,
-      expired: true,
-    };
-  }
-
-  const totalMinutes = Math.floor(diff / (1000 * 60));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
-
+const getCountdown = (deadline: string | null) => {
+  if (!deadline) return { label: "Không giới hạn", urgent: false, expired: false };
+  const diff = new Date(deadline).getTime() - Date.now();
+  if (diff <= 0) return { label: "Hết hạn", urgent: true, expired: true };
+  const mins = Math.floor(diff / 60000);
+  const days = Math.floor(mins / 1440);
+  const hours = Math.floor((mins % 1440) / 60);
   const label =
     days > 0
-      ? `${days} ngày ${hours} giờ`
+      ? `${days}d ${hours}h`
       : hours > 0
-        ? `${hours} giờ ${minutes} phút`
-        : `${Math.max(minutes, 1)} phút`;
-
-  return {
-    label,
-    urgent: totalMinutes <= 180,
-    expired: false,
-  };
+        ? `${hours}h ${mins % 60}m`
+        : `${Math.max(mins, 1)}m`;
+  return { label, urgent: mins <= 180, expired: false };
 };
 
-export function MatchCard({ match, actions }: MatchCardProps) {
+export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
   const sportLabel = SPORT_TYPE_LABELS[match.sport_type] ?? match.sport_type;
-  const slotFillPercent = Math.min(
+  const fillPct = Math.min(
     100,
     Math.round((match.slots_filled / Math.max(match.slots_needed, 1)) * 100),
   );
-  const creatorName = match.creator.full_name || "Người tạo ẩn danh";
-  const joinDeadlineLabel = match.join_deadline
-    ? formatDateTime(match.join_deadline)
-    : "Không giới hạn";
-  const joinCountdown = getJoinCountdown(match.join_deadline);
-  const statusAccent = MATCH_STATUS_ACCENT[match.status];
+  const countdown = getCountdown(match.join_deadline);
+  const countdownTone = countdown.expired
+    ? "text-rose-600"
+    : countdown.urgent
+      ? "text-amber-600"
+      : "text-accent-sport";
+
+  const participation = match.my_participation_status;
+  const hasJoined = participation === "ACCEPTED";
+  const hasPending = participation === "PENDING";
 
   return (
-    <Card className="group relative overflow-hidden border border-emerald-100/80 bg-white/95 py-4 shadow-lg shadow-slate-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/25 dark:border-emerald-900/40 dark:bg-slate-900/80">
+    <Card
+      className={cn(
+        "group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border-border/80 p-0",
+        "transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg",
+      )}
+    >
+      {/* Status accent bar */}
       <div
+        aria-hidden
         className={cn(
-          "absolute inset-x-0 top-0 h-1.5 bg-linear-to-r",
-          statusAccent,
+          "h-1 w-full bg-gradient-to-r",
+          STATUS_ACCENT[match.status],
         )}
       />
-      <div className="pointer-events-none absolute inset-0 sports-field-pattern opacity-35" />
-      <div className="pointer-events-none absolute -right-14 top-12 h-36 w-36 rounded-full bg-emerald-300/25 blur-3xl" />
 
-      <CardHeader className="relative space-y-4 px-5 pb-0 pt-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-              <AvatarImage src={match.creator.avatar ?? undefined} alt={creatorName} />
-              <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-700">
-                {getNameInitials(creatorName, "Người tạo")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-                Creator
-              </p>
-              <p className="truncate text-sm font-semibold text-slate-900">
-                {creatorName}
-              </p>
-            </div>
-          </div>
-
-          <MatchStatusBadge status={match.status} className="shrink-0" />
+      {/* Header: creator + status */}
+      <CardHeader className="flex flex-row items-center justify-between gap-3 px-4 pb-3 pt-3.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar className="size-7 shrink-0 ring-1 ring-border">
+            <AvatarImage src={match.creator.avatar ?? undefined} />
+            <AvatarFallback className="bg-muted text-[10px] font-semibold">
+              {getNameInitials(match.creator.full_name || "", "?")}
+            </AvatarFallback>
+          </Avatar>
+          <p className="truncate text-xs font-semibold text-foreground">
+            {match.creator.full_name || "Ẩn danh"}
+          </p>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            · creator
+          </span>
         </div>
+        <MatchStatusBadge status={match.status} className="shrink-0" />
+      </CardHeader>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Body */}
+      <CardContent className="flex flex-1 flex-col gap-3 border-t border-border/70 px-4 py-3.5">
+        {/* Chips + Title */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Badge
               variant="outline"
-              className="border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700"
+              className={cn(
+                "border text-[10.5px] font-semibold",
+                SPORT_TINT[match.sport_type],
+              )}
             >
               {sportLabel}
             </Badge>
-
-            {match.skill_level ? (
+            {match.skill_level && (
               <Badge
                 variant="outline"
-                className={cn("text-xs font-medium", MATCH_SKILL_BADGE_STYLES[match.skill_level])}
+                className={cn(
+                  "text-[10.5px] font-medium",
+                  MATCH_SKILL_BADGE_STYLES[match.skill_level],
+                )}
               >
                 {MATCH_SKILL_LABELS[match.skill_level]}
               </Badge>
-            ) : null}
+            )}
+            {hasJoined && (
+              <Badge className="border-0 bg-emerald-600 text-white">
+                <CheckCircle2 data-icon="inline-start" />
+                Đã tham gia
+              </Badge>
+            )}
+            {hasPending && (
+              <Badge className="border-0 bg-amber-500 text-white">
+                <Hourglass data-icon="inline-start" />
+                Chờ duyệt
+              </Badge>
+            )}
           </div>
-
-          <CardTitle className="mt-3 line-clamp-2 text-xl leading-snug text-slate-900">
-            {match.title}
-          </CardTitle>
-
-          <CardDescription className="mt-1 line-clamp-2 text-sm text-slate-600">
-            {match.description || "Kèo chưa có mô tả chi tiết. Xem chi tiết để biết thêm."}
-          </CardDescription>
+          <Link
+            to={`/matches/${match.id}`}
+            className="group/link block transition-colors"
+          >
+            <h3 className="font-display text-base font-bold leading-snug tracking-tight text-foreground group-hover/link:text-primary">
+              <span className="line-clamp-2">{match.title}</span>
+            </h3>
+          </Link>
         </div>
-      </CardHeader>
 
-      <CardContent className="relative space-y-4 px-5 pt-4 text-sm">
-        <div className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-              Bắt đầu
-            </p>
-            <div className="flex items-center gap-2 text-slate-700">
-              <Clock3 className="h-4 w-4 text-blue-600" />
-              <span className="line-clamp-1 text-sm font-medium">
-                {formatDateTime(match.booking.start_time)}
-              </span>
-            </div>
+        {/* Meta row: when + where (inline, compact) */}
+        <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <CalendarClock className="size-3.5 shrink-0 text-muted-foreground/70" />
+            <span className="font-display font-bold italic tabular-nums text-foreground">
+              {formatShortTime(match.booking.start_time)}
+            </span>
           </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-              Địa điểm
-            </p>
-            <div className="flex items-center gap-2 text-slate-700">
-              <MapPin className="h-4 w-4 text-red-500" />
-              <span className="line-clamp-1 text-sm font-medium">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="size-3.5 shrink-0 text-muted-foreground/70" />
+            <span className="truncate text-foreground/80">
+              <span className="font-semibold text-foreground">
                 {match.booking.sub_field_name}
               </span>
-            </div>
-            <p className="mt-1 line-clamp-1 text-xs text-slate-500">
-              {match.booking.complex_name}
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-              <Users className="h-4 w-4 text-emerald-600" />
-              {match.slots_filled}/{match.slots_needed} người
-            </p>
-            <p className="text-xs font-medium text-slate-500">Còn {match.slots_left} chỗ</p>
-          </div>
-
-          <div className="mt-2 h-2 rounded-full bg-slate-200">
-            <div
-              className={cn(
-                "h-full rounded-full bg-linear-to-r transition-all duration-500",
-                statusAccent,
-              )}
-              style={{ width: `${slotFillPercent}%` }}
-            />
-          </div>
-
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <MatchParticipantsAvatarGroup
-              participants={match.participants_preview}
-              slotsFilled={match.slots_filled}
-            />
-            <span className="text-xs font-medium text-slate-500">
-              {slotFillPercent}% đã lấp đầy
+              <span className="text-muted-foreground"> · {match.booking.complex_name}</span>
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
-          <CalendarClock className="h-4 w-4 text-rose-600" />
-          <span className="font-medium">Hạn tham gia:</span>
-          <span className="truncate">{joinDeadlineLabel}</span>
+        {/* Roster — progress bar with inline avatars and counts */}
+        <div className="flex flex-col gap-1.5 rounded-lg bg-muted/40 px-2.5 py-2 ring-1 ring-border/50">
+          <div className="flex items-center justify-between gap-2">
+            <MatchParticipantsAvatarGroup
+              participants={match.participants_preview}
+              slotsFilled={match.slots_filled}
+            />
+            <div className="flex items-baseline gap-1 text-xs">
+              <span className="font-display text-sm font-black italic tabular-nums text-foreground">
+                {match.slots_filled}
+              </span>
+              <span className="text-muted-foreground">/</span>
+              <span className="tabular-nums text-foreground">
+                {match.slots_needed}
+              </span>
+              <span className="text-muted-foreground">·</span>
+              <span className="font-semibold tabular-nums text-muted-foreground">
+                còn {match.slots_left}
+              </span>
+            </div>
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-muted">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                STATUS_PROGRESS[match.status],
+              )}
+              style={{ width: `${fillPct}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span className={cn("inline-flex items-center gap-1 font-medium", countdownTone)}>
+              <Timer className="size-3" />
+              {countdown.label}
+            </span>
+            <span className="font-semibold tabular-nums">{fillPct}%</span>
+          </div>
         </div>
-
-        <div
-          className={cn(
-            "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs",
-            joinCountdown.expired
-              ? "border-rose-200 bg-rose-50 text-rose-700"
-              : joinCountdown.urgent
-                ? "border-orange-200 bg-orange-50 text-orange-700"
-                : "border-emerald-200 bg-emerald-50 text-emerald-700",
-          )}
-        >
-          <Timer className="h-4 w-4" />
-          <span className="font-medium">Countdown:</span>
-          <span className="ml-auto font-semibold">{joinCountdown.label}</span>
-        </div>
-
-        <p className="text-xs text-slate-500">
-          Tạo lúc {formatDateTime(match.created_at)}
-        </p>
       </CardContent>
 
-      {actions && (
-        <CardFooter className="px-5 pt-0">
-          <div className="flex w-full items-center justify-end gap-2">{actions}</div>
-        </CardFooter>
-      )}
+      {/* Footer */}
+      <CardFooter className="flex items-center justify-end gap-2 border-t border-border/70 px-4 py-2.5">
+        {actions ?? (
+          <DefaultMatchActions match={match} isPlayer={Boolean(isPlayer)} />
+        )}
+      </CardFooter>
     </Card>
+  );
+}
+
+function DefaultMatchActions({
+  match,
+  isPlayer,
+}: {
+  match: Match;
+  isPlayer: boolean;
+}) {
+  const canJoin =
+    isPlayer && match.status === "OPEN" && !match.my_participation_status;
+  const alreadyInvolved = Boolean(match.my_participation_status);
+
+  return (
+    <>
+      <Button asChild variant="outline" size="sm">
+        <Link to={`/matches/${match.id}`}>Xem chi tiết</Link>
+      </Button>
+      {canJoin ? (
+        <Button asChild size="sm">
+          <Link to={`/matches/${match.id}`}>Tham gia ngay</Link>
+        </Button>
+      ) : alreadyInvolved ? (
+        <Button asChild variant="secondary" size="sm">
+          <Link to={`/matches/${match.id}`}>Xem trạng thái</Link>
+        </Button>
+      ) : null}
+    </>
   );
 }

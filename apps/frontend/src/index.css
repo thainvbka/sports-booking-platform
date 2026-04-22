@@ -168,6 +168,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* Keep layout width stable when page content toggles vertical scrollbar. */
+    scrollbar-gutter: stable;
+  }
+  @supports not (scrollbar-gutter: stable) {
+    body {
+      overflow-y: scroll;
+    }
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body-family);
@@ -178,9 +187,96 @@
   h4 {
     font-family: var(--font-display-family);
   }
+
+  a:focus-visible {
+    @apply rounded-sm outline-none ring-2 ring-ring/70 ring-offset-2 ring-offset-background;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer utilities {
+  .skip-nav-link {
+    position: fixed;
+    left: 1rem;
+    top: -4rem;
+    z-index: 120;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.16);
+    transition: top 160ms ease;
+  }
+
+  .skip-nav-link:focus-visible {
+    top: 1rem;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-soft {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-safe-fade-up {
+      animation: fade-up 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .motion-safe-scale-soft {
+      animation: scale-soft 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .motion-safe-stagger > * {
+      animation: fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .motion-safe-stagger > *:nth-child(1) {
+      animation-delay: 50ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(2) {
+      animation-delay: 110ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(3) {
+      animation-delay: 170ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(4) {
+      animation-delay: 230ms;
+    }
+  }
+
   .text-display {
     @apply font-display text-5xl leading-[1.1] font-black tracking-tight;
   }
@@ -227,6 +323,54 @@
 
   .status-surface-neutral {
     @apply border border-slate-200 bg-slate-100 text-slate-600;
+  }
+
+  @keyframes marquee-x {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.6);
+      opacity: 0.35;
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee-x 32s linear infinite;
+  }
+
+  .animate-pulse-dot {
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+
+  .bg-grid-faint {
+    background-image:
+      linear-gradient(to right, rgb(148 163 184 / 0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(148 163 184 / 0.12) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .bg-grid-dark {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.055) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .text-stroke-white {
+    -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.85);
+    color: transparent;
   }
 
   .sports-field-pattern {

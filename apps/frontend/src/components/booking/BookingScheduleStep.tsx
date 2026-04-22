@@ -1,18 +1,19 @@
+import { EmptyState } from "@/components/shared/EmptyState";
 import { TimeSlotsGrid } from "@/components/shared/TimeSlotsGrid";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -86,10 +87,13 @@ export function BookingScheduleStep({
 }: BookingScheduleStepProps) {
   return (
     <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-      <div>
-        <Label className="mb-3 block font-semibold">
+      <div className="space-y-2">
+        <Label className="block text-sm font-semibold text-foreground">
           Tình trạng sân ({date ? format(date, "dd/MM/yyyy") : "--/--/----"})
         </Label>
+        <p className="text-xs text-muted-foreground">
+          Chọn khung giờ theo trạng thái thực tế của sân ở từng mốc 30 phút.
+        </p>
         {date ? (
           <TimeSlotsGrid
             subFieldId={subfieldId}
@@ -99,7 +103,7 @@ export function BookingScheduleStep({
             selectedEnd={customEndTime}
           />
         ) : (
-          <p className="rounded-md border p-4 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             Chọn ngày để hiển thị trạng thái sân.
           </p>
         )}
@@ -197,25 +201,36 @@ export function BookingScheduleStep({
           </div>
         )}
 
-        {availableRules.length > 0 && (
-          <div className="rounded-md border bg-blue-50 p-3">
-            <p className="mb-2 text-sm font-semibold text-blue-700">
-              Bảng giá hôm nay ({dayNames[date?.getDay() ?? 0]})
-            </p>
-            <div className="space-y-1 text-xs">
-              {availableRules.map((rule) => (
-                <div key={rule.id} className="flex justify-between">
-                  <span>
-                    {formatRuleTime(rule.start_time)} - {formatRuleTime(rule.end_time)}
-                  </span>
-                  <span className="font-semibold">
-                    {Number(rule.base_price).toLocaleString("vi-VN")}đ/h
-                  </span>
-                </div>
-              ))}
+        {date ? (
+          availableRules.length > 0 ? (
+            <div className="rounded-xl border border-primary/20 bg-linear-to-br from-primary/8 to-primary/3 p-4 shadow-sm">
+              <p className="mb-2 text-sm font-semibold text-primary">
+                Bảng giá hôm nay ({dayNames[date.getDay()]})
+              </p>
+              <div className="space-y-1.5 text-xs">
+                {availableRules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    className="flex items-center justify-between rounded-md bg-background/70 px-2 py-1.5"
+                  >
+                    <span>
+                      {formatRuleTime(rule.start_time)} - {formatRuleTime(rule.end_time)}
+                    </span>
+                    <span className="font-semibold text-primary">
+                      {Number(rule.base_price).toLocaleString("vi-VN")}đ/h
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <EmptyState
+              title="Chưa có bảng giá cho ngày đã chọn"
+              description="Vui lòng chọn ngày khác hoặc liên hệ chủ sân để cập nhật khung giờ."
+              className="py-8"
+            />
+          )
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -257,11 +272,11 @@ export function BookingScheduleStep({
           </div>
         </div>
 
-        {!isCustomTimeValid && customStartTime && customEndTime && (
-          <p className="text-sm text-red-500">
+        {!isCustomTimeValid && customStartTime && customEndTime ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
             Thời lượng phải lớn hơn 0 và là bội của 30 phút.
           </p>
-        )}
+        ) : null}
       </div>
     </div>
   );

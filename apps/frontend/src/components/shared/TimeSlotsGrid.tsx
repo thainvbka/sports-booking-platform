@@ -1,3 +1,6 @@
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
@@ -7,8 +10,7 @@ import {
   parseRuleTimeToMinutes,
 } from "@/utils/time.utils";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface BookingSlot {
   start: string;
@@ -33,27 +35,30 @@ export function TimeSlotsGrid({
 }: TimeSlotsGridProps) {
   const [bookings, setBookings] = useState<BookingSlot[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchAvailability = useCallback(async () => {
+    if (!date || !subFieldId) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const fmtDate = format(date, "yyyy-MM-dd");
+      const data = await publicService.getSubfieldAvailability(subFieldId, fmtDate);
+      setBookings(data.data.availability.bookings || []);
+    } catch (error) {
+      console.error("Failed to fetch availability", error);
+      setBookings([]);
+      setErrorMessage("Không thể tải trạng thái sân cho ngày đã chọn.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [date, subFieldId]);
 
   useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!date || !subFieldId) return;
-      setIsLoading(true);
-      try {
-        const fmtDate = format(date, "yyyy-MM-dd");
-        const data = await publicService.getSubfieldAvailability(
-          subFieldId,
-          fmtDate,
-        );
-        setBookings(data.data.availability.bookings || []);
-      } catch (error) {
-        console.error("Failed to fetch availability", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAvailability();
-  }, [subFieldId, date]);
+    void fetchAvailability();
+  }, [fetchAvailability]);
 
   const timeSlots = useMemo(() => {
     if (!pricingRules || pricingRules.length === 0) return [];
@@ -109,51 +114,54 @@ export function TimeSlotsGrid({
   };
 
   if (isLoading) {
+    return <LoadingState text="Đang tải trạng thái sân..." className="py-10" />;
+  }
+
+  if (errorMessage) {
     return (
-      <div className="flex h-full items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <EmptyState
+        title="Không thể tải trạng thái sân"
+        description={errorMessage}
+        actionLabel="Thử lại"
+        onAction={() => void fetchAvailability()}
+        className="py-10"
+      />
     );
   }
 
   if (timeSlots.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-muted-foreground">
-        Không có lịch trống cho ngày này
-      </div>
+      <EmptyState
+        title="Chưa có khung giờ cho ngày này"
+        description="Bảng giá của sân chưa cấu hình khung giờ phù hợp. Vui lòng chọn ngày khác."
+        className="py-10"
+      />
     );
   }
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="mb-4 flex flex-wrap items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5">
-          <div className="h-3 w-3 rounded-sm border bg-white" />
-          <span>Trống</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="h-3 w-3 rounded-sm bg-primary" />
-          <span>Đang chọn</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="h-3 w-3 rounded-sm bg-yellow-100 border border-yellow-200" />
-          <span>Chờ thanh toán</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="h-3 w-3 rounded-sm bg-red-100 border border-red-200"
-            style={{
-              backgroundImage:
-                "linear-gradient(45deg,rgba(255,255,255,.5) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.5) 75%,transparent 75%,transparent)",
-              backgroundSize: "8px 8px",
-            }}
-          />
-          <span>Đã đặt</span>
-        </div>
+    <div className="flex w-full flex-col">
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        <Badge variant="outline" className="bg-background text-foreground">
+          Trống
+        </Badge>
+        <Badge className="bg-primary text-primary-foreground">Đang chọn</Badge>
+        <Badge
+          variant="outline"
+          className="border-amber-200 bg-amber-50 text-amber-700"
+        >
+          Chờ thanh toán
+        </Badge>
+        <Badge
+          variant="outline"
+          className="border-red-200 bg-red-50 text-red-600"
+        >
+          Đã đặt
+        </Badge>
       </div>
 
       <div className="w-full">
-        <div className="grid grid-cols-6 gap-2 pb-4">
+        <div className="grid grid-cols-4 gap-2 pb-4 sm:grid-cols-6">
           {timeSlots.map((time) => {
             const status = getSlotStatus(time);
             return (
