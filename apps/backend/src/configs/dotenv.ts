@@ -25,6 +25,7 @@ const config = {
   MAIL_PORT: process.env.MAIL_PORT,
   MAIL_USER: process.env.MAIL_USER,
   MAIL_PASS: process.env.MAIL_PASS,
+  REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
 };
 
 export default config;

@@ -1,3 +1,6 @@
+import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
 import {
     AdminDetailDialog,
@@ -6,6 +9,14 @@ import {
 } from "@/components/admin/details/AdminDetailDialog";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -14,6 +25,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    ToggleGroup,
+    ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import {
     BOOKING_STATUS_COLORS,
     BOOKING_STATUS_LABELS,
@@ -31,10 +46,11 @@ import {
     Calendar,
     CalendarRange,
     Clock,
-    Info,
+    Eye,
     LayoutDashboard,
     LayoutList,
     MapPin,
+    MoreHorizontal,
     Repeat2,
     Search,
     Tag,
@@ -95,7 +111,6 @@ export default function AdminBookingsPage() {
   const [activeView, setActiveView] = useState<BookingView>("single");
   const [recurringInitialized, setRecurringInitialized] = useState(false);
 
-  // ── Single booking store ────────────────────────────────────────────────────
   const {
     bookings,
     pagination: singlePagination,
@@ -108,7 +123,6 @@ export default function AdminBookingsPage() {
     setPage: setSinglePage,
   } = useAdminBookingStore();
 
-  // ── Recurring booking store ─────────────────────────────────────────────────
   const {
     recurringBookings,
     pagination: recurringPagination,
@@ -121,7 +135,6 @@ export default function AdminBookingsPage() {
     setPage: setRecurringPage,
   } = useAdminRecurringBookingStore();
 
-  // ── Local UI state ──────────────────────────────────────────────────────────
   const [singleSearch, setSingleSearch] = useState(singleFilters.search || "");
   const [recurringSearch, setRecurringSearch] = useState(
     recurringFilters.search || "",
@@ -132,7 +145,6 @@ export default function AdminBookingsPage() {
     useState<AdminRecurringRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  // ── Init ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     fetchBookings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,7 +158,6 @@ export default function AdminBookingsPage() {
     }
   };
 
-  // ── Debounced search ────────────────────────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => {
       if (singleSearch !== (singleFilters.search || "")) {
@@ -167,10 +178,9 @@ export default function AdminBookingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recurringSearch]);
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
   const bookingStatusColor = (status: string) =>
     BOOKING_STATUS_COLORS[status as keyof typeof BOOKING_STATUS_COLORS] ||
-    "bg-slate-100 text-slate-700";
+    "bg-muted text-muted-foreground";
 
   const bookingStatusLabel = (status: string) =>
     BOOKING_STATUS_LABELS[status as keyof typeof BOOKING_STATUS_LABELS] ||
@@ -180,14 +190,12 @@ export default function AdminBookingsPage() {
     SPORT_TYPE_LABELS[sportType as keyof typeof SPORT_TYPE_LABELS] ||
     "Không xác định";
 
-  // ── SINGLE stats ────────────────────────────────────────────────────────────
   const singleStatItems = [
     {
       label: "Tổng đặt đơn lẻ",
       value: singleStats.total,
       icon: LayoutDashboard,
       color: "blue" as const,
-      // variant: "solid" as const,
     },
     {
       label: "Chưa thanh toán",
@@ -209,14 +217,12 @@ export default function AdminBookingsPage() {
     },
   ];
 
-  // ── RECURRING stats ─────────────────────────────────────────────────────────
   const recurringStatItems = [
     {
       label: "Tổng nhóm định kỳ",
       value: recurringStats.total,
       icon: Repeat2,
       color: "purple" as const,
-      // variant: "solid" as const,
     },
     {
       label: "Chưa thanh toán",
@@ -238,13 +244,12 @@ export default function AdminBookingsPage() {
     },
   ];
 
-  // ── SINGLE columns ──────────────────────────────────────────────────────────
   const singleColumns: Column<AdminBookingRow>[] = [
     {
       header: "Mã",
       className: "w-20",
       cell: (b) => (
-        <span className="text-[10px] font-mono text-muted-foreground uppercase truncate block w-16">
+        <span className="block w-16 truncate font-mono text-[10px] uppercase text-muted-foreground">
           {b.id.split("-")[0]}
         </span>
       ),
@@ -254,11 +259,11 @@ export default function AdminBookingsPage() {
       className: "w-52",
       cell: (b) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-sm">
-            <User className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <User className="size-3.5 shrink-0 text-primary" />
             <span className="truncate">{b.player.account.full_name}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground ml-5 truncate">
+          <span className="ml-5 truncate text-[10px] text-muted-foreground">
             {b.player.account.phone_number}
           </span>
         </div>
@@ -269,11 +274,11 @@ export default function AdminBookingsPage() {
       className: "w-56",
       cell: (b) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-sm">
-            <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <MapPin className="size-3.5 shrink-0 text-rose-500" />
             <span className="truncate">{b.sub_field.complex.complex_name}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground ml-5 italic">
+          <div className="ml-5 flex items-center gap-1 text-[10px] italic text-muted-foreground">
             <span>{b.sub_field.sub_field_name}</span>
             <span>•</span>
             <span>{sportLabel(b.sub_field.sport_type)}</span>
@@ -287,13 +292,13 @@ export default function AdminBookingsPage() {
       cell: (b) => (
         <div className="flex flex-col gap-0.5 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <Calendar className="w-3 h-3 text-muted-foreground" />
+            <Calendar className="size-3 text-muted-foreground" />
             <span>
               {format(new Date(b.start_time), "dd/MM/yyyy", { locale: vi })}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="w-3 h-3" />
+            <Clock className="size-3" />
             <span>
               {format(new Date(b.start_time), "HH:mm")} –{" "}
               {format(new Date(b.end_time), "HH:mm")}
@@ -306,7 +311,7 @@ export default function AdminBookingsPage() {
       header: "Thanh toán",
       className: "w-28",
       cell: (b) => (
-        <span className="font-bold text-sm text-green-700">
+        <span className="font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
           {fmtVND(Number(b.total_price))}
         </span>
       ),
@@ -316,7 +321,7 @@ export default function AdminBookingsPage() {
       className: "w-32",
       cell: (b) => (
         <Badge
-          className={`${bookingStatusColor(b.status)} border-none text-[10px] py-0 h-5 shadow-none`}
+          className={`${bookingStatusColor(b.status)} h-5 border-none py-0 text-[10px] shadow-none`}
         >
           {bookingStatusLabel(b.status)}
         </Badge>
@@ -324,18 +329,45 @@ export default function AdminBookingsPage() {
     },
     {
       header: "",
-      className: "w-8",
-      cell: () => <Info className="w-4 h-4 text-muted-foreground/50" />,
+      className: "w-12 text-right",
+      cell: (b) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal />
+              <span className="sr-only">Mở menu hành động</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onSelect={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedBooking(b);
+                  setDetailOpen(true);
+                }}
+              >
+                <Eye /> Xem chi tiết
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
     },
   ];
 
-  // ── RECURRING columns ───────────────────────────────────────────────────────
   const recurringColumns: Column<AdminRecurringRow>[] = [
     {
       header: "Mã nhóm",
       className: "w-20",
       cell: (rb) => (
-        <span className="text-[10px] font-mono text-muted-foreground uppercase truncate block w-16">
+        <span className="block w-16 truncate font-mono text-[10px] uppercase text-muted-foreground">
           {rb.id.split("-")[0]}
         </span>
       ),
@@ -345,11 +377,11 @@ export default function AdminBookingsPage() {
       className: "w-52",
       cell: (rb) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-sm">
-            <User className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <User className="size-3.5 shrink-0 text-primary" />
             <span className="truncate">{rb.player.account.full_name}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground ml-5 truncate">
+          <span className="ml-5 truncate text-[10px] text-muted-foreground">
             {rb.player.account.phone_number}
           </span>
         </div>
@@ -360,13 +392,13 @@ export default function AdminBookingsPage() {
       className: "w-56",
       cell: (rb) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-sm">
-            <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <MapPin className="size-3.5 shrink-0 text-rose-500" />
             <span className="truncate">
               {rb.sub_field.complex.complex_name}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground ml-5 italic">
+          <div className="ml-5 flex items-center gap-1 text-[10px] italic text-muted-foreground">
             <span>{rb.sub_field.sub_field_name}</span>
             <span>•</span>
             <span>{sportLabel(rb.sub_field.sport_type)}</span>
@@ -379,8 +411,8 @@ export default function AdminBookingsPage() {
       className: "w-40",
       cell: (rb) => (
         <div className="flex flex-col gap-1">
-          <Badge className="bg-purple-100 text-purple-800 border-none text-[10px] py-0 h-5 shadow-none w-fit">
-            <Repeat2 className="w-2.5 h-2.5 mr-1" />
+          <Badge className="h-5 w-fit gap-1 border-none bg-violet-100 py-0 text-[10px] text-violet-800 shadow-none dark:bg-violet-500/15 dark:text-violet-300">
+            <Repeat2 className="size-2.5" />
             {RECURRENCE_TYPE_LABELS[rb.recurrence_type] ?? rb.recurrence_type}
           </Badge>
           <span className="text-[10px] text-muted-foreground">
@@ -395,7 +427,7 @@ export default function AdminBookingsPage() {
       className: "w-20 text-center",
       cell: (rb) => (
         <div className="text-center">
-          <span className="text-sm font-black text-foreground">
+          <span className="font-display text-sm font-black italic text-foreground">
             {rb.child_count}
           </span>
           <span className="text-[10px] text-muted-foreground"> buổi</span>
@@ -406,7 +438,7 @@ export default function AdminBookingsPage() {
       header: "Tổng tiền",
       className: "w-28",
       cell: (rb) => (
-        <span className="font-bold text-sm text-green-700">
+        <span className="font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
           {fmtVND(rb.total_value)}
         </span>
       ),
@@ -416,7 +448,7 @@ export default function AdminBookingsPage() {
       className: "w-32",
       cell: (rb) => (
         <Badge
-          className={`${RECURRING_STATUS_COLORS[rb.status] ?? "bg-slate-100 text-slate-700"} border-none text-[10px] py-0 h-5 shadow-none`}
+          className={`${RECURRING_STATUS_COLORS[rb.status] ?? "bg-muted text-muted-foreground"} h-5 border-none py-0 text-[10px] shadow-none`}
         >
           {RECURRING_STATUS_LABELS[rb.status] ?? rb.status}
         </Badge>
@@ -424,77 +456,108 @@ export default function AdminBookingsPage() {
     },
     {
       header: "",
-      className: "w-8",
-      cell: () => <Info className="w-4 h-4 text-muted-foreground/50" />,
+      className: "w-12 text-right",
+      cell: (rb) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal />
+              <span className="sr-only">Mở menu hành động</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onSelect={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedRecurring(rb);
+                  setDetailOpen(true);
+                }}
+              >
+                <Eye /> Xem chi tiết
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
     },
   ];
 
-  return (
-    <div className="px-4 lg:px-6 space-y-6 pb-10">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">Giám sát Đặt sân</h1>
-        <p className="text-sm text-muted-foreground">
-          Dữ liệu thống kê dựa trên toàn bộ hệ thống.
-        </p>
-      </div>
+  const totalCount =
+    activeView === "single"
+      ? singlePagination?.total ?? singleStats.total
+      : recurringPagination?.total ?? recurringStats.total;
 
-      {/* ── Stats ── */}
+  return (
+    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+      <AdminPageHeader
+        index={1}
+        eyebrow="Admin · Operations"
+        title="Giám sát"
+        titleAccent="đặt sân"
+        description="Theo dõi thời gian thực mọi lượt đặt sân và nhóm đặt định kỳ trên toàn hệ thống."
+      />
+
       <StatsGrid
         items={activeView === "single" ? singleStatItems : recurringStatItems}
       />
 
-      {/* ── Filters + view toggle on same row ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Tab toggle */}
-        <div className="inline-flex shrink-0 rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-800 p-0.5 gap-0.5">
-          <button
-            onClick={() => handleViewChange("single")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-all ${
-              activeView === "single"
-                ? "bg-white dark:bg-slate-800 shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+      <AdminFiltersBar
+        leading={
+          <ToggleGroup
+            type="single"
+            value={activeView}
+            onValueChange={(v) => v && handleViewChange(v as BookingView)}
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
           >
-            <LayoutList className="w-3.5 h-3.5" />
-            Đơn lẻ
-          </button>
-          <button
-            onClick={() => handleViewChange("recurring")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-all ${
-              activeView === "recurring"
-                ? "bg-white dark:bg-slate-800 shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Repeat2 className="w-3.5 h-3.5" />
-            Định kỳ
-          </button>
-        </div>
-
-        {/* Search */}
+            <ToggleGroupItem
+              value="single"
+              aria-label="Đơn lẻ"
+              className="gap-1.5"
+            >
+              <LayoutList className="size-3.5" />
+              Đơn lẻ
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="recurring"
+              aria-label="Định kỳ"
+              className="gap-1.5"
+            >
+              <Repeat2 className="size-3.5" />
+              Định kỳ
+            </ToggleGroupItem>
+          </ToggleGroup>
+        }
+      >
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           {activeView === "single" ? (
             <Input
               key="single-search"
-              placeholder="Tìm theo Tên khách, Tên sân..."
-              className="pl-9 h-9 border-slate-200 shadow-none"
+              placeholder="Tìm theo tên khách, tên sân..."
+              className="h-9 pl-9"
               value={singleSearch}
               onChange={(e) => setSingleSearch(e.target.value)}
             />
           ) : (
             <Input
               key="recurring-search"
-              placeholder="Tìm theo Tên khách, Tên sân..."
-              className="pl-9 h-9 border-slate-200 shadow-none"
+              placeholder="Tìm theo tên khách, tên sân..."
+              className="h-9 pl-9"
               value={recurringSearch}
               onChange={(e) => setRecurringSearch(e.target.value)}
             />
           )}
         </div>
 
-        {/* Status filter — adapts per tab */}
         {activeView === "single" ? (
           <Select
             value={singleFilters.status || "ALL"}
@@ -502,7 +565,7 @@ export default function AdminBookingsPage() {
               setSingleFilters({ status: value === "ALL" ? undefined : value })
             }
           >
-            <SelectTrigger className="w-[180px] h-9 border-slate-200 shadow-none shrink-0">
+            <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
@@ -523,7 +586,7 @@ export default function AdminBookingsPage() {
               })
             }
           >
-            <SelectTrigger className="w-[180px] h-9 border-slate-200 shadow-none shrink-0">
+            <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
@@ -536,42 +599,58 @@ export default function AdminBookingsPage() {
             </SelectContent>
           </Select>
         )}
-      </div>
+      </AdminFiltersBar>
 
-      {/* ── Table ── */}
-      {activeView === "single" ? (
-        <DataTable
-          data={bookings as AdminBookingRow[]}
-          columns={singleColumns}
-          isLoading={singleLoading}
-          onRowClick={(b) => {
-            setSelectedBooking(b);
-            setDetailOpen(true);
-          }}
-          pagination={{
-            page: singleParams.page,
-            totalPages: singlePagination?.totalPages || 1,
-            onPageChange: setSinglePage,
-          }}
-          emptyMessage="Không tìm thấy lịch đặt sân nào"
-        />
-      ) : (
-        <DataTable
-          data={recurringBookings as AdminRecurringRow[]}
-          columns={recurringColumns}
-          isLoading={recurringLoading}
-          onRowClick={(rb) => {
-            setSelectedRecurring(rb);
-            setDetailOpen(true);
-          }}
-          pagination={{
-            page: recurringParams.page,
-            totalPages: recurringPagination?.totalPages || 1,
-            onPageChange: setRecurringPage,
-          }}
-          emptyMessage="Không tìm thấy nhóm đặt định kỳ nào"
-        />
-      )}
+      <AdminTableSection
+        index={2}
+        eyebrow="Data · Table"
+        title={
+          activeView === "single"
+            ? "Lượt đặt sân"
+            : "Nhóm đặt định kỳ"
+        }
+        description={
+          activeView === "single"
+            ? "Nhấp vào một dòng để xem chi tiết lượt đặt."
+            : "Nhấp vào một nhóm để xem danh sách buổi bên trong."
+        }
+        count={totalCount}
+        countLabel={activeView === "single" ? "lượt đặt" : "nhóm"}
+      >
+        {activeView === "single" ? (
+          <DataTable
+            data={bookings as AdminBookingRow[]}
+            columns={singleColumns}
+            isLoading={singleLoading}
+            onRowClick={(b) => {
+              setSelectedBooking(b);
+              setDetailOpen(true);
+            }}
+            pagination={{
+              page: singleParams.page,
+              totalPages: singlePagination?.totalPages || 1,
+              onPageChange: setSinglePage,
+            }}
+            emptyMessage="Không tìm thấy lịch đặt sân nào"
+          />
+        ) : (
+          <DataTable
+            data={recurringBookings as AdminRecurringRow[]}
+            columns={recurringColumns}
+            isLoading={recurringLoading}
+            onRowClick={(rb) => {
+              setSelectedRecurring(rb);
+              setDetailOpen(true);
+            }}
+            pagination={{
+              page: recurringParams.page,
+              totalPages: recurringPagination?.totalPages || 1,
+              onPageChange: setRecurringPage,
+            }}
+            emptyMessage="Không tìm thấy nhóm đặt định kỳ nào"
+          />
+        )}
+      </AdminTableSection>
 
       {/* ── Single booking detail dialog ─────────────────────────────────────── */}
       <AdminDetailDialog
@@ -594,17 +673,17 @@ export default function AdminBookingsPage() {
         }
       >
         {selectedBooking && (
-          <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto bg-white">
+          <div className="max-h-[70vh] space-y-5 overflow-y-auto bg-background p-6">
             <DetailSummaryRow
               leftLabel="Tổng chi phí"
               leftValue={
-                <p className="text-2xl font-black text-green-700">
+                <p className="font-display text-2xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
                   {fmtVND(Number(selectedBooking.total_price))}
                 </p>
               }
               rightLabel="Mã đặt sân"
               rightValue={
-                <p className="text-xs font-mono font-bold break-all text-slate-700 max-w-64">
+                <p className="max-w-64 break-all font-mono text-xs font-bold text-foreground">
                   {selectedBooking.id}
                 </p>
               }
@@ -667,17 +746,17 @@ export default function AdminBookingsPage() {
         }
       >
         {selectedRecurring && (
-          <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto bg-white">
+          <div className="max-h-[70vh] space-y-5 overflow-y-auto bg-background p-6">
             <DetailSummaryRow
               leftLabel="Tổng chi phí nhóm"
               leftValue={
-                <p className="text-2xl font-black text-green-700">
+                <p className="font-display text-2xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
                   {fmtVND(selectedRecurring.total_value)}
                 </p>
               }
               rightLabel="Mã nhóm"
               rightValue={
-                <p className="text-xs font-mono font-bold break-all text-slate-700 max-w-64">
+                <p className="max-w-64 break-all font-mono text-xs font-bold text-foreground">
                   {selectedRecurring.id}
                 </p>
               }
@@ -715,42 +794,41 @@ export default function AdminBookingsPage() {
               />
             </div>
 
-            {/* Child booking session list */}
             {selectedRecurring.bookings.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   Danh sách buổi ({selectedRecurring.bookings.length})
                 </p>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                <div className="max-h-64 space-y-1.5 overflow-y-auto pr-1">
                   {selectedRecurring.bookings.map((b, idx) => (
                     <div
                       key={b.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/60 gap-3"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/30 px-3 py-2"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="text-[9px] font-bold text-muted-foreground w-4 shrink-0 text-right">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="w-4 shrink-0 text-right text-[9px] font-bold text-muted-foreground">
                           {idx + 1}
                         </span>
-                        <div className="flex flex-col min-w-0">
+                        <div className="flex min-w-0 flex-col">
                           <span className="text-[11px] font-semibold text-foreground">
                             {format(new Date(b.start_time), "EEEE dd/MM/yyyy", {
                               locale: vi,
                             })}
                           </span>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                            <Clock className="w-2.5 h-2.5" />
+                            <Clock className="size-2.5" />
                             {format(new Date(b.start_time), "HH:mm")} –{" "}
                             {format(new Date(b.end_time), "HH:mm")}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex shrink-0 items-center gap-2">
                         <Badge
-                          className={`${bookingStatusColor(b.status)} border-none text-[9px] py-0 h-4 shadow-none`}
+                          className={`${bookingStatusColor(b.status)} h-4 border-none py-0 text-[9px] shadow-none`}
                         >
                           {bookingStatusLabel(b.status)}
                         </Badge>
-                        <span className="text-[11px] font-bold text-foreground tabular-nums">
+                        <span className="text-[11px] font-bold tabular-nums text-foreground">
                           {fmtVND(Number(b.total_price))}
                         </span>
                       </div>
@@ -760,17 +838,16 @@ export default function AdminBookingsPage() {
               </div>
             )}
 
-            {/* Status breakdown */}
             {Object.keys(selectedRecurring.status_breakdown).length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Tổng hợp:
                 </span>
                 {Object.entries(selectedRecurring.status_breakdown).map(
                   ([status, count]) => (
                     <Badge
                       key={status}
-                      className={`${bookingStatusColor(status)} border-none text-[9px] py-0 h-4 shadow-none`}
+                      className={`${bookingStatusColor(status)} h-4 border-none py-0 text-[9px] shadow-none`}
                     >
                       {bookingStatusLabel(status)}: {count}
                     </Badge>

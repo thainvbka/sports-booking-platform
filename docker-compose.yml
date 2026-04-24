@@ -12,6 +12,19 @@ services:
     restart: always
     networks:
       - my-network
+  
+   # --- REDIS CACHE ---
+  redis:
+    image: redis:7-alpine
+    container_name: sports-booking-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    restart: always
+    networks:
+      - my-network
 
   # ---  BACKEND ---
   backend:
@@ -30,6 +43,7 @@ services:
       - ./apps/backend/.env
     depends_on:
       - postgres-db
+      - redis
     restart: always
     networks:
       - my-network
@@ -54,6 +68,7 @@ services:
 
 volumes:
   postgres-data:
+  redis-data:
 
 networks:
   my-network:

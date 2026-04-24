@@ -3,13 +3,22 @@ import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";
 import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useComplexStore } from "@/store/owner/useComplexStore";
 import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import type { ComplexDetail } from "@/types";
 import { ComplexStatus } from "@/types";
-import { AlertCircle, Edit, Plus, Trash2 } from "lucide-react";
+import {
+  Ban,
+  Clock,
+  Pencil,
+  Plus,
+  PowerOff,
+  RotateCcw,
+  ShieldAlert,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -82,12 +91,10 @@ export function ComplexDetailPage() {
       toast.success(
         "Cập nhật thành công: Thông tin khu phức hợp đã được cập nhật.",
       );
-      console.log("Cập nhật thành công");
     } catch {
       toast.error(
         "Đã có lỗi xảy ra khi cập nhật thông tin khu phức hợp. Vui lòng thử lại sau.",
       );
-      console.error("Cập nhật thất bại");
     }
   };
 
@@ -96,13 +103,11 @@ export function ComplexDetailPage() {
     try {
       await deleteComplex(id);
       toast.success("Ngừng hoạt động khu phức hợp thành công.");
-      console.log("Xóa thành công");
       navigate("/owner/complexes", { replace: true });
     } catch {
       toast.error(
         "Đã có lỗi xảy ra khi ngừng hoạt động khu phức hợp. Vui lòng thử lại sau.",
       );
-      console.error("Xóa thất bại");
     }
   };
 
@@ -111,12 +116,10 @@ export function ComplexDetailPage() {
     try {
       await reactivateComplex(id);
       toast.success("Kích hoạt lại khu phức hợp thành công.");
-      console.log("Kích hoạt thành công");
     } catch {
       toast.error(
         "Đã có lỗi xảy ra khi kích hoạt lại khu phức hợp. Vui lòng thử lại sau.",
       );
-      console.error("Kích hoạt thất bại");
     }
   };
 
@@ -131,17 +134,16 @@ export function ComplexDetailPage() {
   const complex = selectedComplex as ComplexDetail;
   const canAddSubField = complex?.status === ComplexStatus.ACTIVE;
 
-  // Render owner-specific header actions
+  // ── Owner action panel ──────────────────────────────────────
   const headerActions = complex && (
-    <>
+    <div className="flex flex-wrap items-center gap-2">
       {complex.status === ComplexStatus.INACTIVE ? (
         <Button
-          variant="default"
           size="sm"
           onClick={() => setIsReactivateDialogOpen(true)}
-          className="bg-green-600 hover:bg-green-700"
+          className="h-9 rounded-full bg-emerald-600 px-4 text-xs font-semibold text-white shadow shadow-emerald-600/25 hover:bg-emerald-600/90"
         >
-          <Edit className="w-4 h-4 mr-2" />
+          <RotateCcw data-icon="inline-start" />
           Kích hoạt lại
         </Button>
       ) : (
@@ -150,85 +152,87 @@ export function ComplexDetailPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsEditDialogOpen(true)}
+            className="h-9 rounded-full border-border/70 bg-background/70 px-4 text-xs font-semibold backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
           >
-            <Edit className="w-4 h-4 mr-2" />
+            <Pencil data-icon="inline-start" />
             Chỉnh sửa
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
             size="sm"
             onClick={() => setIsDeleteDialogOpen(true)}
+            className="h-9 rounded-full border-destructive/30 bg-destructive/5 px-4 text-xs font-semibold text-destructive hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <PowerOff data-icon="inline-start" />
             Ngừng hoạt động
           </Button>
         </>
       )}
-    </>
+    </div>
   );
 
-  // Render status alerts
+  // ── Status alerts ───────────────────────────────────────────
   const statusAlerts = complex && (
-    <>
+    <div className="flex flex-col gap-2">
       {complex.status === ComplexStatus.PENDING && (
-        <Alert
-          variant="default"
-          className="bg-yellow-50 border-yellow-200 text-yellow-900"
-        >
-          <AlertCircle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription>
-            Khu phức hợp hiện đang chờ phê duyệt, bạn sẽ có thể thêm sân con khi
-            quản trị viên duyệt yêu cầu này.
-          </AlertDescription>
-        </Alert>
+        <StatusRibbon
+          tone="amber"
+          icon={Clock}
+          title="Đang chờ phê duyệt"
+          description="Khu phức hợp đang chờ admin xét duyệt. Bạn sẽ có thể thêm sân con ngay khi yêu cầu được chấp thuận."
+        />
       )}
 
       {complex.status === ComplexStatus.INACTIVE && (
-        <Alert
-          variant="default"
-          className="bg-orange-50 border-orange-200 text-orange-900"
-        >
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <AlertDescription>
-            Khu phức hợp đã ngừng hoạt động. Khách hàng không thể xem hoặc đặt
-            lịch. Bạn có thể kích hoạt lại bất cứ lúc nào.
-          </AlertDescription>
-        </Alert>
+        <StatusRibbon
+          tone="slate"
+          icon={Ban}
+          title="Khu phức hợp đã ngừng hoạt động"
+          description="Khách hàng không thể xem hoặc đặt lịch tại đây. Bạn có thể kích hoạt lại bất cứ lúc nào từ thanh thao tác phía trên."
+        />
       )}
 
       {complex.status === ComplexStatus.REJECTED && (
-        <Alert
-          variant="destructive"
-          className="bg-red-50 border-red-200 text-red-900"
-        >
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Khu phức hợp đã bị từ chối. Vui lòng liên hệ quản trị viên để biết
-            thêm chi tiết.
-          </AlertDescription>
-        </Alert>
+        <StatusRibbon
+          tone="rose"
+          icon={ShieldAlert}
+          title="Yêu cầu đã bị từ chối"
+          description="Khu phức hợp không được chấp thuận. Vui lòng liên hệ quản trị viên để biết lý do và các bước tiếp theo."
+        />
       )}
-    </>
+    </div>
   );
 
-  // Add subfield button
+  // ── Add subfield buttons ────────────────────────────────────
   const addSubfieldButton = complex && (
     <SubFieldFormDialog
       complexId={complex.id}
       trigger={
-        <Button disabled={!canAddSubField} className="shadow-md">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button
+          size="sm"
+          disabled={!canAddSubField}
+          className="h-9 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow shadow-primary/25 hover:bg-primary/92"
+        >
+          <Plus data-icon="inline-start" />
           Thêm sân con
         </Button>
       }
     />
   );
 
-  // Empty state button
   const emptyStateButton = complex && (
     <SubFieldFormDialog
       complexId={complex.id}
-      trigger={<Button disabled={!canAddSubField}>Thêm sân con ngay</Button>}
+      trigger={
+        <Button
+          size="sm"
+          disabled={!canAddSubField}
+          className="h-9 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow shadow-primary/25 hover:bg-primary/92"
+        >
+          <Plus data-icon="inline-start" />
+          Thêm sân con ngay
+        </Button>
+      }
     />
   );
 
@@ -250,6 +254,7 @@ export function ComplexDetailPage() {
         emptyStateButton={emptyStateButton}
         backLink="/owner/complexes"
         backLabel="Quay lại danh sách"
+        parentLabel="Khu phức hợp"
       />
 
       {/* Dialogs */}
@@ -276,5 +281,72 @@ export function ComplexDetailPage() {
         </>
       )}
     </>
+  );
+}
+
+// ── Reusable status ribbon (bigger alert with icon + left accent bar) ──
+type RibbonTone = "amber" | "slate" | "rose";
+
+function StatusRibbon({
+  tone,
+  icon: Icon,
+  title,
+  description,
+}: {
+  tone: RibbonTone;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
+  const tones: Record<
+    RibbonTone,
+    { wrap: string; bar: string; icon: string; title: string }
+  > = {
+    amber: {
+      wrap: "border-amber-500/30 bg-amber-500/8 text-amber-900 dark:text-amber-200",
+      bar: "bg-amber-500",
+      icon: "text-amber-600 dark:text-amber-400",
+      title: "text-amber-700 dark:text-amber-300",
+    },
+    slate: {
+      wrap: "border-slate-500/30 bg-slate-500/8 text-slate-900 dark:text-slate-200",
+      bar: "bg-slate-500",
+      icon: "text-slate-600 dark:text-slate-300",
+      title: "text-slate-700 dark:text-slate-300",
+    },
+    rose: {
+      wrap: "border-rose-500/30 bg-rose-500/8 text-rose-900 dark:text-rose-200",
+      bar: "bg-rose-500",
+      icon: "text-rose-600 dark:text-rose-400",
+      title: "text-rose-700 dark:text-rose-300",
+    },
+  };
+
+  const t = tones[tone];
+
+  return (
+    <Alert
+      className={cn(
+        "relative overflow-hidden rounded-2xl border pl-5",
+        t.wrap,
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn("absolute inset-y-0 left-0 w-1", t.bar)}
+      />
+      <Icon className={cn("size-4", t.icon)} />
+      <AlertTitle
+        className={cn(
+          "font-display text-sm font-bold italic tracking-tight",
+          t.title,
+        )}
+      >
+        {title}
+      </AlertTitle>
+      <AlertDescription className="text-xs leading-relaxed opacity-90">
+        {description}
+      </AlertDescription>
+    </Alert>
   );
 }

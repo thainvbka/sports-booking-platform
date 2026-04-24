@@ -59,7 +59,7 @@ export function ComplexCard({ complex }: ComplexCardProps) {
     >
       <Card
         className={cn(
-          "relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/70 bg-card p-0",
+          "relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0",
           "shadow-card transition-all duration-300",
           "group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-card-hover",
           "group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2",

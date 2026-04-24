@@ -1,3 +1,6 @@
+import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
 import {
   AdminDetailDialog,
@@ -6,6 +9,14 @@ import {
 } from "@/components/admin/details/AdminDetailDialog";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,8 +32,10 @@ import {
   AlertCircle,
   ArrowRightLeft,
   CheckCircle2,
-  Info,
+  CreditCard,
+  Eye,
   MapPin,
+  MoreHorizontal,
   Receipt,
   Search,
   TrendingUp,
@@ -30,9 +43,9 @@ import {
 import { useEffect, useState } from "react";
 
 const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  SUCCESS: "bg-green-100 text-green-800",
-  FAILED: "bg-red-100 text-red-800",
-  REFUNDED: "bg-blue-100 text-blue-800",
+  SUCCESS: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+  FAILED: "bg-red-100 text-red-800 dark:bg-rose-500/15 dark:text-rose-300",
+  REFUNDED: "bg-blue-100 text-blue-800 dark:bg-sky-500/15 dark:text-sky-300",
 };
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
@@ -60,6 +73,7 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => {
     fetchPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -69,14 +83,14 @@ export default function AdminPaymentsPage() {
       }
     }, 500);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
-  };
 
   const handleRowClick = (payment: any) => {
     setSelectedPayment(payment);
@@ -91,7 +105,6 @@ export default function AdminPaymentsPage() {
       value: formatPrice(stats.totalRevenue),
       icon: TrendingUp,
       color: "slate" as const,
-      // variant: "solid" as const,
       description: "Tổng tiền thực thu hệ thống",
     },
     {
@@ -121,11 +134,13 @@ export default function AdminPaymentsPage() {
       cell: (payment) => (
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase">
-            <Receipt className="w-3.5 h-3.5 text-primary" />
-            <span>{payment.transaction_code}</span>
+            <Receipt className="size-3.5 text-primary" />
+            <span className="truncate">{payment.transaction_code}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground ml-5 italic">
-            Created: {format(new Date(payment.created_at), "HH:mm dd/MM")}
+          <span className="ml-5 text-[10px] italic text-muted-foreground">
+            {format(new Date(payment.created_at), "HH:mm · dd/MM", {
+              locale: vi,
+            })}
           </span>
         </div>
       ),
@@ -136,17 +151,17 @@ export default function AdminPaymentsPage() {
       cell: (payment) => {
         const player = payment.bookings?.[0]?.player;
         if (!player)
-          return <span className="text-muted-foreground italic">N/A</span>;
+          return <span className="italic text-muted-foreground">N/A</span>;
         return (
           <div className="flex items-center gap-2">
-            <div className="size-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-[10px]">
-              {player.account.full_name.charAt(0)}
+            <div className="flex size-8 items-center justify-center rounded-full border border-border/60 bg-primary/5 text-[11px] font-bold text-primary">
+              {player.account.full_name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium truncate max-w-[150px]">
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">
                 {player.account.full_name}
               </span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="truncate text-[10px] text-muted-foreground">
                 {player.account.email}
               </span>
             </div>
@@ -155,10 +170,22 @@ export default function AdminPaymentsPage() {
       },
     },
     {
+      header: "Phương thức",
+      className: "w-36",
+      cell: (payment) => (
+        <div className="flex items-center gap-1.5 text-xs">
+          <CreditCard className="size-3.5 text-sky-500" />
+          <span className="font-medium uppercase tracking-wide">
+            {payment.provider}
+          </span>
+        </div>
+      ),
+    },
+    {
       header: "Số tiền",
       className: "w-32",
       cell: (payment) => (
-        <div className="font-bold text-sm text-foreground">
+        <div className="font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
           {formatPrice(payment.amount)}
         </div>
       ),
@@ -170,79 +197,116 @@ export default function AdminPaymentsPage() {
         const status = payment.status;
         return (
           <Badge
-            className={`${PAYMENT_STATUS_COLORS[status]} border-none flex items-center gap-1 w-fit shadow-none text-[10px] py-0 h-5`}
+            className={`${PAYMENT_STATUS_COLORS[status] ?? "bg-muted text-muted-foreground"} h-5 w-fit border-none py-0 text-[10px] shadow-none`}
           >
-            {PAYMENT_STATUS_LABELS[status]}
+            {PAYMENT_STATUS_LABELS[status] ?? status}
           </Badge>
         );
       },
     },
     {
       header: "",
-      className: "w-10",
-      cell: () => <Info className="w-4 h-4 text-muted-foreground/50" />,
+      className: "w-12 text-right",
+      cell: (payment) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal />
+              <span className="sr-only">Mở menu hành động</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onSelect={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPayment(payment);
+                  setDetailOpen(true);
+                }}
+              >
+                <Eye /> Xem chi tiết
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
     },
   ];
 
+  const totalCount =
+    pagination?.total ??
+    stats.successCount + stats.failedCount + stats.refundedCount;
+
   return (
-    <div className="px-4 lg:px-6 space-y-6 pb-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Giám sát Thanh toán
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Dữ liệu thống kê doanh thu toàn hệ thống.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+      <AdminPageHeader
+        index={3}
+        eyebrow="Admin · Finance"
+        title="Giám sát"
+        titleAccent="thanh toán"
+        description="Theo dõi dòng tiền, đối soát giao dịch và kiểm tra lịch sử hoàn tiền trên toàn hệ thống."
+      />
 
       <StatsGrid items={statItems} />
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <AdminFiltersBar>
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Tìm theo Mã giao dịch, Tên khách, Email..."
-            className="pl-9 h-9 shadow-none border-slate-200"
+            placeholder="Tìm theo mã giao dịch, tên khách, email..."
+            className="h-9 pl-9"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
-          <Select
-            value={filters.status || "ALL"}
-            onValueChange={(value) =>
-              setFilters({ status: value === "ALL" ? undefined : value })
-            }
-          >
-            <SelectTrigger className="w-[160px] h-9 shadow-none border-slate-200">
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-              {Object.entries(PAYMENT_STATUS_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        <Select
+          value={filters.status || "ALL"}
+          onValueChange={(value) =>
+            setFilters({ status: value === "ALL" ? undefined : value })
+          }
+        >
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+            {Object.entries(PAYMENT_STATUS_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </AdminFiltersBar>
 
-      <DataTable
-        data={payments}
-        columns={columns}
-        isLoading={isLoading}
-        onRowClick={handleRowClick}
-        pagination={{
-          page: queryParams.page,
-          totalPages: pagination?.totalPages || 1,
-          onPageChange: setPage,
-        }}
-        emptyMessage="Không tìm thấy giao dịch nào"
-      />
+      <AdminTableSection
+        index={4}
+        eyebrow="Data · Ledger"
+        title="Sổ cái giao dịch"
+        description="Nhấp vào một dòng để xem chi tiết và các lượt đặt liên kết."
+        count={totalCount}
+        countLabel="giao dịch"
+      >
+        <DataTable
+          data={payments}
+          columns={columns}
+          isLoading={isLoading}
+          onRowClick={handleRowClick}
+          pagination={{
+            page: queryParams.page,
+            totalPages: pagination?.totalPages || 1,
+            onPageChange: setPage,
+          }}
+          emptyMessage="Không tìm thấy giao dịch nào"
+        />
+      </AdminTableSection>
 
-      {/* Detail Dialog */}
       <AdminDetailDialog
         open={detailOpen}
         onOpenChange={setDetailOpen}
@@ -260,17 +324,17 @@ export default function AdminPaymentsPage() {
         }
       >
         {selectedPayment && (
-          <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto bg-white">
+          <div className="max-h-[70vh] space-y-6 overflow-y-auto bg-background p-6">
             <DetailSummaryRow
               leftLabel="Tổng số tiền"
               leftValue={
-                <p className="text-2xl font-black text-green-700">
+                <p className="font-display text-2xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
                   {formatPrice(selectedPayment.amount)}
                 </p>
               }
               rightLabel="Mã giao dịch"
               rightValue={
-                <p className="text-xs font-mono font-bold break-all text-slate-700 max-w-64">
+                <p className="max-w-64 break-all font-mono text-xs font-bold text-foreground">
                   {selectedPayment.transaction_code}
                 </p>
               }
@@ -281,51 +345,48 @@ export default function AdminPaymentsPage() {
                 label="Khách hàng"
                 value={linkedBookings[0]?.player?.account?.full_name || "N/A"}
               />
-
               <DetailInfoCard
                 label="Phương thức"
                 value={selectedPayment.provider}
               />
-
               <DetailInfoCard
                 label="Thời gian giao dịch"
                 value={format(
                   new Date(selectedPayment.created_at),
-                  "HH:mm - dd/MM/yyyy",
+                  "HH:mm · dd/MM/yyyy",
                   { locale: vi },
                 )}
               />
-
               <DetailInfoCard
                 label="Số lượt đặt liên kết"
                 value={linkedBookings.length}
               />
             </div>
 
-            {linkedBookings.length > 1 && (
-              <div className="space-y-3 pt-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                  Các lượt đặt trong giao dịch
+            {linkedBookings.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Các lượt đặt trong giao dịch ({linkedBookings.length})
                 </p>
                 <div className="space-y-2">
                   {linkedBookings.map((booking: any, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-slate-50/50"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/30 p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-md bg-white border flex items-center justify-center font-bold text-xs text-slate-400">
+                        <div className="flex size-8 items-center justify-center rounded-md border border-border/60 bg-background text-xs font-bold text-muted-foreground">
                           {idx + 1}
                         </div>
                         <div>
-                          <p className="text-sm font-bold flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-red-500" />
+                          <p className="flex items-center gap-1 text-sm font-bold">
+                            <MapPin className="size-3 text-rose-500" />
                             {booking.sub_field?.complex?.complex_name || "N/A"}
                           </p>
                           <p className="text-[10px] text-muted-foreground">
                             {booking.sub_field?.sub_field_name ||
                               "Unknown Field"}{" "}
-                            •{" "}
+                            ·{" "}
                             {format(
                               new Date(booking.start_time),
                               "dd/MM HH:mm",
@@ -333,7 +394,7 @@ export default function AdminPaymentsPage() {
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm font-bold">
+                      <p className="font-display text-sm font-black italic tracking-tight text-foreground">
                         {formatPrice(booking.total_price)}
                       </p>
                     </div>

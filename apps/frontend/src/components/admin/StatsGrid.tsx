@@ -2,7 +2,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
-type StatColor = "blue" | "green" | "red" | "orange" | "purple" | "slate" | "indigo";
+type StatColor =
+  | "blue"
+  | "green"
+  | "red"
+  | "orange"
+  | "purple"
+  | "slate"
+  | "indigo";
 
 interface StatItem {
   label: string;
@@ -10,7 +17,7 @@ interface StatItem {
   icon: LucideIcon;
   description?: string;
   color?: StatColor;
-  /** "solid" = gradient hero card; "glass" = light accent card (default) */
+  /** Kept for API compatibility; ignored in the compact design. */
   variant?: "solid" | "glass";
 }
 
@@ -18,219 +25,129 @@ interface StatsGridProps {
   items: StatItem[];
 }
 
-// ── Solid / hero cards (gradient + glow) ──────────────────────────────────────
-const SOLID: Record<
+// ── Compact accent tokens ─────────────────────────────────────────────────────
+// Each color drives: the left accent bar, the icon tile, and a soft ambient glow.
+const ACCENT: Record<
   StatColor,
   {
-    card: string;
-    glow1: string;
-    glow2: string;
+    bar: string;
     iconWrap: string;
     iconColor: string;
-    label: string;
-    desc: string;
+    glow: string;
+    valueAccent: string;
   }
 > = {
   slate: {
-    card: "bg-linear-to-br from-slate-900 via-slate-800 to-zinc-900 border-0 shadow-lg text-white",
-    glow1: "bg-emerald-500/10",
-    glow2: "bg-blue-500/5",
-    iconWrap: "bg-emerald-500/20 border-emerald-500/30",
-    iconColor: "text-emerald-400",
-    label: "text-slate-400",
-    desc: "text-slate-500",
-  },
-  blue: {
-    card: "bg-linear-to-br from-blue-700 via-blue-800 to-indigo-900 border-0 shadow-lg text-white",
-    glow1: "bg-blue-400/20",
-    glow2: "bg-indigo-500/10",
-    iconWrap: "bg-blue-400/20 border-blue-400/30",
-    iconColor: "text-blue-200",
-    label: "text-blue-200/80",
-    desc: "text-blue-200/60",
-  },
-  green: {
-    card: "bg-linear-to-br from-emerald-600 via-emerald-700 to-teal-800 border-0 shadow-lg text-white",
-    glow1: "bg-emerald-300/20",
-    glow2: "bg-teal-500/10",
-    iconWrap: "bg-white/15 border-white/20",
-    iconColor: "text-white",
-    label: "text-emerald-100/80",
-    desc: "text-emerald-100/60",
-  },
-  red: {
-    card: "bg-linear-to-br from-rose-600 via-rose-700 to-red-900 border-0 shadow-lg text-white",
-    glow1: "bg-rose-300/20",
-    glow2: "bg-red-500/10",
-    iconWrap: "bg-white/15 border-white/20",
-    iconColor: "text-white",
-    label: "text-rose-100/80",
-    desc: "text-rose-100/60",
-  },
-  orange: {
-    card: "bg-linear-to-br from-amber-500 via-amber-600 to-orange-700 border-0 shadow-lg text-white",
-    glow1: "bg-amber-300/20",
-    glow2: "bg-orange-500/10",
-    iconWrap: "bg-white/15 border-white/20",
-    iconColor: "text-white",
-    label: "text-amber-100/80",
-    desc: "text-amber-100/60",
-  },
-  purple: {
-    card: "bg-linear-to-br from-violet-600 via-purple-700 to-indigo-800 border-0 shadow-lg text-white",
-    glow1: "bg-violet-300/20",
-    glow2: "bg-indigo-500/10",
-    iconWrap: "bg-white/15 border-white/20",
-    iconColor: "text-white",
-    label: "text-violet-100/80",
-    desc: "text-violet-100/60",
-  },
-  indigo: {
-    card: "bg-linear-to-br from-indigo-600 via-indigo-700 to-blue-900 border-0 shadow-lg text-white",
-    glow1: "bg-indigo-300/20",
-    glow2: "bg-blue-500/10",
-    iconWrap: "bg-white/15 border-white/20",
-    iconColor: "text-white",
-    label: "text-indigo-100/80",
-    desc: "text-indigo-100/60",
-  },
-};
-
-// ── Glass / light accent cards ────────────────────────────────────────────────
-const GLASS: Record<
-  StatColor,
-  { card: string; glow: string; iconWrap: string; iconColor: string }
-> = {
-  slate: {
-    card: "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/30 shadow-sm",
+    bar: "bg-gradient-to-b from-slate-500/70 via-slate-500/40 to-transparent",
+    iconWrap: "bg-slate-100 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/30",
+    iconColor: "text-slate-600 dark:text-slate-300",
     glow: "bg-slate-500/5",
-    iconWrap: "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
-    iconColor: "text-slate-600 dark:text-slate-400",
+    valueAccent: "text-foreground",
   },
   blue: {
-    card: "bg-white dark:bg-slate-900 border border-blue-100/80 dark:border-blue-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-blue-500 via-blue-500/40 to-transparent",
+    iconWrap: "bg-blue-50 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/30",
+    iconColor: "text-blue-600 dark:text-blue-300",
     glow: "bg-blue-500/6",
-    iconWrap: "bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/30",
-    iconColor: "text-blue-500",
+    valueAccent: "text-foreground",
   },
   green: {
-    card: "bg-white dark:bg-slate-900 border border-emerald-100/80 dark:border-emerald-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-emerald-500 via-emerald-500/40 to-transparent",
+    iconWrap: "bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/30",
+    iconColor: "text-emerald-600 dark:text-emerald-300",
     glow: "bg-emerald-500/6",
-    iconWrap: "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/30",
-    iconColor: "text-emerald-500",
+    valueAccent: "text-foreground",
   },
   red: {
-    card: "bg-white dark:bg-slate-900 border border-rose-100/80 dark:border-rose-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-rose-500 via-rose-500/40 to-transparent",
+    iconWrap: "bg-rose-50 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/30",
+    iconColor: "text-rose-600 dark:text-rose-300",
     glow: "bg-rose-500/6",
-    iconWrap: "bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/30",
-    iconColor: "text-rose-500",
+    valueAccent: "text-foreground",
   },
   orange: {
-    card: "bg-white dark:bg-slate-900 border border-amber-100/80 dark:border-amber-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-amber-500 via-amber-500/40 to-transparent",
+    iconWrap: "bg-amber-50 border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/30",
+    iconColor: "text-amber-600 dark:text-amber-300",
     glow: "bg-amber-500/6",
-    iconWrap: "bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/30",
-    iconColor: "text-amber-500",
+    valueAccent: "text-foreground",
   },
   purple: {
-    card: "bg-white dark:bg-slate-900 border border-violet-100/80 dark:border-violet-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-violet-500 via-violet-500/40 to-transparent",
+    iconWrap: "bg-violet-50 border-violet-100 dark:bg-violet-500/10 dark:border-violet-500/30",
+    iconColor: "text-violet-600 dark:text-violet-300",
     glow: "bg-violet-500/6",
-    iconWrap: "bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/30",
-    iconColor: "text-violet-500",
+    valueAccent: "text-foreground",
   },
   indigo: {
-    card: "bg-white dark:bg-slate-900 border border-indigo-100/80 dark:border-indigo-900/30 shadow-sm",
+    bar: "bg-gradient-to-b from-indigo-500 via-indigo-500/40 to-transparent",
+    iconWrap: "bg-indigo-50 border-indigo-100 dark:bg-indigo-500/10 dark:border-indigo-500/30",
+    iconColor: "text-indigo-600 dark:text-indigo-300",
     glow: "bg-indigo-500/6",
-    iconWrap: "bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/30",
-    iconColor: "text-indigo-500",
+    valueAccent: "text-foreground",
   },
 };
 
 export function StatsGrid({ items }: StatsGridProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
       {items.map((item, idx) => {
         const Icon = item.icon;
-        const color = item.color ?? "slate";
-        const isSolid = item.variant === "solid";
+        const tone = ACCENT[item.color ?? "slate"];
 
-        if (isSolid) {
-          const s = SOLID[color];
-          return (
-            <Card key={idx} className={cn("relative overflow-hidden", s.card)}>
-              <div
-                className={cn(
-                  "absolute -top-8 -right-8 w-28 h-28 rounded-full blur-2xl pointer-events-none",
-                  s.glow1,
-                )}
-              />
-              <div
-                className={cn(
-                  "absolute bottom-0 left-0 w-20 h-20 rounded-full blur-xl pointer-events-none",
-                  s.glow2,
-                )}
-              />
-              <CardContent className="p-5 relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <p
-                    className={cn(
-                      "text-[10px] font-semibold uppercase tracking-[0.15em] leading-tight pt-0.5",
-                      s.label,
-                    )}
-                  >
-                    {item.label}
-                  </p>
-                  <div
-                    className={cn(
-                      "shrink-0 rounded-xl border p-2.5",
-                      s.iconWrap,
-                    )}
-                  >
-                    <Icon className={cn("h-4 w-4", s.iconColor)} />
-                  </div>
-                </div>
-                <p className="text-[1.7rem] font-black tracking-tight leading-none mb-2 text-white">
-                  {item.value}
-                </p>
-                {item.description && (
-                  <p className={cn("text-[10px]", s.desc)}>{item.description}</p>
-                )}
-              </CardContent>
-            </Card>
-          );
-        }
-
-        // Glass variant
-        const g = GLASS[color];
         return (
-          <Card key={idx} className={cn("relative overflow-hidden", g.card)}>
-            <div
+          <Card
+            key={idx}
+            className={cn(
+              "relative overflow-hidden rounded-xl border border-border/60 bg-card p-0 shadow-sm transition-all duration-300",
+              "hover:-translate-y-0.5 hover:shadow-md",
+            )}
+          >
+            {/* Left accent bar */}
+            <span
+              aria-hidden
               className={cn(
-                "absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl pointer-events-none",
-                g.glow,
+                "pointer-events-none absolute inset-y-2 left-0 w-[3px] rounded-r-full",
+                tone.bar,
               )}
             />
-            <CardContent className="p-5 relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground leading-tight pt-0.5">
+            {/* Ambient glow */}
+            <span
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute -top-6 -right-6 size-20 rounded-full blur-2xl",
+                tone.glow,
+              )}
+            />
+
+            <CardContent className="relative flex items-start gap-3 px-3.5 py-3 pl-4">
+              <div
+                className={cn(
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg border",
+                  tone.iconWrap,
+                )}
+              >
+                <Icon className={cn("size-4", tone.iconColor)} />
+              </div>
+
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {item.label}
-                </p>
-                <div
+                </span>
+                <span
                   className={cn(
-                    "shrink-0 rounded-xl border p-2.5",
-                    g.iconWrap,
+                    "font-display text-xl font-black italic leading-none tracking-tight tabular-nums md:text-[1.35rem]",
+                    tone.valueAccent,
                   )}
                 >
-                  <Icon className={cn("h-4 w-4", g.iconColor)} />
-                </div>
+                  {item.value}
+                </span>
+                {item.description && (
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {item.description}
+                  </span>
+                )}
               </div>
-              <p className="text-[1.7rem] font-black tracking-tight leading-none mb-2 text-foreground">
-                {item.value}
-              </p>
-              {item.description && (
-                <p className="text-[10px] text-muted-foreground">
-                  {item.description}
-                </p>
-              )}
             </CardContent>
           </Card>
         );

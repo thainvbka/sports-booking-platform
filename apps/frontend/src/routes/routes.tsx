@@ -39,7 +39,7 @@ import { StripeRefreshPage } from "@/pages/stripe/StripeRefreshPage";
 import { StripeReturnPage } from "@/pages/stripe/StripeReturnPage";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
-import { DashboardLayout } from "../layouts/DashboardLayout";
+import { OwnerLayout } from "../layouts/OwnerLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -197,7 +197,7 @@ export const router = createBrowserRouter([
     path: "/owner",
     element: (
       <ProtectedRoute allowedRoles={["OWNER"]}>
-        <DashboardLayout />
+        <OwnerLayout />
       </ProtectedRoute>
     ),
     children: [

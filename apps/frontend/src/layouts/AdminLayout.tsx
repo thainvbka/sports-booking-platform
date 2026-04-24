@@ -3,25 +3,56 @@
 import { AppSidebar } from "@/components/admin/Sidebar";
 import { SiteFooter } from "@/components/admin/SiteFooter";
 import { SiteHeader } from "@/components/admin/SiteHeader";
-// import {
-//   ThemeCustomizer,
-//   ThemeCustomizerTrigger,
-// } from "@/components/theme-customizer";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useSidebarConfig } from "@/hooks/use-sidebar-config";
+import { cn } from "@/lib/utils";
 import * as React from "react";
 import { Outlet } from "react-router-dom";
 
 interface BaseLayoutProps {
   children?: React.ReactNode;
-  title?: string;
-  description?: string;
 }
 
-export function BaseLayout({ children, title, description }: BaseLayoutProps) {
-  // const [themeCustomizerOpen, setThemeCustomizerOpen] = React.useState(false);
+// Editorial admin shell: sidebar + glass header + ambient content + slim footer.
+export function BaseLayout({ children }: BaseLayoutProps) {
   const { config } = useSidebarConfig();
   const content = children ?? <Outlet />;
+
+  const sidebar = (
+    <AppSidebar
+      variant={config.variant}
+      collapsible={config.collapsible}
+      side={config.side}
+    />
+  );
+
+  const inset = (
+    <SidebarInset className="relative flex min-h-svh flex-col bg-background">
+      <SiteHeader />
+
+      <main className="relative flex-1 overflow-visible">
+        {/* Ambient decorative backdrop — stays behind content, no pointer events. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-primary/5 via-transparent to-transparent"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 right-[-6rem] size-72 rounded-full bg-primary/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-40 left-[-4rem] size-64 rounded-full bg-sky-500/5 blur-3xl"
+        />
+
+        <div className="relative mx-auto flex w-full max-w-[1400px] flex-col gap-5 px-4 py-5 md:gap-6 md:px-6 md:py-7">
+          {content}
+        </div>
+      </main>
+
+      <SiteFooter />
+    </SidebarInset>
+  );
 
   return (
     <SidebarProvider
@@ -32,78 +63,21 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
           "--header-height": "calc(var(--spacing) * 14)",
         } as React.CSSProperties
       }
-      className={config.collapsible === "none" ? "sidebar-none-mode" : ""}
+      className={cn(
+        config.collapsible === "none" ? "sidebar-none-mode" : "",
+      )}
     >
       {config.side === "left" ? (
         <>
-          <AppSidebar
-            variant={config.variant}
-            collapsible={config.collapsible}
-            side={config.side}
-          />
-          <SidebarInset>
-            <SiteHeader />
-            <div className="flex flex-1 flex-col">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                  {title && (
-                    <div className="px-4 lg:px-6">
-                      <div className="flex flex-col gap-2">
-                        <h1 className="text-2xl font-bold tracking-tight">
-                          {title}
-                        </h1>
-                        {description && (
-                          <p className="text-muted-foreground">{description}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {content}
-                </div>
-              </div>
-            </div>
-            <SiteFooter />
-          </SidebarInset>
+          {sidebar}
+          {inset}
         </>
       ) : (
         <>
-          <SidebarInset>
-            <SiteHeader />
-            <div className="flex flex-1 flex-col">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                  {title && (
-                    <div className="px-4 lg:px-6">
-                      <div className="flex flex-col gap-2">
-                        <h1 className="text-2xl font-bold tracking-tight">
-                          {title}
-                        </h1>
-                        {description && (
-                          <p className="text-muted-foreground">{description}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {content}
-                </div>
-              </div>
-            </div>
-            <SiteFooter />
-          </SidebarInset>
-          <AppSidebar
-            variant={config.variant}
-            collapsible={config.collapsible}
-            side={config.side}
-          />
+          {inset}
+          {sidebar}
         </>
       )}
-
-      {/* Theme Customizer */}
-      {/* <ThemeCustomizerTrigger onClick={() => setThemeCustomizerOpen(true)} />
-      <ThemeCustomizer
-        open={themeCustomizerOpen}
-        onOpenChange={setThemeCustomizerOpen}
-      /> */}
     </SidebarProvider>
   );
 }

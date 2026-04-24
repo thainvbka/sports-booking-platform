@@ -1,17 +1,27 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar as CalendarIcon, Check, ChevronDown } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Check,
+  ChevronDown,
+  Coins,
+  Filter,
+  RotateCcw,
+  Tag,
+} from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 
@@ -42,6 +52,7 @@ export function BookingFilters({
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [statusOpen, setStatusOpen] = useState(false);
+  const [priceOpen, setPriceOpen] = useState(false);
 
   const handleApply = () => {
     onFilterChange({
@@ -79,35 +90,63 @@ export function BookingFilters({
   const hasDateFilter = !!dateRange;
   const hasPriceFilter = !!minPrice || !!maxPrice;
   const hasAnyFilter = hasStatusFilter || hasDateFilter || hasPriceFilter;
+  const activeCount = [hasStatusFilter, hasDateFilter, hasPriceFilter].filter(
+    Boolean,
+  ).length;
+
+  const pillClass = (active: boolean) =>
+    cn(
+      "h-9 gap-2 rounded-full border px-3.5 text-xs font-medium transition-colors",
+      active
+        ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15"
+        : "border-border/70 bg-background text-foreground hover:border-primary/30 hover:text-primary",
+    );
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Status Filter - Direct dropdown */}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="flex items-center gap-1.5 pr-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        <Filter className="size-3" />
+        Lọc
+        {activeCount > 0 ? (
+          <Badge
+            variant="outline"
+            className="ml-1 h-4 rounded-full border-primary/30 bg-primary/10 px-1.5 text-[9px] font-semibold uppercase tracking-wider text-primary"
+          >
+            {activeCount}
+          </Badge>
+        ) : null}
+      </span>
+
       <Popover open={statusOpen} onOpenChange={setStatusOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant={hasStatusFilter ? "default" : "outline"}
-            className="h-9 gap-2"
+            variant="outline"
+            size="sm"
+            className={pillClass(hasStatusFilter)}
           >
-            {currentStatusLabel}
-            <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+            <Tag data-icon="inline-start" />
+            {hasStatusFilter ? currentStatusLabel : "Trạng thái"}
+            <ChevronDown className="size-3.5 opacity-60" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-48 p-1" align="start">
-          <div className="space-y-1">
+        <PopoverContent className="w-52 p-1" align="start">
+          <div className="flex flex-col gap-0.5">
             {statusList.map((item) => (
               <button
                 key={item.value}
+                type="button"
                 onClick={() => handleStatusSelect(item.value)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors text-left",
-                  status === item.value && "bg-accent"
+                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                  status === item.value && "bg-accent text-accent-foreground",
                 )}
               >
                 <Check
                   className={cn(
-                    "h-4 w-4",
-                    status === item.value ? "opacity-100" : "opacity-0"
+                    "size-3.5",
+                    status === item.value
+                      ? "opacity-100 text-primary"
+                      : "opacity-0",
                   )}
                 />
                 {item.label}
@@ -117,22 +156,22 @@ export function BookingFilters({
         </PopoverContent>
       </Popover>
 
-      {/* Date Range Filter */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            variant={hasDateFilter ? "default" : "outline"}
-            className="h-9 gap-2"
+            variant="outline"
+            size="sm"
+            className={pillClass(hasDateFilter)}
           >
-            <CalendarIcon className="h-3.5 w-3.5" />
+            <CalendarIcon data-icon="inline-start" />
             {hasDateFilter && dateRange?.from
               ? dateRange.to
                 ? `${format(dateRange.from, "dd/MM", {
                     locale: vi,
-                  })} - ${format(dateRange.to, "dd/MM", { locale: vi })}`
+                  })} – ${format(dateRange.to, "dd/MM", { locale: vi })}`
                 : format(dateRange.from, "dd/MM", { locale: vi })
               : "Thời gian"}
-            <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+            <ChevronDown className="size-3.5 opacity-60" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
@@ -153,68 +192,71 @@ export function BookingFilters({
         </PopoverContent>
       </Popover>
 
-      {/* Price Range Filter */}
-      <Popover>
+      <Popover open={priceOpen} onOpenChange={setPriceOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant={hasPriceFilter ? "default" : "outline"}
-            className="h-9 gap-2"
+            variant="outline"
+            size="sm"
+            className={pillClass(hasPriceFilter)}
           >
+            <Coins data-icon="inline-start" />
             {hasPriceFilter
               ? minPrice && maxPrice
-                ? `${parseInt(minPrice) / 1000}k - ${
-                    parseInt(maxPrice) / 1000
-                  }k`
+                ? `${parseInt(minPrice) / 1000}k – ${parseInt(maxPrice) / 1000}k`
                 : minPrice
-                ? `Từ ${parseInt(minPrice) / 1000}k`
-                : `Đến ${parseInt(maxPrice) / 1000}k`
+                  ? `Từ ${parseInt(minPrice) / 1000}k`
+                  : `Đến ${parseInt(maxPrice) / 1000}k`
               : "Giá"}
-            <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+            <ChevronDown className="size-3.5 opacity-60" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-4" align="end">
-          <div className="space-y-4">
-            <div>
-              <Label className="text-xs font-medium mb-2 block">
-                Khoảng giá
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Khoảng giá (VND)
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="Từ"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="Đến"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
+                <Input
+                  type="number"
+                  placeholder="Từ"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="h-9 tabular-nums"
+                />
+                <Input
+                  type="number"
+                  placeholder="Đến"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="h-9 tabular-nums"
+                />
               </div>
             </div>
-            <Button onClick={handleApply} className="w-full h-9">
+            <Separator />
+            <Button
+              onClick={() => {
+                handleApply();
+                setPriceOpen(false);
+              }}
+              className="h-9 rounded-full"
+            >
+              <Filter data-icon="inline-start" />
               Áp dụng
             </Button>
           </div>
         </PopoverContent>
       </Popover>
 
-      {/* Clear All Filters */}
       {hasAnyFilter && (
         <Button
           variant="ghost"
           size="sm"
           onClick={handleClear}
-          className="h-9 text-xs"
+          className="h-9 rounded-full text-muted-foreground hover:text-destructive"
         >
-          Xóa bộ lọc
+          <RotateCcw data-icon="inline-start" />
+          Xóa
         </Button>
       )}
     </div>

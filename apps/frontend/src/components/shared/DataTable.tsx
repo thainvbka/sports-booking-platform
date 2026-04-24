@@ -28,7 +28,6 @@ interface DataTableProps<T> {
   };
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
-  pageSize?: number;
 }
 
 export function DataTable<T>({
@@ -38,13 +37,12 @@ export function DataTable<T>({
   pagination,
   emptyMessage = "Không có dữ liệu",
   onRowClick,
-  pageSize = 8,
 }: DataTableProps<T>) {
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border bg-white overflow-hidden">
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-xl border border-border/60 bg-card">
         <div className="overflow-x-auto">
-          <Table className="table-fixed w-full">
+          <Table className="w-full min-w-[720px]">
             <TableHeader>
               <TableRow>
                 {columns.map((column, index) => (
@@ -100,28 +98,32 @@ export function DataTable<T>({
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => pagination.onPageChange(pagination.page - 1)}
-            disabled={pagination.page <= 1 || isLoading}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Trước
-          </Button>
-          <span className="text-sm text-muted-foreground">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground tabular-nums">
             Trang {pagination.page} / {pagination.totalPages}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => pagination.onPageChange(pagination.page + 1)}
-            disabled={pagination.page >= pagination.totalPages || isLoading}
-          >
-            Sau
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => pagination.onPageChange(pagination.page - 1)}
+              disabled={pagination.page <= 1 || isLoading}
+            >
+              <ChevronLeft data-icon="inline-start" />
+              Trước
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => pagination.onPageChange(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages || isLoading}
+            >
+              Sau
+              <ChevronRight data-icon="inline-end" />
+            </Button>
+          </div>
         </div>
       )}
     </div>

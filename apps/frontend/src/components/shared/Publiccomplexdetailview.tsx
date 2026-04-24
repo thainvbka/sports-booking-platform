@@ -25,7 +25,12 @@ import {
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { ComplexDetail, PaginationMeta, SportType, SubField } from "@/types";
+import type {
+  ComplexDetail,
+  PaginationMeta,
+  SportType,
+  SubField,
+} from "@/types";
 import { formatPrice, getSportTypeLabel } from "@/utils";
 import {
   LayoutGrid,
@@ -78,7 +83,9 @@ export function PublicComplexDetailView({
     return (
       <section className="mx-auto flex min-h-[60vh] max-w-3xl flex-col justify-center px-4 py-20 sm:px-6">
         <EmptyState
-          title={error ? "Không thể tải khu phức hợp" : "Không tìm thấy khu phức hợp"}
+          title={
+            error ? "Không thể tải khu phức hợp" : "Không tìm thấy khu phức hợp"
+          }
           description={
             error ??
             "Khu phức hợp bạn đang tìm không tồn tại hoặc đã ngừng hoạt động."
@@ -193,7 +200,10 @@ function ComplexHero({
         aria-hidden
         className="absolute inset-0 bg-linear-to-b from-slate-950/65 via-slate-950/85 to-slate-950"
       />
-      <div aria-hidden className="absolute inset-0 sports-field-pattern opacity-12" />
+      <div
+        aria-hidden
+        className="absolute inset-0 sports-field-pattern opacity-12"
+      />
       <div
         aria-hidden
         className="absolute -left-24 top-6 size-64 rounded-full bg-primary/30 blur-3xl"
@@ -207,13 +217,19 @@ function ComplexHero({
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
             <BreadcrumbItem>
-              <BreadcrumbLink asChild className="text-white/60 hover:text-white">
+              <BreadcrumbLink
+                asChild
+                className="text-white/60 hover:text-white"
+              >
                 <Link to="/">Trang chủ</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="[&>svg]:text-white/30" />
             <BreadcrumbItem>
-              <BreadcrumbLink asChild className="text-white/60 hover:text-white">
+              <BreadcrumbLink
+                asChild
+                className="text-white/60 hover:text-white"
+              >
                 <Link to="/search?tab=complexes">Tìm sân</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>

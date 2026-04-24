@@ -3,6 +3,9 @@ import {
   DetailInfoCard,
   DetailSummaryRow,
 } from "@/components/admin/details/AdminDetailDialog";
+import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -37,7 +41,7 @@ import {
   Eye,
   FileText,
   MapPin,
-  MoreVertical,
+  MoreHorizontal,
   PauseCircle,
   Search,
   ShieldX,
@@ -72,7 +76,6 @@ export default function AdminComplexesPage() {
     fetchComplexes();
   }, [fetchComplexes]);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchValue !== (filters.search || "")) {
@@ -97,12 +100,11 @@ export default function AdminComplexesPage() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
-  };
 
   const getSportLabel = (sportType: unknown) => {
     const key = String(sportType) as keyof typeof SPORT_TYPE_LABELS;
@@ -123,15 +125,15 @@ export default function AdminComplexesPage() {
           {complex.complex_image ? (
             <img
               src={complex.complex_image}
-              className="size-10 rounded-md object-cover border"
+              className="size-10 rounded-lg border border-border/60 object-cover"
             />
           ) : (
-            <div className="size-10 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 border">
+            <div className="flex size-10 items-center justify-center rounded-lg border border-border/60 bg-muted/60 text-muted-foreground">
               <MapPin className="size-5" />
             </div>
           )}
-          <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="font-bold text-sm truncate">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-sm font-bold">
               {complex.complex_name}
             </span>
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -147,11 +149,11 @@ export default function AdminComplexesPage() {
       className: "w-52",
       cell: (complex) => (
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-xs">
-            <User className="w-3.5 h-3.5 text-blue-500" />
+          <div className="flex items-center gap-1.5 text-xs font-medium">
+            <User className="size-3.5 text-primary" />
             <span className="truncate">{complex.owner.account.full_name}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground ml-5 truncate italic">
+          <span className="ml-5 truncate text-[10px] italic text-muted-foreground">
             {complex.owner.account.email}
           </span>
         </div>
@@ -163,12 +165,12 @@ export default function AdminComplexesPage() {
       cell: (complex) => (
         <div className="flex flex-col gap-1 text-[10px]">
           <div className="flex items-center gap-1">
-            <Badge variant="outline" className="text-[9px] py-0 h-4">
+            <Badge variant="outline" className="h-4 py-0 text-[9px]">
               {complex.total_subfields} sân con
             </Badge>
             {complex.avg_rating && (
-              <div className="flex items-center gap-0.5 text-yellow-600 font-bold">
-                <Star className="size-3 fill-yellow-600" />
+              <div className="flex items-center gap-0.5 font-bold text-amber-600 dark:text-amber-400">
+                <Star className="size-3 fill-current" />
                 {Number(complex.avg_rating).toFixed(1)}
               </div>
             )}
@@ -187,12 +189,12 @@ export default function AdminComplexesPage() {
       header: "Khoảng giá",
       className: "w-44",
       cell: (complex) => (
-        <div className="flex flex-col text-[11px] font-medium">
-          <span className="text-green-700">
+        <div className="flex flex-col text-[11px] font-medium tabular-nums">
+          <span className="text-emerald-600 dark:text-emerald-400">
             {formatPrice(complex.min_price || 0)}
           </span>
-          <span className="text-slate-400">đến</span>
-          <span className="text-blue-700">
+          <span className="text-muted-foreground/60">đến</span>
+          <span className="text-sky-600 dark:text-sky-400">
             {formatPrice(complex.max_price || 0)}
           </span>
         </div>
@@ -203,40 +205,39 @@ export default function AdminComplexesPage() {
       className: "w-32",
       cell: (complex) => (
         <Badge
-          className={`${COMPLEX_STATUS_COLORS[complex.status]} border-none text-[10px] py-0 h-5 shadow-none`}
+          className={`${COMPLEX_STATUS_COLORS[complex.status]} h-5 border-none py-0 text-[10px] shadow-none`}
         >
           {COMPLEX_STATUS_LABELS[complex.status]}
         </Badge>
       ),
     },
     {
-      header: "Hành động",
-      className: "w-20",
+      header: "",
+      className: "w-12 text-right",
       cell: (complex) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              openComplexDetail(complex);
-            }}
-          >
-            <Eye className="size-4 text-blue-500" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={(e) => e.stopPropagation()}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal />
+              <span className="sr-only">Mở menu hành động</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onSelect={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openComplexDetail(complex);
+                }}
               >
-                <MoreVertical className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+                <Eye /> Xem chi tiết
+              </DropdownMenuItem>
               {complex.status === "PENDING" && (
                 <>
                   <DropdownMenuItem
@@ -245,9 +246,9 @@ export default function AdminComplexesPage() {
                       e.stopPropagation();
                       handleStatusUpdate(complex.id, "ACTIVE");
                     }}
-                    className="text-green-600"
+                    className="text-emerald-600 dark:text-emerald-400"
                   >
-                    <CheckCircle className="size-4 mr-2" /> Duyệt sân
+                    <CheckCircle /> Duyệt sân
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={(e) => e.stopPropagation()}
@@ -255,9 +256,9 @@ export default function AdminComplexesPage() {
                       e.stopPropagation();
                       handleStatusUpdate(complex.id, "REJECTED");
                     }}
-                    className="text-red-600"
+                    className="text-rose-600 dark:text-rose-400"
                   >
-                    <XCircle className="size-4 mr-2" /> Từ chối
+                    <XCircle /> Từ chối
                   </DropdownMenuItem>
                 </>
               )}
@@ -268,9 +269,9 @@ export default function AdminComplexesPage() {
                     e.stopPropagation();
                     handleStatusUpdate(complex.id, "INACTIVE");
                   }}
-                  className="text-orange-600"
+                  className="text-amber-600 dark:text-amber-400"
                 >
-                  <AlertTriangle className="size-4 mr-2" /> Tạm dừng hoạt động
+                  <AlertTriangle /> Tạm dừng hoạt động
                 </DropdownMenuItem>
               )}
               {complex.status === "INACTIVE" && (
@@ -281,12 +282,12 @@ export default function AdminComplexesPage() {
                     handleStatusUpdate(complex.id, "ACTIVE");
                   }}
                 >
-                  <CheckCircle className="size-4 mr-2" /> Kích hoạt lại
+                  <CheckCircle /> Kích hoạt lại
                 </DropdownMenuItem>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
@@ -318,62 +319,73 @@ export default function AdminComplexesPage() {
     },
   ];
 
+  const totalComplexes =
+    pagination?.total ??
+    stats.active + stats.pending + stats.inactive + stats.rejected;
+
   return (
-    <div className="px-4 lg:px-6 space-y-6 pb-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý Sân bóng</h1>
-        <p className="text-sm text-muted-foreground">
-          Duyệt sân bóng mới và quản lý trạng thái hoạt động của các khu phức
-          hợp thể thao.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+      <AdminPageHeader
+        index={2}
+        eyebrow="Admin · Marketplace"
+        title="Quản lý"
+        titleAccent="sân bóng"
+        description="Duyệt khu phức hợp thể thao đăng ký mới và điều phối trạng thái vận hành của toàn mạng lưới."
+      />
 
       <StatsGrid items={statItems} />
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <AdminFiltersBar>
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Tìm theo tên sân bóng..."
-            className="pl-9 h-9 border-slate-200 shadow-none"
+            placeholder="Tìm theo tên sân bóng, chủ sở hữu..."
+            className="h-9 pl-9"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
-          <Select
-            value={filters.status || "ALL"}
-            onValueChange={(value) =>
-              setFilters({ status: value === "ALL" ? undefined : value })
-            }
-          >
-            <SelectTrigger className="w-45 h-9 border-slate-200 shadow-none">
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-              {Object.entries(COMPLEX_STATUS_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        <Select
+          value={filters.status || "ALL"}
+          onValueChange={(value) =>
+            setFilters({ status: value === "ALL" ? undefined : value })
+          }
+        >
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+            {Object.entries(COMPLEX_STATUS_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </AdminFiltersBar>
 
-      <DataTable
-        data={complexes}
-        columns={columns}
-        isLoading={isLoading}
-        onRowClick={(complex) => openComplexDetail(complex)}
-        pagination={{
-          page: queryParams.page,
-          totalPages: pagination?.totalPages || 1,
-          onPageChange: setPage,
-        }}
-        emptyMessage="Không tìm thấy sân bóng nào"
-      />
+      <AdminTableSection
+        index={3}
+        eyebrow="Data · Table"
+        title="Danh mục sân bóng"
+        description="Nhấp vào một dòng để xem hồ sơ pháp lý và phê duyệt."
+        count={totalComplexes}
+        countLabel="khu"
+      >
+        <DataTable
+          data={complexes}
+          columns={columns}
+          isLoading={isLoading}
+          onRowClick={(complex) => openComplexDetail(complex)}
+          pagination={{
+            page: queryParams.page,
+            totalPages: pagination?.totalPages || 1,
+            onPageChange: setPage,
+          }}
+          emptyMessage="Không tìm thấy sân bóng nào"
+        />
+      </AdminTableSection>
 
       <AdminDetailDialog
         open={docDialogOpen}
@@ -393,17 +405,17 @@ export default function AdminComplexesPage() {
         contentClassName="max-w-3xl"
       >
         {selectedComplex && (
-          <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto bg-white">
+          <div className="max-h-[70vh] space-y-6 overflow-y-auto bg-background p-6">
             <DetailSummaryRow
               leftLabel="Tên khu phức hợp"
               leftValue={
-                <p className="text-lg font-bold text-slate-900">
+                <p className="font-display text-lg font-bold italic tracking-tight text-foreground">
                   {selectedComplex.complex_name}
                 </p>
               }
               rightLabel="Địa chỉ"
               rightValue={
-                <p className="text-xs font-medium text-slate-700 max-w-80 wrap-break-word">
+                <p className="wrap-break-word max-w-80 text-xs font-medium text-foreground">
                   {selectedComplex.complex_address}
                 </p>
               }
@@ -447,18 +459,14 @@ export default function AdminComplexesPage() {
               />
             </div>
 
-            <div className="rounded-lg border border-slate-200 p-4">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
+            <div className="rounded-lg border border-border/60 p-4">
+              <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
                 Môn thể thao khả dụng
               </p>
               <div className="flex flex-wrap gap-2">
                 {selectedComplex.sport_types.length > 0 ? (
                   selectedComplex.sport_types.map((type) => (
-                    <Badge
-                      key={type}
-                      variant="secondary"
-                      className="bg-slate-100 text-slate-700"
-                    >
+                    <Badge key={type} variant="secondary">
                       {getSportLabel(type)}
                     </Badge>
                   ))
@@ -470,16 +478,16 @@ export default function AdminComplexesPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 p-4">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
+            <div className="rounded-lg border border-border/60 p-4">
+              <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
                 Tài liệu pháp lý (JSON)
               </p>
-              <pre className="p-3 bg-slate-50 rounded-md border text-xs font-mono overflow-x-auto">
+              <pre className="overflow-x-auto rounded-md border border-border/60 bg-muted/40 p-3 font-mono text-xs">
                 {JSON.stringify(selectedComplex.verification_docs, null, 2)}
               </pre>
             </div>
 
-            <div className="pt-2 border-t flex flex-wrap justify-end gap-2">
+            <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 pt-4">
               <Button variant="outline" onClick={() => setDocDialogOpen(false)}>
                 Đóng
               </Button>
@@ -492,15 +500,16 @@ export default function AdminComplexesPage() {
                       setDocDialogOpen(false);
                     }}
                   >
+                    <XCircle data-icon="inline-start" />
                     Từ chối
                   </Button>
                   <Button
-                    className="bg-green-600 hover:bg-green-700"
                     onClick={() => {
                       handleStatusUpdate(selectedComplex.id, "ACTIVE");
                       setDocDialogOpen(false);
                     }}
                   >
+                    <CheckCircle data-icon="inline-start" />
                     Phê duyệt ngay
                   </Button>
                 </>

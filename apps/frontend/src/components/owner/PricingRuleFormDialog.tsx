@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -11,36 +12,36 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TimeInput } from "@/components/ui/time-input";
+import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Clock, Plus, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  Clock,
+  Coins,
+  Loader2,
+  Plus,
+  Sparkles,
+  Timer,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// Format time from backend (handles both string and Date)
-// Always returns 24-hour format HH:MM for form input
 const formatTimeFromBackend = (time: string | Date): string => {
   if (!time) return "";
 
   if (typeof time === "string") {
-    // If already in HH:MM format
     if (/^\d{2}:\d{2}$/.test(time)) return time;
-
-    // If in HH:MM:SS format
     if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
-
-    // If ISO string (e.g., "1970-01-01T21:00:00.000Z")
     if (time.includes("T") && time.includes("Z")) {
-      // Extract time part: "1970-01-01T21:00:00.000Z" -> "21:00:00"
       const timePart = time.split("T")[1].split("Z")[0];
-      return timePart.slice(0, 5); // "21:00:00" -> "21:00"
+      return timePart.slice(0, 5);
     }
-
     return time.slice(0, 5);
   }
 
-  // If Date object, use UTC to avoid timezone conversion
   const date = new Date(time);
   const hours = String(date.getUTCHours()).padStart(2, "0");
   const minutes = String(date.getUTCMinutes()).padStart(2, "0");
@@ -48,13 +49,13 @@ const formatTimeFromBackend = (time: string | Date): string => {
 };
 
 const DAYS_OF_WEEK = [
-  { value: 1, label: "Thứ 2" },
-  { value: 2, label: "Thứ 3" },
-  { value: 3, label: "Thứ 4" },
-  { value: 4, label: "Thứ 5" },
-  { value: 5, label: "Thứ 6" },
-  { value: 6, label: "Thứ 7" },
-  { value: 0, label: "Chủ nhật" },
+  { value: 1, label: "T2", long: "Thứ 2" },
+  { value: 2, label: "T3", long: "Thứ 3" },
+  { value: 3, label: "T4", long: "Thứ 4" },
+  { value: 4, label: "T5", long: "Thứ 5" },
+  { value: 5, label: "T6", long: "Thứ 6" },
+  { value: 6, label: "T7", long: "Thứ 7" },
+  { value: 0, label: "CN", long: "Chủ nhật" },
 ];
 
 const pricingRuleSchema = z.object({
@@ -126,6 +127,7 @@ export function PricingRuleFormDialog({
   });
 
   const selectedDays = watch("days");
+  const timeSlots = watch("time_slots") || [];
 
   useEffect(() => {
     if (open) {
@@ -196,224 +198,297 @@ export function PricingRuleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-137.5">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-              <Clock className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <DialogTitle>
-                {mode === "create"
-                  ? "Thêm khung giờ mới"
-                  : "Chỉnh sửa khung giờ"}
-              </DialogTitle>
-              <DialogDescription className="mt-1">
-                {mode === "create"
-                  ? "Tạo khung giờ và giá cho sân con"
-                  : "Cập nhật thông tin khung giờ"}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+      <DialogContent className="overflow-hidden p-0 sm:max-w-[36rem]">
+        <div
+          aria-hidden
+          className="h-1 w-full bg-gradient-to-r from-primary via-accent-sport to-primary"
+        />
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          {/* Days Selection */}
-          {mode === "create" && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Áp dụng cho ngày</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="apply-all"
-                    checked={applyToAll}
-                    onCheckedChange={handleApplyToAllToggle}
-                  />
+        <div className="flex flex-col gap-5 px-6 py-5">
+          <DialogHeader className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+                <Clock className="size-5" />
+              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <Badge
+                  variant="outline"
+                  className="h-5 w-fit gap-1 rounded-full border-primary/20 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-primary"
+                >
+                  <Sparkles className="size-2.5" />
+                  Pricing console ·{" "}
+                  {mode === "create" ? "Tạo mới" : "Chỉnh sửa"}
+                </Badge>
+                <DialogTitle className="font-display text-lg font-black italic tracking-tight">
+                  {mode === "create"
+                    ? "Thêm khung giờ mới"
+                    : "Chỉnh sửa khung giờ"}
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  {mode === "create"
+                    ? "Gắn giá vào khung giờ cho từng ngày trong tuần."
+                    : "Cập nhật lịch và giá cho khung giờ này."}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form
+            id="pricing-rule-form"
+            onSubmit={handleSubmit(onFormSubmit)}
+            className="flex flex-col gap-5"
+          >
+            {mode === "create" && (
+              <section className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/30 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <CalendarDays className="size-3.5" />
+                    Áp dụng cho ngày
+                  </Label>
                   <label
                     htmlFor="apply-all"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className={cn(
+                      "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                      applyToAll
+                        ? "border-primary/40 bg-primary/10 text-primary"
+                        : "border-border/70 bg-background text-muted-foreground hover:border-primary/30 hover:text-primary",
+                    )}
                   >
+                    <Checkbox
+                      id="apply-all"
+                      checked={applyToAll}
+                      onCheckedChange={handleApplyToAllToggle}
+                    />
                     Tất cả các ngày
                   </label>
                 </div>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {DAYS_OF_WEEK.map((day) => (
-                  <div key={day.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`day-${day.value}`}
-                      checked={selectedDays?.includes(day.value)}
-                      onCheckedChange={() => handleDayToggle(day.value)}
-                    />
-                    <label
-                      htmlFor={`day-${day.value}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {day.label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              {errors.days && (
-                <p className="text-sm text-red-600">{errors.days.message}</p>
-              )}
-            </div>
-          )}
 
-          {/* Time Slots */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Các khung giờ</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8"
-                onClick={() => {
-                  const currentSlots = watch("time_slots") || [];
-                  setValue("time_slots", [
-                    ...currentSlots,
-                    { start_time: "", end_time: "", base_price: 0 },
-                  ]);
-                }}
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Thêm
-              </Button>
-            </div>
-
-            {/* Time Slots List - Compact */}
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {watch("time_slots")?.map((_, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-2 p-3 rounded border bg-muted/30"
-                >
-                  <div className="flex items-center justify-center w-6 h-10 text-xs font-medium text-muted-foreground">
-                    {index + 1}
-                  </div>
-
-                  <div className="flex-1 space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">
-                          Giờ bắt đầu
-                        </Label>
-                        <TimeInput
-                          id={`time_slots.${index}.start_time`}
-                          value={watch(`time_slots.${index}.start_time`)}
-                          onChange={(value) =>
-                            setValue(`time_slots.${index}.start_time`, value)
-                          }
-                          className="h-9"
-                        />
-                        {errors.time_slots?.[index]?.start_time && (
-                          <p className="text-xs text-red-600 mt-0.5">
-                            {errors.time_slots[index]?.start_time?.message}
-                          </p>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                  {DAYS_OF_WEEK.map((day) => {
+                    const checked = selectedDays?.includes(day.value);
+                    return (
+                      <label
+                        key={day.value}
+                        htmlFor={`day-${day.value}`}
+                        className={cn(
+                          "group relative flex cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-2 py-2 text-xs font-semibold transition-all",
+                          checked
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border/60 bg-background text-muted-foreground hover:border-primary/40 hover:text-primary",
                         )}
-                      </div>
-
-                      <div>
-                        <Label className="text-xs text-muted-foreground">
-                          Giờ kết thúc
-                        </Label>
-                        <TimeInput
-                          id={`time_slots.${index}.end_time`}
-                          value={watch(`time_slots.${index}.end_time`)}
-                          onChange={(value) =>
-                            setValue(`time_slots.${index}.end_time`, value)
-                          }
-                          className="h-9"
+                      >
+                        <Checkbox
+                          id={`day-${day.value}`}
+                          checked={checked}
+                          onCheckedChange={() => handleDayToggle(day.value)}
+                          className="sr-only"
                         />
-                        {errors.time_slots?.[index]?.end_time && (
-                          <p className="text-xs text-red-600 mt-0.5">
-                            {errors.time_slots[index]?.end_time?.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-xs text-muted-foreground">
-                        Giá/giờ (VNĐ)
-                        <span className="text-xs font-normal text-muted-foreground/70 ml-1">
-                          • Player sẽ trả theo số giờ đặt
+                        <span className="font-display text-sm italic">
+                          {day.label}
                         </span>
-                      </Label>
-                      <Input
-                        id={`time_slots.${index}.base_price`}
-                        type="number"
-                        min="0"
-                        step="1000"
-                        {...register(`time_slots.${index}.base_price`, {
-                          valueAsNumber: true,
-                        })}
-                        placeholder="300000"
-                        className="h-9"
+                        <span
+                          className={cn(
+                            "text-[9px] font-normal uppercase tracking-[0.14em]",
+                            checked
+                              ? "text-primary-foreground/70"
+                              : "text-muted-foreground/70",
+                          )}
+                        >
+                          {day.long.split(" ")[1] ?? day.long}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {errors.days && (
+                  <p className="text-xs text-destructive">
+                    {errors.days.message}
+                  </p>
+                )}
+              </section>
+            )}
+
+            <section className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <Timer className="size-3.5" />
+                  Các khung giờ · {timeSlots.length}
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-full"
+                  onClick={() => {
+                    setValue("time_slots", [
+                      ...timeSlots,
+                      { start_time: "", end_time: "", base_price: 0 },
+                    ]);
+                  }}
+                >
+                  <Plus data-icon="inline-start" />
+                  Thêm
+                </Button>
+              </div>
+
+              <div className="flex max-h-80 flex-col gap-2 overflow-y-auto pr-1">
+                {timeSlots.map((_, index) => {
+                  const basePrice = watch(`time_slots.${index}.base_price`);
+                  const startTime = watch(`time_slots.${index}.start_time`);
+                  const endTime = watch(`time_slots.${index}.end_time`);
+                  return (
+                    <div
+                      key={index}
+                      className="group relative flex gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] transition-colors hover:border-primary/30"
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-gradient-to-b from-primary/60 via-primary/20 to-transparent"
                       />
-                      {errors.time_slots?.[index]?.base_price && (
-                        <p className="text-xs text-red-600 mt-0.5">
-                          {errors.time_slots[index]?.base_price?.message}
-                        </p>
-                      )}
-                      {watch(`time_slots.${index}.base_price`) > 0 && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          ≈{" "}
-                          {formatPrice(watch(`time_slots.${index}.base_price`))}
-                          /giờ
-                        </p>
+                      <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted/50 font-display text-xs font-bold italic text-muted-foreground tabular-nums">
+                        {index + 1}
+                      </span>
+
+                      <div className="flex flex-1 flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex flex-col gap-1">
+                            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                              Giờ bắt đầu
+                            </Label>
+                            <TimeInput
+                              id={`time_slots.${index}.start_time`}
+                              value={startTime}
+                              onChange={(value) =>
+                                setValue(
+                                  `time_slots.${index}.start_time`,
+                                  value,
+                                )
+                              }
+                              className="h-9 tabular-nums"
+                            />
+                            {errors.time_slots?.[index]?.start_time && (
+                              <p className="text-[11px] text-destructive">
+                                {errors.time_slots[index]?.start_time?.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                              Giờ kết thúc
+                            </Label>
+                            <TimeInput
+                              id={`time_slots.${index}.end_time`}
+                              value={endTime}
+                              onChange={(value) =>
+                                setValue(`time_slots.${index}.end_time`, value)
+                              }
+                              className="h-9 tabular-nums"
+                            />
+                            {errors.time_slots?.[index]?.end_time && (
+                              <p className="text-[11px] text-destructive">
+                                {errors.time_slots[index]?.end_time?.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            <Coins className="size-3" />
+                            Giá / giờ (VNĐ)
+                          </Label>
+                          <Input
+                            id={`time_slots.${index}.base_price`}
+                            type="number"
+                            min="0"
+                            step="1000"
+                            {...register(`time_slots.${index}.base_price`, {
+                              valueAsNumber: true,
+                            })}
+                            placeholder="300000"
+                            className="h-9 tabular-nums"
+                          />
+                          {errors.time_slots?.[index]?.base_price && (
+                            <p className="text-[11px] text-destructive">
+                              {errors.time_slots[index]?.base_price?.message}
+                            </p>
+                          )}
+                          {basePrice > 0 && (
+                            <p className="font-display text-[11px] italic text-muted-foreground tabular-nums">
+                              ≈ {formatPrice(basePrice)}/giờ
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {timeSlots.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => {
+                            setValue(
+                              "time_slots",
+                              timeSlots.filter((_, i) => i !== index),
+                            );
+                          }}
+                          aria-label="Xóa khung giờ"
+                        >
+                          <Trash2 />
+                        </Button>
                       )}
                     </div>
-                  </div>
+                  );
+                })}
+              </div>
 
-                  {watch("time_slots")?.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0 hover:bg-red-50 hover:text-red-600"
-                      onClick={() => {
-                        const currentSlots = watch("time_slots");
-                        setValue(
-                          "time_slots",
-                          currentSlots.filter((_, i) => i !== index),
-                        );
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
+              {errors.time_slots &&
+                typeof errors.time_slots.message === "string" && (
+                  <p className="text-xs text-destructive">
+                    {errors.time_slots.message}
+                  </p>
+                )}
+            </section>
+          </form>
 
-            {errors.time_slots &&
-              typeof errors.time_slots.message === "string" && (
-                <p className="text-sm text-red-600">
-                  {errors.time_slots.message}
-                </p>
-              )}
-          </div>
-
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="rounded-full"
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Đang xử lý..."
-                : mode === "create"
-                  ? "Tạo khung giờ"
-                  : "Cập nhật"}
+            <Button
+              type="submit"
+              form="pricing-rule-form"
+              disabled={isSubmitting}
+              className="rounded-full"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 data-icon="inline-start" className="animate-spin" />
+                  Đang xử lý…
+                </>
+              ) : mode === "create" ? (
+                <>
+                  <Plus data-icon="inline-start" />
+                  Tạo khung giờ
+                </>
+              ) : (
+                <>
+                  <Sparkles data-icon="inline-start" />
+                  Cập nhật
+                </>
+              )}
             </Button>
           </DialogFooter>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

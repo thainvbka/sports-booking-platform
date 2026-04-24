@@ -29,40 +29,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navGroups = [
     {
-      label: "General",
+      label: "Tổng quan",
       items: [
         {
-          title: "Dashboard",
+          title: "Bảng điều khiển",
           url: "/admin/dashboard",
           icon: LayoutPanelLeft,
         },
       ],
     },
     {
-      label: "Management",
+      label: "Quản lý",
       items: [
         {
-          title: "User Management",
+          title: "Người dùng",
           url: "/admin/users",
           icon: Users,
         },
         {
-          title: "Complex Verification",
+          title: "Sân bóng",
           url: "/admin/complexes",
           icon: Building2,
         },
       ],
     },
     {
-      label: "Monitoring",
+      label: "Giám sát",
       items: [
         {
-          title: "Bookings",
+          title: "Đặt sân",
           url: "/admin/bookings",
           icon: Calendar,
         },
         {
-          title: "Payments",
+          title: "Thanh toán",
           url: "/admin/payments",
           icon: CreditCard,
         },
@@ -78,17 +78,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border/60">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Logo size={24} className="text-current" />
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="group/brand data-[state=open]:bg-sidebar-accent"
+            >
+              <Link to="/admin/dashboard">
+                <div className="relative flex aspect-square size-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary via-primary to-emerald-500 text-primary-foreground shadow-sm ring-1 ring-primary/30">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_60%)]"
+                  />
+                  <Logo size={22} className="relative text-current" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">T-Sport</span>
-                  <span className="truncate text-xs">Sport Booking Admin</span>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="font-display text-[15px] font-bold italic tracking-tight">
+                    T-Sport
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    Admin Console
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -100,7 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border/60">
         <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>

@@ -12,10 +12,48 @@ import {
 import { RevenueQualityChart } from "@/components/admin/dashboard/revenue-quality-chart";
 import { SportRevenueMix } from "@/components/admin/dashboard/sport-revenue-mix";
 import { TopComplexes } from "@/components/admin/dashboard/top-complexes";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminService } from "@/services/admin.service";
 import { useAdminStore } from "@/store/admin/useAdminStore";
 import { useEffect, useMemo, useState } from "react";
+
+interface SectionHeadingProps {
+  index: number;
+  eyebrow: string;
+  title: string;
+  description?: string;
+}
+
+function SectionHeading({
+  index,
+  eyebrow,
+  title,
+  description,
+}: SectionHeadingProps) {
+  return (
+    <div className="mb-4 flex items-end justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/5 font-display text-sm font-black italic tracking-tight text-primary shadow-sm">
+          {String(index).padStart(2, "0")}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            {eyebrow}
+          </p>
+          <h3 className="truncate font-display text-lg font-bold italic tracking-tight text-foreground md:text-xl">
+            {title}
+          </h3>
+        </div>
+      </div>
+      {description && (
+        <p className="hidden max-w-xs text-right text-[11px] leading-snug text-muted-foreground md:block">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { analytics, fetchAllData, isLoading } = useAdminStore();
@@ -60,19 +98,16 @@ export default function Dashboard() {
 
   if (isLoading && !analytics) {
     return (
-      <div className="flex-1 space-y-4 p-4 md:p-6 lg:p-8 bg-background">
-        <div className="flex items-center justify-between mb-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-8 pb-10">
+        <Skeleton className="h-40 w-full rounded-3xl" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+            <Skeleton key={i} className="h-36 w-full rounded-xl" />
           ))}
         </div>
         <div className="grid grid-cols-12 gap-4">
-          <Skeleton className="col-span-8 h-[300px] rounded-xl" />
-          <Skeleton className="col-span-4 h-[300px] rounded-xl" />
+          <Skeleton className="col-span-12 h-[320px] rounded-xl lg:col-span-8" />
+          <Skeleton className="col-span-12 h-[320px] rounded-xl lg:col-span-4" />
         </div>
       </div>
     );
@@ -80,70 +115,177 @@ export default function Dashboard() {
 
   if (!analytics) return null;
 
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString("vi-VN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 bg-slate-50/40 dark:bg-transparent min-h-screen">
-      {/* ── HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 border-slate-200/60 dark:border-slate-800/60">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-3xl font-black tracking-tight text-foreground">
-              Bảng điều khiển quản trị
-            </h2>
+    <div className="space-y-10 pb-10">
+      {/* ── HERO HEADER ── */}
+      <header className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm backdrop-blur md:p-8">
+        {/* ambient blobs */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-primary/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-24 -left-16 size-60 rounded-full bg-accent-sport/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+        />
+
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className="gap-1.5 rounded-full border-primary/30 bg-primary/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary"
+              >
+                <span className="relative inline-flex size-1.5">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-primary/70" />
+                  <span className="relative inline-block size-1.5 rounded-full bg-primary" />
+                </span>
+                Pulse realtime
+              </Badge>
+              <span className="text-[11px] font-semibold capitalize text-muted-foreground">
+                · {formattedDate}
+              </span>
+            </div>
+
+            <h1 className="font-display text-3xl font-black italic leading-[1.05] tracking-tight text-foreground md:text-[2.6rem]">
+              Toàn cảnh vận hành{" "}
+              <span className="relative inline-block text-primary">
+                T-Sport
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 -bottom-1 h-1 rounded-full bg-gradient-to-r from-primary/70 via-primary to-accent-sport/70"
+                />
+              </span>
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Theo dõi doanh thu, đặt sân và chất lượng dịch vụ trong một khung
+              nhìn duy nhất. Dữ liệu cập nhật theo thời gian thực từ toàn bộ
+              cụm sân trên hệ thống.
+            </p>
+
+            {/* summary meta strip */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
+                Doanh thu tháng
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-blue-500" />
+                {analytics.kpis.bookings.thisMonth.toLocaleString()} lượt đặt
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-amber-500" />
+                {analytics.kpis.avgRating.toFixed(1)} / 5 điểm đánh giá
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-violet-500" />
+                {analytics.kpis.complexes.total} cụm sân
+              </span>
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            <QuickActions />
           </div>
         </div>
-        <QuickActions />
-      </div>
+      </header>
 
       {/* ── SECTION 1: PULSE (KPIs) ── */}
-      <KpiCards kpis={analytics.kpis} />
+      <section>
+        <SectionHeading
+          index={1}
+          eyebrow="Pulse"
+          title="Chỉ số trọng yếu"
+          description="So sánh với tháng trước · cập nhật theo MoM"
+        />
+        <KpiCards kpis={analytics.kpis} />
+      </section>
 
-      {/* ── SECTION 2: PERFORMANCE CORE (12-Col Grid) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-        <div className="lg:col-span-8 xl:col-span-9">
-          <RevenueQualityChart data={analytics.revenueTrend} />
+      {/* ── SECTION 2: PERFORMANCE CORE ── */}
+      {/* Chart chính 2/3 · funnel 1/3 — đủ rộng cho cả hai */}
+      <section>
+        <SectionHeading
+          index={2}
+          eyebrow="Performance"
+          title="Hiệu suất tài chính & chuyển đổi"
+          description="Doanh thu và dòng chảy booking theo tháng"
+        />
+        <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <RevenueQualityChart data={analytics.revenueTrend} />
+          </div>
+          <div className="lg:col-span-1">
+            <ConversionFunnel data={analytics.conversionFunnel} />
+          </div>
         </div>
-        <div className="lg:col-span-4 xl:col-span-3">
-          <ConversionFunnel data={analytics.conversionFunnel} />
-        </div>
-      </div>
+      </section>
 
       {/* ── SECTION 3: ACTIVITY & MANAGEMENT ── */}
-      {/* Kéo lên cao vì admin cần check Top Complexes & Recent Transactions sớm nhất */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-7 xl:col-span-8">
+      {/* Hai danh sách cân bằng 50/50 — mỗi bên đọc rõ, không cảm giác thừa cột */}
+      <section>
+        <SectionHeading
+          index={3}
+          eyebrow="Activity"
+          title="Hoạt động & vận hành"
+          description="Xếp hạng cụm sân và giao dịch mới nhất"
+        />
+        <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
           <TopComplexes data={analytics.topComplexes} />
-        </div>
-        <div className="lg:col-span-5 xl:col-span-4">
           <RecentTransactions payments={recentPayments} />
         </div>
-      </div>
+      </section>
 
       {/* ── SECTION 4: GROWTH & QUALITY ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-5">
+      {/* Ba khối đồng nhất 1/3 — dễ đọc, hết cảm giác "bậc thang" */}
+      <section>
+        <SectionHeading
+          index={4}
+          eyebrow="Growth"
+          title="Tăng trưởng & chất lượng"
+          description="Người chơi, cơ cấu môn và mức độ hài lòng"
+        />
+        <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           <PlayerGrowthChart data={analytics.retentionData} />
-        </div>
-        <div className="lg:col-span-4">
           <SportRevenueMix data={analytics.sportRevenue} />
+          <div className="md:col-span-2 lg:col-span-1">
+            <RatingDistribution
+              data={analytics.ratingDist}
+              avgRating={analytics.kpis.avgRating}
+            />
+          </div>
         </div>
-        <div className="lg:col-span-3">
-          <RatingDistribution
-            data={analytics.ratingDist}
-            avgRating={analytics.kpis.avgRating}
-          />
-        </div>
-      </div>
+      </section>
 
       {/* ── SECTION 5: DEEP ANALYTICS ── */}
-      {/* Phân tích chi tiết vận hành — đặt cuối vì không cần action ngay */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pb-10">
-        <div className="lg:col-span-7 xl:col-span-8">
-          <DemandHeatmap data={heatmapData} />
+      {/* Heatmap cần chiều ngang — giữ 2/3 · providers 1/3, nhất quán với Section 2 */}
+      <section>
+        <SectionHeading
+          index={5}
+          eyebrow="Analytics"
+          title="Phân tích chuyên sâu"
+          description="Nhu cầu theo thời gian và cổng thanh toán"
+        />
+        <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <DemandHeatmap data={heatmapData} />
+          </div>
+          <div className="lg:col-span-1">
+            <PaymentProviders data={analytics.paymentProviderData} />
+          </div>
         </div>
-        <div className="lg:col-span-5 xl:col-span-4">
-          <PaymentProviders data={analytics.paymentProviderData} />
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

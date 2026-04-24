@@ -84,29 +84,29 @@ export function NavUser({
               <DropdownMenuItem asChild className="cursor-pointer">
                 <Link to="/settings/account">
                   <CircleUser />
-                  Account
+                  Tài khoản
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <Link to="/settings/billing">
                   <CreditCard />
-                  Billing
+                  Thanh toán
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <Link to="/settings/notifications">
                   <BellDot />
-                  Notifications
+                  Thông báo
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="cursor-pointer text-destructive focus:text-destructive"
               onClick={logout}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -3,11 +3,18 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -39,6 +46,11 @@ interface ComplexDetailViewProps {
   backLink?: string;
   onBack?: () => void;
   backLabel: string;
+  /**
+   * Short label used for the breadcrumb parent node.
+   * Defaults to `backLabel` when not provided.
+   */
+  parentLabel?: string;
 }
 
 export function ComplexDetailView({
@@ -59,6 +71,7 @@ export function ComplexDetailView({
   backLink,
   onBack,
   backLabel,
+  parentLabel,
 }: ComplexDetailViewProps) {
   const [, setSearchParams] = useSearchParams();
   const isFirstRender = React.useRef(true);
@@ -114,26 +127,38 @@ export function ComplexDetailView({
     );
   }
 
+  const breadcrumbParent = parentLabel ?? backLabel;
+
   return (
     <div className="space-y-8 pb-8">
-      {/* Back Button */}
-      {onBack ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBack}
-          className="rounded-full"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Button>
-      ) : backLink ? (
-        <Button asChild variant="outline" size="sm" className="rounded-full">
-          <Link to={backLink}>
-            <ArrowLeft className="h-4 w-4" />
-            {backLabel}
-          </Link>
-        </Button>
+      {/* Breadcrumb navigation */}
+      {backLink || onBack ? (
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              {onBack ? (
+                <BreadcrumbLink
+                  onClick={onBack}
+                  className="cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                >
+                  {breadcrumbParent}
+                </BreadcrumbLink>
+              ) : backLink ? (
+                <BreadcrumbLink asChild>
+                  <Link to={backLink}>{breadcrumbParent}</Link>
+                </BreadcrumbLink>
+              ) : null}
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="font-semibold">
+                {complex.complex_name}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       ) : null}
 
       {/* Temporary notice for testers (owner mode only) */}

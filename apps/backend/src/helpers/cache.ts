@@ -1,4 +1,59 @@
 import { prisma } from "../libs/prisma";
+import redis from "../libs/redis";
+
+// Default expiration time (1 hour)
+const DEFAULT_EXPIRATION = 3600;
+
+export const cacheHelper = {
+  /**
+   * Set data to Redis cache
+   */
+  set: async (key: string, value: any, expiration = DEFAULT_EXPIRATION) => {
+    try {
+      await redis.set(key, JSON.stringify(value), "EX", expiration);
+    } catch (error) {
+      console.error("Redis Set Error:", error);
+    }
+  },
+
+  /**
+   * Get data from Redis cache
+   */
+  get: async <T>(key: string): Promise<T | null> => {
+    try {
+      const data = await redis.get(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error("Redis Get Error:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Delete data from Redis cache
+   */
+  del: async (key: string) => {
+    try {
+      await redis.del(key);
+    } catch (error) {
+      console.error("Redis Del Error:", error);
+    }
+  },
+
+  /**
+   * Delete keys by pattern
+   */
+  delByPattern: async (pattern: string) => {
+    try {
+      const keys = await redis.keys(pattern);
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } catch (error) {
+      console.error("Redis DelByPattern Error:", error);
+    }
+  },
+};
 
 /**
  * Update cached statistics for a complex

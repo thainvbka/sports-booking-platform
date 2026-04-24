@@ -1,4 +1,4 @@
-import { PublicComplexDetailView } from "@/components/shared/PublicComplexDetailView";
+import { PublicComplexDetailView } from "@/components/shared/Publiccomplexdetailview";
 import { publicService } from "@/services/public.service";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import { useEffect, useState } from "react";
@@ -58,7 +58,8 @@ export function PublicComplexDetailPage() {
       });
 
       if (response.data) {
-        const complexData = response.data.complex as unknown as ComplexDetail & {
+        const complexData = response.data
+          .complex as unknown as ComplexDetail & {
           _count?: { sub_fields: number };
         };
         setComplex({

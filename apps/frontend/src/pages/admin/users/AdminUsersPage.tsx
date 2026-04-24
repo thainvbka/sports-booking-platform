@@ -1,9 +1,14 @@
+import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
+import { StatsGrid } from "@/components/admin/StatsGrid";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -26,14 +31,21 @@ import type { AdminUser } from "@/types/admin.types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
+  Ban,
   Calendar,
+  CheckCircle,
   Mail,
-  MoreVertical,
+  MoreHorizontal,
   Phone,
   Search,
+  Shield,
+  ShieldCheck,
   User,
+  UserCog,
+  Users,
+  XCircle,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminUsersPage() {
@@ -49,9 +61,24 @@ export default function AdminUsersPage() {
     updateUserStatus,
   } = useAdminUserStore();
 
+  const [searchValue, setSearchValue] = useState(filters.search || "");
+
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Debounced, controlled search — replaces the broken defaultValue + per-keystroke
+  // setTimeout. This is a UX fix only; the store call shape is unchanged.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchValue !== (filters.search || "")) {
+        setFilters({ search: searchValue });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValue]);
 
   const handleStatusUpdate = async (
     id: string,
@@ -78,32 +105,56 @@ export default function AdminUsersPage() {
     return user.player?.status || "ACTIVE";
   };
 
+  const initials = (name?: string) =>
+    (name || "?")
+      .split(" ")
+      .filter(Boolean)
+      .slice(-2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?";
+
+  const roleBreakdown = useMemo(() => {
+    const counts = { PLAYER: 0, OWNER: 0, ADMIN: 0 };
+    for (const u of users) {
+      const r = getUserRole(u) as keyof typeof counts;
+      counts[r] = (counts[r] ?? 0) + 1;
+    }
+    return counts;
+  }, [users]);
+
   const columns: Column<AdminUser>[] = [
     {
       header: "STT",
-      className: "w-16",
+      className: "w-14",
       cell: (_, index) => (
-        <span className="text-muted-foreground font-medium">
-          {(queryParams.page - 1) * queryParams.limit + index + 1}
+        <span className="font-mono text-[11px] font-semibold text-muted-foreground tabular-nums">
+          {String(
+            (queryParams.page - 1) * queryParams.limit + index + 1,
+          ).padStart(2, "0")}
         </span>
       ),
     },
     {
       header: "Người dùng",
-      className: "w-64",
+      className: "w-72",
       cell: (user) => (
-        <div className="flex flex-col gap-1 py-1">
-          <div className="flex items-center gap-2 font-semibold">
-            <User className="w-4 h-4 text-primary" />
-            <span>{user.full_name}</span>
+        <div className="flex items-center gap-3 py-1">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-primary/5 font-display text-xs font-black italic text-primary">
+            {initials(user.full_name)}
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Mail className="w-3 h-3" />
-            <span>{user.email}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Phone className="w-3 h-3" />
-            <span>{user.phone_number}</span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 text-sm font-semibold">
+              <User className="size-3.5 text-primary" />
+              <span className="truncate">{user.full_name}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Mail className="size-3" />
+              <span className="truncate">{user.email}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Phone className="size-3" />
+              <span>{user.phone_number}</span>
+            </div>
           </div>
         </div>
       ),
@@ -114,7 +165,10 @@ export default function AdminUsersPage() {
       cell: (user) => {
         const role = getUserRole(user);
         return (
-          <Badge variant="secondary" className={ROLE_COLORS[role]}>
+          <Badge
+            variant="secondary"
+            className={`${ROLE_COLORS[role]} h-5 border-none py-0 text-[10px] shadow-none`}
+          >
             {ROLE_LABELS[role]}
           </Badge>
         );
@@ -122,11 +176,13 @@ export default function AdminUsersPage() {
     },
     {
       header: "Trạng thái",
-      className: "w-40",
+      className: "w-36",
       cell: (user) => {
         const status = getUserStatus(user);
         return (
-          <Badge className={USER_STATUS_COLORS[status]}>
+          <Badge
+            className={`${USER_STATUS_COLORS[status]} h-5 border-none py-0 text-[10px] shadow-none`}
+          >
             {USER_STATUS_LABELS[status]}
           </Badge>
         );
@@ -136,8 +192,8 @@ export default function AdminUsersPage() {
       header: "Ngày tham gia",
       className: "w-40",
       cell: (user) => (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Calendar className="size-3.5" />
           <span>
             {format(new Date(user.created_at), "dd/MM/yyyy", { locale: vi })}
           </span>
@@ -145,53 +201,70 @@ export default function AdminUsersPage() {
       ),
     },
     {
-      header: "Hành động",
-      className: "w-16",
+      header: "",
+      className: "w-12 text-right",
       cell: (user) => {
         const role = getUserRole(user);
         const status = getUserStatus(user);
 
-        if (role === "ADMIN") return null;
+        if (role === "ADMIN") {
+          return (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 opacity-40"
+              disabled
+            >
+              <MoreHorizontal />
+              <span className="sr-only">Không có hành động</span>
+            </Button>
+          );
+        }
 
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="w-4 h-4" />
+              <Button variant="ghost" size="icon" className="size-8">
+                <MoreHorizontal />
+                <span className="sr-only">Mở menu hành động</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {status !== "ACTIVE" && (
-                <DropdownMenuItem
-                  onClick={() => handleStatusUpdate(user.id, role, "ACTIVE")}
-                >
-                  Kích hoạt
-                </DropdownMenuItem>
-              )}
-              {status !== "INACTIVE" &&
-                status !== "BANNED" &&
-                status !== "SUSPENDED" && (
+              <DropdownMenuGroup>
+                {status !== "ACTIVE" && (
                   <DropdownMenuItem
-                    onClick={() =>
-                      handleStatusUpdate(
-                        user.id,
-                        role,
-                        role === "OWNER" ? "SUSPENDED" : "INACTIVE",
-                      )
-                    }
-                    className="text-red-600"
+                    onClick={() => handleStatusUpdate(user.id, role, "ACTIVE")}
+                    className="text-emerald-600 dark:text-emerald-400"
                   >
-                    {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
+                    <CheckCircle /> Kích hoạt
                   </DropdownMenuItem>
                 )}
-              {role === "OWNER" && status === "PENDING" && (
-                <DropdownMenuItem
-                  onClick={() => handleStatusUpdate(user.id, role, "REJECTED")}
-                  className="text-red-600"
-                >
-                  Từ chối duyệt
-                </DropdownMenuItem>
-              )}
+                {status !== "INACTIVE" &&
+                  status !== "BANNED" &&
+                  status !== "SUSPENDED" && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleStatusUpdate(
+                          user.id,
+                          role,
+                          role === "OWNER" ? "SUSPENDED" : "INACTIVE",
+                        )
+                      }
+                      className="text-rose-600 dark:text-rose-400"
+                    >
+                      <Ban />
+                      {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
+                    </DropdownMenuItem>
+                  )}
+                {role === "OWNER" && status === "PENDING" && (
+                  <DropdownMenuItem
+                    onClick={() => handleStatusUpdate(user.id, role, "REJECTED")}
+                    className="text-rose-600 dark:text-rose-400"
+                  >
+                    <XCircle /> Từ chối duyệt
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -199,77 +272,110 @@ export default function AdminUsersPage() {
     },
   ];
 
-  return (
-    <div className="px-4 lg:px-6 space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Quản lý người dùng
-        </h1>
-      </div>
+  const totalUsers = pagination?.total ?? users.length;
+  const statItems = [
+    {
+      label: "Tổng người dùng",
+      value: totalUsers,
+      icon: Users,
+      color: "blue" as const,
+    },
+    {
+      label: "Người chơi",
+      value: roleBreakdown.PLAYER,
+      icon: ShieldCheck,
+      color: "green" as const,
+    },
+    {
+      label: "Chủ sân",
+      value: roleBreakdown.OWNER,
+      icon: UserCog,
+      color: "purple" as const,
+    },
+    {
+      label: "Quản trị",
+      value: roleBreakdown.ADMIN,
+      icon: Shield,
+      color: "red" as const,
+    },
+  ];
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+  return (
+    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+      <AdminPageHeader
+        index={4}
+        eyebrow="Admin · Identity"
+        title="Quản lý"
+        titleAccent="người dùng"
+        description="Kiểm soát danh tính, vai trò và trạng thái hoạt động của người chơi, chủ sân và quản trị viên."
+      />
+
+      <StatsGrid items={statItems} />
+
+      <AdminFiltersBar>
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Tìm kiếm theo tên, email, sđt..."
-            className="pl-9"
-            defaultValue={filters.search}
-            onChange={(e) => {
-              const timer = setTimeout(() => {
-                setFilters({ search: e.target.value });
-              }, 500);
-              return () => clearTimeout(timer);
-            }}
+            placeholder="Tìm theo tên, email, số điện thoại..."
+            className="h-9 pl-9"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
-          <Select
-            value={filters.role || "ALL"}
-            onValueChange={(value) =>
-              setFilters({ role: value === "ALL" ? undefined : value })
-            }
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả vai trò</SelectItem>
-              <SelectItem value="PLAYER">Người chơi</SelectItem>
-              <SelectItem value="OWNER">Chủ sân</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-            </SelectContent>
-          </Select>
+        <Select
+          value={filters.role || "ALL"}
+          onValueChange={(value) =>
+            setFilters({ role: value === "ALL" ? undefined : value })
+          }
+        >
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[160px]">
+            <SelectValue placeholder="Vai trò" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả vai trò</SelectItem>
+            <SelectItem value="PLAYER">Người chơi</SelectItem>
+            <SelectItem value="OWNER">Chủ sân</SelectItem>
+            <SelectItem value="ADMIN">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.status || "ALL"}
+          onValueChange={(value) =>
+            setFilters({ status: value === "ALL" ? undefined : value })
+          }
+        >
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[160px]">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+            <SelectItem value="ACTIVE">Hoạt động</SelectItem>
+            <SelectItem value="INACTIVE">Bị khóa</SelectItem>
+            <SelectItem value="PENDING">Chờ duyệt</SelectItem>
+          </SelectContent>
+        </Select>
+      </AdminFiltersBar>
 
-          <Select
-            value={filters.status || "ALL"}
-            onValueChange={(value) =>
-              setFilters({ status: value === "ALL" ? undefined : value })
-            }
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-              <SelectItem value="ACTIVE">Hoạt động</SelectItem>
-              <SelectItem value="INACTIVE">Bị khóa</SelectItem>
-              <SelectItem value="PENDING">Chờ duyệt</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <DataTable
-        data={users}
-        columns={columns}
-        isLoading={isLoading}
-        pagination={{
-          page: queryParams.page,
-          totalPages: pagination?.totalPages || 1,
-          onPageChange: setPage,
-        }}
-        emptyMessage="Không tìm thấy người dùng nào"
-      />
+      <AdminTableSection
+        index={5}
+        eyebrow="Data · Directory"
+        title="Danh bạ người dùng"
+        description="Nhấp vào biểu tượng hành động để thay đổi trạng thái tài khoản."
+        count={totalUsers}
+        countLabel="tài khoản"
+      >
+        <DataTable
+          data={users}
+          columns={columns}
+          isLoading={isLoading}
+          pagination={{
+            page: queryParams.page,
+            totalPages: pagination?.totalPages || 1,
+            onPageChange: setPage,
+          }}
+          emptyMessage="Không tìm thấy người dùng nào"
+        />
+      </AdminTableSection>
     </div>
   );
 }
