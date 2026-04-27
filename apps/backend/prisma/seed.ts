@@ -1,25 +1,46 @@
 /**
- * Seed toàn diện cho đồ án — bao phủ tất cả entity trong schema.
+ * Seed dữ liệu cho Sports Booking Platform.
  *
- * Entities được seed:
- *   Account / Admin / Owner / Player
- *   Complex / SubField / PricingRule / Product
- *   Booking / Payment / BookingAddon
- *   RecurringBooking (+ child Bookings)
- *   Match / MatchParticipant
- *   Review
- *   Notification
+ * Mục tiêu: cung cấp một bộ dữ liệu đa dạng nhưng NHẤT QUÁN — mọi quan hệ
+ * đều đúng ràng buộc schema và logic nghiệp vụ.
  *
- * Phân phối dữ liệu phục vụ analytics:
- *   - Account.created_at trải đều 6 tháng → userGrowth chart có sóng
- *   - Booking tập trung giờ cao điểm (18–22h) & cuối tuần
- *   - Revenue tháng gần đây cao hơn → trend đi lên
- *   - Cancel rate dao động 15–25% mỗi tháng
- *   - Rating phân phối 1–5 (không chỉ 3–5)
- *   - BookingAddon cho ~40% COMPLETED booking → upsell metrics thực
- *   - PaymentProvider phân chia MOMO 50% / VNPAY 30% / STRIPE 20%
- *   - Recurring bookings thực sự có child bookings
- *   - Match open/full/completed với participants
+ * Ràng buộc được đảm bảo:
+ *   - Account: email & phone_number duy nhất.
+ *   - Complex chỉ ACTIVE mới có booking; verification_docs là JSON object.
+ *   - SubField: tên duy nhất trong 1 complex (theo unique index).
+ *   - PricingRule: (sub_field_id, day_of_week, start_time, end_time) duy nhất.
+ *   - Booking (theo quy ước nghiệp vụ):
+ *       - PENDING: player tạo booking nhưng chưa thanh toán.
+ *       - COMPLETED: đã thanh toán, đang chờ chủ sân xác nhận.
+ *       - CONFIRMED: đã được chủ sân xác nhận.
+ *       - CANCELED: booking bị hủy.
+ *   - Booking:
+ *       - start_time < end_time (slot 2h cố định).
+ *       - Trên cùng 1 sub-field: không có 2 booking trùng slot thời gian.
+ *       - Cùng 1 player: không bị book chồng giờ.
+ *       - created_at ≤ paid_at ≤ start_time; expires_at = created_at + 15 phút.
+ *       - status phù hợp mốc thời gian:
+ *         đã qua → CONFIRMED / COMPLETED / CANCELED;
+ *         tương lai → PENDING / COMPLETED / CONFIRMED / CANCELED.
+ *       - Chỉ COMPLETED & CONFIRMED mới có Payment; amount khớp total_price.
+ *   - Payment.transaction_code duy nhất.
+ *   - BookingAddon: chỉ trên booking đã thanh toán (COMPLETED/CONFIRMED) của đúng complex; (booking_id,
+ *     product_id) duy nhất; addon cộng thêm vào total_price của booking.
+ *   - Recurring booking: children tuân theo recurrence_type (WEEKLY/MONTHLY),
+ *     nằm trong [start_date, end_date], cùng player & sub-field, không xung đột.
+ *   - Match (kèo):
+ *       - 1-1 với Booking; chỉ tạo cho booking CONFIRMED.
+ *       - creator_id = booking.player_id; sport_type = sub_field.sport_type.
+ *       - slots_needed ≤ sub_field.capacity − 1.
+ *       - slots_filled = số participants ACCEPTED.
+ *       - join_deadline < booking.start_time.
+ *       - status COMPLETED chỉ khi booking đã kết thúc.
+ *   - MatchParticipant: (match_id, player_id) duy nhất; player ≠ creator.
+ *   - Review: chỉ trên booking CONFIRMED đã kết thúc; player_id & subfield_id phải khớp
+ *     booking; rating 1–5; created_at ≥ booking.end_time.
+ *   - Cache fields được đồng bộ lại sau khi seed (SubField.avg_rating,
+ *     total_reviews; Complex.min_price, max_price, total_subfields,
+ *     sport_types, avg_rating, total_reviews).
  */
 
 import { faker } from "@faker-js/faker/locale/vi";
@@ -35,7 +56,9 @@ import {
   PaymentProvider,
   PaymentStatus,
   PlayerStatus,
+  Prisma,
   PrismaClient,
+  ProductStatus,
   RecurrenceType,
   RecurringStatus,
   SportType,
@@ -45,12 +68,9 @@ import dotenv from "dotenv";
 import path from "path";
 import { Pool } from "pg";
 
-dotenv.config({
-  path: path.resolve(__dirname, "../.env"),
-});
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const connectionString = process.env.DATABASE_URL ?? "";
-
 if (!connectionString) {
   throw new Error("DATABASE_URL is required for seed");
 }
@@ -59,14 +79,12 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const hash = (p: string) => bcrypt.hashSync(p, 10);
-
-const randInt = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
 const rand = () => Math.random();
+const randInt = (min: number, max: number) =>
+  Math.floor(rand() * (max - min + 1)) + min;
 
 const pick = <T>(arr: T[]): T => arr[randInt(0, arr.length - 1)];
 
@@ -79,43 +97,6 @@ const pickN = <T>(arr: T[], n: number): T[] => {
   return out;
 };
 
-/** Ngày trong quá khứ tính từ hôm nay */
-const daysAgo = (d: number): Date => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() - d);
-  return dt;
-};
-
-/** Ngày trong quá khứ từ một mốc nhất định */
-const daysAgoFrom = (base: Date, d: number): Date => {
-  const dt = new Date(base);
-  dt.setDate(dt.getDate() - d);
-  return dt;
-};
-
-/** Set giờ:phút cho một Date */
-const setHM = (base: Date, hh: number, mm: number): Date => {
-  const d = new Date(base);
-  d.setHours(hh, mm, 0, 0);
-  return d;
-};
-
-/** Random Date trong khoảng [from, to] */
-const randDate = (from: Date, to: Date): Date => {
-  const ms = from.getTime() + rand() * (to.getTime() - from.getTime());
-  return new Date(ms);
-};
-
-/** Random Date an toàn khi from >= to */
-const randDateSafe = (from: Date, to: Date): Date => {
-  if (from.getTime() >= to.getTime()) return new Date(from);
-  return randDate(from, to);
-};
-
-/**
- * Chọn ngẫu nhiên với trọng số.
- * weights phải cùng độ dài với items và tổng = 1 (hoặc bất kỳ — sẽ normalise).
- */
 const weightedPick = <T>(items: T[], weights: number[]): T => {
   const total = weights.reduce((a, b) => a + b, 0);
   let r = rand() * total;
@@ -125,6 +106,64 @@ const weightedPick = <T>(items: T[], weights: number[]): T => {
   }
   return items[items.length - 1];
 };
+
+/** Mốc 0h hôm nay – `d` ngày */
+const daysAgo = (d: number): Date => {
+  const dt = new Date();
+  dt.setDate(dt.getDate() - d);
+  dt.setHours(0, 0, 0, 0);
+  return dt;
+};
+
+/** Ngày trong tương lai */
+const daysFromNow = (d: number): Date => daysAgo(-d);
+
+const addDays = (d: Date, n: number): Date => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+};
+
+const addMinutes = (d: Date, m: number): Date =>
+  new Date(d.getTime() + m * 60_000);
+
+const addMonths = (d: Date, n: number): Date => {
+  const x = new Date(d);
+  x.setMonth(x.getMonth() + n);
+  return x;
+};
+
+const setHM = (base: Date, hh: number, mm = 0): Date => {
+  const d = new Date(base);
+  d.setHours(hh, mm, 0, 0);
+  return d;
+};
+
+const randDate = (from: Date, to: Date): Date => {
+  if (from.getTime() >= to.getTime()) return new Date(from);
+  return new Date(from.getTime() + rand() * (to.getTime() - from.getTime()));
+};
+
+/** Chuỗi đại diện ngày (theo local) – dùng làm phần khoá slot */
+const dateKey = (d: Date): string => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+/** Khoá slot thời gian: YYYY-MM-DD_HH */
+const slotKey = (d: Date, startH: number): string =>
+  `${dateKey(d)}_${String(startH).padStart(2, "0")}`;
+
+let txnCounter = 0;
+const nextTxn = (prefix: string): string =>
+  `${prefix}_${Date.now().toString(36).toUpperCase()}_${(++txnCounter)
+    .toString()
+    .padStart(7, "0")}`;
+
+/** Làm tròn về bội số 10.000 cho giá VNĐ */
+const roundVnd = (n: number): number => Math.round(n / 10_000) * 10_000;
 
 // ─── Lookup data ──────────────────────────────────────────────────────────────
 
@@ -174,13 +213,22 @@ const COMPLEX_NAMES = [
   "Urban Sports Park",
 ];
 
-/** Giờ mở cửa: 6h–22h. Trọng số tập trung peak 18–22h và 8–10h */
-const PEAK_HOURS = [6, 7, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20];
-const PEAK_WEIGHTS = [
-  0.04, 0.05, 0.06, 0.06, 0.05, 0.04, 0.05, 0.06, 0.07, 0.14, 0.16, 0.12,
-];
-const SLOT_DURATION_H = 2; // mỗi slot 2 giờ
+/** Slot 2h cố định, mở từ 6h–22h */
+const TIME_SLOTS = [6, 8, 10, 14, 16, 18, 20] as const;
+const SLOT_HOURS = 2;
 
+/** Trọng số chọn giờ: tập trung peak 18h–20h */
+const SLOT_WEIGHTS: Record<number, number> = {
+  6: 0.05,
+  8: 0.08,
+  10: 0.07,
+  14: 0.08,
+  16: 0.12,
+  18: 0.32,
+  20: 0.28,
+};
+
+/** Khoảng giá theo môn (VNĐ / 2h) */
 const PRICE_RANGE: Record<SportType, [number, number]> = {
   FOOTBALL: [300_000, 800_000],
   BASKETBALL: [200_000, 500_000],
@@ -190,19 +238,16 @@ const PRICE_RANGE: Record<SportType, [number, number]> = {
   PICKLEBALL: [100_000, 200_000],
 };
 
-/** Tỉ lệ cancel theo tháng: tháng xa hơn cancel ít hơn (dữ liệu đã "chốt") */
-const CANCEL_RATE_BY_MONTH = [0.15, 0.17, 0.2, 0.22, 0.18, 0.14]; // index 0 = cách 5 tháng
-
-const PROVIDER_WEIGHTS = {
-  [PaymentProvider.MOMO]: 0.5,
-  [PaymentProvider.VNPAY]: 0.3,
-  [PaymentProvider.STRIPE]: 0.2,
+/** Sức chứa hợp lý theo môn */
+const CAPACITY_BY_SPORT: Record<SportType, number[]> = {
+  FOOTBALL: [10, 14, 22],
+  BASKETBALL: [6, 10],
+  TENNIS: [2, 4],
+  BADMINTON: [2, 4],
+  VOLLEYBALL: [10, 12],
+  PICKLEBALL: [2, 4],
 };
 
-/** Phân phối rating thực tế: 1★ ít, 5★ nhiều */
-const RATING_WEIGHTS = [0.05, 0.08, 0.15, 0.32, 0.4]; // 1→5
-
-/** Sport names cho match title */
 const SPORT_LABELS: Record<SportType, string> = {
   FOOTBALL: "Bóng đá",
   BASKETBALL: "Bóng rổ",
@@ -211,6 +256,18 @@ const SPORT_LABELS: Record<SportType, string> = {
   VOLLEYBALL: "Bóng chuyền",
   PICKLEBALL: "Pickleball",
 };
+
+const PROVIDERS: PaymentProvider[] = [
+  PaymentProvider.VNPAY,
+  PaymentProvider.STRIPE,
+];
+const PROVIDER_WEIGHTS = [0.7, 0.3];
+
+/** Phân phối rating thực tế (1★ ít, 5★ nhiều) */
+const RATING_WEIGHTS = [0.05, 0.08, 0.15, 0.32, 0.4];
+
+/** Tỉ lệ huỷ theo tháng cũ → mới */
+const CANCEL_RATE_BY_MONTH = [0.18, 0.2, 0.22, 0.18, 0.15, 0.12];
 
 const PRODUCT_TEMPLATES: Record<
   SportType,
@@ -251,18 +308,83 @@ const PRODUCT_TEMPLATES: Record<
   ],
 };
 
-// ─── Seed functions ───────────────────────────────────────────────────────────
+const CLOSE_REASONS = [
+  "Chủ kèo đóng do đủ team nội bộ",
+  "Đổi lịch thi đấu",
+  "Đã chuyển sang sân khác",
+  "Thời tiết xấu",
+];
 
-/**
- * 1. Accounts — trải created_at đều trong 6 tháng để userGrowth chart có dữ liệu.
- *    - 1 Admin
- *    - 12 Owners (cố định)
- *    - 120 Players: 10–15 player/tháng để có tăng trưởng rõ
- */
+// ─── Internal types ───────────────────────────────────────────────────────────
+
+interface PlayerInfo {
+  id: string;
+  account_id: string;
+  account_created_at: Date;
+}
+
+interface SubFieldInfo {
+  id: string;
+  complex_id: string;
+  sport_type: SportType;
+  capacity: number;
+}
+
+interface ProductInfo {
+  id: string;
+  price: number;
+  status: ProductStatus;
+  stock: number;
+}
+
+// ─── Slot conflict tracking ──────────────────────────────────────────────────
+
+const subfieldSlots = new Map<string, Set<string>>();
+const playerSlots = new Map<string, Set<string>>();
+
+const isSlotFree = (sfId: string, plId: string, key: string): boolean => {
+  if (subfieldSlots.get(sfId)?.has(key)) return false;
+  if (playerSlots.get(plId)?.has(key)) return false;
+  return true;
+};
+
+const occupySlot = (sfId: string, plId: string, key: string): void => {
+  let s = subfieldSlots.get(sfId);
+  if (!s) {
+    s = new Set();
+    subfieldSlots.set(sfId, s);
+  }
+  s.add(key);
+  let p = playerSlots.get(plId);
+  if (!p) {
+    p = new Set();
+    playerSlots.set(plId, p);
+  }
+  p.add(key);
+};
+
+// ─── Pricing helpers ─────────────────────────────────────────────────────────
+
+const computeFieldPrice = (sport: SportType, startH: number, isWeekend: boolean): number => {
+  const [pMin, pMax] = PRICE_RANGE[sport];
+  const base = roundVnd(randInt(pMin, pMax));
+  const peakMul = startH >= 17 ? 1.3 : 1;
+  const weekendMul = isWeekend ? 1.2 : 1;
+  return roundVnd(base * peakMul * weekendMul);
+};
+
+// ─── 1. Accounts ─────────────────────────────────────────────────────────────
+
+interface SeededOwner {
+  ownerId: string;
+  accountId: string;
+  status: OwnerStatus;
+}
+
 async function seedAccounts() {
-  console.log("  [1/7] Accounts...");
+  console.log("  [1/8] Accounts (admin / owners / players)...");
 
-  // Admin
+  // 1 admin
   await prisma.account.create({
     data: {
       email: "admin@sportsbooking.vn",
@@ -271,14 +393,15 @@ async function seedAccounts() {
       phone_number: "0900000001",
       email_verified: true,
       phone_verified: true,
+      created_at: daysAgo(200),
       admin: { create: { status: AdminStatus.ACTIVE } },
     },
   });
 
-  // Owners — tạo từ 6 tháng trước, stable
-  const ownerAccounts: any[] = [];
+  // 12 owners – 10 ACTIVE, 2 SUSPENDED
+  const owners: SeededOwner[] = [];
   for (let i = 0; i < 12; i++) {
-    const createdAt = randDate(daysAgo(180), daysAgo(120));
+    const status = i < 10 ? OwnerStatus.ACTIVE : OwnerStatus.SUSPENDED;
     const acc = await prisma.account.create({
       data: {
         email: `owner${i + 1}@sportsbooking.vn`,
@@ -287,41 +410,40 @@ async function seedAccounts() {
         phone_number: `091${String(i).padStart(7, "0")}`,
         email_verified: true,
         phone_verified: true,
-        created_at: createdAt,
+        created_at: randDate(daysAgo(180), daysAgo(120)),
         owner: {
           create: {
             company_name: `${faker.company.name()} Sports`,
-            status: i < 10 ? OwnerStatus.ACTIVE : OwnerStatus.SUSPENDED,
+            status,
           },
         },
       },
       include: { owner: true },
     });
-    ownerAccounts.push(acc);
+    owners.push({
+      ownerId: acc.owner!.id,
+      accountId: acc.id,
+      status,
+    });
   }
 
-  // Players — phân bổ đều 6 tháng: tháng xa ít hơn, tháng gần nhiều hơn
-  // → tạo cảm giác tăng trưởng
-  const playerAccounts: any[] = [];
-  const playerDistByMonth = [12, 14, 16, 18, 22, 28]; // index 0 = cách 5 tháng
-  // Use a distinct 093xxxxxxx range for players to avoid collisions with:
-  // - admin: 0900000001
-  // - owners: 0910000000..0910000011
-  let playerPhoneSeq = 0;
+  // Players – phân bổ tăng dần theo 6 tháng
+  const monthlyCounts = [12, 14, 16, 20, 24, 28]; // tháng cũ → tháng gần
+  const players: PlayerInfo[] = [];
+  let phoneSeq = 0;
 
   for (let monthOffset = 5; monthOffset >= 0; monthOffset--) {
-    const count = playerDistByMonth[5 - monthOffset];
+    const count = monthlyCounts[5 - monthOffset];
     const from = daysAgo((monthOffset + 1) * 30);
     const to = daysAgo(monthOffset * 30);
-
     for (let i = 0; i < count; i++) {
       const createdAt = randDate(from, to);
       const acc = await prisma.account.create({
         data: {
-          email: `player_${Date.now()}_${playerPhoneSeq}@gmail.com`,
+          email: `player${phoneSeq + 1}@sportsbooking.vn`,
           password: hash("Player@123"),
           full_name: faker.person.fullName(),
-          phone_number: `093${String(playerPhoneSeq++).padStart(7, "0")}`,
+          phone_number: `093${String(phoneSeq).padStart(7, "0")}`,
           email_verified: rand() > 0.1,
           phone_verified: rand() > 0.2,
           created_at: createdAt,
@@ -329,355 +451,531 @@ async function seedAccounts() {
         },
         include: { player: true },
       });
-      playerAccounts.push(acc);
+      phoneSeq++;
+      players.push({
+        id: acc.player!.id,
+        account_id: acc.id,
+        account_created_at: createdAt,
+      });
     }
   }
 
-  console.log(
-    `     → ${ownerAccounts.length} owners, ${playerAccounts.length} players`,
-  );
-  return { ownerAccounts, playerAccounts };
+  // 2 banned players để test edge case
+  for (let i = 0; i < 2; i++) {
+    const createdAt = daysAgo(randInt(60, 150));
+    const acc = await prisma.account.create({
+      data: {
+        email: `banned${i + 1}@sportsbooking.vn`,
+        password: hash("Player@123"),
+        full_name: faker.person.fullName(),
+        phone_number: `093${String(phoneSeq).padStart(7, "0")}`,
+        email_verified: true,
+        phone_verified: true,
+        created_at: createdAt,
+        player: { create: { status: PlayerStatus.BANNED } },
+      },
+      include: { player: true },
+    });
+    phoneSeq++;
+    players.push({
+      id: acc.player!.id,
+      account_id: acc.id,
+      account_created_at: createdAt,
+    });
+  }
+
+  console.log(`     → 1 admin, ${owners.length} owners, ${players.length} players`);
+  return { owners, players };
 }
 
-/**
- * 2. Complexes, SubFields, PricingRules, Products
- */
-async function seedComplexesAndProducts(ownerAccounts: any[]) {
-  console.log("  [2/7] Complexes, SubFields, PricingRules, Products...");
+// ─── 2. Complexes / SubFields / PricingRules / Products ──────────────────────
 
-  const allSubFields: any[] = [];
-  const complexProductsMap: Record<string, any[]> = {}; // complexId → products[]
+interface SeededComplex {
+  complexId: string;
+  ownerId: string;
+  status: ComplexStatus;
+  sports: SportType[];
+}
 
-  for (const ownerAcc of ownerAccounts) {
-    const owner = ownerAcc.owner;
-    if (!owner) continue;
+async function seedComplexesAndProducts(owners: SeededOwner[]) {
+  console.log("  [2/8] Complexes / SubFields / PricingRules / Products...");
 
-    const numComplexes = randInt(1, 2);
+  const complexes: SeededComplex[] = [];
+  const subfields: SubFieldInfo[] = [];
+  const productsByComplex = new Map<string, ProductInfo[]>();
+
+  for (let oi = 0; oi < owners.length; oi++) {
+    const owner = owners[oi];
+
+    // Owner SUSPENDED chỉ có complex INACTIVE/REJECTED
+    const numComplexes =
+      owner.status === OwnerStatus.SUSPENDED ? 1 : randInt(1, 2);
+
     for (let ci = 0; ci < numComplexes; ci++) {
+      let status: ComplexStatus;
+      if (owner.status === OwnerStatus.SUSPENDED) {
+        status = pick([ComplexStatus.INACTIVE, ComplexStatus.REJECTED]);
+      } else {
+        status = weightedPick(
+          [
+            ComplexStatus.ACTIVE,
+            ComplexStatus.PENDING,
+            ComplexStatus.DRAFT,
+            ComplexStatus.REJECTED,
+          ],
+          [0.78, 0.12, 0.06, 0.04],
+        );
+      }
+
       const sports = pickN(SPORT_TYPES, randInt(1, 3)) as SportType[];
-      const status =
-        rand() > 0.15 ? ComplexStatus.ACTIVE : ComplexStatus.PENDING;
 
       const complex = await prisma.complex.create({
         data: {
-          owner_id: owner.id,
-          complex_name: `${pick(COMPLEX_NAMES)} ${faker.string.alphanumeric(3).toUpperCase()}`,
+          owner_id: owner.ownerId,
+          complex_name: `${pick(COMPLEX_NAMES)} ${faker.string
+            .alphanumeric(3)
+            .toUpperCase()}`,
           complex_address: `${randInt(1, 500)} ${pick(STREETS)}, ${pick(DISTRICTS)}`,
           status,
-          verification_docs: { license: "license.pdf", tax: "tax.pdf" },
+          verification_docs: {
+            license: `https://docs.example.com/license-${oi}-${ci}.pdf`,
+            tax: `https://docs.example.com/tax-${oi}-${ci}.pdf`,
+            id_card: `https://docs.example.com/id-${oi}-${ci}.pdf`,
+          },
+          complex_image: `https://picsum.photos/seed/complex-${oi}-${ci}/1280/720`,
           sport_types: sports,
+          created_at: randDate(daysAgo(180), daysAgo(60)),
         },
       });
+      complexes.push({
+        complexId: complex.id,
+        ownerId: owner.ownerId,
+        status,
+        sports,
+      });
 
-      // ── SubFields + PricingRules ──
-      const numSubs = randInt(2, 6);
+      // Sub-fields: chỉ tạo cho complex ACTIVE / PENDING (DRAFT/REJECTED/INACTIVE
+      // không có sân thực tế để tránh sinh dữ liệu thừa)
+      if (status !== ComplexStatus.ACTIVE && status !== ComplexStatus.PENDING) {
+        productsByComplex.set(complex.id, []);
+        continue;
+      }
+
+      const numSubs = randInt(2, 5);
       for (let si = 0; si < numSubs; si++) {
         const sport = pick(sports);
+        const capacity = pick(CAPACITY_BY_SPORT[sport]);
+
         const subField = await prisma.subField.create({
           data: {
             complex_id: complex.id,
-            sub_field_name: `Sân ${si + 1} (${sport})`,
-            capacity: pick([2, 4, 6, 8, 10, 14]),
+            sub_field_name: `Sân ${si + 1} (${SPORT_LABELS[sport]})`,
+            capacity,
+            sub_field_image: `https://picsum.photos/seed/sub-${complex.id}-${si}/800/600`,
             sport_type: sport,
+            created_at: randDate(
+              new Date(complex.created_at),
+              addDays(new Date(complex.created_at), 7),
+            ),
           },
         });
-        allSubFields.push({ ...subField, complex_id: complex.id });
+        subfields.push({
+          id: subField.id,
+          complex_id: complex.id,
+          sport_type: sport,
+          capacity,
+        });
 
-        const [pMin, pMax] = PRICE_RANGE[sport];
-        // Mỗi subfield có giá biến đổi theo giờ trong ngày + ngày trong tuần
+        // PricingRule: 7 ngày × 7 slot = 49 rule, đảm bảo unique theo schema
+        const rules: Prisma.PricingRuleCreateManyInput[] = [];
         for (let day = 0; day < 7; day++) {
           const isWeekend = day === 0 || day === 6;
-          for (const startH of [6, 8, 10, 14, 16, 18, 20]) {
-            const isPeak = startH >= 17;
-            const base = Math.round(randInt(pMin, pMax) / 10_000) * 10_000;
-            const price =
-              Math.round(
-                (base * (isPeak ? 1.3 : 1) * (isWeekend ? 1.2 : 1)) / 10_000,
-              ) * 10_000;
-
-            const refDate = new Date("2000-01-01T00:00:00Z");
-            const startTime = new Date(refDate);
-            startTime.setUTCHours(startH, 0, 0, 0);
-            const endTime = new Date(refDate);
-            endTime.setUTCHours(startH + 2, 0, 0, 0);
-
-            await prisma.pricingRule
-              .create({
-                data: {
-                  sub_field_id: subField.id,
-                  day_of_week: day,
-                  start_time: startTime,
-                  end_time: endTime,
-                  base_price: price,
-                },
-              })
-              .catch(() => {});
+          for (const startH of TIME_SLOTS) {
+            const price = computeFieldPrice(sport, startH, isWeekend);
+            const refDate = new Date(2000, 0, 1);
+            const startTime = setHM(refDate, startH, 0);
+            const endTime = setHM(refDate, startH + SLOT_HOURS, 0);
+            rules.push({
+              sub_field_id: subField.id,
+              day_of_week: day,
+              start_time: startTime,
+              end_time: endTime,
+              base_price: price,
+            });
           }
         }
+        await prisma.pricingRule.createMany({ data: rules });
       }
 
-      // ── Products cho complex ──
+      // Products – chỉ ACTIVE complex mới mở bán
+      const products: ProductInfo[] = [];
       if (status === ComplexStatus.ACTIVE) {
-        const products: any[] = [];
+        const seenNames = new Set<string>();
         for (const sport of sports) {
           for (const tmpl of PRODUCT_TEMPLATES[sport]) {
-            // tránh tạo sản phẩm tên trùng
-            if (products.some((p) => p.name === tmpl.name)) continue;
+            if (seenNames.has(tmpl.name)) continue;
+            seenNames.add(tmpl.name);
+            const productStatus =
+              rand() > 0.05 ? ProductStatus.ACTIVE : ProductStatus.INACTIVE;
             const product = await prisma.product.create({
               data: {
                 complex_id: complex.id,
                 sport_type: sport,
                 name: tmpl.name,
+                description: faker.commerce.productDescription(),
                 price: tmpl.price,
                 stock: randInt(20, 200),
-                status: rand() > 0.05 ? "ACTIVE" : "INACTIVE",
+                image: `https://picsum.photos/seed/p-${complex.id}-${tmpl.name}/400/400`,
+                status: productStatus,
               },
             });
-            products.push(product);
-          }
-        }
-        complexProductsMap[complex.id] = products;
-      }
-    }
-  }
-
-  console.log(`     → ${allSubFields.length} sub-fields`);
-  return { allSubFields, complexProductsMap };
-}
-
-/**
- * 3. Bookings + Payments + BookingAddons + Reviews
- *
- * Chiến lược:
- *   - Mỗi player có 15–30 bookings trải 6 tháng
- *   - Tháng gần hơn → revenue cao hơn (tăng trưởng)
- *   - start_time theo peak hours có trọng số
- *   - 50% returning players đặt nhiều hơn 1 lần/tháng
- *   - COMPLETED booking: 40% có addon, 55% có review
- *   - Payment theo provider weights
- *   - Rating phân phối thực tế 1–5
- */
-async function seedBookingsAndReviews(
-  playerAccounts: any[],
-  allSubFields: any[],
-  complexProductsMap: Record<string, any[]>,
-) {
-  console.log("  [3/7] Bookings, Payments, Addons, Reviews...");
-
-  let totalBookings = 0;
-  let totalPayments = 0;
-  let totalAddons = 0;
-  let totalReviews = 0;
-
-  // Subfields chỉ từ ACTIVE complex (cần truy vấn để lọc)
-  const activeSubFields = allSubFields.filter((sf) => {
-    const products = complexProductsMap[sf.complex_id];
-    return products !== undefined; // proxy cho ACTIVE complex
-  });
-
-  for (const playerAcc of playerAccounts) {
-    const player = playerAcc.player;
-    if (!player) continue;
-
-    // Players tạo muộn hơn → ít booking hơn, nhưng tập trung tháng gần
-    const accountAgeMs = Date.now() - new Date(playerAcc.created_at).getTime();
-    const accountAgeDays = accountAgeMs / 86_400_000;
-    const numBookings = Math.min(
-      30,
-      Math.max(5, Math.round(accountAgeDays / 7)),
-    );
-
-    for (let b = 0; b < numBookings; b++) {
-      // Phân phối ngày: trọng số tháng gần hơn có nhiều booking hơn
-      // tháng 0 (hiện tại) weight 3x so với tháng 5 (xa nhất)
-      const monthOffset = weightedPick(
-        [0, 1, 2, 3, 4, 5],
-        [0.3, 0.22, 0.17, 0.13, 0.1, 0.08],
-      );
-      const bookingDate = randDate(
-        daysAgo((monthOffset + 1) * 30),
-        daysAgo(monthOffset * 30 + 1),
-      );
-
-      // Peak hours với trọng số
-      const startH = weightedPick(PEAK_HOURS, PEAK_WEIGHTS);
-      const isWeekend =
-        bookingDate.getDay() === 0 || bookingDate.getDay() === 6;
-
-      const startTime = setHM(bookingDate, startH, 0);
-      const endTime = setHM(bookingDate, startH + SLOT_DURATION_H, 0);
-
-      const subField = pick(
-        activeSubFields.length > 0 ? activeSubFields : allSubFields,
-      );
-      const [pMin, pMax] = PRICE_RANGE[subField.sport_type as SportType];
-      const basePrice = Math.round(randInt(pMin, pMax) / 10_000) * 10_000;
-      const fieldPrice =
-        Math.round(
-          (basePrice * (startH >= 17 ? 1.3 : 1) * (isWeekend ? 1.2 : 1)) /
-            10_000,
-        ) * 10_000;
-
-      // Status theo tháng (booking cũ đa số COMPLETED/CANCELED, mới thì CONFIRMED/PENDING)
-      let status: BookingStatus;
-      const cancelRate = CANCEL_RATE_BY_MONTH[5 - monthOffset] ?? 0.18;
-      if (monthOffset >= 1) {
-        status =
-          rand() < cancelRate
-            ? BookingStatus.CANCELED
-            : BookingStatus.COMPLETED;
-      } else {
-        // Tháng hiện tại: mix CONFIRMED, PENDING, và một số COMPLETED
-        status = weightedPick(
-          [
-            BookingStatus.COMPLETED,
-            BookingStatus.CONFIRMED,
-            BookingStatus.PENDING,
-            BookingStatus.CANCELED,
-          ],
-          [0.45, 0.3, 0.15, 0.1],
-        );
-      }
-
-      const booking = await prisma.booking.create({
-        data: {
-          player_id: player.id,
-          sub_field_id: subField.id,
-          start_time: startTime,
-          end_time: endTime,
-          total_price: fieldPrice,
-          status,
-          expires_at: new Date(startTime.getTime() + 15 * 60_000),
-          created_at: daysAgoFrom(startTime, randInt(1, 5)), // đặt trước 1–5 ngày
-        },
-      });
-      totalBookings++;
-
-      let addonTotal = 0;
-
-      // ── BookingAddon (40% COMPLETED bookings) ──
-      if (status === BookingStatus.COMPLETED && rand() < 0.4) {
-        const products = complexProductsMap[subField.complex_id] ?? [];
-        const activeProducts = products.filter(
-          (p) => p.status === "ACTIVE" && p.stock > 0,
-        );
-        if (activeProducts.length > 0) {
-          const addonProducts = pickN(activeProducts, randInt(1, 3));
-          for (const product of addonProducts) {
-            const quantity = randInt(1, 3);
-            await prisma.bookingAddon
-              .create({
-                data: {
-                  booking_id: booking.id,
-                  product_id: product.id,
-                  quantity,
-                  unit_price: product.price,
-                },
-              })
-              .catch(() => {});
-            addonTotal += Number(product.price) * quantity;
-            totalAddons++;
+            products.push({
+              id: product.id,
+              price: tmpl.price,
+              status: productStatus,
+              stock: product.stock,
+            });
           }
         }
       }
-
-      const finalTotal = fieldPrice + addonTotal;
-
-      // Payment: cả COMPLETED và CONFIRMED đều có payment, amount phải khớp total_price sau addons
-      let paymentId: string | null = null;
-      if (
-        status === BookingStatus.COMPLETED ||
-        status === BookingStatus.CONFIRMED
-      ) {
-        const provider = weightedPick(
-          [PaymentProvider.MOMO, PaymentProvider.VNPAY, PaymentProvider.STRIPE],
-          [
-            PROVIDER_WEIGHTS[PaymentProvider.MOMO],
-            PROVIDER_WEIGHTS[PaymentProvider.VNPAY],
-            PROVIDER_WEIGHTS[PaymentProvider.STRIPE],
-          ],
-        );
-        const payment = await prisma.payment.create({
-          data: {
-            amount: finalTotal,
-            provider,
-            transaction_code: `TXN_${faker.string.alphanumeric(14).toUpperCase()}`,
-            status: PaymentStatus.SUCCESS,
-            created_at: startTime,
-          },
-        });
-        paymentId = payment.id;
-        totalPayments++;
-      }
-
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: {
-          total_price: finalTotal,
-          payment_id: paymentId,
-          paid_at: paymentId ? startTime : null,
-        },
-      });
-
-      // ── Review (55% COMPLETED bookings) ──
-      if (status === BookingStatus.COMPLETED && rand() < 0.55) {
-        const rating = weightedPick([1, 2, 3, 4, 5], RATING_WEIGHTS);
-        const reviewDate = new Date(
-          endTime.getTime() + randInt(1, 48) * 3_600_000,
-        );
-        await prisma.review
-          .create({
-            data: {
-              booking_id: booking.id,
-              player_id: player.id,
-              subfield_id: subField.id,
-              rating,
-              comment:
-                rating >= 4
-                  ? faker.lorem.sentence()
-                  : rand() > 0.5
-                    ? faker.lorem.sentence()
-                    : null,
-              created_at: reviewDate,
-            },
-          })
-          .catch(() => {});
-        totalReviews++;
-      }
+      productsByComplex.set(complex.id, products);
     }
   }
 
   console.log(
-    `     → ${totalBookings} bookings, ${totalPayments} payments, ${totalAddons} addons, ${totalReviews} reviews`,
+    `     → ${complexes.length} complexes, ${subfields.length} sub-fields`,
   );
+  return { complexes, subfields, productsByComplex };
 }
 
+// ─── 3. Bookings + Payments + Addons + Reviews ───────────────────────────────
+
 /**
- * 4. Recurring Bookings — mỗi player có ~5% cơ hội có recurring booking
- *    Mỗi recurring sinh ra 4–8 child bookings thực sự.
+ * Cố gắng đặt 1 booking trên (player, subfield) tại 1 slot ngẫu nhiên.
+ * Trả về booking nếu thành công, null nếu xung đột hoặc không phù hợp.
  */
-async function seedRecurringBookings(
-  playerAccounts: any[],
-  allSubFields: any[],
+async function tryCreateBooking(args: {
+  player: PlayerInfo;
+  subfield: SubFieldInfo;
+  bookingDate: Date;
+  startH: number;
+  recurringId?: string | null;
+  productsForComplex: ProductInfo[];
+}) {
+  const { player, subfield, bookingDate, startH, recurringId } = args;
+
+  // Player phải đã tồn tại trước khi tạo booking
+  if (bookingDate.getTime() < player.account_created_at.getTime()) return null;
+
+  const startTime = setHM(bookingDate, startH, 0);
+  const endTime = setHM(bookingDate, startH + SLOT_HOURS, 0);
+  const now = new Date();
+
+  // Khoá xung đột slot
+  const key = slotKey(bookingDate, startH);
+  if (!isSlotFree(subfield.id, player.id, key)) return null;
+
+  const isWeekend = bookingDate.getDay() === 0 || bookingDate.getDay() === 6;
+  const fieldPrice = computeFieldPrice(subfield.sport_type, startH, isWeekend);
+
+  // Xác định status theo quy ước nghiệp vụ:
+  // - PENDING: chưa thanh toán
+  // - COMPLETED: đã thanh toán, chờ chủ sân xác nhận
+  // - CONFIRMED: đã được chủ sân xác nhận
+  let status: BookingStatus;
+  if (endTime < now) {
+    // Booking đã qua: không nên còn PENDING.
+    const monthsAgo = Math.min(
+      5,
+      Math.floor((now.getTime() - endTime.getTime()) / (30 * 86_400_000)),
+    );
+    const cancelRate = CANCEL_RATE_BY_MONTH[5 - monthsAgo] ?? 0.18;
+    status =
+      rand() < cancelRate
+        ? BookingStatus.CANCELED
+        : weightedPick(
+            [BookingStatus.CONFIRMED, BookingStatus.COMPLETED],
+            [0.82, 0.18],
+          );
+  } else {
+    // Booking trong tương lai (hoặc đang diễn ra)
+    status = weightedPick(
+      [
+        BookingStatus.PENDING,
+        BookingStatus.COMPLETED,
+        BookingStatus.CONFIRMED,
+        BookingStatus.CANCELED,
+      ],
+      [0.22, 0.24, 0.42, 0.12],
+    );
+  }
+
+  // created_at:
+  // - PENDING: rất gần hiện tại để đúng nghĩa \"đã tạo nhưng chưa thanh toán\".
+  // - Trạng thái khác: đặt trước 1–7 ngày.
+  const minCreated = player.account_created_at;
+  const desiredCreated =
+    status === BookingStatus.PENDING
+      ? new Date(now.getTime() - randInt(0, 10) * 60_000)
+      : new Date(startTime.getTime() - randInt(1, 7) * 86_400_000);
+  const createdAt = new Date(
+    Math.max(desiredCreated.getTime(), minCreated.getTime()),
+  );
+  if (createdAt.getTime() >= startTime.getTime()) return null;
+
+  // PENDING chỉ hợp lý nếu hết thời gian giữ (15') CHƯA xảy ra → tức created_at
+  // gần hiện tại. Nếu không hợp lệ, đổi thành CANCELED (hết hạn).
+  let expiresAt = addMinutes(createdAt, 15);
+  if (status === BookingStatus.PENDING && expiresAt < now) {
+    status = BookingStatus.CANCELED;
+  }
+
+  // Payment chỉ tồn tại với CONFIRMED/COMPLETED
+  let paidAt: Date | null = null;
+  if (status === BookingStatus.CONFIRMED || status === BookingStatus.COMPLETED) {
+    paidAt = new Date(
+      createdAt.getTime() + randInt(1, Math.min(14, 14)) * 60_000,
+    );
+    if (paidAt > startTime) paidAt = new Date(startTime.getTime() - 60_000);
+    // expires_at cho booking đã thanh toán có thể giữ nguyên (15' từ created)
+  }
+
+  // Tạm chiếm slot trước khi insert (tránh seed song song trùng)
+  occupySlot(subfield.id, player.id, key);
+
+  const booking = await prisma.booking.create({
+    data: {
+      player_id: player.id,
+      sub_field_id: subfield.id,
+      start_time: startTime,
+      end_time: endTime,
+      total_price: fieldPrice,
+      status,
+      created_at: createdAt,
+      paid_at: paidAt,
+      expires_at: expiresAt,
+      recurring_booking_id: recurringId ?? null,
+    },
+  });
+
+  // Addons – booking đã thanh toán (COMPLETED/CONFIRMED) + complex ACTIVE
+  let addonTotal = 0;
+  if (
+    (status === BookingStatus.COMPLETED || status === BookingStatus.CONFIRMED) &&
+    rand() < 0.4
+  ) {
+    const candidates = args.productsForComplex.filter(
+      (p) => p.status === ProductStatus.ACTIVE && p.stock > 0,
+    );
+    if (candidates.length > 0) {
+      const chosen = pickN(candidates, randInt(1, Math.min(3, candidates.length)));
+      const addonRows = chosen.map((p) => {
+        const quantity = randInt(1, 3);
+        addonTotal += p.price * quantity;
+        return {
+          booking_id: booking.id,
+          product_id: p.id,
+          quantity,
+          unit_price: p.price,
+        };
+      });
+      await prisma.bookingAddon.createMany({ data: addonRows });
+    }
+  }
+
+  const finalTotal = fieldPrice + addonTotal;
+
+  // Payment – tạo SAU addon để amount khớp total cuối cùng
+  let paymentId: string | null = null;
+  if (status === BookingStatus.CONFIRMED || status === BookingStatus.COMPLETED) {
+    const provider = weightedPick(PROVIDERS, PROVIDER_WEIGHTS);
+    const payment = await prisma.payment.create({
+      data: {
+        amount: finalTotal,
+        provider,
+        transaction_code: nextTxn(provider),
+        status: PaymentStatus.SUCCESS,
+        created_at: paidAt ?? createdAt,
+      },
+    });
+    paymentId = payment.id;
+  } else if (status === BookingStatus.CANCELED && rand() < 0.25) {
+    // 25% đơn huỷ có refund (đã thanh toán rồi mới huỷ)
+    const provider = weightedPick(PROVIDERS, PROVIDER_WEIGHTS);
+    const payment = await prisma.payment.create({
+      data: {
+        amount: finalTotal,
+        provider,
+        transaction_code: nextTxn(provider),
+        status: PaymentStatus.REFUNDED,
+        created_at: createdAt,
+      },
+    });
+    paymentId = payment.id;
+  }
+
+  await prisma.booking.update({
+    where: { id: booking.id },
+    data: {
+      total_price: finalTotal,
+      payment_id: paymentId,
+    },
+  });
+
+  // Review chỉ tạo khi booking đã CONFIRMED và đã kết thúc.
+  if (status === BookingStatus.CONFIRMED && endTime < now && rand() < 0.55) {
+    const rating = weightedPick([1, 2, 3, 4, 5], RATING_WEIGHTS);
+    const reviewAt = new Date(
+      endTime.getTime() + randInt(1, 72) * 3_600_000,
+    );
+    await prisma.review.create({
+      data: {
+        booking_id: booking.id,
+        player_id: player.id,
+        subfield_id: subfield.id,
+        rating,
+        comment:
+          rating <= 2
+            ? `Trải nghiệm chưa tốt. ${faker.lorem.sentence()}`
+            : rand() > 0.3
+              ? faker.lorem.sentence()
+              : null,
+        created_at: reviewAt < new Date() ? reviewAt : new Date(),
+      },
+    });
+  }
+
+  return {
+    bookingId: booking.id,
+    startTime,
+    endTime,
+    createdAt,
+    status,
+    sport: subfield.sport_type,
+    capacity: subfield.capacity,
+  };
+}
+
+async function seedBookings(
+  players: PlayerInfo[],
+  complexes: SeededComplex[],
+  subfields: SubFieldInfo[],
+  productsByComplex: Map<string, ProductInfo[]>,
 ) {
-  console.log("  [4/7] Recurring bookings...");
-  let count = 0;
+  console.log("  [3/8] Bookings / Payments / Addons / Reviews...");
 
-  // Chọn ~20% player làm recurring player
-  const recurringPlayers = playerAccounts.filter(() => rand() < 0.2);
+  // Chỉ dùng subfields thuộc complex ACTIVE
+  const activeComplexIds = new Set(
+    complexes
+      .filter((c) => c.status === ComplexStatus.ACTIVE)
+      .map((c) => c.complexId),
+  );
+  const bookableSubfields = subfields.filter((s) =>
+    activeComplexIds.has(s.complex_id),
+  );
 
-  for (const playerAcc of recurringPlayers) {
-    const player = playerAcc.player;
-    if (!player) continue;
+  if (bookableSubfields.length === 0) {
+    console.log("     ! Không có sub-field nào thuộc complex ACTIVE, bỏ qua.");
+    return;
+  }
 
-    const subField = pick(allSubFields);
+  const activePlayers = players.filter(() => true); // banned cũng có thể có booking cũ
+  let totalBookings = 0;
+
+  for (const player of activePlayers) {
+    // Số booking mong muốn dựa trên tuổi tài khoản
+    const ageDays = Math.max(
+      1,
+      (Date.now() - player.account_created_at.getTime()) / 86_400_000,
+    );
+    const desired = Math.min(40, Math.max(4, Math.round(ageDays / 6)));
+
+    let attempts = 0;
+    let succeeded = 0;
+    while (succeeded < desired && attempts < desired * 4) {
+      attempts++;
+      const subfield = pick(bookableSubfields);
+
+      // Phân phối ngày: ưu tiên gần hiện tại, có cả tương lai
+      const monthOffset = weightedPick(
+        [-1, 0, 1, 2, 3, 4, 5],
+        [0.08, 0.28, 0.2, 0.16, 0.12, 0.1, 0.06],
+      );
+      let from: Date;
+      let to: Date;
+      if (monthOffset < 0) {
+        from = daysFromNow(1);
+        to = daysFromNow(45);
+      } else {
+        from = daysAgo((monthOffset + 1) * 30);
+        to = daysAgo(monthOffset * 30);
+      }
+      const bookingDate = new Date(randDate(from, to));
+      bookingDate.setHours(0, 0, 0, 0);
+
+      const startH = weightedPick(
+        TIME_SLOTS as unknown as number[],
+        TIME_SLOTS.map((h) => SLOT_WEIGHTS[h] ?? 0.1),
+      );
+
+      const result = await tryCreateBooking({
+        player,
+        subfield,
+        bookingDate,
+        startH,
+        productsForComplex: productsByComplex.get(subfield.complex_id) ?? [],
+      });
+      if (result) {
+        succeeded++;
+        totalBookings++;
+      }
+    }
+  }
+
+  console.log(`     → ${totalBookings} bookings`);
+}
+
+// ─── 4. Recurring bookings ────────────────────────────────────────────────────
+
+async function seedRecurringBookings(
+  players: PlayerInfo[],
+  complexes: SeededComplex[],
+  subfields: SubFieldInfo[],
+  productsByComplex: Map<string, ProductInfo[]>,
+) {
+  console.log("  [4/8] Recurring bookings + child bookings...");
+
+  const activeComplexIds = new Set(
+    complexes
+      .filter((c) => c.status === ComplexStatus.ACTIVE)
+      .map((c) => c.complexId),
+  );
+  const bookableSubfields = subfields.filter((s) =>
+    activeComplexIds.has(s.complex_id),
+  );
+  if (bookableSubfields.length === 0) return;
+
+  // ~20% players có recurring
+  const recurringCandidates = players
+    .filter(() => rand() < 0.2)
+    .filter((p) => p.account_created_at < daysAgo(60));
+
+  let totalChildren = 0;
+  let totalRecurring = 0;
+
+  for (const player of recurringCandidates) {
+    const subfield = pick(bookableSubfields);
     const recType: RecurrenceType =
       rand() > 0.5 ? RecurrenceType.WEEKLY : RecurrenceType.MONTHLY;
+    const startH = pick([8, 10, 18, 20]);
 
-    // Bắt đầu từ 60–90 ngày trước, kéo dài 56 ngày (8 tuần)
-    const startDate = daysAgo(randInt(60, 90));
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 56);
+    // Bắt đầu từ 1–3 tháng trước, kéo dài 8 tuần (weekly) / 3 tháng (monthly)
+    const startDate = randDate(daysAgo(90), daysAgo(45));
+    startDate.setHours(0, 0, 0, 0);
+    const endDate =
+      recType === RecurrenceType.WEEKLY
+        ? addDays(startDate, 56)
+        : addMonths(startDate, 3);
 
     const recurStatus: RecurringStatus =
       endDate < new Date()
@@ -687,153 +985,128 @@ async function seedRecurringBookings(
     const recurring = await prisma.recurringBooking.create({
       data: {
         player_id: player.id,
-        sub_field_id: subField.id,
+        sub_field_id: subfield.id,
         recurrence_type: recType,
         start_date: startDate,
         end_date: endDate,
         status: recurStatus,
+        created_at: addDays(startDate, -1),
       },
     });
+    totalRecurring++;
 
-    // Tạo child bookings theo recurrence
-    const [pMin, pMax] = PRICE_RANGE[subField.sport_type as SportType];
-    const price = Math.round(randInt(pMin, pMax) / 10_000) * 10_000;
-    const startH = pick([8, 10, 18, 20]);
     const intervalDays = recType === RecurrenceType.WEEKLY ? 7 : 30;
-
     let cursor = new Date(startDate);
+    const products = productsByComplex.get(subfield.complex_id) ?? [];
+
     while (cursor <= endDate) {
-      const startTime = setHM(cursor, startH, 0);
-      const endTime = setHM(cursor, startH + 2, 0);
-      const isPast = endTime < new Date();
-      const childStatus: BookingStatus = isPast
-        ? BookingStatus.COMPLETED
-        : BookingStatus.CONFIRMED;
-
-      let paymentId: string | null = null;
-      if (childStatus === BookingStatus.COMPLETED) {
-        const payment = await prisma.payment.create({
-          data: {
-            amount: price,
-            provider: weightedPick(
-              [
-                PaymentProvider.MOMO,
-                PaymentProvider.VNPAY,
-                PaymentProvider.STRIPE,
-              ],
-              [0.5, 0.3, 0.2],
-            ),
-            transaction_code: `REC_${faker.string.alphanumeric(12).toUpperCase()}`,
-            status: PaymentStatus.SUCCESS,
-            created_at: startTime,
-          },
-        });
-        paymentId = payment.id;
-      }
-
-      await prisma.booking.create({
-        data: {
-          player_id: player.id,
-          sub_field_id: subField.id,
-          start_time: startTime,
-          end_time: endTime,
-          total_price: price,
-          status: childStatus,
-          payment_id: paymentId,
-          paid_at: paymentId ? startTime : null,
-          expires_at: new Date(startTime.getTime() + 15 * 60_000),
-          recurring_booking_id: recurring.id,
-          created_at: daysAgoFrom(startTime, 3),
-        },
+      const child = await tryCreateBooking({
+        player,
+        subfield,
+        bookingDate: new Date(cursor),
+        startH,
+        recurringId: recurring.id,
+        productsForComplex: products,
       });
-      count++;
-      cursor.setDate(cursor.getDate() + intervalDays);
+      if (child) totalChildren++;
+      cursor = addDays(cursor, intervalDays);
     }
   }
 
-  console.log(`     → ${count} recurring child bookings`);
+  console.log(`     → ${totalRecurring} recurring, ${totalChildren} children`);
 }
 
-/**
- * 5. Matches + MatchParticipants
- *    Lấy COMPLETED / CONFIRMED booking và tạo dữ liệu match nhất quán theo status/slots/time.
- */
-async function seedMatches(playerAccounts: any[]) {
-  console.log("  [5/7] Matches & participants...");
+// ─── 5. Matches + Participants ────────────────────────────────────────────────
 
-  // Lấy bookings đã CONFIRMED/COMPLETED + không có match, lấy tối đa 80
-  const eligibleBookings = await prisma.booking.findMany({
+async function seedMatches(players: PlayerInfo[]) {
+  console.log("  [5/8] Matches & participants...");
+
+  // Lấy booking đủ điều kiện làm kèo: chỉ booking đã CONFIRMED.
+  const candidates = await prisma.booking.findMany({
     where: {
-      status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED] },
+      status: BookingStatus.CONFIRMED,
       match: null,
     },
-    include: {
-      sub_field: true,
-      player: true,
+    select: {
+      id: true,
+      created_at: true,
+      start_time: true,
+      end_time: true,
+      player_id: true,
+      sub_field: {
+        select: { sport_type: true, capacity: true },
+      },
     },
-    take: 80,
-    orderBy: { created_at: "desc" },
+    take: 200,
+    orderBy: { start_time: "desc" },
   });
 
-  // Chỉ tạo match cho 60% eligible bookings
-  const matchBookings = eligibleBookings.filter(() => rand() < 0.6);
-
-  const playerIds = playerAccounts
-    .filter((p) => p.player)
-    .map((p) => p.player.id);
+  // Tạo match cho ~60% candidate
+  const chosen = candidates.filter(() => rand() < 0.6);
+  const playerIds = players.map((p) => p.id);
+  const now = new Date();
 
   let totalMatches = 0;
   let totalParticipants = 0;
-  const now = new Date();
 
-  const closeReasons = [
-    "Chủ kèo đóng do đủ team nội bộ",
-    "Đổi lịch thi đấu",
-    "Đã chuyển sang sân khác",
-  ];
-
-  for (const booking of matchBookings) {
+  for (const booking of chosen) {
     const sport = booking.sub_field.sport_type as SportType;
-    const slotsNeeded = randInt(1, 5);
-    const bookingStart = new Date(booking.start_time);
-    const bookingEnd = new Date(booking.end_time);
-    const isPast = bookingEnd < now;
+    const capacity = booking.sub_field.capacity;
+    if (capacity <= 1) continue; // không thể tìm thêm người
 
-    const matchStatus: MatchStatus = isPast
-      ? MatchStatus.COMPLETED
-      : weightedPick(
-          [
-            MatchStatus.OPEN,
-            MatchStatus.FULL,
-            MatchStatus.CLOSED,
-            MatchStatus.EXPIRED,
-          ],
-          [0.45, 0.25, 0.2, 0.1],
-        );
+    const slotsNeeded = randInt(1, Math.max(1, capacity - 1));
+    const isPast = booking.end_time < now;
+    const otherPlayers = playerIds.filter((id) => id !== booking.player_id);
+    if (otherPlayers.length === 0) continue;
 
-    let desiredAccepted = 0;
-    if (matchStatus === MatchStatus.FULL) {
-      desiredAccepted = slotsNeeded;
-    } else if (
-      matchStatus === MatchStatus.OPEN ||
-      matchStatus === MatchStatus.EXPIRED
-    ) {
-      desiredAccepted = slotsNeeded > 1 ? randInt(0, slotsNeeded - 1) : 0;
+    // Quyết định status
+    let status: MatchStatus;
+    if (isPast) {
+      status = MatchStatus.COMPLETED;
     } else {
-      desiredAccepted = randInt(0, slotsNeeded);
+      status = weightedPick(
+        [
+          MatchStatus.OPEN,
+          MatchStatus.FULL,
+          MatchStatus.CLOSED,
+          MatchStatus.EXPIRED,
+          MatchStatus.CANCELED,
+        ],
+        [0.5, 0.2, 0.12, 0.1, 0.08],
+      );
     }
 
-    const otherPlayers = playerIds.filter((id) => id !== booking.player.id);
-    const acceptedCount = Math.min(desiredAccepted, otherPlayers.length);
-
-    let joinDeadline = new Date(
-      bookingStart.getTime() - randInt(30, 180) * 60_000,
-    );
-    if (matchStatus === MatchStatus.EXPIRED) {
-      joinDeadline = new Date(now.getTime() - randInt(30, 360) * 60_000);
+    // Tính số người ACCEPTED khớp với status
+    let accepted: number;
+    if (status === MatchStatus.FULL || status === MatchStatus.COMPLETED) {
+      accepted = slotsNeeded;
+    } else if (status === MatchStatus.CLOSED) {
+      accepted = randInt(0, slotsNeeded);
+    } else {
+      accepted = slotsNeeded > 1 ? randInt(0, slotsNeeded - 1) : 0;
     }
-    if (joinDeadline >= bookingStart) {
-      joinDeadline = new Date(bookingStart.getTime() - 15 * 60_000);
+    accepted = Math.min(accepted, otherPlayers.length);
+
+    // join_deadline phải < start_time
+    let joinDeadline: Date;
+    if (status === MatchStatus.EXPIRED) {
+      joinDeadline = new Date(
+        Math.min(now.getTime(), booking.start_time.getTime()) -
+          randInt(60, 360) * 60_000,
+      );
+    } else {
+      joinDeadline = new Date(
+        booking.start_time.getTime() - randInt(60, 360) * 60_000,
+      );
+    }
+    // Đảm bảo joinDeadline > created_at
+    if (joinDeadline <= booking.created_at) {
+      joinDeadline = new Date(
+        Math.max(
+          booking.created_at.getTime() + 60_000,
+          booking.start_time.getTime() - 30 * 60_000,
+        ),
+      );
     }
 
     const skillLevel = weightedPick(
@@ -842,128 +1115,129 @@ async function seedMatches(playerAccounts: any[]) {
         MatchSkillLevel.INTERMEDIATE,
         MatchSkillLevel.ADVANCED,
       ],
-      [0.35, 0.45, 0.2],
+      [0.3, 0.5, 0.2],
     );
+
+    const closedReason =
+      status === MatchStatus.CLOSED
+        ? pick(CLOSE_REASONS)
+        : status === MatchStatus.EXPIRED
+          ? "Quá hạn nhận người tham gia"
+          : status === MatchStatus.CANCELED
+            ? "Chủ kèo huỷ trận"
+            : null;
 
     const match = await prisma.match.create({
       data: {
         booking_id: booking.id,
-        creator_id: booking.player.id,
+        creator_id: booking.player_id,
         sport_type: sport,
         skill_level: skillLevel,
-        title: `Tìm người chơi ${SPORT_LABELS[sport]} — ${bookingStart.toLocaleDateString("vi")}`,
-        description: rand() > 0.4 ? faker.lorem.sentences(2) : null,
+        title: `Tìm ${slotsNeeded} người chơi ${SPORT_LABELS[sport]} – ${booking.start_time.toLocaleDateString("vi-VN")}`,
+        description: rand() > 0.3 ? faker.lorem.sentences(2) : null,
         slots_needed: slotsNeeded,
-        slots_filled: acceptedCount,
+        slots_filled: accepted,
         join_deadline: joinDeadline,
-        status: matchStatus,
-        closed_reason:
-          matchStatus === MatchStatus.CLOSED
-            ? pick(closeReasons)
-            : matchStatus === MatchStatus.EXPIRED
-              ? "Quá hạn nhận người tham gia"
-              : null,
-        created_at: new Date(booking.created_at),
+        status,
+        closed_reason: closedReason,
+        created_at: booking.created_at,
       },
     });
     totalMatches++;
 
-    // Thêm participants: luôn nhất quán với slots_filled (số ACCEPTED)
-    const maxExtra = Math.min(
-      3,
-      Math.max(otherPlayers.length - acceptedCount, 0),
+    // Sinh participants
+    const matchCreatedAt = match.created_at;
+    const responseUpper = new Date(
+      Math.min(joinDeadline.getTime(), now.getTime()),
     );
-    const extraCount = maxExtra > 0 ? randInt(0, maxExtra) : 0;
-    const totalParticipantsTarget = acceptedCount + extraCount;
-    const participants = pickN(otherPlayers, totalParticipantsTarget);
+    const safeUpper =
+      responseUpper.getTime() <= matchCreatedAt.getTime()
+        ? new Date(matchCreatedAt.getTime() + 60_000)
+        : responseUpper;
 
-    const acceptedPlayers = participants.slice(0, acceptedCount);
-    const remainingPlayers = participants.slice(acceptedCount);
+    // Số participant cần (accepted + thêm pending/rejected/withdrawn)
+    const extraSlots = Math.min(
+      otherPlayers.length - accepted,
+      randInt(0, Math.max(0, Math.min(5, otherPlayers.length - accepted))),
+    );
+    const totalParticipantsCount = accepted + extraSlots;
+    const participantPool = pickN(otherPlayers, totalParticipantsCount);
 
-    for (const playerId of acceptedPlayers) {
-      await prisma.matchParticipant
-        .create({
-          data: {
-            match_id: match.id,
-            player_id: playerId,
-            status: ParticipantStatus.ACCEPTED,
-            introduction: rand() > 0.3 ? faker.lorem.sentence() : null,
-            responded_at: randDateSafe(
-              new Date(booking.created_at),
-              new Date(
-                Math.max(bookingStart.getTime() - 10 * 60_000, now.getTime()),
-              ),
-            ),
-          },
-        })
-        .catch(() => {});
+    const acceptedSet = participantPool.slice(0, accepted);
+    const otherSet = participantPool.slice(accepted);
+
+    // ACCEPTED
+    for (const playerId of acceptedSet) {
+      const respondedAt = randDate(matchCreatedAt, safeUpper);
+      await prisma.matchParticipant.create({
+        data: {
+          match_id: match.id,
+          player_id: playerId,
+          status: ParticipantStatus.ACCEPTED,
+          introduction: rand() > 0.3 ? faker.lorem.sentence() : null,
+          responded_at: respondedAt,
+          created_at: matchCreatedAt,
+        },
+      });
       totalParticipants++;
     }
 
-    for (const playerId of remainingPlayers) {
-      const pendingAllowed =
-        matchStatus === MatchStatus.OPEN || matchStatus === MatchStatus.CLOSED;
+    // Còn lại: PENDING / REJECTED / WITHDRAWN / REMOVED
+    const allowPending =
+      status === MatchStatus.OPEN ||
+      status === MatchStatus.CLOSED ||
+      status === MatchStatus.CANCELED;
+    const statusPool = allowPending
+      ? [
+          ParticipantStatus.PENDING,
+          ParticipantStatus.REJECTED,
+          ParticipantStatus.WITHDRAWN,
+          ParticipantStatus.REMOVED,
+        ]
+      : [
+          ParticipantStatus.REJECTED,
+          ParticipantStatus.WITHDRAWN,
+          ParticipantStatus.REMOVED,
+        ];
+    const statusWeights = allowPending
+      ? [0.4, 0.3, 0.2, 0.1]
+      : [0.5, 0.3, 0.2];
 
-      const statusPool: ParticipantStatus[] = pendingAllowed
-        ? [
-            ParticipantStatus.PENDING,
-            ParticipantStatus.REJECTED,
-            ParticipantStatus.WITHDRAWN,
-            ParticipantStatus.REMOVED,
-          ]
-        : [
-            ParticipantStatus.REJECTED,
-            ParticipantStatus.WITHDRAWN,
-            ParticipantStatus.REMOVED,
-          ];
-
-      const statusWeights = pendingAllowed
-        ? [0.45, 0.3, 0.15, 0.1]
-        : [0.55, 0.3, 0.15];
-
+    for (const playerId of otherSet) {
       const pStatus = weightedPick(statusPool, statusWeights);
-      const actionAt = randDateSafe(
-        new Date(booking.created_at),
-        new Date(Math.max(bookingStart.getTime() - 10 * 60_000, now.getTime())),
-      );
-
-      await prisma.matchParticipant
-        .create({
-          data: {
-            match_id: match.id,
-            player_id: playerId,
-            status: pStatus,
-            introduction: rand() > 0.3 ? faker.lorem.sentence() : null,
-            responded_at:
-              pStatus === ParticipantStatus.PENDING ? null : actionAt,
-            left_at: pStatus === ParticipantStatus.WITHDRAWN ? actionAt : null,
-          },
-        })
-        .catch(() => {});
+      const respondedAt =
+        pStatus === ParticipantStatus.PENDING
+          ? null
+          : randDate(matchCreatedAt, safeUpper);
+      const leftAt =
+        pStatus === ParticipantStatus.WITHDRAWN ? respondedAt : null;
+      await prisma.matchParticipant.create({
+        data: {
+          match_id: match.id,
+          player_id: playerId,
+          status: pStatus,
+          introduction: rand() > 0.4 ? faker.lorem.sentence() : null,
+          responded_at: respondedAt,
+          left_at: leftAt,
+          created_at: matchCreatedAt,
+        },
+      });
       totalParticipants++;
     }
   }
 
-  console.log(
-    `     → ${totalMatches} matches, ${totalParticipants} participants`,
-  );
+  console.log(`     → ${totalMatches} matches, ${totalParticipants} participants`);
 }
 
-/**
- * 6. Cập nhật cache fields trên SubField (avg_rating, total_reviews)
- */
-async function syncSubFieldCaches() {
-  console.log("  [6/8] Sync subfield cache fields...");
+// ─── 6. Sync SubField caches ─────────────────────────────────────────────────
 
+async function syncSubFieldCaches() {
+  console.log("  [6/8] Sync SubField caches (avg_rating, total_reviews)...");
   const subFields = await prisma.subField.findMany({
     where: { isDelete: false },
     select: {
       id: true,
-      reviews: {
-        select: {
-          rating: true,
-        },
-      },
+      reviews: { select: { rating: true } },
     },
   });
 
@@ -971,28 +1245,25 @@ async function syncSubFieldCaches() {
     const ratings = sf.reviews.map((r) => r.rating);
     const avgRating =
       ratings.length > 0
-        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+        ? Number(
+            (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2),
+          )
         : null;
-
     await prisma.subField.update({
       where: { id: sf.id },
       data: {
-        avg_rating: avgRating ? Number(avgRating.toFixed(2)) : null,
+        avg_rating: avgRating,
         total_reviews: ratings.length,
       },
     });
   }
-
-  console.log(`     → ${subFields.length} subfields synced`);
+  console.log(`     → ${subFields.length} sub-fields synced`);
 }
 
-/**
- * 7. Cập nhật cache fields trên Complex (avg_rating, total_reviews, min/max price)
- *    Schema có các cached fields — cần sync sau khi seed xong.
- */
-async function syncComplexCaches() {
-  console.log("  [7/8] Sync complex cache fields...");
+// ─── 7. Sync Complex caches ──────────────────────────────────────────────────
 
+async function syncComplexCaches() {
+  console.log("  [7/8] Sync Complex caches (price range / sports / rating)...");
   const complexes = await prisma.complex.findMany({
     select: {
       id: true,
@@ -1014,12 +1285,19 @@ async function syncComplexCaches() {
     const allRatings = c.sub_fields.flatMap((sf) =>
       sf.reviews.map((r) => r.rating),
     );
+    const sportTypes = Array.from(
+      new Set(c.sub_fields.map((sf) => sf.sport_type)),
+    );
 
     const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
     const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : null;
     const avgRating =
       allRatings.length > 0
-        ? allRatings.reduce((a, b) => a + b, 0) / allRatings.length
+        ? Number(
+            (allRatings.reduce((a, b) => a + b, 0) / allRatings.length).toFixed(
+              2,
+            ),
+          )
         : null;
 
     await prisma.complex.update({
@@ -1028,21 +1306,19 @@ async function syncComplexCaches() {
         min_price: minPrice,
         max_price: maxPrice,
         total_subfields: c.sub_fields.length,
-        avg_rating: avgRating ? Number(avgRating.toFixed(2)) : null,
+        sport_types: sportTypes,
+        avg_rating: avgRating,
         total_reviews: allRatings.length,
       },
     });
   }
-
   console.log(`     → ${complexes.length} complexes synced`);
 }
 
-/**
- * 8. Notifications — vài notification mẫu cho mỗi player
- */
-async function seedNotifications(playerAccounts: any[]) {
-  console.log("  [8/8] Notifications...");
+// ─── 8. Notifications ────────────────────────────────────────────────────────
 
+async function seedNotifications(players: PlayerInfo[]) {
+  console.log("  [8/8] Notifications...");
   const templates = [
     { type: "BOOKING_CONFIRMED", msg: "Booking của bạn đã được xác nhận." },
     {
@@ -1066,40 +1342,35 @@ async function seedNotifications(playerAccounts: any[]) {
   ];
 
   let total = 0;
-  for (const playerAcc of playerAccounts.slice(0, 60)) {
-    // Chỉ 60 players có notification
-    const numNotifs = randInt(2, 6);
-    for (let i = 0; i < numNotifs; i++) {
+  const targets = players.slice(0, Math.min(60, players.length));
+  for (const player of targets) {
+    const num = randInt(2, 6);
+    const rows: Prisma.NotificationCreateManyInput[] = [];
+    for (let i = 0; i < num; i++) {
       const tmpl = pick(templates);
-      await prisma.notification.create({
-        data: {
-          account_id: playerAcc.id,
-          message: tmpl.msg,
-          type: tmpl.type,
-          is_read: rand() > 0.4,
-          created_at: randDate(daysAgo(30), new Date()),
-        },
+      rows.push({
+        account_id: player.account_id,
+        message: tmpl.msg,
+        type: tmpl.type,
+        is_read: rand() > 0.4,
+        created_at: randDate(daysAgo(30), new Date()),
       });
       total++;
     }
+    await prisma.notification.createMany({ data: rows });
   }
-
   console.log(`     → ${total} notifications`);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────
 
-async function main() {
-  console.log("========================================");
-  console.log("  Sports Booking — Full Seed");
-  console.log("========================================\n");
-
-  // ── Cleanup (theo thứ tự FK) ──
+async function cleanup() {
   console.log("Cleaning up existing data...");
+  // Order theo FK
   await prisma.matchParticipant.deleteMany();
   await prisma.match.deleteMany();
-  await prisma.bookingAddon.deleteMany();
   await prisma.review.deleteMany();
+  await prisma.bookingAddon.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.booking.deleteMany();
   await prisma.payment.deleteMany();
@@ -1115,23 +1386,9 @@ async function main() {
   await prisma.player.deleteMany();
   await prisma.account.deleteMany();
   console.log("Done.\n");
+}
 
-  // ── Seed ──
-  const { ownerAccounts, playerAccounts } = await seedAccounts();
-  const { allSubFields, complexProductsMap } =
-    await seedComplexesAndProducts(ownerAccounts);
-  await seedBookingsAndReviews(
-    playerAccounts,
-    allSubFields,
-    complexProductsMap,
-  );
-  await seedRecurringBookings(playerAccounts, allSubFields);
-  await seedMatches(playerAccounts);
-  await syncSubFieldCaches();
-  await syncComplexCaches();
-  await seedNotifications(playerAccounts);
-
-  // ── Summary ──
+async function summary() {
   console.log("\n========================================");
   console.log("  Seed Summary");
   console.log("========================================");
@@ -1139,6 +1396,7 @@ async function main() {
     prisma.account.count(),
     prisma.complex.count(),
     prisma.subField.count(),
+    prisma.pricingRule.count(),
     prisma.product.count(),
     prisma.booking.count(),
     prisma.payment.count(),
@@ -1153,6 +1411,7 @@ async function main() {
     "Accounts",
     "Complexes",
     "SubFields",
+    "PricingRules",
     "Products",
     "Bookings",
     "Payments",
@@ -1165,12 +1424,28 @@ async function main() {
   ];
   labels.forEach((l, i) => console.log(`  ${l.padEnd(20)}: ${counts[i]}`));
   console.log("========================================\n");
-
-  // ── Login hints ──
   console.log("Test accounts:");
   console.log("  Admin:  admin@sportsbooking.vn  / Admin@123");
   console.log("  Owner:  owner1@sportsbooking.vn / Owner@123");
-  console.log("  Player: player_*@gmail.com      / Player@123");
+  console.log("  Player: player1@sportsbooking.vn / Player@123");
+}
+
+async function main() {
+  console.log("========================================");
+  console.log("  Sports Booking — Seed");
+  console.log("========================================\n");
+  await cleanup();
+
+  const { owners, players } = await seedAccounts();
+  const { complexes, subfields, productsByComplex } =
+    await seedComplexesAndProducts(owners);
+  await seedBookings(players, complexes, subfields, productsByComplex);
+  await seedRecurringBookings(players, complexes, subfields, productsByComplex);
+  await seedMatches(players);
+  await syncSubFieldCaches();
+  await syncComplexCaches();
+  await seedNotifications(players);
+  await summary();
 }
 
 main()
