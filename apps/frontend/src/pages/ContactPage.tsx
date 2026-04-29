@@ -61,7 +61,7 @@ const CONTACT_CHANNELS: Array<{
   {
     label: "Hotline 8:00 – 22:00",
     value: "0862 821 861",
-    sub: "Phản hồi trong dưới 2 phút giờ cao điểm",
+    sub: "Phản hồi trong dưới 10 phút giờ cao điểm",
     icon: Phone,
     tone: "sport",
   },
@@ -175,13 +175,6 @@ export function ContactPage() {
 
         {/* ── HERO ─────────────────────────────────────────────── */}
         <header className="mt-8 flex flex-col gap-5">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.3em] text-muted-foreground backdrop-blur-sm">
-            <span className="relative inline-flex size-1.5">
-              <span className="absolute inset-0 animate-ping rounded-full bg-accent-sport/70" />
-              <span className="relative inline-block size-1.5 rounded-full bg-accent-sport" />
-            </span>
-            Dispatch Desk · T-Sport Support
-          </span>
 
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex max-w-3xl flex-col gap-3">
@@ -204,7 +197,7 @@ export function ContactPage() {
                 className="gap-1.5 rounded-full border-border/70 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm"
               >
                 <Sparkles data-icon="inline-start" />
-                Trả lời &lt; 2 phút
+                Trả lời &lt; 10 phút
               </Badge>
               <Badge
                 variant="outline"
@@ -300,16 +293,7 @@ export function ContactPage() {
                       </span>
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="hidden gap-1.5 rounded-full border-primary/30 bg-white text-[10.5px] font-semibold uppercase tracking-[0.2em] text-primary sm:inline-flex"
-                  >
-                    <span className="relative inline-flex size-1.5">
-                      <span className="absolute inset-0 animate-ping rounded-full bg-primary/60" />
-                      <span className="relative inline-block size-1.5 rounded-full bg-primary" />
-                    </span>
-                    Live
-                  </Badge>
+                  
                 </div>
               </CardContent>
             </Card>
@@ -370,9 +354,7 @@ export function ContactPage() {
             <CardHeader className="relative pb-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col">
-                  <span className="text-[10.5px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-                    Dispatch form · Priority mail
-                  </span>
+                 
                   <CardTitle className="mt-1 font-display text-2xl font-black italic tracking-tight">
                     Viết cho chúng tôi
                   </CardTitle>

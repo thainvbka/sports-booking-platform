@@ -347,7 +347,7 @@ export function MatchDetailPage() {
           ? null
           : currentMatch.status !== "OPEN"
             ? "Kèo hiện không ở trạng thái mở, nên bạn chưa thể gửi yêu cầu tham gia."
-            : "Bạn có thể gửi yêu cầu tham gia ngay trong panel này."
+            : "Bạn có thể gửi yêu cầu tham gia ngay."
       : null;
 
   return (
@@ -562,14 +562,7 @@ function MatchHero({
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Eyebrow + chips */}
-        <div className="mt-6 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70">
-          <span className="relative flex size-2.5">
-            <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-            <span className="relative inline-flex size-2.5 rounded-full bg-accent-sport" />
-          </span>
-          Match · Live card
-        </div>
+    
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Badge
@@ -607,7 +600,7 @@ function MatchHero({
           />
           <HeroMetaTile
             icon={<Timer className="size-3.5 text-amber-300" />}
-            label="Countdown tham gia"
+            label="Đếm ngược"
             value={
               <span className={cn("font-black italic", countdownTone)}>
                 {countdown.label}
@@ -632,7 +625,7 @@ function MatchHero({
             </Avatar>
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
-                Creator
+                Chủ kèo
               </p>
               <p className="truncate text-sm font-semibold leading-tight text-white">
                 {creatorName}
@@ -743,7 +736,7 @@ function MatchInfoCard({
       <CardHeader className="border-b border-border/70 px-5 py-4">
         <CardTitle className="font-display italic">Thông tin trận</CardTitle>
         <CardDescription>
-          Lịch thi đấu, địa điểm và thông tin creator của kèo này.
+          Lịch thi đấu, địa điểm và thông tin chủ kèo.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-0 p-0">
@@ -801,7 +794,7 @@ function MatchInfoCard({
         <Separator />
         <InfoRow
           icon={<UserRound className="size-4 text-indigo-500" />}
-          label="Creator"
+          label="Chủ kèo"
           value={<span className="font-semibold">{creatorName}</span>}
         />
       </CardContent>
@@ -1040,16 +1033,6 @@ function ActionPanel({
 }: ActionPanelProps) {
   return (
     <Card className="gap-0 overflow-hidden py-0">
-      <CardHeader className="border-b border-border/70 bg-gradient-to-r from-primary/5 to-transparent px-5 py-4">
-        <CardTitle className="flex items-center gap-2 font-display italic">
-          <Sparkles className="size-4 text-primary" />
-          Hành động của bạn
-        </CardTitle>
-        <CardDescription>
-          Tham gia hoặc rời kèo trực tiếp từ panel này.
-        </CardDescription>
-      </CardHeader>
-
       <CardContent className="flex flex-col gap-3 p-5">
         {participationStatus ? (
           <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/40 px-3 py-2.5">

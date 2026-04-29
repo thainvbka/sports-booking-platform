@@ -3,7 +3,6 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -39,13 +38,11 @@ import { getPlayerProfileId } from "@/utils/userProfile";
 import {
   ArrowUpRight,
   CircleAlert,
-  Filter,
   Hourglass,
   LogOut,
   Sparkles,
   Trophy,
   UsersRound,
-  X,
 } from "lucide-react";
 import { useEffect, useState, type ComponentType } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -140,7 +137,6 @@ export function MyMatchesPage() {
   };
 
   const displayName = user?.full_name || "Người chơi";
-  const activeTypeLabel = MY_MATCH_TYPE_LABELS[type];
 
   return (
     <div className="relative min-h-[60vh] bg-background">
@@ -166,13 +162,7 @@ export function MyMatchesPage() {
         {/* ─── Personal Header ──────────────────────────────────────── */}
         <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-              <span className="relative flex size-2.5">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-2.5 rounded-full bg-accent-sport" />
-              </span>
-              Personal board · {activeTypeLabel.toLowerCase()}
-            </div>
+           
 
             <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl">
               Kèo của{" "}
@@ -183,7 +173,7 @@ export function MyMatchesPage() {
 
             <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
               Sổ tay cá nhân cho các kèo bạn đã tạo, đã tham gia và đang chờ
-              creator duyệt.
+              chủ kèo duyệt.
             </p>
 
             <div className="mt-1 inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-card/80 py-1 pl-1 pr-3 shadow-sm backdrop-blur-sm">
@@ -206,17 +196,41 @@ export function MyMatchesPage() {
             </div>
           </div>
 
-          <Button
-            asChild
-            size="lg"
-            className="self-start lg:self-auto"
-          >
-            <Link to="/matches">
-              <Sparkles data-icon="inline-start" />
-              Khám phá kèo mới
-              <ArrowUpRight data-icon="inline-end" />
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setStatus(parseMatchStatus(value));
+                setPage(1);
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                className="h-10 gap-1.5 rounded-lg border-border/60 bg-background text-sm font-medium"
+              >
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                {MATCH_STATUS_OPTIONS.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {MATCH_STATUS_BADGE_CONFIG[item].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              asChild
+              size="lg"
+              className="self-start sm:self-auto"
+            >
+              <Link to="/matches">
+                <Sparkles data-icon="inline-start" />
+                Khám phá kèo mới
+                <ArrowUpRight data-icon="inline-end" />
+              </Link>
+            </Button>
+          </div>
         </header>
 
         {/* ─── Category Tiles (Tabs) ────────────────────────────────── */}
@@ -290,70 +304,7 @@ export function MyMatchesPage() {
           </TabsList>
         </Tabs>
 
-        {/* ─── Filter bar ───────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2 rounded-full border border-border/80 bg-card/60 p-1.5 pl-3 shadow-sm backdrop-blur-sm">
-          <span className="hidden items-center gap-1.5 pr-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:inline-flex">
-            <Filter className="size-3 text-primary" />
-            Lọc
-          </span>
 
-          <Select
-            value={status}
-            onValueChange={(value) => {
-              setStatus(parseMatchStatus(value));
-              setPage(1);
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="h-8 gap-1.5 rounded-full border-border/60 bg-background pl-3 pr-2 text-xs font-medium"
-            >
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-              {MATCH_STATUS_OPTIONS.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {MATCH_STATUS_BADGE_CONFIG[item].label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {status !== "ALL" ? (
-            <Badge
-              variant="outline"
-              className="h-7 gap-1 rounded-full border-border/70 bg-background pl-2.5 pr-1 text-[11px] font-medium"
-            >
-              <span className="truncate">
-                {MATCH_STATUS_BADGE_CONFIG[status].label}
-              </span>
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                aria-label="Xóa bộ lọc trạng thái"
-                className="inline-flex size-4 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <X className="size-3" />
-              </button>
-            </Badge>
-          ) : null}
-
-          <span className="ml-auto text-xs text-muted-foreground">
-            Hiện{" "}
-            <span className="font-semibold tabular-nums text-foreground">
-              {matches.length}
-            </span>
-            {pagination ? (
-              <>
-                {" "}· Tổng{" "}
-                <span className="font-semibold tabular-nums text-foreground">
-                  {pagination.total_items}
-                </span>
-              </>
-            ) : null}
-          </span>
-        </div>
 
         {/* ─── Error ────────────────────────────────────────────────── */}
         {error && (

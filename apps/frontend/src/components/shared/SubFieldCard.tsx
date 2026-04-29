@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { SubField } from "@/types";
 import { formatPrice, getPriceRange, getSportTypeLabel } from "@/utils";
-import { ArrowRight, ArrowUpRight, MapPin, Users } from "lucide-react";
+import { ArrowUpRight, MapPin, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 interface SubFieldCardProps {
@@ -123,7 +123,7 @@ export function SubFieldCard({
                 onClick={() => navigate(`/booking/${subField.id}`)}
               >
                 Đặt ngay
-                <ArrowRight data-icon="inline-end" />
+                {/* <ArrowRight data-icon="inline-end" /> */}
               </Button>
             </div>
           ) : (

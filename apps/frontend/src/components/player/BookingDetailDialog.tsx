@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -17,12 +18,15 @@ import { type BookingResponse, BookingStatus, type SportType } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Sparkles, Star } from "lucide-react";
 
 interface BookingDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   booking: BookingResponse | null;
+  onReviewClick?: () => void;
+  canCreateReview?: boolean;
+  canUpdateReview?: boolean;
 }
 
 const getStatusColor = (status: BookingStatus) => {
@@ -49,6 +53,9 @@ export function BookingDetailDialog({
   open,
   onOpenChange,
   booking,
+  onReviewClick,
+  canCreateReview,
+  canUpdateReview,
 }: BookingDetailDialogProps) {
   if (!booking) {
     return null;
@@ -186,6 +193,39 @@ export function BookingDetailDialog({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {booking.type === "SINGLE" && booking.status === BookingStatus.CONFIRMED && (canCreateReview || canUpdateReview) && (
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-base mb-1">Đánh giá sân</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {canCreateReview ? "Chia sẻ trải nghiệm của bạn" : "Xem hoặc cập nhật đánh giá"}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={canUpdateReview ? "outline" : "default"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReviewClick?.();
+                  }}
+                >
+                  {canCreateReview ? (
+                    <>
+                      <Star className="w-4 h-4 mr-1" />
+                      Viết đánh giá
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      Xem/Cập nhật
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </div>

@@ -409,13 +409,7 @@ function SearchHero({
 
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div className="motion-safe-fade-up">
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-accent-sport" />
-              </span>
-              Live search · T-Sport
-            </div>
+           
 
             <h1 className="mt-4 font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
               Tìm sân, chốt lịch,
@@ -424,8 +418,7 @@ function SearchHero({
             </h1>
 
             <p className="mt-4 max-w-xl text-sm text-white/65 sm:text-base">
-              Lọc theo môn thể thao, khu vực, khung giá và sức chứa — kết quả
-              được cập nhật theo thời gian thực.
+              Lọc theo môn thể thao, khu vực, khung giá và sức chứa — Tìm sân phù hợp nhanh chóng.
             </p>
           </div>
 
@@ -468,14 +461,14 @@ function ResultTicker({ isLoading, totalResults }: ResultTickerProps) {
     <Card className="w-full max-w-sm gap-0 rounded-2xl border-white/10 bg-white/[0.06] p-5 text-white shadow-none backdrop-blur-sm">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/55">
-          Live count
+          Sân và Khu phức hợp
         </span>
         <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/75">
           <span className="relative flex size-1.5">
             <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
             <span className="relative inline-flex size-1.5 rounded-full bg-accent-sport" />
           </span>
-          Realtime
+          Đang hoạt động
         </span>
       </div>
 

@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -47,16 +46,12 @@ import {
   CheckCircle2,
   Clock,
   CreditCard,
-  Eye,
   MapPin,
   MoreHorizontal,
-  Receipt,
   RefreshCcw,
-  Sparkles,
-  Star,
   Ticket,
   X,
-  XCircle,
+  XCircle
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -187,15 +182,17 @@ export function PlayerBookingsPage() {
     setDetailDialogOpen(true);
   };
 
-  const handleOpenReviewDialog = (booking: BookingResponse) => {
-    if (booking.type !== "SINGLE") return;
-    if (booking.status !== BookingStatus.CONFIRMED) return;
-    setSelectedReviewBooking(booking);
-    setReviewDialogOpen(true);
-  };
-
   const handleReviewSuccess = (bookingId: string, review: ReviewItem) => {
     updateSingleBookingReview(bookingId, review);
+    if (selectedBooking && selectedBooking.type === "SINGLE" && selectedBooking.id === bookingId) {
+      setSelectedBooking({
+        ...selectedBooking,
+        review,
+      });
+    }
+    // Đóng review dialog
+    setReviewDialogOpen(false);
+    toast.success("Đánh giá của bạn đã được lưu");
   };
 
   // ─── Derived counters (of current page) ──────────────────────────────────
@@ -225,13 +222,7 @@ export function PlayerBookingsPage() {
         {/* ── Hero header ─────────────────────────────────────────────── */}
         <header className="flex flex-col gap-5">
           <div className="flex flex-col gap-3">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/80 bg-background/70 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.26em] text-muted-foreground backdrop-blur-sm">
-              <span className="relative inline-flex size-1.5">
-                <span className="absolute inset-0 animate-ping rounded-full bg-accent-sport/70" />
-                <span className="relative inline-block size-1.5 rounded-full bg-accent-sport" />
-              </span>
-              Player · Ticket ledger
-            </span>
+            
 
             <div className="flex flex-wrap items-end justify-between gap-5">
               <div className="flex max-w-2xl flex-col gap-2">
@@ -272,34 +263,7 @@ export function PlayerBookingsPage() {
             </div>
           </div>
 
-          {/* ── Slim ledger strip ───────────────────────────────────── */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-full border border-border/70 bg-background/80 px-4 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <Receipt className="size-3.5 text-primary/70" />
-              <span className="font-semibold uppercase tracking-[0.22em] text-foreground/80">
-                Sổ vé
-              </span>
-              <span className="text-muted-foreground/80">
-                · Hiển thị{" "}
-                <span className="font-semibold text-foreground tabular-nums">
-                  {bookings.length}
-                </span>{" "}
-                vé ở trang hiện tại
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 tabular-nums">
-                <span className="text-muted-foreground/70">Trang</span>
-                <span className="font-display text-sm font-bold italic text-foreground">
-                  {page}
-                </span>
-                <span className="text-muted-foreground/50">/</span>
-                <span className="font-semibold text-foreground">
-                  {Math.max(totalPages, 1)}
-                </span>
-              </span>
-            </div>
-          </div>
+          
         </header>
 
         {/* ── Ticket list ──────────────────────────────────────────── */}
@@ -318,7 +282,6 @@ export function PlayerBookingsPage() {
                 anyPaying={Boolean(payingBookingId)}
                 onPay={handlePayment}
                 onViewDetails={handleViewDetails}
-                onReview={handleOpenReviewDialog}
                 onRequestCancel={() => {
                   setSelectedBookingId(booking.id);
                   setSelectedBookingType(booking.type);
@@ -366,6 +329,14 @@ export function PlayerBookingsPage() {
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
         booking={selectedBooking}
+        onReviewClick={() => {
+          if (selectedBooking && selectedBooking.type === "SINGLE") {
+            setSelectedReviewBooking(selectedBooking);
+            setReviewDialogOpen(true);
+          }
+        }}
+        canCreateReview={selectedBooking ? canCreateReviewBooking(selectedBooking) : false}
+        canUpdateReview={selectedBooking ? canUpdateReviewBooking(selectedBooking) : false}
       />
     </div>
   );
@@ -421,7 +392,6 @@ interface BookingTicketProps {
   anyPaying: boolean;
   onPay: (ids: string[], id: string) => void;
   onViewDetails: (booking: BookingResponse) => void;
-  onReview: (booking: BookingResponse) => void;
   onRequestCancel: () => void;
 }
 
@@ -432,7 +402,6 @@ function BookingTicket({
   anyPaying,
   onPay,
   onViewDetails,
-  onReview,
   onRequestCancel,
 }: BookingTicketProps) {
   const isSingle = booking.type === "SINGLE";
@@ -457,14 +426,13 @@ function BookingTicket({
     : new Date(booking.start_date);
 
   const canCancel = canCancelBooking(booking);
-  const canCreateReview = canCreateReviewBooking(booking);
-  const canUpdateReview = canUpdateReviewBooking(booking);
   const isPending = booking.status === BookingStatus.PENDING;
 
   return (
     <article
+      onClick={() => onViewDetails(booking)}
       className={cn(
-        "group relative isolate flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md sm:flex-row",
+        "group relative isolate flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md sm:flex-row cursor-pointer",
         isPending && "ring-1 ring-amber-200/70",
       )}
     >
@@ -603,11 +571,12 @@ function BookingTicket({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           {isPending && (
             <Button
               size="sm"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (booking.type === "SINGLE") {
                   void onPay([booking.id], booking.id);
                   return;
@@ -625,58 +594,33 @@ function BookingTicket({
             </Button>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-9 rounded-full"
-                disabled={loading || paying}
-              >
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">Mở menu hành động</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem onClick={() => onViewDetails(booking)}>
-                <Eye data-icon="inline-start" />
-                Xem chi tiết
-              </DropdownMenuItem>
-
-              {canCreateReview && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onReview(booking)}>
-                    <Star data-icon="inline-start" />
-                    Đánh giá sân
-                  </DropdownMenuItem>
-                </>
-              )}
-
-              {canUpdateReview && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onReview(booking)}>
-                    <Sparkles data-icon="inline-start" />
-                    Xem / Cập nhật đánh giá
-                  </DropdownMenuItem>
-                </>
-              )}
-
-              {canCancel && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={onRequestCancel}
-                    className="text-rose-600 focus:bg-rose-50 focus:text-rose-700"
-                  >
-                    <X data-icon="inline-start" />
-                    Hủy đặt sân
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {canCancel && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-9 rounded-full"
+                  disabled={loading || paying}
+                >
+                  <MoreHorizontal className="size-4" />
+                  <span className="sr-only">Mở menu hành động</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestCancel();
+                  }}
+                  className="text-rose-600 focus:bg-rose-50 focus:text-rose-700"
+                >
+                  <X data-icon="inline-start" />
+                  Hủy đặt sân
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </article>

@@ -10,18 +10,18 @@ import { publicService } from "@/services/public.service";
 import type { Complex, PublicSubfield, SportType } from "@/types";
 import { SportType as SportTypeValue } from "@/types";
 import {
-    ArrowRight,
-    CalendarCheck,
-    CheckCircle2,
-    Search as SearchIcon,
-    Sparkles,
+  ArrowRight,
+  CalendarCheck,
+  CheckCircle2,
+  Search as SearchIcon,
+  Sparkles,
 } from "lucide-react";
 import {
-    Fragment,
-    useEffect,
-    useState,
-    type FormEvent,
-    type ReactNode,
+  Fragment,
+  useEffect,
+  useState,
+  type FormEvent,
+  type ReactNode,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -202,13 +202,7 @@ function HeroSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-6 pb-24 pt-20 lg:pt-28">
         <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div className="motion-safe-fade-up">
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-2 rounded-full bg-accent-sport" />
-              </span>
-              Live on T-Sport · Est. 2025
-            </div>
+           
 
             <h1 className="mt-6 font-display text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[5.25rem]">
               Chốt sân.
@@ -218,7 +212,7 @@ function HeroSection() {
             </h1>
 
             <p className="mt-6 max-w-xl text-base text-white/70 sm:text-lg">
-              Nền tảng đặt sân thể thao realtime. Tìm sân phù hợp, giữ chỗ trong
+              Nền tảng đặt sân thể thao toàn diện. Tìm sân phù hợp, giữ chỗ trong
               vài giây, thanh toán gọn — sẵn sàng thi đấu trong hôm nay.
             </p>
 
@@ -346,7 +340,6 @@ function HeroSearchForm() {
 /* -------------------------------------------------------------------------- */
 
 interface SectionHeaderProps {
-  eyebrow: ReactNode;
   title: ReactNode;
   description?: string;
   action?: ReactNode;
@@ -354,7 +347,6 @@ interface SectionHeaderProps {
 }
 
 function SectionHeader({
-  eyebrow,
   title,
   description,
   action,
@@ -371,14 +363,6 @@ function SectionHeader({
             isDark ? "text-white/55" : "text-muted-foreground",
           )}
         >
-          <span
-            className={cn(
-              "h-px w-8",
-              isDark ? "bg-white/30" : "bg-border-strong",
-            )}
-            aria-hidden="true"
-          />
-          {eyebrow}
         </div>
         <h2
           className={cn(
@@ -417,14 +401,14 @@ function SportCategoriesSection() {
       <div className="absolute inset-0 bg-grid-faint opacity-60" aria-hidden="true" />
       <div className="relative mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow="Section 01 — Môn thể thao"
+          // eyebrow=""
           title={
             <>
               Chọn môn bạn yêu,
               <br className="hidden sm:block" /> chúng tôi lo phần còn lại.
             </>
           }
-          description="Năm bộ môn phổ biến nhất trên T-Sport — khung giờ realtime, giá minh bạch, không phí ẩn."
+          description="Năm bộ môn phổ biến nhất trên T-Sport — khung giờ đa dạng, giá cả minh bạch.."
         />
 
         <div className="mt-12 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
@@ -533,7 +517,7 @@ function SportBentoCard({ category, featured, className }: SportBentoCardProps) 
 }
 
 /* -------------------------------------------------------------------------- */
-/* Live courts                                                                 */
+/* Courts                                                                 */
 /* -------------------------------------------------------------------------- */
 
 interface LiveCourtsSectionProps {
@@ -551,22 +535,13 @@ function LiveCourtsSection({
     <section className="relative bg-surface-2 py-20">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow={
-            <span className="inline-flex items-center gap-2">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-accent-sport" />
-              </span>
-              Section 02 — Live / Sân đang trống
-            </span>
-          }
           title={
             <>
               Sẵn sàng thi đấu,
               <br className="hidden sm:block" /> chỉ đợi bạn ra sân.
             </>
           }
-          description="Danh sách sân khả dụng được cập nhật theo thời gian thực trong vài khung giờ tới."
+          description="Danh sách sân khả dụng được cập nhật liên tục cho vài khung giờ tới."
           action={
             <Button asChild variant="outline" size="lg" className="rounded-full">
               <Link to="/search?tab=subfields">
@@ -631,7 +606,6 @@ function FeaturedComplexesSection({
 
       <div className="relative mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow="Section 03 — Signature venues"
           tone="dark"
           title={
             <>
@@ -702,7 +676,6 @@ function HowItWorksSection() {
     <section className="relative bg-background py-20">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeader
-          eyebrow="Section 04 — Quy trình"
           title={
             <>
               Ba bước,

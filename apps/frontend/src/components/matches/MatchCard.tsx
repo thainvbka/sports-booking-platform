@@ -141,7 +141,7 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
             {match.creator.full_name || "Ẩn danh"}
           </p>
           <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            · creator
+            · Chủ kèo
           </span>
         </div>
         <MatchStatusBadge status={match.status} className="shrink-0" />

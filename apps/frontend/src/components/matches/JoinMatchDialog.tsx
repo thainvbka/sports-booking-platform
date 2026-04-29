@@ -50,7 +50,7 @@ export function JoinMatchDialog({
             Vào đội ngay
           </DialogTitle>
           <DialogDescription>
-            Viết một lời giới thiệu ngắn để creator duyệt bạn nhanh hơn.
+            Viết một lời giới thiệu ngắn để chủ kèo duyệt bạn nhanh hơn.
           </DialogDescription>
         </DialogHeader>
 

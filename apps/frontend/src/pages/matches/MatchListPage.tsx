@@ -144,14 +144,6 @@ function MatchesHero({
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           {/* LEFT — headline */}
           <div className="flex max-w-2xl flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70">
-              <span className="relative flex size-2.5">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-2.5 rounded-full bg-accent-sport" />
-              </span>
-              Matchday · Live wire
-            </div>
-
             <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               Kèo đấu{" "}
               <span className="bg-gradient-to-r from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text text-transparent">
@@ -163,7 +155,7 @@ function MatchesHero({
 
             <p className="max-w-xl text-base text-white/70 sm:text-lg">
               Chọn kèo theo môn, trình độ và khung giờ. Danh sách cập nhật
-              realtime để bạn vào đội nhanh trước khi đội đối thủ kịp chào sân.
+              liên tục để bạn vào đội nhanh trước khi đội đối thủ kịp chào sân.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -172,7 +164,7 @@ function MatchesHero({
                 className="border-white/20 bg-white/5 text-white hover:bg-white/10"
               >
                 <Sparkles data-icon="inline-start" />
-                Match discovery
+                Khám phá ngay
               </Badge>
               <span className="inline-flex items-center gap-1.5 text-sm text-white/70">
                 <UsersRound className="size-4 text-accent-sport" />
@@ -210,21 +202,21 @@ function MatchesHero({
               value={openCount}
               icon={<Zap className="size-3" />}
               accent="success"
-              hint="Ở trang này"
+              hint="Sẵn sàng để tham gia ngay"
             />
             <ScoreboardChip
               label="Sắp full"
               value={almostFullCount}
               icon={<Flame className="size-3" />}
               accent="danger"
-              hint="≤ 2 chỗ còn lại"
+              hint="Còn ít hơn 2 chỗ trống"
             />
             <ScoreboardChip
               label="Chỗ trống"
               value={totalSlotsLeft}
               icon={<UsersRound className="size-3" />}
               accent="primary"
-              hint="Ở trang này"
+              hint="Cơ hội để bạn đặt chân vào đội"
             />
           </div>
         </div>

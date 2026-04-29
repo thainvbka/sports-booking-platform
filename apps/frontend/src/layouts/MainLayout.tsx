@@ -56,22 +56,29 @@ type NavItem = {
 const BASE_NAV_ITEMS: NavItem[] = [
   { label: "Tìm sân", href: "/search", icon: MapPin, description: "Khám phá cụm sân quanh bạn" },
   { label: "Kèo đấu", href: "/matches", icon: Swords, description: "Tham gia trận mở đang tuyển" },
-  { label: "Lịch đặt sân", href: "/bookings", icon: CalendarCheck, description: "Theo dõi các booking đang có" },
   { label: "Về chúng tôi", href: "/about", icon: Info, description: "Câu chuyện T-Sport" },
   { label: "Liên hệ", href: "/contact", icon: LifeBuoy, description: "Hỗ trợ & góp ý" },
 ];
 
-const PLAYER_ITEM: NavItem = {
-  label: "Kèo của tôi",
-  href: "/player/matches",
-  icon: Users,
-  description: "Kèo đã tạo & đã tham gia",
-};
+const PLAYER_ITEMS: NavItem[] = [
+  {
+    label: "Kèo của tôi",
+    href: "/player/matches",
+    icon: Users,
+    description: "Kèo đã tạo & đã tham gia",
+  },
+  {
+    label: "Lịch đặt sân",
+    href: "/bookings",
+    icon: CalendarCheck,
+    description: "Theo dõi các booking đang có",
+  },
+];
 
 function useNavItems(isPlayer: boolean): NavItem[] {
   if (!isPlayer) return BASE_NAV_ITEMS;
   const items = [...BASE_NAV_ITEMS];
-  items.splice(2, 0, PLAYER_ITEM);
+  items.splice(2, 0, ...PLAYER_ITEMS);
   return items;
 }
 

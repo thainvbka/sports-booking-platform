@@ -41,7 +41,7 @@ const VALUES = [
     code: "01",
     title: "Cộng đồng là sân chính",
     description:
-      "Mỗi tính năng chúng tôi xây đều trả lời một câu hỏi: điều này có làm người chơi và chủ sân thở phào không?",
+      "Mỗi tính năng chúng tôi xây đều trả lời một câu hỏi: điều này có làm người chơi và chủ sân hài lòng không?",
     icon: UsersRound,
     tone: "primary" as const,
   },
@@ -49,7 +49,7 @@ const VALUES = [
     code: "02",
     title: "Minh bạch không thương lượng",
     description:
-      "Giá rõ ràng, tình trạng sân cập nhật theo thời gian thực, đánh giá không chỉnh sửa. Tin tưởng được xây bằng dữ liệu thật.",
+      "Giá rõ ràng, tình trạng sân cập nhật liên tục, đánh giá không chỉnh sửa. Tin tưởng được xây bằng dữ liệu thật.",
     icon: ShieldCheck,
     tone: "sport" as const,
   },
@@ -65,19 +65,19 @@ const VALUES = [
 
 const MILESTONES = [
   {
-    year: "2024 · Q4",
+    year: "2025 · Q4",
     title: "Prototype khởi động",
     detail:
       "Nhóm sáng lập dựng bản demo đầu tiên sau 3 tuần ròng rã chạy thử ở các cụm sân khu vực Hai Bà Trưng.",
   },
   {
-    year: "2025 · Q1",
+    year: "2026 · Q1",
     title: "Ra mắt thị trường",
     detail:
       "Mở cổng cho người chơi và chủ sân, tích hợp thanh toán điện tử, triển khai lịch đặt sân theo thời gian thực.",
   },
   {
-    year: "2025 · Q3",
+    year: "2026 · Q2",
     title: "Hệ sinh thái kèo & giải đấu",
     detail:
       "Kết nối trận đấu mở, hỗ trợ tạo giải bán chuyên, giới thiệu gói đặt sân định kỳ cho đội nhóm.",
@@ -90,7 +90,7 @@ const LEGAL_LINKS = [
     eyebrow: "Điều khoản",
     title: "Luật chơi của T-Sport",
     description:
-      "Từng dòng về quyền và trách nhiệm của bạn khi đặt sân, hủy lịch, thanh toán và giải quyết tranh chấp.",
+      "Quyền và trách nhiệm của bạn khi đặt sân, hủy lịch, thanh toán và giải quyết tranh chấp.",
     icon: FileText,
   },
   {
@@ -148,13 +148,7 @@ export function AboutPage() {
 
           <div className="mt-10 grid items-center gap-10 lg:mt-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <div className="flex flex-col gap-6">
-              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur-sm">
-                <span className="relative inline-flex size-1.5">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-accent-sport/80" />
-                  <span className="relative inline-block size-1.5 rounded-full bg-accent-sport" />
-                </span>
-                Est. 2025 · Field Notes
-              </span>
+              
 
               <h1 className="font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
                 Sân thể thao,{" "}
@@ -166,9 +160,9 @@ export function AboutPage() {
               </h1>
 
               <p className="max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
-                T-Sport là một đội nhỏ, tin rằng việc tìm sân xứng đáng với bạn
+                T-Sport tin rằng việc tìm sân thể thao với bạn
                 thì không nên phức tạp hơn một cú vuốt điện thoại. Chúng tôi
-                dựng nên cây cầu giữa chủ sân và người chơi — rõ ràng, tức thì,
+                dựng nên cây cầu giữa chủ sân và người chơi — rõ ràng, nhanh chóng,
                 và công bằng.
               </p>
 
@@ -367,7 +361,7 @@ export function AboutPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
-                  { label: "Phản hồi trung bình", value: "< 2 phút" },
+                  { label: "Phản hồi trung bình", value: "< 10 phút" },
                   { label: "Tỷ lệ booking thành công", value: "98.4%" },
                 ].map((item) => (
                   <div
@@ -486,7 +480,7 @@ export function AboutPage() {
             <div className="flex flex-col gap-3">
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                 <ShieldCheck className="size-3 text-primary" />
-                Phần in nhỏ
+                Lưu ý quan trọng
               </span>
               <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
                 Trước khi vào sân,{" "}
@@ -494,7 +488,7 @@ export function AboutPage() {
               </h2>
               <p className="text-sm text-muted-foreground sm:text-base">
                 Mọi thoả thuận giữa bạn, chủ sân và T-Sport đều viết rõ ở hai
-                trang dưới. Không có dòng nào giấu trong footnote.
+                trang dưới, vui lòng đọc kỹ để hiểu đầy đủ các điều khoản.
               </p>
             </div>
 
