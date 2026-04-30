@@ -1,4 +1,5 @@
 import { uploadComplexImages } from "../../helpers";
+import { CACHE_KEYS, CACHE_TTL, cacheHelper } from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
@@ -275,10 +276,16 @@ export const updateComplex = async (
       `Cannot update complex with status '${complex.status}'`,
     );
   }
-  return await prisma.complex.update({
+  
+  const updated = await prisma.complex.update({
     where: { id: complexId },
     data,
   });
+
+  // Invalidate complex cache after updating
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+
+  return updated;
 };
 
 //delete complex
@@ -305,6 +312,10 @@ export const deleteComplex = async (complexId: string, ownerId: string) => {
       isDelete: true,
     },
   });
+
+  // Invalidate complex and all subfields cache
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.ALL_SUBFIELDS);
 
   return { message: "Complex and its subfields have been deactivated" };
 };
@@ -338,6 +349,10 @@ export const reactivateComplex = async (complexId: string, ownerId: string) => {
       data: { isDelete: false },
     }),
   ]);
+
+  // Invalidate complex and all subfields cache
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.ALL_SUBFIELDS);
 
   return { message: "Complex and its subfields have been reactivated" };
 };
@@ -462,29 +477,39 @@ export const getPublicComplexById = async (
     search?: string;
   },
 ) => {
-  //check complex thuộc owner
-  const complex = await prisma.complex.findFirst({
-    where: { id: complexId, status: "ACTIVE" },
-    select: {
-      id: true,
-      complex_name: true,
-      complex_address: true,
-      complex_image: true,
-      status: true,
-      _count: {
-        select: {
-          sub_fields: {
-            where: {
-              isDelete: false,
+  const cacheKey = CACHE_KEYS.COMPLEX(complexId);
+  let complex = await cacheHelper.get(cacheKey);
+
+  if (!complex) {
+    console.log(`:::::Cache miss for complex ${complexId}, querying database`);
+    // Cache miss - query database
+    complex = await prisma.complex.findFirst({
+      where: { id: complexId, status: "ACTIVE" },
+      select: {
+        id: true,
+        complex_name: true,
+        complex_address: true,
+        complex_image: true,
+        status: true,
+        _count: {
+          select: {
+            sub_fields: {
+              where: {
+                isDelete: false,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!complex) {
-    throw new NotFoundError("Complex not found");
+    if (!complex) {
+      throw new NotFoundError("Complex not found");
+    }
+
+    await cacheHelper.set(cacheKey, complex, CACHE_TTL.RESOURCE);
+  } else {
+    console.log(`:::::Cache hit for complex ${complexId}`);
   }
 
   const skip = (page - 1) * limit;

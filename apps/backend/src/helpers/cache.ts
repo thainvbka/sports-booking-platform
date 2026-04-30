@@ -1,16 +1,51 @@
 import { prisma } from "../libs/prisma";
-import redis from "../libs/redis";
+import { getRedis } from "../libs/redis";
 
 // Default expiration time (1 hour)
 const DEFAULT_EXPIRATION = 3600;
+
+/**
+ * Cache key constants for organized key management
+ */
+export const CACHE_KEYS = {
+  // Individual resources (High TTL: 2 hours)
+  COMPLEX: (id: string) => `complex:${id}`,
+  SUBFIELD: (id: string) => `subfield:${id}`,
+
+  // List endpoints (High TTL: 2 hours)
+  COMPLEXES_LIST: (page: number, limit: number) => `complexes:list:${page}:${limit}`,
+  SUBFIELDS_LIST: (page: number, limit: number) => `subfields:list:${page}:${limit}`,
+
+  // Reviews (Medium TTL: 30 minutes)
+  SUBFIELD_REVIEWS: (id: string) => `subfield:${id}:reviews`,
+
+  // Pattern wildcards for invalidation
+  PATTERNS: {
+    ALL_COMPLEXES: "complex:*",
+    ALL_SUBFIELDS: "subfield:*",
+    COMPLEXES_LIST: "complexes:list:*",
+    SUBFIELDS_LIST: "subfields:list:*",
+  },
+};
+
+// TTL configurations (in seconds)
+export const CACHE_TTL = {
+  RESOURCE: 7200, // 2 hours for individual resources (complex, subfield)
+  LIST: 3600, // 1 hour for list endpoints
+  REVIEWS: 1800, // 30 minutes for reviews
+  AVAILABILITY: 300, // 5 minutes for availability (if cached)
+};
 
 export const cacheHelper = {
   /**
    * Set data to Redis cache
    */
-  set: async (key: string, value: any, expiration = DEFAULT_EXPIRATION) => {
+  set: async (key: string, value: any, expiration: number = DEFAULT_EXPIRATION) => {
     try {
-      await redis.set(key, JSON.stringify(value), "EX", expiration);
+      const redis = getRedis();
+      await redis.set(key, JSON.stringify(value), {
+        EX: expiration,
+      });
     } catch (error) {
       console.error("Redis Set Error:", error);
     }
@@ -21,6 +56,7 @@ export const cacheHelper = {
    */
   get: async <T>(key: string): Promise<T | null> => {
     try {
+      const redis = getRedis();
       const data = await redis.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
@@ -34,6 +70,7 @@ export const cacheHelper = {
    */
   del: async (key: string) => {
     try {
+      const redis = getRedis();
       await redis.del(key);
     } catch (error) {
       console.error("Redis Del Error:", error);
@@ -45,9 +82,12 @@ export const cacheHelper = {
    */
   delByPattern: async (pattern: string) => {
     try {
+      const redis = getRedis();
       const keys = await redis.keys(pattern);
       if (keys.length > 0) {
-        await redis.del(...keys);
+        for (const key of keys) {
+          await redis.del(key);
+        }
       }
     } catch (error) {
       console.error("Redis DelByPattern Error:", error);

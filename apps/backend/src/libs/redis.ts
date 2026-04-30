@@ -15,28 +15,37 @@ export const initRedis = async () => {
 
   const client = createClient({
     url: config.REDIS_URL,
-    
+    socket: {
+      reconnectStrategy: (retries) => Math.min(retries * 50, 500),
+      connectTimeout: 10000,
+    },
   });
 
   client.on('connect', () => {
-    console.log('::::::::Redis connected successfully!');
+    console.log(':::::Redis connected successfully!');
   });
 
   client.on('error', (err) => {
-    console.error('::::::::Redis connection error:', err);
+    console.error(':::::Redis connection error:', err);
+  });
+
+  client.on('reconnecting', () => {
+    console.warn(':::::Redis reconnecting...');
   });
 
   try {
     await client.connect();
     globalForRedis.redisClient = client;
+    console.log(':::::Redis client initialized');
   } catch (error) {
-    console.error(":::::::Failed to connect to Redis:", error);
+    console.error(":::::Failed to connect to Redis:", error);
+    throw error;
   }
 };
 
 export const getRedis = (): RedisClient => {
   if (!globalForRedis.redisClient) {
-    throw new Error('::::::::Redis client instance is not initialized. Make sure to call initRedis() first.');
+    throw new Error(':::::Redis client instance is not initialized. Make sure to call initRedis() first.');
   }
   return globalForRedis.redisClient;
 };
@@ -45,6 +54,6 @@ export const closeRedis = async () => {
   if (globalForRedis.redisClient) {
     await globalForRedis.redisClient.quit();
     globalForRedis.redisClient = undefined;
-    console.log('::::::::Redis connection closed.');
+    console.log(':::::Redis connection closed.');
   }
 };

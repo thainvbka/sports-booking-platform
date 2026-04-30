@@ -1,4 +1,4 @@
-import { updateComplexCache } from "../../helpers/cache";
+import { CACHE_KEYS, CACHE_TTL, cacheHelper, updateComplexCache } from "../../helpers/cache";
 import { uploadSubfieldImage } from "../../helpers/upload";
 import { prisma } from "../../libs/prisma";
 import {
@@ -60,6 +60,8 @@ export const createSubfield = async (
     },
   });
 
+  // Invalidate cache after creating subfield
+  await cacheHelper.del(CACHE_KEYS.SUBFIELD(newSubfield.id));
   // Update complex cache after creating subfield
   await updateComplexCache(complexId);
 
@@ -202,6 +204,8 @@ export const updateSubfield = async (
     },
   });
 
+  // Invalidate subfield cache after updating
+  await cacheHelper.del(CACHE_KEYS.SUBFIELD(subfieldId));
   // Update complex cache after updating subfield (especially if sport_type changed)
   await updateComplexCache(subfield.complex_id);
 
@@ -233,6 +237,8 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
     data: { isDelete: true },
   });
 
+  // Invalidate subfield cache after deleting
+  await cacheHelper.del(CACHE_KEYS.SUBFIELD(subfieldId));
   // Update complex cache after deleting subfield
   await updateComplexCache(subfield.complex_id);
 };
@@ -401,7 +407,19 @@ export const getAllPublicSubfields = async ({
 };
 
 export const getPublicSubfieldById = async (subfieldId: string) => {
-  const subfield = await prisma.subField.findUnique({
+  // Try to get from cache first
+  const cacheKey = CACHE_KEYS.SUBFIELD(subfieldId);
+  let subfield = await cacheHelper.get(cacheKey);
+
+  if (subfield) {
+    console.log(`::::: Cache hit for subfield ${subfieldId}`);
+    return subfield;
+  }
+
+  console.log(`::::: Cache miss for subfield ${subfieldId}, querying database`);
+
+  // Cache miss - query database
+  subfield = await prisma.subField.findUnique({
     where: {
       id: subfieldId,
       isDelete: false,
@@ -435,6 +453,9 @@ export const getPublicSubfieldById = async (subfieldId: string) => {
   if (!subfield) {
     throw new NotFoundError("Subfield not found");
   }
+
+  // Cache the result
+  await cacheHelper.set(cacheKey, subfield, CACHE_TTL.RESOURCE);
 
   return subfield;
 };

@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { config, reasonPhrases, statusCodes } from "./configs";
 import { handleStripeWebhookController } from "./controllers/v1/payment.controller";
+import { closeRedis, initRedis } from "./libs/redis";
 import errorHandler from "./middlewares/errorHandler";
 import routesV1 from "./routes/v1";
 import { startCronJobs } from "./services/v1/cron.service";
@@ -72,9 +73,25 @@ app.use((_req, res) => {
 
 app.use(errorHandler);
 
-app.listen(config.SERVER_PORT, () => {
-  console.log(`Server is running on http://localhost:${config.SERVER_PORT}`);
+const startServer = async () => {
+  try {
+    await initRedis();
+
+    app.listen(config.SERVER_PORT, () => {
+      console.log(`:::::Server is running on http://localhost:${config.SERVER_PORT}`);
+    });
+
+    startCronJobs();
+  } catch (error) {
+    console.error(":::::Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+process.on('SIGINT', async () => {
+  console.log('\n::::: Shutting down gracefully...');
+  await closeRedis();
+  process.exit(0);
 });
 
-// Start cron jobs
-startCronJobs();
+startServer();
