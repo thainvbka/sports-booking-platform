@@ -66,7 +66,7 @@ export function SubfieldStickySidebar({
                 <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
                 <span className="relative inline-flex size-1.5 rounded-full bg-accent-sport" />
               </span>
-              Live · Đặt nhanh
+              Đặt nhanh
             </span>
             <Badge
               variant="secondary"

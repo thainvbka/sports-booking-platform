@@ -1,22 +1,29 @@
 import {
-  BookingStatus,
-  MatchSkillLevel,
-  MatchStatus,
-  ParticipantStatus,
-  Prisma,
+    BookingStatus,
+    MatchSkillLevel,
+    MatchStatus,
+    ParticipantStatus,
+    Prisma,
 } from "@prisma/client";
+import {
+    CACHE_KEYS,
+    buildMatchDetailCacheKey,
+    buildPublicMatchesCacheKey,
+    CACHE_TTL,
+    cacheHelper
+} from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
-  BadRequestError,
-  ConflictRequestError,
-  ForbiddenError,
-  NotFoundError,
+    BadRequestError,
+    ConflictRequestError,
+    ForbiddenError,
+    NotFoundError,
 } from "../../utils/error.response";
 import {
-  CreateMatchInput,
-  MatchParticipantsQuery,
-  MyMatchesQuery,
-  PublicMatchesQuery,
+    CreateMatchInput,
+    MatchParticipantsQuery,
+    MyMatchesQuery,
+    PublicMatchesQuery,
 } from "../../validations";
 
 const DEFAULT_JOIN_DEADLINE_MINUTES = 30;
@@ -47,6 +54,14 @@ const runSerializableWithRetry = async <T>(
   }
 
   throw new ConflictRequestError("SERIALIZATION_RETRY_FAILED: Please retry");
+};
+
+const invalidateMatchCaches = async (matchId?: string) => {
+  if (matchId) {
+    await cacheHelper.del(buildMatchDetailCacheKey(matchId));
+    await cacheHelper.delByPattern(`match:${matchId}:participants:*`);
+  }
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.MATCHES_LIST);
 };
 
 const matchListSelect = {
@@ -374,6 +389,28 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
   const limit = query.limit ?? 20;
   const skip = (page - 1) * limit;
 
+  // Only cache stable filters. Exclude search, time filters to prevent bloat & ensure fresh data
+  const isCacheable = !query.q && !query.from_time && !query.to_time;
+  const cacheKey = buildPublicMatchesCacheKey({
+    page,
+    limit,
+    sport_type: query.sport_type,
+    skill_level: query.skill_level,
+    status: query.status,
+    sort: query.sort,
+  });
+
+  if (isCacheable) {
+    const cached = await cacheHelper.get(cacheKey);
+    if (cached) {
+      console.log(`[Cache HIT] Matches list: ${cacheKey}`);
+      return cached;
+    }
+    console.log(`[Cache MISS] Matches list: ${cacheKey}`);
+  } else {
+    console.log(`[Cache SKIP] Search or time filters present - bypassing matches list cache`);
+  }
+
   const where = buildPublicMatchWhere(query);
   const orderBy = parseMatchSort(query.sort);
 
@@ -388,7 +425,7 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
     }),
   ]);
 
-  return {
+  const result = {
     items: matches.map(mapMatchListItem),
     pagination: {
       page,
@@ -398,9 +435,25 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
       has_next: page * limit < total,
     },
   };
+
+  if (isCacheable) {
+    await cacheHelper.set(cacheKey, result, CACHE_TTL.MATCHES);
+  }
+
+  return result;
 };
 
 export const getPublicMatchById = async (matchId: string) => {
+  const cacheKey = buildMatchDetailCacheKey(matchId);
+
+  // Try cache first
+  const cached = await cacheHelper.get(cacheKey);
+  if (cached) {
+    console.log(`[Cache HIT] Match detail: ${matchId}`);
+    return cached;
+  }
+  console.log(`[Cache MISS] Match detail: ${matchId}`);
+
   const match = await prisma.match.findUnique({
     where: { id: matchId },
     select: matchDetailSelect,
@@ -425,7 +478,12 @@ export const getPublicMatchById = async (matchId: string) => {
     }),
   ]);
 
-  return mapMatchDetailItem(match, accepted_count, pending_count);
+  const result = mapMatchDetailItem(match, accepted_count, pending_count);
+
+  // Cache the result (5min - status changes frequently)
+  await cacheHelper.set(cacheKey, result, CACHE_TTL.MATCHES);
+
+  return result;
 };
 
 export const getMatchByIdForPlayer = async (
@@ -532,8 +590,9 @@ export const createMatch = async (playerId: string, data: CreateMatchInput) => {
 
     return createdMatch.id;
   });
-
-  return getMappedMatchById(createdMatchId);
+  const result = await getMappedMatchById(createdMatchId);
+  await invalidateMatchCaches(createdMatchId);
+  return result;
 };
 
 export const joinMatch = async (
@@ -635,8 +694,9 @@ export const joinMatch = async (
       },
     ),
   );
-
-  return getMappedParticipantById(participantId);
+  const result = await getMappedParticipantById(participantId);
+  await invalidateMatchCaches(matchId);
+  return result;
 };
 
 export const leaveMatch = async (playerId: string, matchId: string) => {
@@ -746,8 +806,9 @@ export const leaveMatch = async (playerId: string, matchId: string) => {
       },
     ),
   );
-
-  return getMappedParticipantById(participantId);
+  const result = await getMappedParticipantById(participantId);
+  await invalidateMatchCaches(matchId);
+  return result;
 };
 
 export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
@@ -1061,8 +1122,9 @@ export const acceptMatchParticipant = async (
       },
     ),
   );
-
-  return getMappedParticipantById(resolvedParticipantId);
+  const result = await getMappedParticipantById(resolvedParticipantId);
+  await invalidateMatchCaches(matchId);
+  return result;
 };
 
 export const rejectMatchParticipant = async (
@@ -1155,8 +1217,9 @@ export const rejectMatchParticipant = async (
       },
     ),
   );
-
-  return getMappedParticipantById(resolvedParticipantId);
+  const result = await getMappedParticipantById(resolvedParticipantId);
+  await invalidateMatchCaches(matchId);
+  return result;
 };
 
 export const closeMatch = async (creatorId: string, matchId: string) => {
@@ -1216,7 +1279,9 @@ export const closeMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return getMappedMatchById(match.id);
+  const result = await getMappedMatchById(match.id);
+  await invalidateMatchCaches(match.id);
+  return result;
 };
 
 export const reopenMatch = async (creatorId: string, matchId: string) => {
@@ -1280,7 +1345,9 @@ export const reopenMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return getMappedMatchById(match.id);
+  const result = await getMappedMatchById(match.id);
+  await invalidateMatchCaches(match.id);
+  return result;
 };
 
 export const cancelMatch = async (creatorId: string, matchId: string) => {
@@ -1335,7 +1402,9 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
     throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
   }
 
-  return getMappedMatchById(match.id);
+  const result = await getMappedMatchById(match.id);
+  await invalidateMatchCaches(match.id);
+  return result;
 };
 
 export const syncMatchStatusesByTime = async () => {
@@ -1387,6 +1456,8 @@ export const syncMatchStatusesByTime = async () => {
       },
     },
   });
+
+  await invalidateMatchCaches();
 };
 
 export const cancelMatchesByCanceledBookings = async () => {
@@ -1406,4 +1477,6 @@ export const cancelMatchesByCanceledBookings = async () => {
       },
     },
   });
+
+  await invalidateMatchCaches();
 };

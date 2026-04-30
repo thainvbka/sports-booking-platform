@@ -1,15 +1,35 @@
 import { formatTimeForDisplay, parseTime } from "../../helpers";
-import { updateComplexCache } from "../../helpers/cache";
+import {
+    buildPricingRulesCacheKey,
+    CACHE_KEYS,
+    CACHE_TTL,
+    cacheHelper,
+    updateComplexCache,
+} from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError,
 } from "../../utils/error.response";
 import {
-  CreatePricingRuleInput,
-  UpdatePricingRuleInput,
+    CreatePricingRuleInput,
+    UpdatePricingRuleInput,
 } from "../../validations";
+
+const invalidatePublicCachesAfterPricingChange = async (
+  subFieldId: string,
+  complexId: string,
+) => {
+  // Pricing rule affects:
+  // - subfield detail (pricing_rules)
+  // - subfields list (min_price + price filters)
+  // - complex detail/list (denormalized min/max price stats after updateComplexCache)
+  await cacheHelper.del(CACHE_KEYS.SUBFIELD(subFieldId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
+};
 
 export const createPricingRule = async (
   ownerId: string,
@@ -113,6 +133,12 @@ export const createPricingRule = async (
   const complexId = subField.complex.id;
   await updateComplexCache(complexId);
 
+  // Invalidate pricing cache for created days
+  for (const day of data.day_of_week) {
+    await cacheHelper.del(CACHE_KEYS.PRICING_RULES(data.sub_field_id, day));
+  }
+  await invalidatePublicCachesAfterPricingChange(data.sub_field_id, complexId);
+
   return createdRules;
 };
 
@@ -121,6 +147,16 @@ export const getOwnerPricingRulesByDay = async (
   subFieldId: string,
   dayOfWeek: number,
 ) => {
+  const cacheKey = buildPricingRulesCacheKey({ subfield_id: subFieldId, day_of_week: dayOfWeek });
+  
+  // Try cache first
+  const cached = await cacheHelper.get(cacheKey);
+  if (cached) {
+    console.log(`[Cache HIT] Pricing rules for subfield ${subFieldId} day ${dayOfWeek}`);
+    return cached;
+  }
+  console.log(`[Cache MISS] Pricing rules for subfield ${subFieldId} day ${dayOfWeek}`);
+
   const pricingRules = await prisma.pricingRule.findMany({
     where: {
       sub_field_id: subFieldId,
@@ -140,6 +176,9 @@ export const getOwnerPricingRulesByDay = async (
     },
     orderBy: { start_time: "asc" },
   });
+
+  // Cache the result
+  await cacheHelper.set(cacheKey, pricingRules, CACHE_TTL.PRICING);
 
   return pricingRules;
 };
@@ -234,6 +273,16 @@ export const updatePricingRule = async (
   const complexId = existingRule.sub_field.complex.id;
   await updateComplexCache(complexId);
 
+  // Invalidate pricing cache for old and new day
+  await cacheHelper.del(CACHE_KEYS.PRICING_RULES(existingRule.sub_field_id, existingRule.day_of_week));
+  if (
+    typeof data.day_of_week === "number" &&
+    existingRule.day_of_week !== data.day_of_week
+  ) {
+    await cacheHelper.del(CACHE_KEYS.PRICING_RULES(existingRule.sub_field_id, data.day_of_week));
+  }
+  await invalidatePublicCachesAfterPricingChange(existingRule.sub_field_id, complexId);
+
   return updatedPricingRule;
 };
 
@@ -273,6 +322,10 @@ export const deletePricingRule = async (
   // Update complex cache after deleting pricing rule
   const complexId = pricingRule.sub_field.complex.id;
   await updateComplexCache(complexId);
+
+  // Invalidate pricing cache
+  await cacheHelper.del(CACHE_KEYS.PRICING_RULES(pricingRule.sub_field_id, pricingRule.day_of_week));
+  await invalidatePublicCachesAfterPricingChange(pricingRule.sub_field_id, complexId);
 };
 
 // Bulk delete pricing rules
@@ -330,6 +383,17 @@ export const bulkDeletePricingRules = async (
   await Promise.all(
     affectedComplexIds.map((complexId) => updateComplexCache(complexId)),
   );
+
+  // Invalidate all pricing rules cache
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.PRICING_RULES);
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
+  for (const complexId of affectedComplexIds) {
+    await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  }
+  for (const rule of pricingRules) {
+    await cacheHelper.del(CACHE_KEYS.SUBFIELD(rule.sub_field_id));
+  }
 
   return { deletedCount: pricingRules.length };
 };
@@ -421,6 +485,12 @@ export const copyPricingRules = async (
   // Update complex cache after copying pricing rules
   const complexId = subField.complex.id;
   await updateComplexCache(complexId);
+
+  // Invalidate pricing cache for affected days
+  for (const day of targetDaysOfWeek) {
+    await cacheHelper.del(CACHE_KEYS.PRICING_RULES(subFieldId, day));
+  }
+  await invalidatePublicCachesAfterPricingChange(subFieldId, complexId);
 
   return {
     copiedFrom: sourceDayOfWeek,

@@ -19,6 +19,14 @@ export const CACHE_KEYS = {
   // Reviews (Medium TTL: 30 minutes)
   SUBFIELD_REVIEWS: (id: string) => `subfield:${id}:reviews`,
 
+  // Pricing Rules (Medium TTL: 30 minutes) - OWNER only
+  PRICING_RULES: (subfieldId: string, dayOfWeek: number) => `pricing:${subfieldId}:${dayOfWeek}`,
+
+  // Matches (Short TTL: 5 minutes) - PUBLIC
+  MATCH: (id: string) => `match:${id}`,
+  MATCHES_LIST: (page: number, limit: number) => `matches:list:${page}:${limit}`,
+  MATCH_PARTICIPANTS: (matchId: string, page: number, limit: number) => `match:${matchId}:participants:${page}:${limit}`,
+
   // Pattern wildcards for invalidation
   PATTERNS: {
     ALL_COMPLEXES: "complex:*",
@@ -26,6 +34,10 @@ export const CACHE_KEYS = {
     COMPLEXES_LIST: "complexes:list:*",
     SUBFIELDS_LIST: "subfields:list:*",
     SUBFIELD_REVIEWS: "subfield:*:reviews:*",
+    PRICING_RULES: "pricing:*",
+    ALL_MATCHES: "match:*",
+    MATCHES_LIST: "matches:list:*",
+    MATCH_PARTICIPANTS: "match:*:participants:*",
   },
 };
 
@@ -34,6 +46,8 @@ export const CACHE_TTL = {
   RESOURCE: 7200, // 2 hours for individual resources (complex, subfield)
   LIST: 3600, // 1 hour for list endpoints
   REVIEWS: 1800, // 30 minutes for reviews
+  MATCHES: 300, // 5 minutes for matches (volatile - status changes frequently)
+  PRICING: 1800, // 30 minutes for pricing rules
   AVAILABILITY: 300, // 5 minutes for availability (if cached)
 };
 
@@ -105,6 +119,67 @@ export const buildReviewsCacheKey = (params: {
   
   if (rating !== undefined) key += `:rating=${rating}`;
   if (has_images) key += `:has_images=true`;
+  
+  return key;
+};
+
+/**
+ * Build cache key for pricing rules by day
+ * Owner-only, tied to specific subfield and day
+ */
+export const buildPricingRulesCacheKey = (params: {
+  subfield_id: string;
+  day_of_week: number;
+}): string => {
+  const { subfield_id, day_of_week } = params;
+  return `pricing:${subfield_id}:${day_of_week}`;
+};
+
+/**
+ * Build cache key for public matches list
+ * NOTE: Search, time filters NOT cached - exclude to prevent bloat & ensure freshness
+ * Only cache stable filters (sport_type, skill_level, status, sort)
+ */
+export const buildPublicMatchesCacheKey = (params: {
+  page?: number;
+  limit?: number;
+  sport_type?: string;
+  skill_level?: string;
+  status?: string;
+  sort?: string;
+}): string => {
+  const { page = 1, limit = 20, sport_type, skill_level, status, sort = "created_at:desc" } = params;
+  
+  let key = `matches:list:${page}:${limit}:${sort}`;
+  
+  if (sport_type) key += `:sport=${sport_type}`;
+  if (skill_level) key += `:skill=${skill_level}`;
+  if (status) key += `:status=${status}`;
+  
+  return key;
+};
+
+/**
+ * Build cache key for match detail
+ * Short TTL because status changes frequently (OPEN → FULL → CLOSED, etc)
+ */
+export const buildMatchDetailCacheKey = (matchId: string): string => {
+  return `match:${matchId}`;
+};
+
+/**
+ * Build cache key for match participants
+ * Creator-only view, stable data (participants list doesn't change often)
+ */
+export const buildMatchParticipantsCacheKey = (params: {
+  match_id: string;
+  page?: number;
+  limit?: number;
+  status?: string;
+}): string => {
+  const { match_id, page = 1, limit = 10, status = "ALL" } = params;
+  
+  let key = `match:${match_id}:participants:${page}:${limit}:${status}`;
   
   return key;
 };
