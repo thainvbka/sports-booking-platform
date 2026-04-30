@@ -2,6 +2,7 @@ import { DeleteComplexDialog } from "@/components/owner/DeleteComplexDialog";
 import { EditComplexDialog } from "@/components/owner/EditComplexDialog";
 import { ReactivateComplexDialog } from "@/components/owner/ReactivateComplexDialog";
 import { ComplexDetailView } from "@/components/shared/ComplexDetailView";
+import { LegalDocumentsDialog } from "@/components/shared/LegalDocumentsDialog";
 import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { ComplexStatus } from "@/types";
 import {
   Ban,
   Clock,
+  FileText,
   Pencil,
   Plus,
   PowerOff,
@@ -52,6 +54,7 @@ export function ComplexDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isReactivateDialogOpen, setIsReactivateDialogOpen] = useState(false);
+  const [isLegalDocsOpen, setIsLegalDocsOpen] = useState(false);
 
   // Scroll to top on mount and when id changes
   useEffect(() => {
@@ -156,6 +159,15 @@ export function ComplexDetailPage() {
           >
             <Pencil data-icon="inline-start" />
             Chỉnh sửa
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLegalDocsOpen(true)}
+            className="h-9 rounded-full border-border/70 bg-background/70 px-4 text-xs font-semibold backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+          >
+            <FileText data-icon="inline-start" />
+            Tài liệu pháp lý
           </Button>
           <Button
             variant="outline"
@@ -277,6 +289,13 @@ export function ComplexDetailPage() {
             onOpenChange={setIsReactivateDialogOpen}
             complexName={complex.complex_name}
             onConfirm={handleReactivateComplex}
+          />
+          <LegalDocumentsDialog
+            open={isLegalDocsOpen}
+            onOpenChange={setIsLegalDocsOpen}
+            title={`Tài liệu pháp lý · ${complex.complex_name}`}
+            description="Đây là các tài liệu bạn đã gửi khi đăng ký khu phức hợp."
+            verificationDocs={complex.verification_docs}
           />
         </>
       )}

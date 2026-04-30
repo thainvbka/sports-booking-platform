@@ -65,8 +65,7 @@ export const createComplex = async (
       complex_address: data.complex_address,
       complex_image: complex_image,
       verification_docs: verification_docs,
-      // status: "PENDING",
-      status: "ACTIVE", //tạm thời cho ACTIVE để test vì chưa có chức năng duyệt của admin
+      status: "PENDING",
     },
     select: {
       id: true,
@@ -180,6 +179,7 @@ export const getOwnerComplexById = async (
       complex_name: true,
       complex_address: true,
       complex_image: true,
+      verification_docs: true,
       status: true,
       _count: {
         select: {

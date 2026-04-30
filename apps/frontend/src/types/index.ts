@@ -56,6 +56,7 @@ export interface ComplexBase {
   complex_name: string;
   complex_address: string;
   complex_image?: string;
+  verification_docs?: unknown;
   status: ComplexStatus;
   _count?: {
     sub_fields: number;

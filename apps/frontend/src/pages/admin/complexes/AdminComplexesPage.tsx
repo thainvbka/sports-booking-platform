@@ -30,6 +30,7 @@ import {
   COMPLEX_STATUS_LABELS,
   SPORT_TYPE_LABELS,
 } from "@/lib/constants";
+import { extractLegalDocumentUrls } from "@/lib/legal-docs";
 import { useAdminComplexStore } from "@/store/admin/useAdminComplexStore";
 import type { AdminComplex } from "@/types/admin.types";
 import { format } from "date-fns";
@@ -322,6 +323,9 @@ export default function AdminComplexesPage() {
   const totalComplexes =
     pagination?.total ??
     stats.active + stats.pending + stats.inactive + stats.rejected;
+  const selectedComplexDocUrls = selectedComplex
+    ? extractLegalDocumentUrls(selectedComplex.verification_docs)
+    : [];
 
   return (
     <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
@@ -480,11 +484,35 @@ export default function AdminComplexesPage() {
 
             <div className="rounded-lg border border-border/60 p-4">
               <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
-                Tài liệu pháp lý (JSON)
+                Tài liệu pháp lý
               </p>
-              <pre className="overflow-x-auto rounded-md border border-border/60 bg-muted/40 p-3 font-mono text-xs">
-                {JSON.stringify(selectedComplex.verification_docs, null, 2)}
-              </pre>
+              {selectedComplexDocUrls.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {selectedComplexDocUrls.map((docUrl, index) => (
+                    <a
+                      key={`${docUrl}-${index}`}
+                      href={docUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group overflow-hidden rounded-md border border-border/60 bg-muted/20"
+                    >
+                      <div className="border-b border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground">
+                        Tài liệu #{index + 1}
+                      </div>
+                      <img
+                        src={docUrl}
+                        alt={`Tài liệu pháp lý ${index + 1}`}
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        loading="lazy"
+                      />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-md border border-dashed border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
+                  Không tìm thấy ảnh tài liệu hợp lệ trong dữ liệu pháp lý.
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 pt-4">
@@ -518,6 +546,7 @@ export default function AdminComplexesPage() {
           </div>
         )}
       </AdminDetailDialog>
+
     </div>
   );
 }
