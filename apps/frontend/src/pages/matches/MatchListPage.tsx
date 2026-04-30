@@ -1,9 +1,10 @@
 import { MatchCard } from "@/components/matches/MatchCard";
 import {
-  MatchFilterBar,
-  type MatchFilterValues,
-} from "@/components/matches/MatchFilterBar";
+  MatchFilters,
+  type MatchFiltersValue,
+} from "@/components/matches/MatchFilters";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SearchBar } from "@/components/shared/SearchBar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useMatchStore } from "@/store/useMatchStore";
-import { MATCH_DEFAULT_SORT } from "@/types/match.type";
+import { SportType } from "@/types";
+import {
+  MATCH_DEFAULT_SORT,
+  type MatchSortOption,
+  type SportType as MatchSportType,
+  type MatchStatus,
+} from "@/types/match.type";
 import {
   ArrowRight,
   CircleAlert,
@@ -30,11 +37,20 @@ import {
   UsersRound,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 const PAGE_SIZE = 8;
+interface MatchFilterValues {
+  q: string;
+  sport_type?: MatchSportType;
+  status?: MatchStatus;
+  sort: MatchSortOption;
+}
 const DEFAULT_FILTER: MatchFilterValues = { q: "", sort: MATCH_DEFAULT_SORT };
+const VALID_SPORT_TYPES = new Set<string>(Object.values(SportType));
+const VALID_MATCH_STATUS = new Set(["OPEN", "FULL", "CLOSED", "EXPIRED", "CANCELED", "COMPLETED"]);
+const VALID_MATCH_SORT = new Set(["created_at:desc", "start_time:asc", "start_time:desc"]);
 
 // ── Scoreboard chip (used in cinematic hero) ──────────────────────────────
 interface ScoreboardChipProps {
@@ -361,14 +377,49 @@ function buildPageList(
 
 // ── Main page ─────────────────────────────────────────────────────────────
 export function MatchListPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuthStore();
   const { matches, pagination, isLoading, error, fetchPublicMatches } =
     useMatchStore();
 
-  const [filters, setFilters] = useState<MatchFilterValues>(DEFAULT_FILTER);
-  const [appliedFilters, setAppliedFilters] =
-    useState<MatchFilterValues>(DEFAULT_FILTER);
-  const [page, setPage] = useState(1);
+  const appliedFilters = useMemo<MatchFilterValues>(() => {
+    const q = searchParams.get("q") ?? "";
+    const sport_type = searchParams.get("sport_type");
+    const status = searchParams.get("status");
+    const sort = searchParams.get("sort");
+
+    return {
+      q,
+      sport_type:
+        sport_type && VALID_SPORT_TYPES.has(sport_type)
+          ? (sport_type as MatchFilterValues["sport_type"])
+          : undefined,
+      status: status && VALID_MATCH_STATUS.has(status)
+        ? (status as MatchFilterValues["status"])
+        : undefined,
+      sort:
+        sort && VALID_MATCH_SORT.has(sort)
+          ? (sort as MatchFilterValues["sort"])
+          : MATCH_DEFAULT_SORT,
+    };
+  }, [searchParams]);
+
+  const page = useMemo(() => {
+    const raw = Number(searchParams.get("page") ?? "1");
+    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+  }, [searchParams]);
+
+  const [filters, setFilters] = useState<MatchFilterValues>(appliedFilters);
+  const [keyword, setKeyword] = useState<string>(appliedFilters.q);
+  const [sportValue, setSportValue] = useState<string>(
+    appliedFilters.sport_type ?? "ALL",
+  );
+
+  useEffect(() => {
+    setFilters(appliedFilters);
+    setKeyword(appliedFilters.q);
+    setSportValue(appliedFilters.sport_type ?? "ALL");
+  }, [appliedFilters]);
 
   useEffect(() => {
     void fetchPublicMatches({ ...appliedFilters, page, limit: PAGE_SIZE });
@@ -394,14 +445,63 @@ export function MatchListPage() {
   const currentPage = pagination?.page ?? page;
   const totalPages = Math.max(pagination?.total_pages ?? 1, 1);
 
-  const handleApply = () => {
-    setPage(1);
-    setAppliedFilters(filters);
+  const applyParams = (next: MatchFilterValues, nextPage = 1) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (next.q.trim()) params.set("q", next.q.trim());
+    else params.delete("q");
+
+    if (next.sport_type) params.set("sport_type", next.sport_type);
+    else params.delete("sport_type");
+
+    if (next.status) params.set("status", next.status);
+    else params.delete("status");
+
+    if (next.sort && next.sort !== MATCH_DEFAULT_SORT) {
+      params.set("sort", next.sort);
+    } else {
+      params.delete("sort");
+    }
+
+    if (nextPage > 1) params.set("page", String(nextPage));
+    else params.delete("page");
+
+    setSearchParams(params);
   };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const nextSportType =
+      sportValue !== "ALL" && VALID_SPORT_TYPES.has(sportValue)
+        ? (sportValue as MatchFilterValues["sport_type"])
+        : undefined;
+
+    const next: MatchFilterValues = {
+      ...filters,
+      q: keyword.trim(),
+      sport_type: nextSportType,
+    };
+
+    setFilters(next);
+    applyParams(next, 1);
+  };
+
+  const handleAdvancedFiltersChange = (next: MatchFiltersValue) => {
+    const merged: MatchFilterValues = {
+      ...filters,
+      status: next.status,
+      sort: next.sort,
+    };
+    setFilters(merged);
+    applyParams(merged, 1);
+  };
+
   const handleReset = () => {
-    setPage(1);
     setFilters(DEFAULT_FILTER);
-    setAppliedFilters(DEFAULT_FILTER);
+    setKeyword("");
+    setSportValue("ALL");
+    applyParams(DEFAULT_FILTER, 1);
   };
 
   return (
@@ -416,12 +516,31 @@ export function MatchListPage() {
 
       <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
-          <MatchFilterBar
-            values={filters}
-            onValuesChange={setFilters}
-            onApply={handleApply}
-            onReset={handleReset}
-            isLoading={isLoading}
+          <SearchBar
+            keyword={keyword}
+            onKeywordChange={setKeyword}
+            sportValue={sportValue}
+            onSportChange={(value) =>
+              setSportValue(
+                value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
+              )
+            }
+            onSubmit={handleSearchSubmit}
+            placeholder="Tìm kèo theo tiêu đề, sân, khu phức hợp..."
+            submitLabel="Tìm kèo"
+            allSportsValue="ALL"
+            variant="default"
+            disabled={isLoading}
+          />
+
+          <MatchFilters
+            value={{
+              status: filters.status,
+              sort: filters.sort,
+            }}
+            onChange={handleAdvancedFiltersChange}
+            disabled={isLoading}
+            className="mb-6"
           />
 
           {error && (
@@ -455,7 +574,7 @@ export function MatchListPage() {
             <PaginationBar
               page={currentPage}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={(nextPage) => applyParams(appliedFilters, nextPage)}
               disabled={isLoading}
             />
           ) : null}
