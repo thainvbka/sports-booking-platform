@@ -1,5 +1,5 @@
 import { uploadComplexImages } from "../../helpers";
-import { CACHE_KEYS, CACHE_TTL, cacheHelper } from "../../helpers/cache";
+import { buildComplexListCacheKey, CACHE_KEYS, CACHE_TTL, cacheHelper } from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
   BadRequestError,
@@ -284,6 +284,10 @@ export const updateComplex = async (
 
   // Invalidate complex cache after updating
   await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  // Invalidate all complexes list cache (data might have changed)
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
+  // Subfield list snapshots complex_name/complex_address -> invalidate too
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
 
   return updated;
 };
@@ -313,9 +317,13 @@ export const deleteComplex = async (complexId: string, ownerId: string) => {
     },
   });
 
-  // Invalidate complex and all subfields cache
+  // Invalidate complex and all related cache
   await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
   await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.ALL_SUBFIELDS);
+  // ALL_SUBFIELDS pattern is `subfield:*` and does NOT match `subfields:list:*`,
+  // so we must also invalidate the public subfield list cache explicitly.
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
 
   return { message: "Complex and its subfields have been deactivated" };
 };
@@ -350,9 +358,13 @@ export const reactivateComplex = async (complexId: string, ownerId: string) => {
     }),
   ]);
 
-  // Invalidate complex and all subfields cache
+  // Invalidate complex and all related cache
   await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
   await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.ALL_SUBFIELDS);
+  // ALL_SUBFIELDS pattern is `subfield:*` and does NOT match `subfields:list:*`,
+  // so we must also invalidate the public subfield list cache explicitly.
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
 
   return { message: "Complex and its subfields have been reactivated" };
 };
@@ -375,6 +387,29 @@ export const getPublicComplexActive = async ({
   minPrice?: number;
   maxPrice?: number;
 }) => {
+  // Only cache stable filter combinations. Search keywords are skipped because
+  // they have unbounded cardinality and would either bloat Redis or, if we
+  // built a key without `search`, return wrong results across different searches.
+  const isCacheable = !search;
+  const cacheKey = buildComplexListCacheKey({
+    page,
+    limit,
+    sport_types,
+    minPrice,
+    maxPrice,
+  });
+
+  if (isCacheable) {
+    const cached = await cacheHelper.get(cacheKey);
+    if (cached) {
+      console.log(`:::::Cache hit for complexes list: ${cacheKey}`);
+      return cached;
+    }
+    console.log(`:::::Cache miss for complexes list: ${cacheKey}, querying database`);
+  } else {
+    console.log(`:::::Search query present ("${search}") - bypassing list cache`);
+  }
+
   const skip = (page - 1) * limit;
 
   const whereCondition: any = {
@@ -454,7 +489,7 @@ export const getPublicComplexActive = async ({
     },
   }));
 
-  return {
+  const result = {
     complexes: formattedComplexes,
     pagination: {
       total,
@@ -463,6 +498,12 @@ export const getPublicComplexActive = async ({
       totalPages,
     },
   };
+
+  if (isCacheable) {
+    await cacheHelper.set(cacheKey, result, CACHE_TTL.LIST);
+  }
+
+  return result;
 };
 
 export const getPublicComplexById = async (

@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
 import {
+  buildReviewsCacheKey,
+  CACHE_KEYS,
+  CACHE_TTL,
+  cacheHelper,
   updateComplexRatingCache,
   updateSubfieldRatingCache,
 } from "../../helpers/cache";
@@ -18,6 +22,10 @@ import {
 
 type MulterFiles = {
   [fieldname: string]: Express.Multer.File[];
+};
+
+const invalidateSubfieldReviewsCache = async (subfieldId: string) => {
+  await cacheHelper.delByPattern(`${CACHE_KEYS.SUBFIELD_REVIEWS(subfieldId)}:*`);
 };
 
 /**
@@ -78,6 +86,9 @@ export const createReview = async (
     updateComplexRatingCache(booking.sub_field.complex_id),
   ]);
 
+  // Invalidate paginated/sorted review list cache for this subfield
+  await invalidateSubfieldReviewsCache(booking.sub_field_id);
+
   return review;
 };
 
@@ -119,6 +130,9 @@ export const updateReview = async (
     ]);
   }
 
+  // Invalidate paginated/sorted review list cache for this subfield
+  await invalidateSubfieldReviewsCache(existingReview.subfield_id);
+
   return updatedReview;
 };
 
@@ -143,6 +157,9 @@ export const deleteReview = async (review_id: string, player_id: string) => {
     updateSubfieldRatingCache(existingReview.subfield_id),
     updateComplexRatingCache(existingReview.subfield.complex_id),
   ]);
+
+  // Invalidate paginated/sorted review list cache for this subfield
+  await invalidateSubfieldReviewsCache(existingReview.subfield_id);
 
   return { success: true };
 };
@@ -182,6 +199,9 @@ export const ownerDeleteReview = async (
     updateComplexRatingCache(review.subfield.complex_id),
   ]);
 
+  // Invalidate paginated/sorted review list cache for this subfield
+  await invalidateSubfieldReviewsCache(review.subfield_id);
+
   return { success: true };
 };
 
@@ -192,7 +212,26 @@ export const getSubfieldReviews = async (
   subfield_id: string,
   query: ReviewQueryInput,
 ) => {
-  const { page, limit, rating, has_images, sort_by } = query;
+  const { page = 1, limit = 10, rating, has_images, sort_by = "newest" } = query;
+
+  // Build cache key for this specific query
+  const cacheKey = buildReviewsCacheKey({
+    subfield_id,
+    page,
+    limit,
+    rating,
+    has_images,
+    sort_by,
+  });
+
+  // Try to get from cache
+  const cachedResult = await cacheHelper.get(cacheKey);
+  if (cachedResult) {
+    console.log(`[Cache HIT] Reviews for subfield ${subfield_id} - Page ${page}`);
+    return cachedResult;
+  }
+  console.log(`[Cache MISS] Reviews for subfield ${subfield_id} - Page ${page}`);
+
   const skip = (page - 1) * limit;
 
   const where: Prisma.ReviewWhereInput = { subfield_id };
@@ -232,7 +271,7 @@ export const getSubfieldReviews = async (
     prisma.review.count({ where }),
   ]);
 
-  return {
+  const result = {
     reviews,
     pagination: {
       total,
@@ -241,4 +280,9 @@ export const getSubfieldReviews = async (
       totalPages: Math.ceil(total / limit),
     },
   };
-};
+
+  // Cache the result with 30-minute TTL
+  await cacheHelper.set(cacheKey, result, CACHE_TTL.REVIEWS);
+
+  return result;
+}

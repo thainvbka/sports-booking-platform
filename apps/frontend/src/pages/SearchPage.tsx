@@ -1,6 +1,10 @@
 import { ComplexCard } from "@/components/shared/ComplexCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SearchBar } from "@/components/shared/SearchBar";
+import {
+  SearchFilters,
+  type SearchFiltersValue,
+} from "@/components/shared/SearchFilters";
 import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import {
   Breadcrumb,
@@ -24,11 +28,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
-import type { Complex, SportType, SubField } from "@/types";
-import { formatPrice, getSportTypeLabel } from "@/utils";
-import { Building2, Flag, Users } from "lucide-react";
+import { SportType, type SportType as SportTypeValue, type Complex, type SubField } from "@/types";
+import { Building2, Flag } from "lucide-react";
 import {
   useEffect,
+  useMemo,
   useState,
   type FormEvent,
   type ReactNode,
@@ -36,14 +40,40 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-interface ActiveFilter {
-  key: string;
-  label: string;
-  icon?: ReactNode;
-  onRemove: () => void;
-}
-
 type TabValue = "complexes" | "subfields";
+
+const ALL_SPORT_TYPES = new Set<string>(Object.values(SportType));
+
+const parseSportTypesFromParams = (
+  params: URLSearchParams,
+): SportTypeValue[] => {
+  // Primary: comma-separated `sport_types`
+  const csv = params.get("sport_types");
+  if (csv) {
+    const tokens = csv
+      .split(",")
+      .map((token) => token.trim())
+      .filter((token) => ALL_SPORT_TYPES.has(token));
+    if (tokens.length > 0) return tokens as SportTypeValue[];
+  }
+
+  // Legacy fallback: single `sport_type`
+  const legacy = params.get("sport_type");
+  if (legacy && ALL_SPORT_TYPES.has(legacy)) {
+    return [legacy as SportTypeValue];
+  }
+  return [];
+};
+
+const parseNumberParam = (
+  params: URLSearchParams,
+  key: string,
+): number | undefined => {
+  const raw = params.get(key);
+  if (raw === null || raw === "") return undefined;
+  const num = Number(raw);
+  return Number.isFinite(num) && num >= 0 ? num : undefined;
+};
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,43 +95,46 @@ export function SearchPage() {
     totalPages: 0,
   });
 
-  // Parse search params
+  // Parse all filter values from URL — URL remains the source of truth.
   const location = searchParams.get("location") || undefined;
-  const sport_type = searchParams.get("sport_type") as SportType | undefined;
-  const minPrice = searchParams.get("minPrice")
-    ? Number(searchParams.get("minPrice"))
-    : undefined;
-  const maxPrice = searchParams.get("maxPrice")
-    ? Number(searchParams.get("maxPrice"))
-    : undefined;
-  const minCapacity = searchParams.get("minCapacity")
-    ? Number(searchParams.get("minCapacity"))
-    : undefined;
-  const maxCapacity = searchParams.get("maxCapacity")
-    ? Number(searchParams.get("maxCapacity"))
-    : undefined;
+  const sportTypes = useMemo(
+    () => parseSportTypesFromParams(searchParams),
+    [searchParams],
+  );
+  const minPrice = parseNumberParam(searchParams, "minPrice");
+  const maxPrice = parseNumberParam(searchParams, "maxPrice");
+  const minCapacity = parseNumberParam(searchParams, "minCapacity");
+  const maxCapacity = parseNumberParam(searchParams, "maxCapacity");
 
   const complexPage = Number(searchParams.get("complexPage")) || 1;
   const subfieldPage = Number(searchParams.get("subfieldPage")) || 1;
   const defaultTab = (searchParams.get("tab") as TabValue) || "complexes";
 
-  // Local state for the search bar, seeded from URL (URL remains the source of truth).
+  // SearchBar binds to a single sport. Show the first sport from the URL,
+  // or "ALL" when none is selected. Multi-select still flows through SearchFilters.
+  const primarySport = sportTypes[0];
+
+  // Local state for the search bar, seeded from URL.
   const [keyword, setKeyword] = useState<string>(location ?? "");
-  const [sportValue, setSportValue] = useState<string>(sport_type ?? "ALL");
+  const [sportValue, setSportValue] = useState<string>(primarySport ?? "ALL");
 
   useEffect(() => {
     setKeyword(location ?? "");
   }, [location]);
   useEffect(() => {
-    setSportValue(sport_type ?? "ALL");
-  }, [sport_type]);
+    setSportValue(primarySport ?? "ALL");
+  }, [primarySport]);
+
+  // Stable key for sport_types so the data-fetch effect re-runs on changes
+  // without needing the array reference to be referentially stable.
+  const sportTypesKey = sportTypes.join(",");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
 
-        const sport_types = sport_type ? [sport_type] : undefined;
+        const sport_types = sportTypes.length > 0 ? sportTypes : undefined;
 
         const [complexesRes, subfieldsRes] = await Promise.all([
           publicService.getComplexes({
@@ -156,7 +189,7 @@ export function SearchPage() {
     fetchData();
   }, [
     location,
-    sport_type,
+    sportTypesKey,
     minPrice,
     maxPrice,
     minCapacity,
@@ -177,37 +210,68 @@ export function SearchPage() {
     setSearchParams(newParams);
   };
 
+  /**
+   * Apply a partial change to URL filter params and reset pagination.
+   * Pass `undefined` to remove a key, or `null` to leave it untouched.
+   */
+  const updateFilterParams = (changes: Record<string, string | undefined | null>) => {
+    const newParams = new URLSearchParams(searchParams);
+    for (const [key, val] of Object.entries(changes)) {
+      if (val === null) continue;
+      if (val === undefined || val === "") {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, val);
+      }
+    }
+    // any filter change resets pagination
+    newParams.delete("complexPage");
+    newParams.delete("subfieldPage");
+    setSearchParams(newParams);
+  };
+
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const newParams = new URLSearchParams(searchParams);
     const trimmed = keyword.trim();
-
-    if (trimmed) {
-      newParams.set("location", trimmed);
-    } else {
-      newParams.delete("location");
-    }
-
-    if (sportValue && sportValue !== "ALL") {
-      newParams.set("sport_type", sportValue);
-    } else {
-      newParams.delete("sport_type");
-    }
-
-    // reset pagination when submitting a new search
-    newParams.delete("complexPage");
-    newParams.delete("subfieldPage");
-
-    setSearchParams(newParams);
+    updateFilterParams({
+      location: trimmed || undefined,
+      // SearchBar selects a single sport — override the multi-selection
+      sport_types: sportValue && sportValue !== "ALL" ? sportValue : undefined,
+      sport_type: undefined, // drop legacy param when user submits
+    });
   };
 
-  const removeParams = (keys: string[]) => {
-    const newParams = new URLSearchParams(searchParams);
-    keys.forEach((k) => newParams.delete(k));
-    newParams.delete("complexPage");
-    newParams.delete("subfieldPage");
-    setSearchParams(newParams);
+  const filtersValue: SearchFiltersValue = {
+    location,
+    sportTypes,
+    minPrice,
+    maxPrice,
+    minCapacity,
+    maxCapacity,
   };
+
+  const handleFiltersChange = (next: SearchFiltersValue) => {
+    updateFilterParams({
+      location: next.location ?? undefined,
+      sport_types:
+        next.sportTypes.length > 0 ? next.sportTypes.join(",") : undefined,
+      sport_type: undefined,
+      minPrice: next.minPrice !== undefined ? String(next.minPrice) : undefined,
+      maxPrice: next.maxPrice !== undefined ? String(next.maxPrice) : undefined,
+      minCapacity:
+        next.minCapacity !== undefined ? String(next.minCapacity) : undefined,
+      maxCapacity:
+        next.maxCapacity !== undefined ? String(next.maxCapacity) : undefined,
+    });
+  };
+
+  const hasActiveFilters =
+    Boolean(location) ||
+    sportTypes.length > 0 ||
+    minPrice !== undefined ||
+    maxPrice !== undefined ||
+    minCapacity !== undefined ||
+    maxCapacity !== undefined;
 
   const clearAllFilters = () => {
     const preserved = new URLSearchParams();
@@ -215,48 +279,6 @@ export function SearchPage() {
     if (tab) preserved.set("tab", tab);
     setSearchParams(preserved);
   };
-
-  const activeFilters: ActiveFilter[] = [];
-
-  if (location) {
-    activeFilters.push({
-      key: "location",
-      label: `“${location}”`,
-      onRemove: () => removeParams(["location"]),
-    });
-  }
-
-  if (sport_type) {
-    activeFilters.push({
-      key: "sport_type",
-      label: getSportTypeLabel(sport_type),
-      icon: <Flag className="h-3 w-3" />,
-      onRemove: () => removeParams(["sport_type"]),
-    });
-  }
-
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    const parts: string[] = [];
-    if (minPrice !== undefined) parts.push(`từ ${formatPrice(minPrice)}`);
-    if (maxPrice !== undefined) parts.push(`đến ${formatPrice(maxPrice)}`);
-    activeFilters.push({
-      key: "price",
-      label: `Giá ${parts.join(" ")}`,
-      onRemove: () => removeParams(["minPrice", "maxPrice"]),
-    });
-  }
-
-  if (minCapacity !== undefined || maxCapacity !== undefined) {
-    const parts: string[] = [];
-    if (minCapacity !== undefined) parts.push(`${minCapacity}+`);
-    if (maxCapacity !== undefined) parts.push(`≤ ${maxCapacity}`);
-    activeFilters.push({
-      key: "capacity",
-      label: `Sức chứa ${parts.join(" · ")}`,
-      icon: <Users className="h-3 w-3" />,
-      onRemove: () => removeParams(["minCapacity", "maxCapacity"]),
-    });
-  }
 
   const totalResults = complexPagination.total + subfieldPagination.total;
 
@@ -274,14 +296,13 @@ export function SearchPage() {
 
       <section className="relative">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {/* {activeFilters.length > 0 ? (
-            <ActiveFilterRail
-              filters={activeFilters}
-              onClearAll={clearAllFilters}
-            />
-          ) : null} */}
+          <SearchFilters
+            value={filtersValue}
+            onChange={handleFiltersChange}
+            className="mb-6"
+          />
 
-          <Tabs defaultValue={defaultTab} className="mt-6 flex flex-col gap-6">
+          <Tabs defaultValue={defaultTab} className="flex flex-col gap-6">
             <ResultTabsList
               complexesCount={complexPagination.total}
               subfieldsCount={subfieldPagination.total}
@@ -293,12 +314,8 @@ export function SearchPage() {
                 isEmpty={complexResults.length === 0}
                 emptyTitle="Không tìm thấy khu phức hợp"
                 emptyDescription="Thử điều chỉnh lại từ khoá hoặc bộ lọc để mở rộng kết quả."
-                emptyActionLabel={
-                  activeFilters.length > 0 ? "Xóa bộ lọc" : undefined
-                }
-                onEmptyAction={
-                  activeFilters.length > 0 ? clearAllFilters : undefined
-                }
+                emptyActionLabel={hasActiveFilters ? "Xóa bộ lọc" : undefined}
+                onEmptyAction={hasActiveFilters ? clearAllFilters : undefined}
               >
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger">
                   {complexResults.map((complex) => (
@@ -320,12 +337,8 @@ export function SearchPage() {
                 isEmpty={subFieldResults.length === 0}
                 emptyTitle="Không tìm thấy sân lẻ"
                 emptyDescription="Thử đổi môn thể thao, thay đổi khoảng giá hoặc mở rộng khu vực tìm kiếm."
-                emptyActionLabel={
-                  activeFilters.length > 0 ? "Xóa bộ lọc" : undefined
-                }
-                onEmptyAction={
-                  activeFilters.length > 0 ? clearAllFilters : undefined
-                }
+                emptyActionLabel={hasActiveFilters ? "Xóa bộ lọc" : undefined}
+                onEmptyAction={hasActiveFilters ? clearAllFilters : undefined}
               >
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger">
                   {subFieldResults.map((subField) => (
@@ -487,55 +500,6 @@ function ResultTicker({ isLoading, totalResults }: ResultTickerProps) {
     </Card>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/* Active filters                                                              */
-/* -------------------------------------------------------------------------- */
-
-// interface ActiveFilterRailProps {
-//   filters: ActiveFilter[];
-//   onClearAll: () => void;
-// }
-
-// function ActiveFilterRail({ filters, onClearAll }: ActiveFilterRailProps) {
-//   return (
-//     <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border/70 bg-surface-2/80 p-3">
-//       <span className="flex items-center gap-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-//         <span className="h-px w-5 bg-border-strong" aria-hidden="true" />
-//         Đang lọc
-//       </span>
-
-//       {filters.map((filter) => (
-//         <Badge
-//           key={filter.key}
-//           variant="secondary"
-//           className="gap-1.5 rounded-full bg-background px-2.5 py-1 text-xs font-medium shadow-sm"
-//         >
-//           {filter.icon}
-//           {filter.label}
-//           <button
-//             type="button"
-//             onClick={filter.onRemove}
-//             aria-label={`Bỏ lọc ${filter.label}`}
-//             className="-mr-1 inline-flex size-4 items-center justify-center rounded-full text-muted-foreground transition hover:bg-foreground hover:text-background"
-//           >
-//             <X className="h-3 w-3" />
-//           </button>
-//         </Badge>
-//       ))}
-
-//       <Button
-//         type="button"
-//         variant="ghost"
-//         size="sm"
-//         onClick={onClearAll}
-//         className="ml-auto h-8 rounded-full px-3 text-xs"
-//       >
-//         Xóa tất cả
-//       </Button>
-//     </div>
-//   );
-// }
 
 /* -------------------------------------------------------------------------- */
 /* Tabs                                                                        */

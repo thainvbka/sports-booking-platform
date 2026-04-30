@@ -25,6 +25,7 @@ export const CACHE_KEYS = {
     ALL_SUBFIELDS: "subfield:*",
     COMPLEXES_LIST: "complexes:list:*",
     SUBFIELDS_LIST: "subfields:list:*",
+    SUBFIELD_REVIEWS: "subfield:*:reviews:*",
   },
 };
 
@@ -34,6 +35,78 @@ export const CACHE_TTL = {
   LIST: 3600, // 1 hour for list endpoints
   REVIEWS: 1800, // 30 minutes for reviews
   AVAILABILITY: 300, // 5 minutes for availability (if cached)
+};
+
+/**
+ * Build cache key for complex list with filters
+ * NOTE: Search is NOT cached due to infinite combinations
+ * Only cache stable filters (types, price ranges)
+ */
+export const buildComplexListCacheKey = (params: {
+  page?: number;
+  limit?: number;
+  sport_types?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+}): string => {
+  const { page = 1, limit = 8, sport_types, minPrice, maxPrice } = params;
+  
+  let key = `complexes:list:${page}:${limit}`;
+  
+  if (sport_types?.length) key += `:types=${sport_types.join(",")}`;
+  if (minPrice !== undefined) key += `:minPrice=${minPrice}`;
+  if (maxPrice !== undefined) key += `:maxPrice=${maxPrice}`;
+  
+  return key;
+};
+
+/**
+ * Build cache key for subfield list with filters
+ * NOTE: Search is NOT cached due to infinite combinations
+ * Only cache stable filters (types, capacity, price ranges)
+ */
+export const buildSubfieldListCacheKey = (params: {
+  page?: number;
+  limit?: number;
+  sport_types?: string[];
+  minCapacity?: number;
+  maxCapacity?: number;
+  minPrice?: number;
+  maxPrice?: number;
+}): string => {
+  const { page = 1, limit = 8, sport_types, minCapacity, maxCapacity, minPrice, maxPrice } = params;
+  
+  let key = `subfields:list:${page}:${limit}`;
+  
+  if (sport_types?.length) key += `:types=${sport_types.join(",")}`;
+  if (minCapacity !== undefined) key += `:minCap=${minCapacity}`;
+  if (maxCapacity !== undefined) key += `:maxCap=${maxCapacity}`;
+  if (minPrice !== undefined) key += `:minPrice=${minPrice}`;
+  if (maxPrice !== undefined) key += `:maxPrice=${maxPrice}`;
+  
+  return key;
+};
+
+/**
+ * Build cache key for subfield reviews with filters
+ * Includes pagination, rating filter, image filter, and sort order
+ */
+export const buildReviewsCacheKey = (params: {
+  subfield_id: string;
+  page?: number;
+  limit?: number;
+  rating?: number;
+  has_images?: boolean;
+  sort_by?: "newest" | "oldest" | "rating_desc" | "rating_asc";
+}): string => {
+  const { subfield_id, page = 1, limit = 10, rating, has_images, sort_by = "newest" } = params;
+  
+  let key = `subfield:${subfield_id}:reviews:${page}:${limit}:${sort_by}`;
+  
+  if (rating !== undefined) key += `:rating=${rating}`;
+  if (has_images) key += `:has_images=true`;
+  
+  return key;
 };
 
 export const cacheHelper = {
@@ -83,11 +156,20 @@ export const cacheHelper = {
   delByPattern: async (pattern: string) => {
     try {
       const redis = getRedis();
-      const keys = await redis.keys(pattern);
-      if (keys.length > 0) {
-        for (const key of keys) {
-          await redis.del(key);
+      const pipeline = redis.multi();
+      let hasAnyKey = false;
+
+      // Use SCAN instead of KEYS to avoid blocking Redis on large keyspaces.
+      for await (const key of redis.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+        const keys = Array.isArray(key) ? key : [key];
+        for (const item of keys) {
+          pipeline.del(item);
+          hasAnyKey = true;
         }
+      }
+
+      if (hasAnyKey) {
+        await pipeline.exec();
       }
     } catch (error) {
       console.error("Redis DelByPattern Error:", error);

@@ -1,4 +1,4 @@
-import { CACHE_KEYS, CACHE_TTL, cacheHelper, updateComplexCache } from "../../helpers/cache";
+import { buildSubfieldListCacheKey, CACHE_KEYS, CACHE_TTL, cacheHelper, updateComplexCache } from "../../helpers/cache";
 import { uploadSubfieldImage } from "../../helpers/upload";
 import { prisma } from "../../libs/prisma";
 import {
@@ -62,8 +62,13 @@ export const createSubfield = async (
 
   // Invalidate cache after creating subfield
   await cacheHelper.del(CACHE_KEYS.SUBFIELD(newSubfield.id));
-  // Update complex cache after creating subfield
+  // Invalidate subfields list cache (data might have changed)
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
+  // Recompute complex aggregate stats in DB (min_price, total_subfields, ...)
   await updateComplexCache(complexId);
+  // Public complex list/by-id caches snapshot those aggregates -> invalidate
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
 
   return newSubfield;
 };
@@ -206,8 +211,13 @@ export const updateSubfield = async (
 
   // Invalidate subfield cache after updating
   await cacheHelper.del(CACHE_KEYS.SUBFIELD(subfieldId));
+  // Invalidate subfields list cache (data might have changed)
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
   // Update complex cache after updating subfield (especially if sport_type changed)
   await updateComplexCache(subfield.complex_id);
+  // Public complex list/by-id caches snapshot those aggregates -> invalidate
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(subfield.complex_id));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
 
   return updatedSubfield;
 };
@@ -239,8 +249,13 @@ export const deleteSubfield = async (ownerId: string, subfieldId: string) => {
 
   // Invalidate subfield cache after deleting
   await cacheHelper.del(CACHE_KEYS.SUBFIELD(subfieldId));
+  // Invalidate subfields list cache (data might have changed)
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.SUBFIELDS_LIST);
   // Update complex cache after deleting subfield
   await updateComplexCache(subfield.complex_id);
+  // Public complex list/by-id caches snapshot those aggregates -> invalidate
+  await cacheHelper.del(CACHE_KEYS.COMPLEX(subfield.complex_id));
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
 };
 
 /**
@@ -265,6 +280,31 @@ export const getAllPublicSubfields = async ({
   minPrice?: number;
   maxPrice?: number;
 }) => {
+  // Only cache stable filter combinations. Search keywords are skipped because
+  // they have unbounded cardinality and would either bloat Redis or, if we
+  // built a key without `search`, return wrong results across different searches.
+  const isCacheable = !search;
+  const cacheKey = buildSubfieldListCacheKey({
+    page,
+    limit,
+    sport_types,
+    minCapacity,
+    maxCapacity,
+    minPrice,
+    maxPrice,
+  });
+
+  if (isCacheable) {
+    const cached = await cacheHelper.get(cacheKey);
+    if (cached) {
+      console.log(`:::::Cache hit for subfields list: ${cacheKey}`);
+      return cached;
+    }
+    console.log(`:::::Cache miss for subfields list: ${cacheKey}, querying database`);
+  } else {
+    console.log(`:::::Search query present ("${search}") - bypassing list cache`);
+  }
+
   const skip = (page - 1) * limit;
 
   // Build capacity filter
@@ -395,7 +435,7 @@ export const getAllPublicSubfields = async ({
     complex_address: sf.complex.complex_address,
   }));
 
-  return {
+  const result = {
     subfields: formattedSubfields,
     pagination: {
       total,
@@ -404,6 +444,12 @@ export const getAllPublicSubfields = async ({
       totalPages,
     },
   };
+
+  if (isCacheable) {
+    await cacheHelper.set(cacheKey, result, CACHE_TTL.LIST);
+  }
+
+  return result;
 };
 
 export const getPublicSubfieldById = async (subfieldId: string) => {
