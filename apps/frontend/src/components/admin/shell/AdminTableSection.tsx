@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 interface AdminTableSectionProps {
   index?: number;
+  /** Kept for API compatibility; intentionally unused in the compact design. */
   eyebrow?: string;
   title: string;
   description?: ReactNode;
@@ -18,7 +19,6 @@ interface AdminTableSectionProps {
 
 export function AdminTableSection({
   index,
-  eyebrow,
   title,
   description,
   icon: Icon,
@@ -29,39 +29,35 @@ export function AdminTableSection({
   className,
 }: AdminTableSectionProps) {
   return (
-    <section className={cn("flex flex-col gap-3", className)}>
-      <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
+    <section className={cn("flex flex-col gap-2", className)}>
+      <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between md:gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
           {index !== undefined ? (
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/5 font-display text-xs font-black italic tracking-tight text-primary shadow-sm">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40 font-display text-[10px] font-black italic tracking-tight text-muted-foreground">
               {String(index).padStart(2, "0")}
             </span>
           ) : Icon ? (
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-muted-foreground">
-              <Icon className="size-4" />
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40 text-muted-foreground">
+              <Icon className="size-3.5" />
             </span>
           ) : null}
+
           <div className="min-w-0">
-            {eyebrow && (
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                {eyebrow}
-              </p>
-            )}
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-display text-lg font-bold italic tracking-tight text-foreground md:text-xl">
+              <h3 className="font-display text-base font-bold italic tracking-tight text-foreground md:text-[1.05rem]">
                 {title}
               </h3>
               {count !== undefined && (
                 <Badge
                   variant="secondary"
-                  className="rounded-full border border-border/60 bg-muted/60 px-2.5 py-0 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                  className="rounded-full border border-border/60 bg-muted/60 px-2 py-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
                 >
                   {count} {countLabel}
                 </Badge>
               )}
             </div>
             {description && (
-              <p className="mt-1 text-xs text-muted-foreground md:text-[13px]">
+              <p className="text-[11px] text-muted-foreground md:text-xs">
                 {description}
               </p>
             )}

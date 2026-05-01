@@ -90,7 +90,7 @@ export default function AdminComplexesPage() {
     try {
       await updateComplexStatus(id, status);
       toast.success(
-        `Đã cập nhật trạng thái sân bóng thành ${COMPLEX_STATUS_LABELS[status]}`,
+        `Đã cập nhật trạng thái khu phức hợp thành ${COMPLEX_STATUS_LABELS[status]}`,
       );
     } catch (error: unknown) {
       const message =
@@ -119,7 +119,7 @@ export default function AdminComplexesPage() {
 
   const columns: Column<AdminComplex>[] = [
     {
-      header: "Sân bóng",
+      header: "Khu phức hợp",
       className: "w-72",
       cell: (complex) => (
         <div className="flex items-center gap-3">
@@ -328,12 +328,11 @@ export default function AdminComplexesPage() {
     : [];
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+    <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
         index={2}
-        eyebrow="Admin · Marketplace"
         title="Quản lý"
-        titleAccent="sân bóng"
+        titleAccent="khu phức hợp"
         description="Duyệt khu phức hợp thể thao đăng ký mới và điều phối trạng thái vận hành của toàn mạng lưới."
       />
 
@@ -343,7 +342,7 @@ export default function AdminComplexesPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Tìm theo tên sân bóng, chủ sở hữu..."
+            placeholder="Tìm theo tên khu phức hợp, chủ sở hữu..."
             className="h-9 pl-9"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
@@ -372,7 +371,7 @@ export default function AdminComplexesPage() {
       <AdminTableSection
         index={3}
         eyebrow="Data · Table"
-        title="Danh mục sân bóng"
+        title="Danh mục khu phức hợp"
         description="Nhấp vào một dòng để xem hồ sơ pháp lý và phê duyệt."
         count={totalComplexes}
         countLabel="khu"
@@ -381,13 +380,14 @@ export default function AdminComplexesPage() {
           data={complexes}
           columns={columns}
           isLoading={isLoading}
+          paginationStyle="search"
           onRowClick={(complex) => openComplexDetail(complex)}
           pagination={{
             page: queryParams.page,
             totalPages: pagination?.totalPages || 1,
             onPageChange: setPage,
           }}
-          emptyMessage="Không tìm thấy sân bóng nào"
+          emptyMessage="Không tìm thấy khu phức hợp nào"
         />
       </AdminTableSection>
 

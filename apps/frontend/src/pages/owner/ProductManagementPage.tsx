@@ -32,7 +32,6 @@ import type { OwnerProductFilterInput } from "@/validations";
 import {
   AlertCircle,
   ArrowUpRight,
-  Boxes,
   CircleOff,
   Layers,
   MoreVertical,
@@ -42,7 +41,6 @@ import {
   PowerOff,
   Search,
   ShieldAlert,
-  Sparkles,
   Tag,
   ToggleLeft,
   X,
@@ -489,22 +487,6 @@ export function ProductManagementPage() {
 
         <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-border/60 bg-background/70 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-muted-foreground backdrop-blur-sm"
-              >
-                <Boxes className="size-2.5" />
-                Pro Shop · Inventory
-              </Badge>
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-primary"
-              >
-                <Sparkles className="size-2.5" />
-                {totalItems} sản phẩm
-              </Badge>
-            </div>
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
               Kho hàng · <span className="italic text-primary">Pro shop</span>
@@ -622,6 +604,7 @@ export function ProductManagementPage() {
         data={products}
         columns={columns}
         isLoading={isLoading}
+        paginationStyle="search"
         pagination={{
           page: queryParams.page,
           totalPages: pagination?.totalPages || 1,

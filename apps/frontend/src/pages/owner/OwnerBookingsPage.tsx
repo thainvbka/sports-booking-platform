@@ -38,7 +38,6 @@ import {
   CheckCircle2,
   ChevronsRight,
   CircleDot,
-  ClipboardList,
   Clock,
   Layers,
   MapPin,
@@ -490,25 +489,6 @@ export function OwnerBookingsPage() {
 
         <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-border/60 bg-background/70 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-muted-foreground backdrop-blur-sm"
-              >
-                <span className="relative flex size-1.5">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
-                </span>
-                Box Office · Live
-              </Badge>
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-primary"
-              >
-                <ClipboardList className="size-2.5" />
-                {stats.total} lượt đặt
-              </Badge>
-            </div>
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
               Sổ tay đặt sân của{" "}
@@ -612,6 +592,7 @@ export function OwnerBookingsPage() {
         data={bookings}
         columns={columns}
         isLoading={isLoading}
+        paginationStyle="search"
         pagination={{
           page: queryParams.page,
           totalPages: pagination?.totalPages || 1,

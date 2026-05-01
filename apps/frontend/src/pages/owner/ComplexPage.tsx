@@ -1,6 +1,5 @@
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,7 +22,6 @@ import {
   Compass,
   LayoutGrid,
   MinusCircle,
-  Sparkles,
   X,
   XCircle,
 } from "lucide-react";
@@ -148,22 +146,6 @@ export function ComplexesPage() {
 
         <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-border/60 bg-background/70 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm"
-              >
-                <Compass className="size-2.5" />
-                Portfolio · Owner
-              </Badge>
-              <Badge
-                variant="outline"
-                className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-primary"
-              >
-                <Sparkles className="size-2.5" />
-                {totalItems} khu phức hợp
-              </Badge>
-            </div>
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
               Khu phức hợp của{" "}
@@ -296,12 +278,8 @@ export function ComplexesPage() {
 
           {/* Pagination */}
           {pagination && totalPages > 1 ? (
-            <div className="mt-2 flex flex-col items-center gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                Trang {currentPage} / {totalPages} · {totalItems} khu phức hợp
-              </p>
-
-              <Pagination>
+            <div className="mt-2">
+              <Pagination className="mt-2">
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
@@ -311,7 +289,6 @@ export function ComplexesPage() {
                         goTo(currentPage - 1);
                       }}
                       className={cn(
-                        "rounded-full",
                         currentPage <= 1 &&
                           "pointer-events-none opacity-40",
                       )}
@@ -333,7 +310,6 @@ export function ComplexesPage() {
                             event.preventDefault();
                             goTo(page);
                           }}
-                          className="rounded-full"
                         >
                           {page}
                         </PaginationLink>
@@ -349,7 +325,6 @@ export function ComplexesPage() {
                         goTo(currentPage + 1);
                       }}
                       className={cn(
-                        "rounded-full",
                         currentPage >= totalPages &&
                           "pointer-events-none opacity-40",
                       )}

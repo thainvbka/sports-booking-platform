@@ -47,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           icon: Users,
         },
         {
-          title: "Sân bóng",
+          title: "Khu phức hợp",
           url: "/admin/complexes",
           icon: Building2,
         },

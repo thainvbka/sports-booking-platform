@@ -1,12 +1,12 @@
-import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
-import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
-import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
-import { StatsGrid } from "@/components/admin/StatsGrid";
 import {
   AdminDetailDialog,
   DetailInfoCard,
   DetailSummaryRow,
 } from "@/components/admin/details/AdminDetailDialog";
+import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
+import { StatsGrid } from "@/components/admin/StatsGrid";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,6 @@ export default function AdminPaymentsPage() {
       value: formatPrice(stats.totalRevenue),
       icon: TrendingUp,
       color: "slate" as const,
-      description: "Tổng tiền thực thu hệ thống",
     },
     {
       label: "Giao dịch thành công",
@@ -244,11 +243,10 @@ export default function AdminPaymentsPage() {
     stats.successCount + stats.failedCount + stats.refundedCount;
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+    <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
-        index={3}
-        eyebrow="Admin · Finance"
-        title="Giám sát"
+        index={4}
+        title="Quản lý"
         titleAccent="thanh toán"
         description="Theo dõi dòng tiền, đối soát giao dịch và kiểm tra lịch sử hoàn tiền trên toàn hệ thống."
       />
@@ -297,6 +295,7 @@ export default function AdminPaymentsPage() {
           data={payments}
           columns={columns}
           isLoading={isLoading}
+          paginationStyle="search"
           onRowClick={handleRowClick}
           pagination={{
             page: queryParams.page,

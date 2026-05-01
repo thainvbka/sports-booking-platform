@@ -301,10 +301,10 @@ export default function AdminUsersPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+    <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
-        index={4}
-        eyebrow="Admin · Identity"
+        index={1}
+        // eyebrow="Admin · Identity"
         title="Quản lý"
         titleAccent="người dùng"
         description="Kiểm soát danh tính, vai trò và trạng thái hoạt động của người chơi, chủ sân và quản trị viên."
@@ -368,6 +368,7 @@ export default function AdminUsersPage() {
           data={users}
           columns={columns}
           isLoading={isLoading}
+          paginationStyle="search"
           pagination={{
             page: queryParams.page,
             totalPages: pagination?.totalPages || 1,

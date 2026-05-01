@@ -20,37 +20,25 @@ import { useEffect, useMemo, useState } from "react";
 
 interface SectionHeadingProps {
   index: number;
-  eyebrow: string;
   title: string;
-  description?: string;
 }
 
 function SectionHeading({
   index,
-  eyebrow,
   title,
-  description,
 }: SectionHeadingProps) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
+    <div className="mb-2.5 flex items-end justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/5 font-display text-sm font-black italic tracking-tight text-primary shadow-sm">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40 font-display text-[10px] font-black italic tracking-tight text-muted-foreground">
           {String(index).padStart(2, "0")}
         </span>
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-            {eyebrow}
-          </p>
-          <h3 className="truncate font-display text-lg font-bold italic tracking-tight text-foreground md:text-xl">
+          <h3 className="truncate font-display text-base font-bold italic tracking-tight text-foreground md:text-lg">
             {title}
           </h3>
         </div>
       </div>
-      {description && (
-        <p className="hidden max-w-xs text-right text-[11px] leading-snug text-muted-foreground md:block">
-          {description}
-        </p>
-      )}
     </div>
   );
 }
@@ -98,11 +86,11 @@ export default function Dashboard() {
 
   if (isLoading && !analytics) {
     return (
-      <div className="space-y-8 pb-10">
-        <Skeleton className="h-40 w-full rounded-3xl" />
+      <div className="space-y-5 pb-8">
+        <Skeleton className="h-28 w-full rounded-xl" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-36 w-full rounded-xl" />
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
         <div className="grid grid-cols-12 gap-4">
@@ -124,59 +112,36 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="space-y-10 pb-10">
+    <div className="space-y-5 pb-8">
       {/* ── HERO HEADER ── */}
-      <header className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/70 p-6 shadow-sm backdrop-blur md:p-8">
-        {/* ambient blobs */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-primary/10 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-24 -left-16 size-60 rounded-full bg-accent-sport/10 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-        />
-
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="rounded-xl border border-border/60 bg-card px-4 py-3 md:px-5 md:py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 flex-1">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className="gap-1.5 rounded-full border-primary/30 bg-primary/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary"
+                className="gap-1.5 rounded-full border-border/60 bg-background px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
               >
                 <span className="relative inline-flex size-1.5">
                   <span className="absolute inset-0 animate-ping rounded-full bg-primary/70" />
                   <span className="relative inline-block size-1.5 rounded-full bg-primary" />
                 </span>
-                Pulse realtime
+                {formattedDate}
               </Badge>
-              <span className="text-[11px] font-semibold capitalize text-muted-foreground">
-                · {formattedDate}
-              </span>
             </div>
 
-            <h1 className="font-display text-3xl font-black italic leading-[1.05] tracking-tight text-foreground md:text-[2.6rem]">
+            <h1 className="font-display text-2xl font-black italic leading-[1.05] tracking-tight text-foreground md:text-3xl">
               Toàn cảnh vận hành{" "}
-              <span className="relative inline-block text-primary">
-                T-Sport
-                <span
-                  aria-hidden
-                  className="absolute inset-x-0 -bottom-1 h-1 rounded-full bg-gradient-to-r from-primary/70 via-primary to-accent-sport/70"
-                />
-              </span>
+              <span className="text-primary">T-Sport</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1.5 max-w-3xl text-xs leading-relaxed text-muted-foreground md:text-sm">
               Theo dõi doanh thu, đặt sân và chất lượng dịch vụ trong một khung
-              nhìn duy nhất. Dữ liệu cập nhật theo thời gian thực từ toàn bộ
+              nhìn duy nhất. Dữ liệu cập nhật liên tục từ toàn bộ
               cụm sân trên hệ thống.
             </p>
 
             {/* summary meta strip */}
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
                 Doanh thu tháng
@@ -196,7 +161,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 lg:pb-0.5">
             <QuickActions />
           </div>
         </div>
@@ -206,9 +171,7 @@ export default function Dashboard() {
       <section>
         <SectionHeading
           index={1}
-          eyebrow="Pulse"
           title="Chỉ số trọng yếu"
-          description="So sánh với tháng trước · cập nhật theo MoM"
         />
         <KpiCards kpis={analytics.kpis} />
       </section>
@@ -218,9 +181,7 @@ export default function Dashboard() {
       <section>
         <SectionHeading
           index={2}
-          eyebrow="Performance"
           title="Hiệu suất tài chính & chuyển đổi"
-          description="Doanh thu và dòng chảy booking theo tháng"
         />
         <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
@@ -237,9 +198,7 @@ export default function Dashboard() {
       <section>
         <SectionHeading
           index={3}
-          eyebrow="Activity"
           title="Hoạt động & vận hành"
-          description="Xếp hạng cụm sân và giao dịch mới nhất"
         />
         <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
           <TopComplexes data={analytics.topComplexes} />
@@ -252,9 +211,7 @@ export default function Dashboard() {
       <section>
         <SectionHeading
           index={4}
-          eyebrow="Growth"
           title="Tăng trưởng & chất lượng"
-          description="Người chơi, cơ cấu môn và mức độ hài lòng"
         />
         <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           <PlayerGrowthChart data={analytics.retentionData} />
@@ -273,9 +230,7 @@ export default function Dashboard() {
       <section>
         <SectionHeading
           index={5}
-          eyebrow="Analytics"
           title="Phân tích chuyên sâu"
-          description="Nhu cầu theo thời gian và cổng thanh toán"
         />
         <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">

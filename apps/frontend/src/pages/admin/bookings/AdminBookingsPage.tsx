@@ -1,41 +1,41 @@
+import {
+  AdminDetailDialog,
+  DetailInfoCard,
+  DetailSummaryRow,
+} from "@/components/admin/details/AdminDetailDialog";
 import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
 import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
-import {
-    AdminDetailDialog,
-    DetailInfoCard,
-    DetailSummaryRow,
-} from "@/components/admin/details/AdminDetailDialog";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    ToggleGroup,
-    ToggleGroupItem,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import {
-    BOOKING_STATUS_COLORS,
-    BOOKING_STATUS_LABELS,
-    RECURRENCE_TYPE_LABELS,
-    RECURRING_STATUS_COLORS,
-    RECURRING_STATUS_LABELS,
-    SPORT_TYPE_LABELS,
+  BOOKING_STATUS_COLORS,
+  BOOKING_STATUS_LABELS,
+  RECURRENCE_TYPE_LABELS,
+  RECURRING_STATUS_COLORS,
+  RECURRING_STATUS_LABELS,
+  SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { fmtVND } from "@/lib/format";
 import { useAdminBookingStore } from "@/store/admin/useAdminBookingStore";
@@ -43,20 +43,20 @@ import { useAdminRecurringBookingStore } from "@/store/admin/useAdminRecurringBo
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-    Calendar,
-    CalendarRange,
-    Clock,
-    Eye,
-    LayoutDashboard,
-    LayoutList,
-    MapPin,
-    MoreHorizontal,
-    Repeat2,
-    Search,
-    Tag,
-    Timer,
-    User,
-    XCircle,
+  Calendar,
+  CalendarRange,
+  Clock,
+  Eye,
+  LayoutDashboard,
+  LayoutList,
+  MapPin,
+  MoreHorizontal,
+  Repeat2,
+  Search,
+  Tag,
+  Timer,
+  User,
+  XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -270,7 +270,7 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Sân bóng",
+      header: "Khu phức hợp",
       className: "w-56",
       cell: (b) => (
         <div className="flex flex-col gap-0.5">
@@ -388,7 +388,7 @@ export default function AdminBookingsPage() {
       ),
     },
     {
-      header: "Sân bóng",
+      header: "Khu phức hợp",
       className: "w-56",
       cell: (rb) => (
         <div className="flex flex-col gap-0.5">
@@ -495,13 +495,12 @@ export default function AdminBookingsPage() {
       : recurringPagination?.total ?? recurringStats.total;
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 lg:px-6">
+    <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
-        index={1}
-        eyebrow="Admin · Operations"
-        title="Giám sát"
+        index={3}
+        title="Quản lý"
         titleAccent="đặt sân"
-        description="Theo dõi thời gian thực mọi lượt đặt sân và nhóm đặt định kỳ trên toàn hệ thống."
+        description="Theo dõi mọi lượt đặt sân và nhóm đặt định kỳ trên toàn hệ thống."
       />
 
       <StatsGrid
@@ -622,6 +621,7 @@ export default function AdminBookingsPage() {
             data={bookings as AdminBookingRow[]}
             columns={singleColumns}
             isLoading={singleLoading}
+            paginationStyle="search"
             onRowClick={(b) => {
               setSelectedBooking(b);
               setDetailOpen(true);
@@ -638,6 +638,7 @@ export default function AdminBookingsPage() {
             data={recurringBookings as AdminRecurringRow[]}
             columns={recurringColumns}
             isLoading={recurringLoading}
+            paginationStyle="search"
             onRowClick={(rb) => {
               setSelectedRecurring(rb);
               setDetailOpen(true);
@@ -699,7 +700,7 @@ export default function AdminBookingsPage() {
                 value={selectedBooking.sub_field.complex.owner.company_name}
               />
               <DetailInfoCard
-                label="Sân bóng"
+                label="Khu phức hợp"
                 value={selectedBooking.sub_field.complex.complex_name}
                 helper={`${selectedBooking.sub_field.sub_field_name} · ${sportLabel(selectedBooking.sub_field.sport_type)}`}
               />
@@ -773,7 +774,7 @@ export default function AdminBookingsPage() {
                 value={selectedRecurring.sub_field.complex.owner.company_name}
               />
               <DetailInfoCard
-                label="Sân bóng"
+                label="Khu phức hợp"
                 value={selectedRecurring.sub_field.complex.complex_name}
                 helper={`${selectedRecurring.sub_field.sub_field_name} · ${sportLabel(selectedRecurring.sub_field.sport_type)}`}
               />

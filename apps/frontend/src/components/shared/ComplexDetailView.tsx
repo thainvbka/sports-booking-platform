@@ -13,10 +13,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import {
-  ChevronLeft,
-  ChevronRight,
   MapPin,
   Search,
   TriangleAlert,
@@ -51,6 +58,21 @@ interface ComplexDetailViewProps {
    * Defaults to `backLabel` when not provided.
    */
   parentLabel?: string;
+}
+
+function buildPageList(
+  current: number,
+  total: number,
+): (number | "ellipsis")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const items: (number | "ellipsis")[] = [1];
+  if (current > 3) items.push("ellipsis");
+  const from = Math.max(2, current - 1);
+  const to = Math.min(total - 1, current + 1);
+  for (let i = from; i <= to; i++) items.push(i);
+  if (current < total - 2) items.push("ellipsis");
+  items.push(total);
+  return items;
 }
 
 export function ComplexDetailView({
@@ -318,34 +340,65 @@ export function ComplexDetailView({
             </div>
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-2/60 px-3 py-2">
-                <p className="text-sm text-muted-foreground">
-                  Hiển thị {subfields.length}/{pagination.total} sân trong trang này.
-                </p>
+              <div className="mt-4">
+                <Pagination className="mt-2">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          if (pagination.page <= 1) return;
+                          onPageChange(pagination.page - 1);
+                        }}
+                        className={
+                          pagination.page <= 1 ? "pointer-events-none opacity-50" : undefined
+                        }
+                        aria-disabled={pagination.page <= 1}
+                      />
+                    </PaginationItem>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onPageChange(pagination.page - 1)}
-                    disabled={pagination.page <= 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Trước
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Trang {pagination.page} / {pagination.totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onPageChange(pagination.page + 1)}
-                    disabled={pagination.page >= pagination.totalPages}
-                  >
-                    Sau
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                    {buildPageList(pagination.page, pagination.totalPages).map(
+                      (item, idx) =>
+                        item === "ellipsis" ? (
+                          <PaginationItem key={`ellipsis-${idx}`}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={item}>
+                            <PaginationLink
+                              href="#"
+                              isActive={item === pagination.page}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                if (item === pagination.page) return;
+                                onPageChange(item);
+                              }}
+                            >
+                              {item}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ),
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          if (pagination.page >= pagination.totalPages) return;
+                          onPageChange(pagination.page + 1);
+                        }}
+                        className={
+                          pagination.page >= pagination.totalPages
+                            ? "pointer-events-none opacity-50"
+                            : undefined
+                        }
+                        aria-disabled={pagination.page >= pagination.totalPages}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </>

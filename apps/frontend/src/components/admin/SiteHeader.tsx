@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell, Clock3 } from "lucide-react";
@@ -19,7 +19,7 @@ import { Link, useLocation } from "react-router-dom";
 const ROUTE_LABELS: Record<string, string> = {
   dashboard: "Bảng điều khiển",
   users: "Người dùng",
-  complexes: "Sân bóng",
+  complexes: "Khu phức hợp",
   bookings: "Đặt sân",
   payments: "Thanh toán",
 };
