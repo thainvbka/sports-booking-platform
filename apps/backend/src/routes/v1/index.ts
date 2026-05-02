@@ -7,6 +7,7 @@ import authRouter from "./auth.routes";
 import bookingRouter from "./booking.routes";
 import complexRouter from "./complex.routes";
 import matchRouter from "./match.routes";
+import notificationRouter from "./notification.routes";
 import ownerDashboardRouter from "./owner_dashboard.routes";
 import paymentRouter from "./payment.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
@@ -36,6 +37,7 @@ router.use("/matches", apiLimiter, matchRouter);
 router.use("/products", apiLimiter, productRouter);
 router.use("/payments", apiLimiter, paymentRouter);
 router.use("/owner-dashboard", apiLimiter, ownerDashboardRouter);
+router.use("/notifications", apiLimiter, notificationRouter);
 router.use("/reviews", apiLimiter, reviewRouter);
 
 export default router;

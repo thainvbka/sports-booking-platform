@@ -104,6 +104,12 @@ enum MatchSkillLevel {
   ADVANCED
 }
 
+enum NotificationTargetRole {
+  PLAYER
+  OWNER
+  ADMIN
+}
+
 model Account {
   id                        String          @id @default(uuid()) @db.Uuid
   email                     String          @unique @db.VarChar(50)
@@ -309,11 +315,14 @@ model Notification {
   message    String   @db.Text
   is_read    Boolean  @default(false)
   type       String
+  target_role NotificationTargetRole
   link_to    String?
   created_at DateTime @default(now()) @db.Timestamptz(0)
 
   @@index([account_id, is_read])
   @@index([account_id, created_at])
+  @@index([account_id, target_role, created_at])
+  @@index([account_id, target_role, is_read])
 }
 
 model Product {

@@ -3,10 +3,12 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import { createServer } from "http";
 import morgan from "morgan";
 import { config, reasonPhrases, statusCodes } from "./configs";
 import { handleStripeWebhookController } from "./controllers/v1/payment.controller";
 import { closeRedis, initRedis } from "./libs/redis";
+import { initSocket } from "./libs/socket";
 import errorHandler from "./middlewares/errorHandler";
 import routesV1 from "./routes/v1";
 import { startCronJobs } from "./services/v1/cron.service";
@@ -76,8 +78,10 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await initRedis();
+    const httpServer = createServer(app);
+    initSocket(httpServer);
 
-    app.listen(config.SERVER_PORT, () => {
+    httpServer.listen(config.SERVER_PORT, () => {
       console.log(`:::::Server is running on http://localhost:${config.SERVER_PORT}`);
     });
 

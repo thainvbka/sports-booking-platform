@@ -234,7 +234,6 @@ export const logIn = async (email: string, password: string) => {
 
   //fetch roles và profiles
   const { roles, profiles } = await getUserRolesAndProfiles(user.id);
-  console.log(roles, profiles);
   //tạo payload cho jwt
   const jwtPayload: JwtPayload = {
     accountId: user.id,

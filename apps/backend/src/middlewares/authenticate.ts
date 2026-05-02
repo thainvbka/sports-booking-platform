@@ -13,7 +13,11 @@ const authenticate = async (
     throw new UnauthorizedError("Access denied, no token provided");
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.slice("Bearer ".length).trim();
+  if (!token) {
+    throw new UnauthorizedError("Access denied, invalid authorization header");
+  }
+
   try {
     const decoded = verifyAccessToken(token) as JwtPayload;
     req.user = decoded;

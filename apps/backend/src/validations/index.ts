@@ -3,6 +3,7 @@ export * from "./account.schema";
 export * from "./booking.schema";
 export * from "./complex.schema";
 export * from "./match.schema";
+export * from "./notification.schema";
 export * from "./pricing_rule.schema";
 export * from "./product.schema";
 export * from "./recurring_booking.schema";
