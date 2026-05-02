@@ -17,3 +17,6 @@ docs/
 
 .github/workflows/backup.yml
 sports-booking-platform.md
+
+.agents/
+skills-lock.json

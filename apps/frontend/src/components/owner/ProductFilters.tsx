@@ -22,7 +22,6 @@ import {
   Coins,
   Filter,
   RotateCcw,
-  SlidersHorizontal,
   Tag,
   Warehouse,
 } from "lucide-react";
@@ -150,12 +149,6 @@ export function ProductFilters({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <span className="inline-flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <SlidersHorizontal className="size-3.5" />
-        </span>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          Bộ lọc nâng cao
-        </span>
         {activeCount > 0 ? (
           <Badge
             variant="outline"

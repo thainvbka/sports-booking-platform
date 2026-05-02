@@ -1,4 +1,5 @@
 import { BookingFilters } from "@/components/owner/BookingFilters";
+import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   BOOKING_STATUS_COLORS,
@@ -43,12 +43,10 @@ import {
   MapPin,
   MoreVertical,
   Phone,
-  Search,
   Sparkles,
   Ticket,
   User,
   Wallet,
-  X,
 } from "lucide-react";
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -187,6 +185,7 @@ export function OwnerBookingsPage() {
   >("SINGLE");
   const [selectedBooking, setSelectedBooking] =
     useState<OwnerBookingResponse | null>(null);
+  const [searchValue, setSearchValue] = useState(filters.search || "");
 
   useEffect(() => {
     fetchStats();
@@ -210,13 +209,12 @@ export function OwnerBookingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryParams.page]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setFilters({ search: value });
+      setFilters({ search: searchValue });
     }, 300);
     return () => clearTimeout(timer);
-  };
+  }, [searchValue, setFilters]);
 
   const handleViewDetail = (booking: OwnerBookingResponse) => {
     setSelectedBooking(booking);
@@ -290,6 +288,11 @@ export function OwnerBookingsPage() {
       filters.minPrice !== undefined ||
       filters.maxPrice !== undefined,
   );
+
+  const handleClearAllFilters = () => {
+    setSearchValue("");
+    clearFilters();
+  };
 
   // ── Table columns ──────────────────────────────────────────────
   const columns: Column<OwnerBookingResponse>[] = [
@@ -500,9 +503,14 @@ export function OwnerBookingsPage() {
             </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            <AlarmClock className="size-3.5" />
-            {format(new Date(), "EEE, dd/MM", { locale: vi })}
+          <div className="flex shrink-0 items-center gap-2">
+            <Badge
+              variant="outline"
+              className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-primary"
+            >
+              <Sparkles className="size-2.5" />
+              {pagination?.total ?? bookings.length} lịch đặt
+            </Badge>
           </div>
         </div>
 
@@ -547,43 +555,31 @@ export function OwnerBookingsPage() {
       </section>
 
       {/* ── TOOLBAR ──────────────────────────────────────────── */}
-      <section className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-xs md:flex-row md:items-center md:justify-between md:p-3.5">
-        <div className="relative w-full md:max-w-sm">
-          <Input
-            type="search"
-            placeholder="Tìm theo khách, sân, khu phức hợp…"
-            defaultValue={filters.search || ""}
-            onChange={handleSearchChange}
-            className="h-10 rounded-full pl-10 pr-10 text-sm shadow-none focus-visible:ring-1"
-          />
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <BookingFilters
-            onFilterChange={(newFilters) => setFilters(newFilters)}
-            onClear={clearFilters}
-          />
-        </div>
-      </section>
+      <OwnerFilterShell
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        placeholder="Tìm theo khách, sân, khu phức hợp…"
+        searchClassName="relative w-full md:max-w-sm"
+      >
+        <BookingFilters
+          value={filters}
+          isLoading={isLoading}
+          onApply={(newFilters) => setFilters(newFilters)}
+          onClear={handleClearAllFilters}
+        />
+      </OwnerFilterShell>
 
       {/* ── TABLE ────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-2 px-0.5">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          Danh sách lịch đặt{" "}
-          <span className="tabular-nums text-foreground">
-            · {pagination?.total ?? bookings.length}
-          </span>
-        </span>
         {hasActiveFilters ? (
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearFilters}
+            onClick={handleClearAllFilters}
             className="h-7 rounded-full px-2 text-[11px] font-semibold"
           >
-            <X data-icon="inline-start" />
-            Xóa bộ lọc
+            <ArrowUpRight data-icon="inline-start" />
+            Đặt lại
           </Button>
         ) : null}
       </div>

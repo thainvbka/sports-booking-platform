@@ -1,7 +1,8 @@
+import { ComplexFilters } from "@/components/owner/ComplexFilters";
+import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -19,28 +20,15 @@ import {
   Building2,
   CheckCircle2,
   Clock,
-  Compass,
+  Layers,
   LayoutGrid,
   MinusCircle,
   X,
-  XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 type StatusFilter = "ALL" | ComplexStatus;
-
-const STATUS_TABS: {
-  id: StatusFilter;
-  label: string;
-  hint: string;
-}[] = [
-  { id: "ALL", label: "Tất cả", hint: "Toàn bộ khu phức hợp" },
-  { id: ComplexStatus.ACTIVE, label: "Hoạt động", hint: "Đang nhận đặt" },
-  { id: ComplexStatus.PENDING, label: "Chờ duyệt", hint: "Đợi admin phê duyệt" },
-  { id: ComplexStatus.INACTIVE, label: "Ngừng", hint: "Tạm ngừng nhận đặt" },
-  { id: ComplexStatus.REJECTED, label: "Từ chối", hint: "Bị từ chối" },
-];
 
 function buildPageList(
   current: number,
@@ -118,7 +106,6 @@ export function ComplexesPage() {
     return complexes.filter((c) => c.status === statusFilter);
   }, [complexes, statusFilter]);
 
-  const totalItems = pagination?.total ?? complexes.length;
   const totalPages = pagination?.totalPages ?? 1;
   const currentPage = pagination?.page ?? 1;
   const pageList = buildPageList(currentPage, totalPages);
@@ -132,7 +119,7 @@ export function ComplexesPage() {
   const hasQuery = Boolean(searchTerm) || statusFilter !== "ALL";
 
   return (
-    <div className="flex flex-col gap-6 pb-10">
+    <div className="flex flex-col gap-5 pb-10">
       {/* ── HERO ──────────────────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-accent-sport/5 px-4 py-4 shadow-sm md:px-6 md:py-5">
         <div
@@ -144,16 +131,16 @@ export function ComplexesPage() {
           className="pointer-events-none absolute -bottom-16 left-10 size-40 rounded-full bg-accent-sport/10 blur-3xl"
         />
 
-        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="flex min-w-0 flex-col gap-1.5">
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
-              Khu phức hợp của{" "}
-              <span className="italic text-primary">bạn</span>
+              Danh mục khu phức hợp{" "}
+              <span className="italic text-primary">vận hành</span>
             </h1>
             <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
-              Quản lý danh mục sân — trạng thái, địa chỉ và số sân con — tất cả
-              trong một bảng điều khiển duy nhất.
+              Theo dõi trạng thái khai thác, tiến độ duyệt và khả năng phục vụ của
+              toàn bộ cơ sở trong một khung quản trị duy nhất.
             </p>
           </div>
 
@@ -164,91 +151,52 @@ export function ComplexesPage() {
 
         {/* Stat strip — compact */}
         <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <StatChip
+          <StatTile
+            icon={Layers}
+            label="Tổng khu"
+            value={pagination?.total ?? complexes.length}
+            tone="slate"
+            hint="Toàn bộ cơ sở"
+          />
+          <StatTile
             icon={CheckCircle2}
             label="Hoạt động"
             value={statusCounts[ComplexStatus.ACTIVE]}
             tone="emerald"
+            hint="Đang nhận đặt"
           />
-          <StatChip
+          <StatTile
             icon={Clock}
             label="Chờ duyệt"
             value={statusCounts[ComplexStatus.PENDING]}
             tone="amber"
+            hint="Đợi admin duyệt"
           />
-          <StatChip
+          <StatTile
             icon={MinusCircle}
             label="Đã ngừng"
             value={statusCounts[ComplexStatus.INACTIVE]}
-            tone="slate"
-          />
-          <StatChip
-            icon={XCircle}
-            label="Từ chối"
-            value={statusCounts[ComplexStatus.REJECTED]}
             tone="rose"
+            hint="Tạm dừng vận hành"
           />
         </div>
       </section>
 
       {/* ── TOOLBAR ───────────────────────────────────────────── */}
-      <section className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-xs md:flex-row md:items-center md:justify-between md:p-3.5">
-        {/* Search */}
-        <div className="relative w-full md:max-w-sm">
-          <Input
-            type="search"
-            placeholder="Tìm kiếm khu phức hợp…"
-            className="h-10 rounded-full pl-10 pr-10 text-sm shadow-none focus-visible:ring-1"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <Compass className="size-4" />
-          </span>
-          {searchTerm ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="absolute right-1.5 top-1/2 size-7 -translate-y-1/2 rounded-full"
-              onClick={() => setSearchTerm("")}
-              aria-label="Xóa từ khóa"
-            >
-              <X />
-            </Button>
-          ) : null}
-        </div>
-
-        {/* Status filter */}
-        <div
-          role="tablist"
-          aria-label="Lọc theo trạng thái"
-          className="flex w-full flex-wrap items-center gap-1 rounded-full border border-border/60 bg-muted/40 p-1 md:w-auto md:justify-end"
-        >
-          {STATUS_TABS.map((tab) => {
-            const active = statusFilter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                title={tab.hint}
-                onClick={() => setStatusFilter(tab.id)}
-                className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
-                  active
-                    ? "bg-background text-primary shadow-sm ring-1 ring-primary/25"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      <OwnerFilterShell
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        placeholder="Tìm kiếm khu phức hợp…"
+        searchClassName="relative w-full md:max-w-sm"
+        inline
+      >
+        <ComplexFilters
+          value={statusFilter}
+          isLoading={isLoading}
+          onApply={setStatusFilter}
+          onClear={() => setStatusFilter("ALL")}
+        />
+      </OwnerFilterShell>
 
       {/* ── LIST ──────────────────────────────────────────────── */}
       {isLoading && !hasComplexes ? (
@@ -270,6 +218,23 @@ export function ComplexesPage() {
         </div>
       ) : visibleComplexes.length > 0 ? (
         <>
+          <div className="flex items-center justify-between gap-2 px-0.5">
+            {hasQuery ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("ALL");
+                }}
+                className="h-7 rounded-full px-2 text-[11px] font-semibold"
+              >
+                <X data-icon="inline-start" />
+                Đặt lại
+              </Button>
+            ) : null}
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibleComplexes.map((complex) => (
               <OwnerComplexCard key={complex.id} complex={complex} />
@@ -350,61 +315,101 @@ export function ComplexesPage() {
 }
 
 // ── Small building blocks ──────────────────────────────────────
-type StatTone = "emerald" | "amber" | "slate" | "rose";
+type StatTone = "slate" | "emerald" | "amber" | "rose";
 
-function StatChip({
+const STAT_TONE: Record<
+  StatTone,
+  { chip: string; value: string; bar: string; bg: string; ring: string }
+> = {
+  slate: {
+    chip: "border-slate-300/60 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200",
+    value: "text-slate-900 dark:text-slate-100",
+    bar: "bg-slate-400",
+    bg: "from-slate-500/8 via-transparent to-transparent",
+    ring: "ring-slate-500/10",
+  },
+  emerald: {
+    chip: "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+    value: "text-emerald-700 dark:text-emerald-300",
+    bar: "bg-emerald-500",
+    bg: "from-emerald-500/10 via-transparent to-transparent",
+    ring: "ring-emerald-500/15",
+  },
+  amber: {
+    chip: "border-amber-300/60 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+    value: "text-amber-700 dark:text-amber-300",
+    bar: "bg-amber-500",
+    bg: "from-amber-500/10 via-transparent to-transparent",
+    ring: "ring-amber-500/15",
+  },
+  rose: {
+    chip: "border-rose-300/60 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
+    value: "text-rose-700 dark:text-rose-300",
+    bar: "bg-rose-500",
+    bg: "from-rose-500/10 via-transparent to-transparent",
+    ring: "ring-rose-500/15",
+  },
+};
+
+function StatTile({
   icon: Icon,
   label,
   value,
   tone,
+  hint,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
   tone: StatTone;
+  hint?: string;
 }) {
-  const toneClasses: Record<StatTone, { wrap: string; icon: string; dot: string }> = {
-    emerald: {
-      wrap: "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-      icon: "text-emerald-600 dark:text-emerald-400",
-      dot: "bg-emerald-500",
-    },
-    amber: {
-      wrap: "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-      icon: "text-amber-600 dark:text-amber-400",
-      dot: "bg-amber-500",
-    },
-    slate: {
-      wrap: "border-slate-500/25 bg-slate-500/10 text-slate-700 dark:text-slate-300",
-      icon: "text-slate-600 dark:text-slate-300",
-      dot: "bg-slate-500",
-    },
-    rose: {
-      wrap: "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300",
-      icon: "text-rose-600 dark:text-rose-400",
-      dot: "bg-rose-500",
-    },
-  };
-
-  const t = toneClasses[tone];
+  const t = STAT_TONE[tone];
 
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-sm",
-        t.wrap,
+        "relative overflow-hidden rounded-2xl border border-border/60 bg-card p-3 shadow-xs ring-1",
+        t.ring,
       )}
     >
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.2em] opacity-80">
-          <span aria-hidden className={cn("size-1.5 rounded-full", t.dot)} />
-          {label}
-        </span>
-        <span className="font-display text-lg font-black italic leading-none tabular-nums">
-          {value}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-0 bg-gradient-to-br",
+          t.bg,
+        )}
+      />
+      <span
+        aria-hidden
+        className={cn("absolute inset-y-0 left-0 w-0.5", t.bar)}
+      />
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {label}
+          </span>
+          <span
+            className={cn(
+              "font-display text-2xl font-black italic tabular-nums tracking-tight",
+              t.value,
+            )}
+          >
+            {value}
+          </span>
+          {hint ? (
+            <span className="text-[10.5px] text-muted-foreground">{hint}</span>
+          ) : null}
+        </div>
+        <span
+          className={cn(
+            "inline-flex size-8 shrink-0 items-center justify-center rounded-xl border",
+            t.chip,
+          )}
+        >
+          <Icon className="size-3.5" />
         </span>
       </div>
-      <Icon className={cn("size-4 shrink-0 opacity-90", t.icon)} />
     </div>
   );
 }

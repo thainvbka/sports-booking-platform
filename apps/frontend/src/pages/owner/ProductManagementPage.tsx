@@ -1,3 +1,4 @@
+import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { ProductFilters } from "@/components/owner/ProductFilters";
 import { ProductFormDialog } from "@/components/owner/ProductFormDialog";
 import { UpdateProductStockDialog } from "@/components/owner/UpdateProductStockDialog";
@@ -12,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   PRODUCT_STATUS_COLORS,
   PRODUCT_STATUS_LABELS,
@@ -39,11 +39,9 @@ import {
   PackagePlus,
   Pencil,
   PowerOff,
-  Search,
   ShieldAlert,
   Tag,
   ToggleLeft,
-  X,
   Zap,
 } from "lucide-react";
 import {
@@ -542,29 +540,11 @@ export function ProductManagementPage() {
       </section>
 
       {/* ── TOOLBAR ──────────────────────────────────────── */}
-      <section className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-xs md:p-3.5">
-        <div className="relative w-full md:max-w-md">
-          <Input
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Tìm theo tên sản phẩm, mô tả, cơ sở…"
-            className="h-10 rounded-full pl-10 pr-10 text-sm shadow-none focus-visible:ring-1"
-          />
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          {searchValue ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="absolute right-1.5 top-1/2 size-7 -translate-y-1/2 rounded-full"
-              onClick={() => setSearchValue("")}
-              aria-label="Xóa từ khóa"
-            >
-              <X />
-            </Button>
-          ) : null}
-        </div>
-
+      <OwnerFilterShell
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        placeholder="Tìm theo tên sản phẩm, mô tả, cơ sở…"
+      >
         <ProductFilters
           complexes={complexes}
           value={filters}
@@ -572,7 +552,7 @@ export function ProductManagementPage() {
           onApply={handleApplyFilters}
           onClear={handleClearFilters}
         />
-      </section>
+      </OwnerFilterShell>
 
       {error ? (
         <Alert variant="destructive">
@@ -583,10 +563,6 @@ export function ProductManagementPage() {
 
       {/* ── TABLE ────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-2 px-0.5">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          Danh mục sản phẩm{" "}
-          <span className="tabular-nums text-foreground">· {totalItems}</span>
-        </span>
         {hasActiveFilters ? (
           <Button
             variant="ghost"
