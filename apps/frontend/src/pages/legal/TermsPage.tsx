@@ -116,7 +116,7 @@ export const TermsPage = () => {
         className="pointer-events-none absolute -top-24 right-[8%] size-72 rounded-full bg-primary/15 blur-3xl"
       />
 
-      <div className="container relative z-10 mx-auto flex flex-col gap-8 px-4 pb-16 pt-8 md:pb-20 md:pt-10">
+      <div className="page-shell relative z-10 flex flex-col gap-8 pb-16 pt-8 md:pb-20 md:pt-10">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>

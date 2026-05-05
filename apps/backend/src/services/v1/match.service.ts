@@ -25,6 +25,7 @@ import {
     MyMatchesQuery,
     PublicMatchesQuery,
 } from "../../validations";
+import { sendNotificationIfNotExists } from "./notification.service";
 
 const DEFAULT_JOIN_DEADLINE_MINUTES = 30;
 const SERIALIZABLE_MAX_ATTEMPTS = 3;
@@ -695,6 +696,39 @@ export const joinMatch = async (
     ),
   );
   const result = await getMappedParticipantById(participantId);
+  const [matchMeta, requester] = await Promise.all([
+    prisma.match.findUnique({
+      where: { id: matchId },
+      select: {
+        title: true,
+        creator: {
+          select: {
+            account_id: true,
+          },
+        },
+      },
+    }),
+    prisma.player.findUnique({
+      where: { id: playerId },
+      select: {
+        account: {
+          select: {
+            full_name: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  if (matchMeta?.creator.account_id && requester?.account.full_name) {
+    await sendNotificationIfNotExists(matchMeta.creator.account_id, {
+      message: `${requester.account.full_name} muốn tham gia kèo ${matchMeta.title} của bạn.`,
+      type: "MATCH",
+      target_role: "PLAYER",
+      link_to: `/player/matches/${matchId}`,
+    });
+  }
+
   await invalidateMatchCaches(matchId);
   return result;
 };
@@ -1123,6 +1157,31 @@ export const acceptMatchParticipant = async (
     ),
   );
   const result = await getMappedParticipantById(resolvedParticipantId);
+  const acceptedParticipant = await prisma.matchParticipant.findUnique({
+    where: { id: resolvedParticipantId },
+    select: {
+      player: {
+        select: {
+          account_id: true,
+        },
+      },
+      match: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  });
+
+  if (acceptedParticipant?.player.account_id) {
+    await sendNotificationIfNotExists(acceptedParticipant.player.account_id, {
+      message: `Yêu cầu tham gia kèo ${acceptedParticipant.match.title} của bạn đã được chấp nhận.`,
+      type: "MATCH",
+      target_role: "PLAYER",
+      link_to: `/player/matches/${matchId}`,
+    });
+  }
+
   await invalidateMatchCaches(matchId);
   return result;
 };
@@ -1218,6 +1277,32 @@ export const rejectMatchParticipant = async (
     ),
   );
   const result = await getMappedParticipantById(resolvedParticipantId);
+
+  const rejectedParticipant = await prisma.matchParticipant.findUnique({
+    where: { id: resolvedParticipantId },
+    select: {
+      player: {
+        select: {
+          account_id: true,
+        },
+      },
+      match: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  });
+
+  if (rejectedParticipant?.player.account_id) {
+    await sendNotificationIfNotExists(rejectedParticipant.player.account_id, {
+      message: `Yêu cầu tham gia kèo ${rejectedParticipant.match.title} của bạn đã bị từ chối.`,
+      type: "MATCH",
+      target_role: "PLAYER",
+      link_to: `/player/matches/${matchId}`,
+    });
+  }
+
   await invalidateMatchCaches(matchId);
   return result;
 };

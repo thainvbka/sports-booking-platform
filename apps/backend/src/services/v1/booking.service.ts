@@ -14,6 +14,7 @@ import {
   normalizeBookingAddons,
   restoreAddonStockForBooking,
 } from "./booking_addon.service";
+import { sendNotificationIfNotExists } from "./notification.service";
 
 export interface filter {
   search?: string;
@@ -413,6 +414,26 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
       player_id,
       status: { in: ["PENDING", "COMPLETED", "CONFIRMED"] },
     },
+    select: {
+      id: true,
+      status: true,
+      start_time: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          complex: {
+            select: {
+              owner: {
+                select: {
+                  account_id: true,
+                },
+              },
+              complex_name: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!booking) {
@@ -425,7 +446,7 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
     );
   }
 
-  return await prisma.$transaction(async (tx) => {
+  const canceledBooking = await prisma.$transaction(async (tx) => {
     if (booking.status === "PENDING") {
       const canceled = await tx.booking.updateMany({
         where: { id: booking_id, status: "PENDING" },
@@ -447,16 +468,27 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
       });
     }
 
-    const canceledBooking = await tx.booking.findUnique({
+    const canceled = await tx.booking.findUnique({
       where: { id: booking_id },
     });
 
-    if (!canceledBooking) {
+    if (!canceled) {
       throw new NotFoundError("Booking not found after cancel");
     }
 
-    return canceledBooking;
+    return canceled;
   });
+
+  if (booking.status !== "PENDING") {
+    await sendNotificationIfNotExists(booking.sub_field.complex.owner.account_id, {
+      message: `Player đã hủy booking ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name}.`,
+      type: "BOOKING",
+      target_role: "OWNER",
+      link_to: "/owner/bookings",
+    });
+  }
+
+  return canceledBooking;
 };
 
 export const ownerCancelBooking = async (
@@ -475,6 +507,25 @@ export const ownerCancelBooking = async (
       id: booking_id,
       sub_field: { complex: { owner_id } },
     },
+    select: {
+      id: true,
+      status: true,
+      player: {
+        select: {
+          account_id: true,
+        },
+      },
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          complex: {
+            select: {
+              complex_name: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!booking) {
@@ -487,7 +538,7 @@ export const ownerCancelBooking = async (
     );
   }
 
-  return await prisma.$transaction(async (tx) => {
+  const canceledBooking = await prisma.$transaction(async (tx) => {
     if (booking.status === "PENDING") {
       const canceled = await tx.booking.updateMany({
         where: { id: booking_id, status: "PENDING" },
@@ -519,6 +570,15 @@ export const ownerCancelBooking = async (
 
     return canceledBooking;
   });
+
+  await sendNotificationIfNotExists(booking.player.account_id, {
+    message: `Booking ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name} đã bị chủ sân hủy.`,
+    type: "BOOKING",
+    target_role: "PLAYER",
+    link_to: "/bookings",
+  });
+
+  return canceledBooking;
 };
 
 export const ownerConfirmBooking = async (
@@ -539,16 +599,43 @@ export const ownerConfirmBooking = async (
       status: "COMPLETED",
       payment: { status: "SUCCESS" },
     },
+    select: {
+      id: true,
+      player: {
+        select: {
+          account_id: true,
+        },
+      },
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          complex: {
+            select: {
+              complex_name: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!booking) {
     throw new BadRequestError("Booking not found or cannot be confirmed");
   }
 
-  return await prisma.booking.update({
+  const confirmedBooking = await prisma.booking.update({
     where: { id: booking_id },
     data: { status: "CONFIRMED" },
   });
+
+  await sendNotificationIfNotExists(booking.player.account_id, {
+    message: `Chủ sân đã xác nhận booking ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name} của bạn.`,
+    type: "BOOKING",
+    target_role: "PLAYER",
+    link_to: "/bookings",
+  });
+
+  return confirmedBooking;
 };
 
 export const ownerGetBookingById = async (

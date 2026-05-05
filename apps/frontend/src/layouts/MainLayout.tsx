@@ -1,6 +1,7 @@
 import { Logo } from "@/components/admin/Logo";
 import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 import { Footer } from "@/components/shared/Footer";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,7 +118,7 @@ export function MainLayout() {
         <div className="border-b border-border/60 bg-background/75 backdrop-blur-md supports-backdrop-filter:bg-background/60">
           <div className="container mx-auto flex h-16 items-center justify-between gap-3 px-4">
             {/* LEFT · Mobile trigger + Brand + Desktop nav */}
-            <div className="flex min-w-0 items-center gap-2 md:gap-6">
+            <div className="flex min-w-0 items-center gap-2 md:gap-4">
               {/* Mobile menu */}
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
@@ -167,7 +168,7 @@ export function MainLayout() {
                     <span className="relative inline-block size-2.5 rounded-full bg-accent-sport ring-2 ring-background" />
                   </span>
                 </span>
-                <span className="hidden flex-col leading-none sm:flex">
+                <span className="hidden flex-col leading-none xl:flex">
                   <span className="text-[9px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                     Matchday
                   </span>
@@ -190,7 +191,7 @@ export function MainLayout() {
                       to={item.href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "group/nav relative inline-flex h-9 items-center rounded-full px-3 text-sm font-medium transition-colors",
+                        "group/nav relative inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 text-sm font-medium transition-colors",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60",
                         active
                           ? "text-foreground"
@@ -218,11 +219,13 @@ export function MainLayout() {
             {/* RIGHT · Auth actions */}
             <div className="flex items-center gap-2">
               {user ? (
-                <DropdownMenu>
+                <>
+                  {isPlayer ? <NotificationBell targetRole="PLAYER" /> : null}
+                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="h-9 gap-2 rounded-full border border-transparent pl-1 pr-2.5 transition-colors hover:border-border/70 hover:bg-muted/70 data-[state=open]:border-border data-[state=open]:bg-muted/70"
+                      className="h-9 shrink-0 gap-2 rounded-full border border-transparent px-1 transition-colors hover:border-border/70 hover:bg-muted/70 data-[state=open]:border-border data-[state=open]:bg-muted/70 lg:pr-2.5"
                     >
                       <Avatar className="size-7 border border-border/70">
                         <AvatarImage src={user.avatar} alt={user.full_name} />
@@ -230,7 +233,7 @@ export function MainLayout() {
                           {getInitials(user.full_name)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="hidden min-w-0 flex-col items-start leading-tight sm:flex">
+                      <span className="hidden min-w-0 flex-col items-start leading-tight lg:flex">
                         <span className="max-w-[10rem] truncate text-[13px] font-semibold text-foreground">
                           {user.full_name}
                         </span>
@@ -238,7 +241,7 @@ export function MainLayout() {
                           {primaryRole.label}
                         </span>
                       </span>
-                      <ChevronDown className="hidden size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180 sm:block" />
+                      <ChevronDown className="hidden size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180 lg:block" />
                     </Button>
                   </DropdownMenuTrigger>
 
@@ -352,7 +355,8 @@ export function MainLayout() {
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                  </DropdownMenu>
+                </>
               ) : (
                 <>
                   <Button

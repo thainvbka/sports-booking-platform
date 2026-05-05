@@ -67,7 +67,7 @@ export default function BookingReviewPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-3xl px-4 py-10">
+      <div className="page-shell-compact py-10">
         <LoadingState text="Đang tải thông tin thanh toán..." className="py-16" />
       </div>
     );
@@ -75,7 +75,7 @@ export default function BookingReviewPage() {
 
   if (!booking) {
     return (
-      <div className="container mx-auto max-w-3xl px-4 py-10">
+      <div className="page-shell-compact py-10">
         <EmptyState
           title="Không tìm thấy booking"
           description="Thông tin booking không còn khả dụng hoặc đã hết hạn thanh toán."
@@ -88,7 +88,7 @@ export default function BookingReviewPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="page-shell-compact py-8">
       <Card className="shadow-card">
         <CardHeader className="space-y-3 pb-4">
           <Button

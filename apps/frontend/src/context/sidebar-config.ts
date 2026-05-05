@@ -12,7 +12,7 @@ export interface SidebarContextValue {
 }
 
 export const defaultSidebarConfig: SidebarConfig = {
-  variant: "inset",
+  variant: "sidebar",
   collapsible: "offcanvas",
   side: "left",
 };

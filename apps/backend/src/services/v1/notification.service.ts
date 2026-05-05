@@ -66,6 +66,28 @@ export const sendNotification = async (
   return notification;
 };
 
+export const sendNotificationIfNotExists = async (
+  accountId: string,
+  payload: SendNotificationInput,
+) => {
+  const existing = await prisma.notification.findFirst({
+    where: {
+      account_id: accountId,
+      type: payload.type,
+      target_role: payload.target_role,
+      link_to: payload.link_to,
+      message: payload.message,
+    },
+    select: { id: true },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  return sendNotification(accountId, payload);
+};
+
 export const getNotifications = async (
   accountId: string,
   query: NotificationListQuery,

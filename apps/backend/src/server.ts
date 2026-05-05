@@ -81,7 +81,7 @@ const startServer = async () => {
     const httpServer = createServer(app);
     initSocket(httpServer);
 
-    httpServer.listen(config.SERVER_PORT, () => {
+    httpServer.listen(Number(config.SERVER_PORT), '0.0.0.0', () => {
       console.log(`:::::Server is running on http://localhost:${config.SERVER_PORT}`);
     });
 

@@ -45,7 +45,7 @@ export function BaseLayout({ children }: BaseLayoutProps) {
           className="pointer-events-none absolute top-40 left-[-4rem] size-64 rounded-full bg-sky-500/5 blur-3xl"
         />
 
-        <div className="relative mx-auto flex w-full max-w-[1400px] flex-col gap-5 px-4 py-5 md:gap-6 md:px-6 md:py-7">
+        <div className="relative flex w-full flex-col px-3 py-4 md:px-4 md:py-5">
           {content}
         </div>
       </main>

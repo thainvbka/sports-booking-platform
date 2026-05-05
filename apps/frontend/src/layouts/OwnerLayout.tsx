@@ -1,5 +1,6 @@
 import { Logo } from "@/components/admin/Logo";
 import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ export function OwnerLayout() {
   return (
     <SidebarProvider>
       <Sidebar
-        variant="inset"
+        variant="sidebar"
         collapsible="icon"
         className="border-sidebar-border"
       >
@@ -296,6 +297,7 @@ export function OwnerLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell targetRole={isAdmin ? "ADMIN" : "OWNER"} />
             <Badge
               variant="outline"
               className={cn(
@@ -338,7 +340,7 @@ export function OwnerLayout() {
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/5 via-transparent to-transparent"
           />
-          <div className="relative mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8">
+          <div className="relative w-full px-3 py-4 md:px-4 md:py-5">
             <Outlet />
           </div>
         </div>

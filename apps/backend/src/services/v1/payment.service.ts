@@ -1,4 +1,5 @@
 import { config } from "../../configs";
+import { sendNotificationIfNotExists } from "./notification.service";
 import {
   BookingStatus,
   PaymentProvider,
@@ -73,6 +74,12 @@ export const checkStripeAccountStatus = async (ownerId: string) => {
     return { isComplete: false };
   }
 
+  // Safety-first: once onboarding is marked complete in DB, do not downgrade it
+  // from this polling endpoint to avoid transient Stripe/API inconsistencies.
+  if (owner.stripe_onboarding_complete) {
+    return { isComplete: true };
+  }
+
   //lấy thông tin account từ stripe
   const account = await stripe.accounts.retrieve(owner.stripe_account_id);
 
@@ -80,9 +87,8 @@ export const checkStripeAccountStatus = async (ownerId: string) => {
   // const isComplete =
   //   account.details_submitted && account.charges_enabled ? true : false;
   const isComplete = account.details_submitted ? true : false; //cái trên chặt quá =)) cái thứ 2 là nhận tiền rồi chứ ko phải hoàn thành onboarding
-  //luôn cập nhật trạng thái mới nhất vào db
-  if (owner.stripe_onboarding_complete !== isComplete) {
-    //cập nhật lại trạng thái hoàn thành onboarding
+  // Chỉ cập nhật theo hướng false -> true để tránh ghi đè sai trạng thái đã hoàn tất.
+  if (isComplete && !owner.stripe_onboarding_complete) {
     await prisma.owner.update({
       where: { id: ownerId },
       data: {
@@ -357,7 +363,7 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
       }
 
       try {
-        await prisma.$transaction(async (tx) => {
+        const notificationContext = await prisma.$transaction(async (tx) => {
           const pendingBookings = await tx.booking.findMany({
             where: {
               id: { in: bookingIds },
@@ -367,6 +373,25 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
               id: true,
               total_price: true,
               recurring_booking_id: true,
+              player: {
+                select: {
+                  account_id: true,
+                },
+              },
+              sub_field: {
+                select: {
+                  complex: {
+                    select: {
+                      complex_name: true,
+                      owner: {
+                        select: {
+                          account_id: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           });
 
@@ -439,7 +464,30 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
               });
             }
           }
+
+          const firstBooking = pendingBookings[0];
+          return {
+            playerAccountId: firstBooking.player.account_id,
+            ownerAccountId: firstBooking.sub_field.complex.owner.account_id,
+            complexName: firstBooking.sub_field.complex.complex_name,
+          };
         });
+
+        const bookingLink = `/bookings?ids=${bookingIds.join(",")}`;
+        await Promise.all([
+          sendNotificationIfNotExists(notificationContext.playerAccountId, {
+            message: `Thanh toán thành công cho booking tại ${notificationContext.complexName}.`,
+            type: "PAYMENT",
+            target_role: "PLAYER",
+            link_to: bookingLink,
+          }),
+          sendNotificationIfNotExists(notificationContext.ownerAccountId, {
+            message: `Bạn vừa nhận được một lượt đặt sân mới đã thanh toán tại ${notificationContext.complexName}.`,
+            type: "BOOKING",
+            target_role: "OWNER",
+            link_to: "/owner/bookings",
+          }),
+        ]);
 
         console.log(`Bookings paid successfully: ${transactionCode}`);
       } catch (error: any) {

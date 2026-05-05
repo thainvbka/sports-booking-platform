@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 import prisma from "../../libs/prisma";
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
+import { sendNotificationIfNotExists } from "./notification.service";
 
 /**
  * Dashboard Analytics — Deep Version
@@ -747,6 +748,16 @@ export const updateComplexStatus = async (
 ) => {
   const complex = await prisma.complex.findUnique({
     where: { id: complexId },
+    select: {
+      id: true,
+      status: true,
+      complex_name: true,
+      owner: {
+        select: {
+          account_id: true,
+        },
+      },
+    },
   });
 
   if (!complex) throw new NotFoundError("Complex not found");
@@ -758,10 +769,27 @@ export const updateComplexStatus = async (
     throw new BadRequestError("Only ACTIVE complexes can be suspended");
   }
 
-  return await prisma.complex.update({
+  const updatedComplex = await prisma.complex.update({
     where: { id: complexId },
     data: { status },
   });
+
+  const statusTextMap: Record<ComplexStatus, string> = {
+    DRAFT: "bản nháp",
+    PENDING: "đang chờ duyệt",
+    ACTIVE: "đã được phê duyệt",
+    REJECTED: "đã bị từ chối",
+    INACTIVE: "đã bị tạm ngưng",
+  };
+
+  await sendNotificationIfNotExists(complex.owner.account_id, {
+    message: `Hồ sơ khu phức hợp ${complex.complex_name} ${statusTextMap[status]}.`,
+    type: "SYSTEM",
+    target_role: "OWNER",
+    link_to: "/owner/complexes",
+  });
+
+  return updatedComplex;
 };
 
 /**

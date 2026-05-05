@@ -158,7 +158,7 @@ export function ContactPage() {
         className="pointer-events-none absolute -top-20 left-[8%] size-80 rounded-full bg-accent-sport/12 blur-3xl"
       />
 
-      <div className="container relative z-10 mx-auto px-4 pt-8 pb-16 md:pt-10 md:pb-20">
+      <div className="page-shell relative z-10 pt-8 pb-16 md:pt-10 md:pb-20">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>

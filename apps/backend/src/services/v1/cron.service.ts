@@ -8,6 +8,7 @@ import {
   cancelMatchesByCanceledBookings,
   syncMatchStatusesByTime,
 } from "./match.service";
+import { sendNotificationIfNotExists } from "./notification.service";
 
 export const cleanupExpiredBookings = async () => {
   try {
@@ -22,6 +23,21 @@ export const cleanupExpiredBookings = async () => {
       },
       select: {
         id: true,
+        player: {
+          select: {
+            account_id: true,
+          },
+        },
+        sub_field: {
+          select: {
+            sub_field_name: true,
+            complex: {
+              select: {
+                complex_name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -52,6 +68,12 @@ export const cleanupExpiredBookings = async () => {
 
       if (canceled) {
         canceledCount += 1;
+        await sendNotificationIfNotExists(booking.player.account_id, {
+          message: `Phiên đặt sân ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name} đã hết hạn và bị hủy tự động.`,
+          type: "BOOKING",
+          target_role: "PLAYER",
+          link_to: "/bookings",
+        });
       }
     }
 
@@ -194,6 +216,61 @@ export const expiredRecurringBookings = async () => {
   }
 };
 
+export const sendUpcomingBookingReminders = async () => {
+  try {
+    const now = new Date();
+    const fromTime = new Date(now.getTime() + 55 * 60 * 1000);
+    const toTime = new Date(now.getTime() + 65 * 60 * 1000);
+
+    const upcomingBookings = await prisma.booking.findMany({
+      where: {
+        status: {
+          in: ["CONFIRMED", "COMPLETED"],
+        },
+        start_time: {
+          gte: fromTime,
+          lte: toTime,
+        },
+      },
+      select: {
+        id: true,
+        start_time: true,
+        player: {
+          select: {
+            account_id: true,
+          },
+        },
+        sub_field: {
+          select: {
+            sub_field_name: true,
+            complex: {
+              select: {
+                complex_name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    for (const booking of upcomingBookings) {
+      const startTime = booking.start_time.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      await sendNotificationIfNotExists(booking.player.account_id, {
+        message: `Nhắc lịch: Bạn có lịch đá tại ${booking.sub_field.complex.complex_name} - ${booking.sub_field.sub_field_name} vào lúc ${startTime}.`,
+        type: "SYSTEM",
+        target_role: "PLAYER",
+        link_to: `/bookings/${booking.id}`,
+      });
+    }
+  } catch (error) {
+    console.error("Error during sendUpcomingBookingReminders:", error);
+  }
+};
+
 export const startCronJobs = () => {
   // chay moi phut de huy cac booking le het han
   cron.schedule("*/1 * * * *", () => {
@@ -203,6 +280,11 @@ export const startCronJobs = () => {
   //chay moi 5 phut để hủy recurring booking het han
   cron.schedule("*/5 * * * *", () => {
     expiredRecurringBookings();
+  });
+
+  // chạy mỗi 5 phút để nhắc lịch đá trước 1 giờ
+  cron.schedule("*/5 * * * *", () => {
+    sendUpcomingBookingReminders();
   });
 
   // chay moi phut de dong/huy/completed match theo booking va thoi gian

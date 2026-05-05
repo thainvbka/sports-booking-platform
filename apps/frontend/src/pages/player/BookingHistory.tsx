@@ -218,7 +218,7 @@ export function PlayerBookingsPage() {
         <div className="absolute right-[-6%] top-[5%] size-[340px] rounded-full bg-accent-sport/15 blur-3xl" />
       </div>
 
-      <div className="container mx-auto flex flex-col gap-7 px-4 py-8 lg:px-6">
+      <div className="page-shell flex flex-col gap-7 py-8">
         {/* ── Hero header ─────────────────────────────────────────────── */}
         <header className="flex flex-col gap-5">
           <div className="flex flex-col gap-3">

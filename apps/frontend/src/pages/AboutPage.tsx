@@ -131,7 +131,7 @@ export function AboutPage() {
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
         />
 
-        <div className="container relative z-10 mx-auto px-4 pt-8 pb-20 md:pt-10 md:pb-28">
+        <div className="page-shell relative z-10 pt-8 pb-20 md:pt-10 md:pb-28">
           <Breadcrumb>
             <BreadcrumbList className="text-white/70">
               <BreadcrumbItem>
@@ -251,7 +251,7 @@ export function AboutPage() {
 
       {/* ── STATS RIBBON ─────────────────────────────────────────────── */}
       <section className="border-b border-border/60 bg-surface-2/60">
-        <div className="container mx-auto px-4 py-8 md:py-10">
+        <div className="page-shell py-8 md:py-10">
           <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 lg:grid-cols-4">
             {STATS.map((stat, idx) => {
               const Icon = stat.icon;
@@ -291,7 +291,7 @@ export function AboutPage() {
           className="absolute -top-24 right-[10%] size-80 rounded-full bg-primary/10 blur-3xl"
         />
 
-        <div className="container relative mx-auto px-4">
+        <div className="page-shell relative">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16">
             {/* Image with ticket-stub corners */}
             <div className="relative order-1 lg:order-2">
@@ -389,7 +389,7 @@ export function AboutPage() {
           className="absolute inset-0 sports-field-pattern opacity-[0.07]"
         />
 
-        <div className="container relative mx-auto px-4">
+        <div className="page-shell relative">
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               <Trophy className="size-3 text-primary" />
@@ -415,7 +415,7 @@ export function AboutPage() {
 
       {/* ── MILESTONES TIMELINE ────────────────────────────────────── */}
       <section className="py-20 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="page-shell">
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
               <CalendarCheck className="size-3 text-primary" />
@@ -475,7 +475,7 @@ export function AboutPage() {
 
       {/* ── LEGAL RIBBON ──────────────────────────────────────────── */}
       <section className="border-t border-border/60 bg-gradient-to-b from-surface-2/60 to-background py-20 md:py-24">
-        <div className="container mx-auto px-4">
+        <div className="page-shell">
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="flex flex-col gap-3">
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
@@ -534,7 +534,7 @@ export function AboutPage() {
           className="absolute -right-20 -top-24 size-80 rounded-full bg-accent-sport/30 blur-3xl"
         />
 
-        <div className="container relative z-10 mx-auto px-4 py-16 md:py-20">
+        <div className="page-shell relative z-10 py-16 md:py-20">
           <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div className="flex flex-col gap-4">
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-white/85 backdrop-blur-sm">

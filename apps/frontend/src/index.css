@@ -166,7 +166,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   html {
     /* Keep layout width stable when page content toggles vertical scrollbar. */
@@ -205,6 +205,18 @@
 }
 
 @layer utilities {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-shell-narrow {
+    @apply mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-shell-compact {
+    @apply mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8;
+  }
+
   .skip-nav-link {
     position: fixed;
     left: 1rem;

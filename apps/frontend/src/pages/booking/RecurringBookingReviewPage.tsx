@@ -77,7 +77,7 @@ export default function RecurringBookingReviewPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-10">
+      <div className="page-shell-narrow py-10">
         <LoadingState text="Đang tải thông tin đặt sân định kỳ..." className="py-16" />
       </div>
     );
@@ -85,7 +85,7 @@ export default function RecurringBookingReviewPage() {
 
   if (!booking) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-10">
+      <div className="page-shell-narrow py-10">
         <EmptyState
           title="Không tìm thấy booking định kỳ"
           description="Thông tin lịch đặt định kỳ không còn khả dụng hoặc đã hết hạn thanh toán."
@@ -102,7 +102,7 @@ export default function RecurringBookingReviewPage() {
   const slots = booking.slots || [];
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="page-shell-narrow py-8">
       <Card className="shadow-card">
         <CardHeader className="space-y-3 pb-4">
           <Button

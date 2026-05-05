@@ -199,7 +199,7 @@ function HeroSection() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-24 pt-20 lg:pt-28">
+      <div className="page-shell relative z-10 pb-24 pt-20 lg:pt-28">
         <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div className="motion-safe-fade-up">
            
@@ -399,7 +399,7 @@ function SportCategoriesSection() {
   return (
     <section className="relative bg-background py-20">
       <div className="absolute inset-0 bg-grid-faint opacity-60" aria-hidden="true" />
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="page-shell relative">
         <SectionHeader
           // eyebrow=""
           title={
@@ -533,7 +533,7 @@ function LiveCourtsSection({
 }: LiveCourtsSectionProps) {
   return (
     <section className="relative bg-surface-2 py-20">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="page-shell">
         <SectionHeader
           title={
             <>
@@ -604,7 +604,7 @@ function FeaturedComplexesSection({
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="page-shell relative">
         <SectionHeader
           tone="dark"
           title={
@@ -674,7 +674,7 @@ function FeaturedComplexesSection({
 function HowItWorksSection() {
   return (
     <section className="relative bg-background py-20">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="page-shell">
         <SectionHeader
           title={
             <>
@@ -759,7 +759,7 @@ function CtaSection() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="page-shell relative">
         <div className="grid items-end gap-10 md:grid-cols-[1.5fr_1fr]">
           <div>
             <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">

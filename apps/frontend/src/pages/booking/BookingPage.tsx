@@ -258,7 +258,7 @@ export default function BookingPage() {
   // ─── Loading & error guards ──────────────────────────────────────────────
   if (isSubfieldLoading) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-10">
+      <div className="page-shell py-10">
         <LoadingState text="Đang tải trang booking..." className="py-16" />
       </div>
     );
@@ -266,7 +266,7 @@ export default function BookingPage() {
 
   if (subfieldError && !subfield) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-10">
+      <div className="page-shell py-10">
         <EmptyState
           title="Không thể tải thông tin sân"
           description="Đã xảy ra lỗi khi tải dữ liệu booking. Vui lòng thử lại."
@@ -282,7 +282,7 @@ export default function BookingPage() {
 
   if (!subfield) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-10">
+      <div className="page-shell py-10">
         <EmptyState
           title="Không tìm thấy sân"
           description="Sân bạn đang tìm kiếm không tồn tại hoặc đã bị xóa."
@@ -321,7 +321,7 @@ export default function BookingPage() {
         <div className="absolute -right-[8%] top-[4%] size-[360px] rounded-full bg-accent-sport/15 blur-3xl" />
       </div>
 
-      <div className="container mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 lg:px-6">
+      <div className="page-shell flex flex-col gap-6 py-8">
         {/* ── Breadcrumb ──────────────────────────────────────────── */}
         <Breadcrumb>
           <BreadcrumbList>

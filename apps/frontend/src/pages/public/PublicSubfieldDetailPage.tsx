@@ -90,7 +90,7 @@ export function PublicSubfieldDetailPage() {
 
   if (!subfield) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-16">
+      <div className="page-shell py-16">
         <Card className="rounded-3xl border-dashed">
           <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
             <p className="font-display text-2xl font-bold">Không tìm thấy sân</p>
@@ -118,7 +118,7 @@ export function PublicSubfieldDetailPage() {
         operatingHours={operatingHours}
       />
 
-      <div className="container mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-8">
+      <div className="page-shell pt-10 pb-16">
         <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
           <div className="flex flex-col gap-10">
             <VenueBriefCard

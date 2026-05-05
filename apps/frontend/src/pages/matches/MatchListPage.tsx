@@ -156,7 +156,7 @@ function MatchesHero({
         className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-accent-sport/25 blur-3xl"
       />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+      <div className="page-shell relative py-12 sm:py-16 lg:py-20">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           {/* LEFT — headline */}
           <div className="flex max-w-2xl flex-col gap-5">
@@ -514,7 +514,7 @@ export function MatchListPage() {
         isAuthenticated={isAuthenticated}
       />
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="page-shell py-10">
         <div className="flex flex-col gap-6">
           <SearchBar
             keyword={keyword}

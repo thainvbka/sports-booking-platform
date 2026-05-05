@@ -8,10 +8,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, Clock3 } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -144,15 +144,7 @@ export function SiteHeader() {
             </span>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative size-8 rounded-full"
-            aria-label="Thông báo"
-          >
-            <Bell />
-            <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-rose-500 shadow-[0_0_0_2px] shadow-background" />
-          </Button>
+          <NotificationBell targetRole="ADMIN" />
         </div>
       </div>
     </header>

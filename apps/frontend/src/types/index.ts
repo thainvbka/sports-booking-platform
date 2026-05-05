@@ -94,6 +94,7 @@ export * from "./auth.types";
 export * from "./booking.types";
 export * from "./common.types";
 export * from "./owner.types";
+export * from "./notification.types";
 export * from "./product.types";
 export * from "./public.types";
 export * from "./review.types";

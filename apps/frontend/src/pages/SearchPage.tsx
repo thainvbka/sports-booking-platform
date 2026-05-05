@@ -295,7 +295,7 @@ export function SearchPage() {
       />
 
       <section className="relative">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="page-shell py-8">
           <SearchFilters
             value={filtersValue}
             onChange={handleFiltersChange}
@@ -403,7 +403,7 @@ function SearchHero({
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-10 px-4 pb-14 pt-8 sm:px-6 lg:px-8 lg:pb-16 lg:pt-10">
+      <div className="page-shell relative z-10 flex flex-col gap-10 pb-14 pt-8 lg:pb-16 lg:pt-10">
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
             <BreadcrumbItem>

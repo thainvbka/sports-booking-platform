@@ -158,7 +158,7 @@ export function MyMatchesPage() {
         className="pointer-events-none absolute -right-24 top-12 size-72 rounded-full bg-primary/15 blur-3xl"
       />
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <div className="page-shell relative flex flex-col gap-8 py-8 lg:py-12">
         {/* ─── Personal Header ──────────────────────────────────────── */}
         <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex flex-col gap-3">

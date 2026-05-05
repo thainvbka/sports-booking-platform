@@ -268,7 +268,7 @@ export function MatchDetailPage() {
 
   if (!id) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
+      <div className="page-shell-compact py-16">
         <EmptyState
           title="ID kèo không hợp lệ"
           description="Liên kết bạn truy cập không chứa mã kèo hợp lệ. Hãy quay lại danh sách để chọn lại kèo."
@@ -283,7 +283,7 @@ export function MatchDetailPage() {
 
   if (isLoadingDetail && !currentMatch) {
     return (
-      <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6">
+      <div className="page-shell py-20">
         <LoadingState text="Đang tải chi tiết kèo..." className="py-16" />
       </div>
     );
@@ -291,7 +291,7 @@ export function MatchDetailPage() {
 
   if (!currentMatch) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
+      <div className="page-shell-compact py-16">
         <EmptyState
           title="Không tìm thấy kèo"
           description="Kèo bạn đang tìm không tồn tại hoặc đã bị gỡ khỏi hệ thống."
@@ -374,7 +374,7 @@ export function MatchDetailPage() {
       />
 
       {/* ─── Content ────────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="page-shell py-10">
         {error && (
           <Alert variant="destructive" className="mb-6">
             <CircleAlert />
@@ -538,7 +538,7 @@ function MatchHero({
         )}
       />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-14 pt-8 sm:px-6 lg:px-8 lg:pb-16 lg:pt-10">
+      <div className="page-shell relative pb-14 pt-8 lg:pb-16 lg:pt-10">
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
