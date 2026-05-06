@@ -1,10 +1,21 @@
 import dotenv from "dotenv";
 import ms from "ms";
 import path from "path";
+import fs from "fs";
 
-dotenv.config({
-  path: path.resolve(__dirname, "../../.env"),
-});
+// Production should primarily rely on environment variables injected by Docker/CI.
+// We only load local .env files as a fallback for development.
+const envCandidates = [
+  process.env.ENV_FILE_PATH,
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(__dirname, "../../.env"),
+].filter((p): p is string => Boolean(p));
+
+for (const envPath of envCandidates) {
+  if (!fs.existsSync(envPath)) continue;
+  dotenv.config({ path: envPath, override: false });
+  break;
+}
 
 const config = {
   SERVER_PORT: process.env.SERVER_PORT || 3000,

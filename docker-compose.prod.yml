@@ -28,7 +28,7 @@ services:
 
   # ---  BACKEND (FROM DOCKER HUB) ---
   backend:
-    image: ${BACKEND_IMAGE}:latest # Pull từ Docker Hub, KHÔNG build!
+    image: ${BACKEND_IMAGE}:${IMAGE_TAG:-latest}
     container_name: sports-booking-backend
     env_file:
       - .env.production
@@ -50,8 +50,11 @@ services:
       MAIL_PASS: ${MAIL_PASS}
       CLIENT_URL: ${CLIENT_URL}
       CORS_ORIGIN: ${CORS_ORIGIN}
+      REDIS_URL: ${REDIS_URL}
     depends_on:
       postgres-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -64,7 +67,7 @@ services:
 
   # ---  FRONTEND (FROM DOCKER HUB) ---
   frontend:
-    image: ${FRONTEND_IMAGE}:latest # Pull từ Docker Hub, KHÔNG build!
+    image: ${FRONTEND_IMAGE}:${IMAGE_TAG:-latest}
     container_name: sports-booking-frontend
     ports:
       - "80:80"
@@ -80,6 +83,25 @@ services:
       # Mount SSL certificates (if using Let's Encrypt)
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---  REDIS ---
+  redis:
+    image: redis:7-alpine
+    container_name: sports-booking-redis
+    command: redis-server --save 60 1 --loglevel warning
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     logging:
       driver: "json-file"
       options:

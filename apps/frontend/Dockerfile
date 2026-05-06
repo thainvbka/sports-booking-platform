@@ -53,18 +53,6 @@ COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built static files từ builder
 COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
 
-# Tạo non-root user
-RUN addgroup --system --gid 1001 nginx-user && \
-    adduser --system --uid 1001 nginx-user && \
-    chown -R nginx-user:nginx-user /usr/share/nginx/html && \
-    chown -R nginx-user:nginx-user /var/cache/nginx && \
-    chown -R nginx-user:nginx-user /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R nginx-user:nginx-user /var/run/nginx.pid
-
-# Switch to non-root user
-USER nginx-user
-
 # Expose port
 EXPOSE 80
 

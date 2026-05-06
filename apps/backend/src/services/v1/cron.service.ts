@@ -271,6 +271,65 @@ export const sendUpcomingBookingReminders = async () => {
   }
 };
 
+export const sendOwnerBookingConfirmationReminders = async () => {
+  try {
+    const now = new Date();
+    const fromTime = new Date(now.getTime() + 55 * 60 * 1000);
+    const toTime = new Date(now.getTime() + 65 * 60 * 1000);
+
+    const pendingConfirmBookings = await prisma.booking.findMany({
+      where: {
+        status: "COMPLETED",
+        payment: {
+          status: "SUCCESS",
+        },
+        start_time: {
+          gte: fromTime,
+          lte: toTime,
+        },
+      },
+      select: {
+        id: true,
+        start_time: true,
+        sub_field: {
+          select: {
+            sub_field_name: true,
+            complex: {
+              select: {
+                complex_name: true,
+                owner: {
+                  select: {
+                    account_id: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    for (const booking of pendingConfirmBookings) {
+      const startTime = booking.start_time.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      await sendNotificationIfNotExists(
+        booking.sub_field.complex.owner.account_id,
+        {
+          message: `Nhắc xác nhận: Booking ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name} sẽ bắt đầu lúc ${startTime}. Vui lòng xác nhận sớm cho khách.`,
+          type: "BOOKING",
+          target_role: "OWNER",
+          link_to: `/owner/bookings?bookingId=${booking.id}`,
+        },
+      );
+    }
+  } catch (error) {
+    console.error("Error during sendOwnerBookingConfirmationReminders:", error);
+  }
+};
+
 export const startCronJobs = () => {
   // chay moi phut de huy cac booking le het han
   cron.schedule("*/1 * * * *", () => {
@@ -285,6 +344,11 @@ export const startCronJobs = () => {
   // chạy mỗi 5 phút để nhắc lịch đá trước 1 giờ
   cron.schedule("*/5 * * * *", () => {
     sendUpcomingBookingReminders();
+  });
+
+  // chạy mỗi 5 phút để nhắc chủ sân xác nhận booking đã thanh toán
+  cron.schedule("*/5 * * * *", () => {
+    sendOwnerBookingConfirmationReminders();
   });
 
   // chay moi phut de dong/huy/completed match theo booking va thoi gian

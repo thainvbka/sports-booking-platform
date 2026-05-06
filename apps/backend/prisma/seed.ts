@@ -51,6 +51,7 @@ import {
   ComplexStatus,
   MatchSkillLevel,
   MatchStatus,
+  NotificationTargetRole,
   OwnerStatus,
   ParticipantStatus,
   PaymentProvider,
@@ -255,6 +256,281 @@ const SPORT_LABELS: Record<SportType, string> = {
   BADMINTON: "Cầu lông",
   VOLLEYBALL: "Bóng chuyền",
   PICKLEBALL: "Pickleball",
+};
+
+/**
+ * Curated Unsplash photo IDs cho từng loại sân thể thao.
+ *
+ * Tại sao không dùng loremflickr / tag-based API?
+ *   - loremflickr trả về ảnh ngẫu nhiên theo tag nhưng rất hay lệch chủ đề
+ *     (phong cảnh, động vật...) do index tag của họ không chính xác.
+ *   - Unsplash Source API (source.unsplash.com) đã bị deprecated.
+ *
+ * Giải pháp: hardcode danh sách photo ID đã được kiểm tra thủ công từ Unsplash.
+ *   - Không cần API key.
+ *   - Không bị rate-limit khi seed.
+ *   - Ảnh luôn đúng chủ đề, phù hợp cho UI web.
+ *   - Đủ đa dạng (5–6 ảnh/loại) để tránh lặp trong dữ liệu seed.
+ *
+ * Nếu muốn dùng Pexels/Unsplash API để mở rộng thêm:
+ *   - Pexels: https://www.pexels.com/api/ (miễn phí, tìm theo từ khóa)
+ *   - Unsplash: https://unsplash.com/developers (miễn phí tier)
+ *   Cần đặt PEXELS_API_KEY / UNSPLASH_ACCESS_KEY vào .env và gọi HTTP khi seed.
+ */
+const SPORT_IMAGES: Record<SportType, Record<"complex" | "subfield" | "product", string[]>> = {
+  FOOTBALL: {
+    complex: [
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1551958219-acbc595b75bf?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1520466809213-7b9a56adcd45?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1598901847919-b641267b71dc?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1571103080435-3d12d07f1df8?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1614632537190-23e4146777db?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1511886929837-354d827aae26?w=600&h=600&fit=crop",
+    ],
+  },
+  BASKETBALL: {
+    complex: [
+      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1505666287802-931dc83948e9?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1519861531473-9200262188bf?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1588941288445-4de00ebf43a4?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1594623930572-300a3011d9ae?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1542652694-40abf526446e?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1574623452334-1e0ac2b3ccb4?w=600&h=600&fit=crop",
+    ],
+  },
+  TENNIS: {
+    complex: [
+      "https://images.unsplash.com/photo-1622279457486-62dbd0bbfc4a?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1554068865-24ceec13d068?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1530915534664-4ac6423a5a84?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1602211844066-d3bb556e983b?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1617083934551-ac1f314a7b02?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1570464197285-9949814674a7?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=600&h=600&fit=crop",
+    ],
+  },
+  BADMINTON: {
+    complex: [
+      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1593787406922-875b3e3aeaa3?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1615395406786-ca74f9c59508?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1643360058358-01f5cdbd3b3e?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1599474703894-2dec5b5c8977?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1531315396756-905d68d21b56?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1617083934551-ac1f314a7b02?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1593787406922-875b3e3aeaa3?w=600&h=600&fit=crop",
+    ],
+  },
+  VOLLEYBALL: {
+    complex: [
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1593786961938-c8febe8e4ef4?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1562552052-3c38e0d1a5da?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1616610097222-5e3c8e77e4c3?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1598901847919-b641267b71dc?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1593786961938-c8febe8e4ef4?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=600&h=600&fit=crop",
+    ],
+  },
+  PICKLEBALL: {
+    complex: [
+      "https://images.unsplash.com/photo-1655491406070-8e2a11a0d0ce?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1622279457486-62dbd0bbfc4a?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=1280&h=720&fit=crop",
+      "https://images.unsplash.com/photo-1554068865-24ceec13d068?w=1280&h=720&fit=crop",
+    ],
+    subfield: [
+      "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1602211844066-d3bb556e983b?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1530915534664-4ac6423a5a84?w=1000&h=700&fit=crop",
+      "https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&h=700&fit=crop",
+    ],
+    product: [
+      "https://images.unsplash.com/photo-1617083934551-ac1f314a7b02?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1655491406070-8e2a11a0d0ce?w=600&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1570464197285-9949814674a7?w=600&h=600&fit=crop",
+    ],
+  },
+};
+
+// ─── Pexels image fetcher ─────────────────────────────────────────────────────
+//
+// Khi có PEXELS_API_KEY trong .env, seed sẽ fetch ảnh thực tế theo từng môn +
+// loại (complex / subfield / product), cache trong process và pick xoay vòng
+// theo seed. Nếu key không có hoặc fetch fail, sẽ fallback về danh sách
+// SPORT_IMAGES curated phía trên để đảm bảo seed không tạo URL trắng.
+// Với môi trường production deploy trên EC2, hãy đặt PEXELS_API_KEY trong
+// file env được dùng để chạy lệnh seed (ví dụ: .env.production hoặc export env).
+//
+// Tham khảo: https://www.pexels.com/api/
+
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY ?? "";
+
+const PEXELS_QUERIES: Record<
+  SportType,
+  Record<"complex" | "subfield" | "product", string>
+> = {
+  FOOTBALL: {
+    complex: "football stadium aerial",
+    subfield: "soccer field grass court",
+    product: "football soccer ball",
+  },
+  BASKETBALL: {
+    complex: "basketball arena indoor",
+    subfield: "basketball court indoor",
+    product: "basketball ball hoop",
+  },
+  TENNIS: {
+    complex: "tennis club outdoor",
+    subfield: "tennis court surface",
+    product: "tennis racket ball",
+  },
+  BADMINTON: {
+    complex: "badminton hall indoor",
+    subfield: "badminton court shuttlecock",
+    product: "badminton racket",
+  },
+  VOLLEYBALL: {
+    complex: "volleyball court beach",
+    subfield: "volleyball net indoor court",
+    product: "volleyball ball net",
+  },
+  PICKLEBALL: {
+    complex: "pickleball court outdoor",
+    subfield: "pickleball court game",
+    product: "pickleball paddle ball",
+  },
+};
+
+/** Cache theo key "FOOTBALL_complex" → danh sách URL ảnh */
+const imageCache = new Map<string, string[]>();
+
+async function prefetchPexelsImages(): Promise<void> {
+  if (!PEXELS_API_KEY) {
+    console.warn(
+      "  ⚠ PEXELS_API_KEY không có trong env — bỏ qua prefetch, dùng SPORT_IMAGES fallback.",
+    );
+    return;
+  }
+
+  console.log("  Prefetching sport images from Pexels...");
+
+  const sizeParam: Record<"complex" | "subfield" | "product", string> = {
+    complex: "large2x", // ~1280px
+    subfield: "large", // ~940px
+    product: "medium", // ~350px
+  };
+
+  for (const sport of Object.values(SportType)) {
+    for (const kind of ["complex", "subfield", "product"] as const) {
+      const query = PEXELS_QUERIES[sport][kind];
+      const cacheKey = `${sport}_${kind}`;
+
+      try {
+        const res = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(
+            query,
+          )}&per_page=8&orientation=${
+            kind === "product" ? "square" : "landscape"
+          }`,
+          { headers: { Authorization: PEXELS_API_KEY } },
+        );
+
+        if (!res.ok) {
+          console.warn(
+            `    ✗ Pexels fetch failed for ${cacheKey}: ${res.status}`,
+          );
+          continue;
+        }
+
+        const data = (await res.json()) as {
+          photos: Array<{ src: Record<string, string> }>;
+        };
+        const urls = data.photos
+          .map((p) => p.src?.[sizeParam[kind]])
+          .filter((url): url is string => Boolean(url));
+
+        if (urls.length === 0) {
+          console.warn(`    ✗ Pexels returned 0 ảnh cho ${cacheKey}`);
+          continue;
+        }
+
+        imageCache.set(cacheKey, urls);
+        console.log(`    ✓ ${cacheKey}: ${urls.length} ảnh`);
+      } catch (err) {
+        console.warn(
+          `    ✗ Pexels fetch error cho ${cacheKey}:`,
+          (err as Error).message,
+        );
+      }
+
+      // Rate limit (free tier 200 req/h): chờ nhẹ giữa các call.
+      await new Promise((r) => setTimeout(r, 300));
+    }
+  }
+}
+
+const hashSeed = (seed: string): number =>
+  seed.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
+/**
+ * Trả về URL ảnh đúng môn + loại.
+ * Ưu tiên ảnh từ Pexels (đã prefetch), fallback về SPORT_IMAGES curated.
+ */
+const buildSportImageUrl = (
+  sport: SportType,
+  kind: "complex" | "subfield" | "product",
+  seed: string,
+): string => {
+  const cached = imageCache.get(`${sport}_${kind}`);
+  if (cached && cached.length > 0) {
+    return cached[hashSeed(seed) % cached.length];
+  }
+  const fallback = SPORT_IMAGES[sport][kind];
+  return fallback[hashSeed(seed) % fallback.length];
 };
 
 const PROVIDERS: PaymentProvider[] = [
@@ -528,6 +804,7 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
       }
 
       const sports = pickN(SPORT_TYPES, randInt(1, 3)) as SportType[];
+      const coverSport = pick(sports);
 
       const complex = await prisma.complex.create({
         data: {
@@ -542,7 +819,11 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
             tax: `https://docs.example.com/tax-${oi}-${ci}.pdf`,
             id_card: `https://docs.example.com/id-${oi}-${ci}.pdf`,
           },
-          complex_image: `https://picsum.photos/seed/complex-${oi}-${ci}/1280/720`,
+          complex_image: buildSportImageUrl(
+            coverSport,
+            "complex",
+            `complex-${oi}-${ci}`,
+          ),
           sport_types: sports,
           created_at: randDate(daysAgo(180), daysAgo(60)),
         },
@@ -571,7 +852,11 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
             complex_id: complex.id,
             sub_field_name: `Sân ${si + 1} (${SPORT_LABELS[sport]})`,
             capacity,
-            sub_field_image: `https://picsum.photos/seed/sub-${complex.id}-${si}/800/600`,
+            sub_field_image: buildSportImageUrl(
+              sport,
+              "subfield",
+              `sub-${complex.id}-${si}`,
+            ),
             sport_type: sport,
             created_at: randDate(
               new Date(complex.created_at),
@@ -625,8 +910,12 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
                 description: faker.commerce.productDescription(),
                 price: tmpl.price,
                 stock: randInt(20, 200),
-                image: `https://picsum.photos/seed/p-${complex.id}-${tmpl.name}/400/400`,
-                status: productStatus,
+                image: buildSportImageUrl(
+                  sport,
+                  "product",
+                  `product-${complex.id}-${tmpl.name}`,
+                ),
+                  status: productStatus,
               },
             });
             products.push({
@@ -1317,41 +1606,123 @@ async function syncComplexCaches() {
 
 // ─── 8. Notifications ────────────────────────────────────────────────────────
 
-async function seedNotifications(players: PlayerInfo[]) {
+async function seedNotifications(players: PlayerInfo[], owners: SeededOwner[]) {
   console.log("  [8/8] Notifications...");
-  const templates = [
-    { type: "BOOKING_CONFIRMED", msg: "Booking của bạn đã được xác nhận." },
+  const playerTemplates: Array<{
+    type: string;
+    msg: string;
+    role: NotificationTargetRole;
+    link: string;
+  }> = [
     {
-      type: "BOOKING_REMINDER",
-      msg: "Nhắc nhở: bạn có lịch chơi trong 2 giờ nữa.",
+      type: "BOOKING",
+      msg: "Chủ sân đã xác nhận booking của bạn.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/bookings",
     },
     {
-      type: "MATCH_NEW_REQUEST",
-      msg: "Có người mới xin tham gia trận đấu của bạn.",
+      type: "BOOKING",
+      msg: "Booking của bạn đã bị chủ sân hủy.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/bookings",
     },
     {
-      type: "MATCH_ACCEPTED",
+      type: "BOOKING",
+      msg: "Phiên đặt sân đã hết hạn và bị hủy tự động.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/bookings",
+    },
+    {
+      type: "SYSTEM",
+      msg: "Nhắc lịch: bạn có lịch chơi trong 1 giờ nữa.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/bookings",
+    },
+    {
+      type: "MATCH",
+      msg: "Có người mới xin tham gia kèo của bạn.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/player/matches",
+    },
+    {
+      type: "MATCH",
       msg: "Yêu cầu tham gia trận đấu của bạn đã được chấp nhận.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/player/matches",
     },
     {
-      type: "REVIEW_REMINDER",
-      msg: "Hãy đánh giá trải nghiệm lần chơi gần đây nhất.",
+      type: "MATCH",
+      msg: "Yêu cầu tham gia trận đấu của bạn đã bị từ chối.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/player/matches",
     },
-    { type: "PAYMENT_SUCCESS", msg: "Thanh toán thành công. Cảm ơn bạn!" },
-    { type: "PROMO", msg: "Giảm 20% vào cuối tuần này tại các sân đối tác!" },
+    {
+      type: "PAYMENT",
+      msg: "Thanh toán thành công. Booking đã chuyển sang trạng thái chờ xác nhận.",
+      role: NotificationTargetRole.PLAYER,
+      link: "/bookings",
+    },
+  ];
+
+  const ownerTemplates: Array<{
+    type: string;
+    msg: string;
+    role: NotificationTargetRole;
+    link: string;
+  }> = [
+    {
+      type: "BOOKING",
+      msg: "Bạn vừa nhận một booking mới đã thanh toán.",
+      role: NotificationTargetRole.OWNER,
+      link: "/owner/bookings",
+    },
+    {
+      type: "BOOKING",
+      msg: "Player đã hủy booking đã thanh toán.",
+      role: NotificationTargetRole.OWNER,
+      link: "/owner/bookings",
+    },
+    {
+      type: "SYSTEM",
+      msg: "Hồ sơ khu phức hợp của bạn đã được cập nhật trạng thái từ hệ thống.",
+      role: NotificationTargetRole.OWNER,
+      link: "/owner/complexes",
+    },
+  ];
+
+  const adminTemplates: Array<{
+    type: string;
+    msg: string;
+    role: NotificationTargetRole;
+    link: string;
+  }> = [
+    {
+      type: "SYSTEM",
+      msg: "Có complex mới đang chờ admin duyệt.",
+      role: NotificationTargetRole.ADMIN,
+      link: "/admin/complexes",
+    },
+    {
+      type: "SYSTEM",
+      msg: "Báo cáo vận hành hệ thống theo ngày đã sẵn sàng.",
+      role: NotificationTargetRole.ADMIN,
+      link: "/admin",
+    },
   ];
 
   let total = 0;
-  const targets = players.slice(0, Math.min(60, players.length));
-  for (const player of targets) {
+  const playerTargets = players.slice(0, Math.min(60, players.length));
+  for (const player of playerTargets) {
     const num = randInt(2, 6);
     const rows: Prisma.NotificationCreateManyInput[] = [];
     for (let i = 0; i < num; i++) {
-      const tmpl = pick(templates);
+      const tmpl = pick(playerTemplates);
       rows.push({
         account_id: player.account_id,
         message: tmpl.msg,
         type: tmpl.type,
+        target_role: tmpl.role,
+        link_to: tmpl.link,
         is_read: rand() > 0.4,
         created_at: randDate(daysAgo(30), new Date()),
       });
@@ -1359,6 +1730,50 @@ async function seedNotifications(players: PlayerInfo[]) {
     }
     await prisma.notification.createMany({ data: rows });
   }
+
+  const ownerTargets = owners.slice(0, Math.min(20, owners.length));
+  for (const owner of ownerTargets) {
+    const num = randInt(1, 4);
+    const rows: Prisma.NotificationCreateManyInput[] = [];
+    for (let i = 0; i < num; i++) {
+      const tmpl = pick(ownerTemplates);
+      rows.push({
+        account_id: owner.accountId,
+        message: tmpl.msg,
+        type: tmpl.type,
+        target_role: tmpl.role,
+        link_to: tmpl.link,
+        is_read: rand() > 0.45,
+        created_at: randDate(daysAgo(30), new Date()),
+      });
+      total++;
+    }
+    await prisma.notification.createMany({ data: rows });
+  }
+
+  const admin = await prisma.admin.findFirst({
+    where: { status: AdminStatus.ACTIVE },
+    select: { account_id: true },
+  });
+  if (admin) {
+    const rows: Prisma.NotificationCreateManyInput[] = [];
+    const num = randInt(3, 6);
+    for (let i = 0; i < num; i++) {
+      const tmpl = pick(adminTemplates);
+      rows.push({
+        account_id: admin.account_id,
+        message: tmpl.msg,
+        type: tmpl.type,
+        target_role: tmpl.role,
+        link_to: tmpl.link,
+        is_read: rand() > 0.5,
+        created_at: randDate(daysAgo(30), new Date()),
+      });
+      total++;
+    }
+    await prisma.notification.createMany({ data: rows });
+  }
+
   console.log(`     → ${total} notifications`);
 }
 
@@ -1434,6 +1849,8 @@ async function main() {
   console.log("========================================");
   console.log("  Sports Booking — Seed");
   console.log("========================================\n");
+
+  await prefetchPexelsImages();
   await cleanup();
 
   const { owners, players } = await seedAccounts();
@@ -1444,7 +1861,7 @@ async function main() {
   await seedMatches(players);
   await syncSubFieldCaches();
   await syncComplexCaches();
-  await seedNotifications(players);
+  await seedNotifications(players, owners);
   await summary();
 }
 

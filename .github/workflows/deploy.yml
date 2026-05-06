@@ -7,9 +7,9 @@ on:
     paths:
       - "apps/**"
       - "packages/**"
-      - "docker-compose.all-in-one.yml"
+      - "docker-compose.prod.yml"
       - "nginx/**"
-      - ".github/workflows/deploy-docker-hub.yml"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 env:
@@ -90,8 +90,11 @@ jobs:
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} "IMAGE_TAG='${IMAGE_TAG}' BACKEND_IMAGE='${BACKEND_IMAGE}' FRONTEND_IMAGE='${FRONTEND_IMAGE}' bash -s" << 'EOF'
             cd ~/sports-booking-platform || exit 1
             
             # Check if .env.production exists
@@ -100,24 +103,26 @@ jobs:
               echo "Please create .env.production file on EC2"
               exit 1
             fi
-            
+
+            # Export image tag for this release (pinned by commit SHA)
             # Pull latest code
-            git pull origin main || true
+            git pull origin main
             
             # Pull latest images từ Docker Hub (KHÔNG BUILD!)
             docker compose -f docker-compose.prod.yml --env-file .env.production pull
             
-            # Stop old containers
-            docker compose -f docker-compose.prod.yml --env-file .env.production down
+            # Start/replace containers with latest image tag
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
             
-            # Start new containers
-            docker compose -f docker-compose.prod.yml --env-file .env.production up -d
-            
-            # Wait for database
+            # Wait for services
             sleep 15
             
-            # Run migrations (from host, not inside container)
+            # Run migrations inside backend container
             docker compose -f docker-compose.prod.yml --env-file .env.production exec -T backend sh -c "cd /app && npx prisma migrate deploy --schema=./apps/backend/prisma/schema.prisma"
+
+            # Quick health checks
+            docker compose -f docker-compose.prod.yml --env-file .env.production ps
+            curl -f http://localhost/api/health >/dev/null
             
             # Clean up old images
             docker image prune -af --filter "until=24h"
