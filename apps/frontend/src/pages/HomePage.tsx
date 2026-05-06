@@ -94,10 +94,10 @@ const SPORT_CATEGORIES: HomeSportCategory[] = [
 ];
 
 const HERO_STATS: HomeStat[] = [
-  { value: "2.5K+", label: "Sân đang hoạt động" },
-  { value: "150+", label: "Khu phức hợp" },
-  { value: "50K+", label: "Booking đã chốt" },
-  { value: "4.9★", label: "Đánh giá trung bình" },
+  { value: "500+", label: "Sân đối tác" },
+  { value: "50K+", label: "Người chơi" },
+  { value: "100K+", label: "Lượt đặt sân" },
+  { value: "4.8/5", label: "Đánh giá trung bình" },
 ];
 
 const HOW_IT_WORKS_STEPS: HowItWorksStep[] = [

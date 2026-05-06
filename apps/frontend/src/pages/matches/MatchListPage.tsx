@@ -9,6 +9,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -128,6 +136,12 @@ interface MatchesHeroProps {
   almostFullCount: number;
   totalSlotsLeft: number;
   isAuthenticated: boolean;
+  keyword: string;
+  sportValue: string;
+  onKeywordChange: (value: string) => void;
+  onSportChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
 }
 
 function MatchesHero({
@@ -136,6 +150,12 @@ function MatchesHero({
   almostFullCount,
   totalSlotsLeft,
   isAuthenticated,
+  keyword,
+  sportValue,
+  onKeywordChange,
+  onSportChange,
+  onSubmit,
+  isLoading,
 }: MatchesHeroProps) {
   return (
     <section className="relative overflow-hidden bg-slate-950 text-white">
@@ -156,7 +176,21 @@ function MatchesHero({
         className="pointer-events-none absolute -left-24 bottom-0 size-64 rounded-full bg-accent-sport/25 blur-3xl"
       />
 
-      <div className="page-shell relative py-12 sm:py-16 lg:py-20">
+      <div className="page-shell relative flex min-h-[340px] flex-col gap-8 py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:gap-10 lg:py-20">
+        <Breadcrumb>
+          <BreadcrumbList className="text-white/60">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild className="hover:text-white">
+                <Link to="/">Trang chủ</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-white/30" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-white">Kèo đấu</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           {/* LEFT — headline */}
           <div className="flex max-w-2xl flex-col gap-5">
@@ -235,6 +269,25 @@ function MatchesHero({
               hint="Cơ hội để bạn đặt chân vào đội"
             />
           </div>
+        </div>
+
+        <div className="motion-safe-fade-up">
+          <SearchBar
+            keyword={keyword}
+            onKeywordChange={onKeywordChange}
+            sportValue={sportValue}
+            onSportChange={(value) =>
+              onSportChange(
+                value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
+              )
+            }
+            onSubmit={onSubmit}
+            placeholder="Tìm kèo theo tiêu đề, sân, khu phức hợp..."
+            submitLabel="Tìm kèo"
+            allSportsValue="ALL"
+            variant="hero"
+            disabled={isLoading}
+          />
         </div>
       </div>
 
@@ -512,27 +565,16 @@ export function MatchListPage() {
         almostFullCount={almostFullCount}
         totalSlotsLeft={totalSlotsLeft}
         isAuthenticated={isAuthenticated}
+        keyword={keyword}
+        sportValue={sportValue}
+        onKeywordChange={setKeyword}
+        onSportChange={setSportValue}
+        onSubmit={handleSearchSubmit}
+        isLoading={isLoading}
       />
 
       <section className="page-shell py-10">
         <div className="flex flex-col gap-6">
-          <SearchBar
-            keyword={keyword}
-            onKeywordChange={setKeyword}
-            sportValue={sportValue}
-            onSportChange={(value) =>
-              setSportValue(
-                value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
-              )
-            }
-            onSubmit={handleSearchSubmit}
-            placeholder="Tìm kèo theo tiêu đề, sân, khu phức hợp..."
-            submitLabel="Tìm kèo"
-            allSportsValue="ALL"
-            variant="default"
-            disabled={isLoading}
-          />
-
           <MatchFilters
             value={{
               status: filters.status,

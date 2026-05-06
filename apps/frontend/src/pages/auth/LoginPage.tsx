@@ -14,7 +14,7 @@ import {
   Loader2,
   Lock,
   Mail,
-  Ticket,
+  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -61,8 +61,8 @@ export function LoginPage() {
       {/* ── Header ────────────────────────────────────────────── */}
       <header className="flex flex-col gap-3">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground backdrop-blur-sm">
-          <Ticket className="size-3 text-primary" />
-          Matchday Pass · Sign in
+          <ShieldCheck className="size-3 text-primary" />
+          T-Sport · Cổng đăng nhập
         </span>
         <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem]">
           Chào mừng trở lại,{" "}

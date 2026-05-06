@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { BookingStatus } from "@prisma/client";
 import type { filter } from "../../services/v1/booking.service";
 import {
   cancelBooking,
@@ -140,7 +141,12 @@ export const getPlayerBookingsController = async (
   const playerId = req.user?.profiles.playerId as string;
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 8;
-  const result = await getPlayerBookings(playerId, page, limit);
+  const statusQuery = req.query.status as BookingStatus | undefined;
+  const status =
+    statusQuery && Object.values(BookingStatus).includes(statusQuery)
+      ? statusQuery
+      : undefined;
+  const result = await getPlayerBookings(playerId, page, limit, status);
   return new SuccessResponse({
     message: "Player bookings retrieved successfully",
     data: result,

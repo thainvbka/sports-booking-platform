@@ -1683,6 +1683,12 @@ async function seedNotifications(players: PlayerInfo[], owners: SeededOwner[]) {
       link: "/owner/bookings",
     },
     {
+      type: "BOOKING",
+      msg: "Nhắc xác nhận: Có booking đã thanh toán sắp tới giờ đá, vui lòng xác nhận sớm cho khách.",
+      role: NotificationTargetRole.OWNER,
+      link: "/owner/bookings",
+    },
+    {
       type: "SYSTEM",
       msg: "Hồ sơ khu phức hợp của bạn đã được cập nhật trạng thái từ hệ thống.",
       role: NotificationTargetRole.OWNER,

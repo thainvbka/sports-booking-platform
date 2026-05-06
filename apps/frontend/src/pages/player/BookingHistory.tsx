@@ -1,7 +1,14 @@
-import { BookingDetailDialog } from "@/components/player/BookingDetailDialog";
 import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
 import { ReviewDialog } from "@/components/player/ReviewDialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,10 +26,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBookings } from "@/hooks/useBookings";
 import {
   BOOKING_STATUS_LABELS,
-  RECURRENCE_TYPE_LABELS,
   RECURRING_STATUS_LABELS,
   SPORT_TYPE_LABELS,
 } from "@/lib/constants";
@@ -30,7 +37,6 @@ import { cn } from "@/lib/utils";
 import { bookingService } from "@/services/booking.service";
 import {
   BookingStatus,
-  SportType,
   type BookingResponse,
   type ReviewItem,
 } from "@/types";
@@ -42,39 +48,24 @@ import {
   AlarmClock,
   BadgeCheck,
   CalendarDays,
-  CalendarRange,
-  CheckCircle2,
   Clock,
   CreditCard,
   MapPin,
   MoreHorizontal,
   RefreshCcw,
+  Star,
   Ticket,
   X,
-  XCircle
+  XCircle,
+  Zap
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;
 
 const PAGE_SIZE = 8;
-
-// ─── Sport visual mapping ──────────────────────────────────────────────────
-const SPORT_STUB_STYLE: Record<string, string> = {
-  [SportType.FOOTBALL]:
-    "bg-gradient-to-br from-emerald-500/95 to-green-600 text-white",
-  [SportType.BASKETBALL]:
-    "bg-gradient-to-br from-orange-500/95 to-amber-600 text-white",
-  [SportType.TENNIS]:
-    "bg-gradient-to-br from-lime-500/95 to-yellow-600 text-white",
-  [SportType.BADMINTON]:
-    "bg-gradient-to-br from-sky-500/95 to-blue-600 text-white",
-  [SportType.VOLLEYBALL]:
-    "bg-gradient-to-br from-rose-500/95 to-pink-600 text-white",
-  [SportType.PICKLEBALL]:
-    "bg-gradient-to-br from-violet-500/95 to-purple-600 text-white",
-};
 
 const STATUS_VISUAL: Record<
   BookingStatus,
@@ -98,17 +89,56 @@ const STATUS_VISUAL: Record<
   },
 };
 
+const BOOKING_STATUS_TAB_META: Record<
+  BookingStatus,
+  {
+    icon: LucideIcon;
+    label: string;
+    tint: string;
+    dot: string;
+  }
+> = {
+  [BookingStatus.PENDING]: {
+    icon: CreditCard,
+    label: "Chờ thanh toán",
+    tint: "data-[state=active]:bg-amber-500/10 data-[state=active]:border-amber-400/40",
+    dot: "bg-amber-500",
+  },
+  [BookingStatus.CONFIRMED]: {
+    icon: BadgeCheck,
+    label: "Đã xác nhận",
+    tint: "data-[state=active]:bg-emerald-500/10 data-[state=active]:border-emerald-400/40",
+    dot: "bg-emerald-500",
+  },
+  [BookingStatus.COMPLETED]: {
+    icon: Clock,
+    label: "Đã hoàn thành",
+    tint: "data-[state=active]:bg-sky-500/10 data-[state=active]:border-sky-400/40",
+    dot: "bg-sky-500",
+  },
+  [BookingStatus.CANCELED]: {
+    icon: XCircle,
+    label: "Đã hủy",
+    tint: "data-[state=active]:bg-rose-500/10 data-[state=active]:border-rose-400/40",
+    dot: "bg-rose-500",
+  },
+};
+
 // ─── Main page ─────────────────────────────────────────────────────────────
 export function PlayerBookingsPage() {
+  const [selectedStatus, setSelectedStatus] = useState<BookingStatus | "ALL">(
+    "ALL",
+  );
   const {
     bookings,
     loading,
     page,
     totalPages,
+    summary,
     setPage,
     updateBookingStatus,
     updateSingleBookingReview,
-  } = useBookings({ pageSize: PAGE_SIZE });
+  } = useBookings({ pageSize: PAGE_SIZE, status: selectedStatus });
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
@@ -117,9 +147,6 @@ export function PlayerBookingsPage() {
   const [selectedBookingType, setSelectedBookingType] = useState<
     "SINGLE" | "RECURRING"
   >("SINGLE");
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] =
-    useState<BookingResponse | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [selectedReviewBooking, setSelectedReviewBooking] =
     useState<SingleBooking | null>(null);
@@ -177,131 +204,204 @@ export function PlayerBookingsPage() {
     setSelectedBookingId(null);
   };
 
-  const handleViewDetails = (booking: BookingResponse) => {
-    setSelectedBooking(booking);
-    setDetailDialogOpen(true);
-  };
-
   const handleReviewSuccess = (bookingId: string, review: ReviewItem) => {
     updateSingleBookingReview(bookingId, review);
-    if (selectedBooking && selectedBooking.type === "SINGLE" && selectedBooking.id === bookingId) {
-      setSelectedBooking({
-        ...selectedBooking,
-        review,
-      });
-    }
     // Đóng review dialog
     setReviewDialogOpen(false);
     toast.success("Đánh giá của bạn đã được lưu");
   };
 
-  // ─── Derived counters (of current page) ──────────────────────────────────
-  const pendingCount = bookings.filter(
-    (b) => b.status === BookingStatus.PENDING,
-  ).length;
-  const confirmedCount = bookings.filter(
-    (b) => b.status === BookingStatus.CONFIRMED,
-  ).length;
-  const cancellableCount = bookings.filter((b) => canCancelBooking(b)).length;
+  const statusCounts: Record<BookingStatus, number> = summary.byStatus;
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="relative">
-      {/* decorative backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-background to-background" />
-        <div className="absolute inset-0 sports-field-pattern opacity-[0.35]" />
-        <div className="absolute left-[-8%] top-[-10%] size-[420px] rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute right-[-6%] top-[5%] size-[340px] rounded-full bg-accent-sport/15 blur-3xl" />
-      </div>
+    <div className="min-h-[60vh] bg-background">
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-blue-950/80"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 sports-field-pattern opacity-[0.1]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-24 top-24 size-72 rounded-full bg-primary/25 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 top-8 size-80 rounded-full bg-accent-sport/25 blur-3xl"
+        />
 
-      <div className="page-shell flex flex-col gap-7 py-8">
-        {/* ── Hero header ─────────────────────────────────────────────── */}
-        <header className="flex flex-col gap-5">
-          <div className="flex flex-col gap-3">
-            
+        <div className="page-shell relative z-10 flex min-h-85 flex-col gap-8 py-12 sm:min-h-90 sm:py-16 lg:min-h-100 lg:gap-10 lg:py-20">
+          <Breadcrumb>
+            <BreadcrumbList className="text-white/60">
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild className="hover:text-white">
+                  <Link to="/">Trang chủ</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/30" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-white">Lịch sử đặt sân</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-            <div className="flex flex-wrap items-end justify-between gap-5">
-              <div className="flex max-w-2xl flex-col gap-2">
-                <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-5xl">
-                  Lịch sử đặt sân{" "}
-                  <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
-                    của bạn
-                  </span>
-                </h1>
-                <p className="text-sm text-muted-foreground sm:text-[15px]">
-                  Mỗi vé là một trận sắp đá, một hóa đơn cần chốt hoặc một kỉ
-                  niệm đã khép. Theo dõi, thanh toán, hủy lịch và đánh giá sân
-                  ở cùng một nơi.
-                </p>
-              </div>
-
-              {/* Stat pills */}
-              <div className="flex flex-wrap items-center gap-2">
-                <StatPill
-                  label="Chờ thanh toán"
-                  value={pendingCount}
-                  tone="amber"
-                  icon={CreditCard}
-                />
-                <StatPill
-                  label="Đã xác nhận"
-                  value={confirmedCount}
-                  tone="emerald"
-                  icon={CheckCircle2}
-                />
-                <StatPill
-                  label="Có thể hủy"
-                  value={cancellableCount}
-                  tone="sky"
-                  icon={Clock}
-                />
-              </div>
+          <header className="flex flex-col gap-2">
+            <div className="flex max-w-2xl flex-col gap-2">
+              <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+                Lịch sử đặt sân{" "}
+                <span className="bg-linear-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
+                  của bạn
+                </span>
+              </h1>
+              <p className="text-base text-white/70 sm:text-lg">
+                Mỗi vé là một trận sắp đá, một hóa đơn cần chốt hoặc một kỉ niệm đã
+                khép. Theo dõi, thanh toán, hủy lịch và đánh giá sân ở cùng một nơi.
+              </p>
             </div>
-          </div>
+          </header>
+        </div>
 
-          
-        </header>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-b from-transparent to-background"
+        />
+      </section>
 
-        {/* ── Ticket list ──────────────────────────────────────────── */}
-        <section className="flex flex-col gap-3">
+      <section className="page-shell py-10">
+        <div className="flex flex-col gap-8">
+          {/* ── Status Tabs ───────────────────────────────────────────── */}
+          <Tabs
+            value={selectedStatus}
+            onValueChange={(value) => {
+              setSelectedStatus(value as BookingStatus | "ALL");
+              setPage(1);
+            }}
+          >
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-transparent p-0 sm:grid-cols-2 lg:grid-cols-5">
+              <TabsTrigger
+                value="ALL"
+                className={cn(
+                  "group flex h-auto flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card/70 px-3 py-2.5 text-left shadow-sm backdrop-blur-sm",
+                  "data-[state=active]:border-transparent data-[state=active]:shadow-md data-[state=active]:bg-primary/10 data-[state=active]:border-primary/30",
+                  "hover:border-border hover:bg-card",
+                )}
+              >
+                <div className="flex w-full items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="flex size-6 items-center justify-center rounded-lg bg-muted/70 text-foreground/80">
+                      <Zap className="size-3" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Tất cả
+                      </span>
+                      <span className="font-display text-xs font-bold italic text-foreground">
+                        Lịch sử
+                      </span>
+                    </span>
+                  </span>
+                  <span className="font-display text-lg font-black italic tabular-nums text-foreground">
+                    {summary.total}
+                  </span>
+                </div>
+              </TabsTrigger>
+              {Object.entries(BOOKING_STATUS_TAB_META).map(([status, meta]) => {
+                const Icon = meta.icon;
+                const count = statusCounts[status as BookingStatus] ?? 0;
+                return (
+                  <TabsTrigger
+                    key={status}
+                    value={status}
+                    className={cn(
+                      "group flex h-auto flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card/70 px-3 py-2.5 text-left shadow-sm backdrop-blur-sm",
+                      "data-[state=active]:border-transparent data-[state=active]:shadow-md",
+                      "hover:border-border hover:bg-card",
+                      meta.tint,
+                    )}
+                  >
+                    <div className="flex w-full items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="flex size-6 items-center justify-center rounded-lg bg-muted/70 text-foreground/80">
+                          <Icon className="size-3" />
+                        </span>
+                        <span className="flex flex-col">
+                          <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                            {meta.label.split(" ")[0]}
+                          </span>
+                          <span className="font-display text-xs font-bold italic text-foreground">
+                            {BOOKING_STATUS_LABELS[status as BookingStatus] ?? status}
+                          </span>
+                        </span>
+                      </span>
+                      <span className="font-display text-lg font-black italic tabular-nums text-foreground">
+                        {count}
+                      </span>
+                    </div>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-0.5 w-full origin-left rounded-full bg-transparent transition-all",
+                        "group-data-[state=active]:bg-gradient-to-r",
+                        status === BookingStatus.PENDING && "group-data-[state=active]:from-amber-500 group-data-[state=active]:to-amber-300",
+                        status === BookingStatus.CONFIRMED && "group-data-[state=active]:from-emerald-500 group-data-[state=active]:to-emerald-300",
+                        status === BookingStatus.COMPLETED && "group-data-[state=active]:from-sky-500 group-data-[state=active]:to-sky-300",
+                        status === BookingStatus.CANCELED && "group-data-[state=active]:from-rose-500 group-data-[state=active]:to-rose-300",
+                      )}
+                    />
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
+
+          {/* ── Booking Cards Grid ───────────────────────────────────── */}
           {loading && bookings.length === 0 ? (
-            <TicketSkeletonList />
+            <BookingCardSkeletonGrid />
+          ) : bookings.length === 0 ? (
+            <EmptyLedger />
           ) : bookings.length === 0 ? (
             <EmptyLedger />
           ) : (
-            bookings.map((booking) => (
-              <BookingTicket
-                key={`${booking.type}-${booking.id}`}
-                booking={booking}
-                loading={loading}
-                paying={payingBookingId === booking.id}
-                anyPaying={Boolean(payingBookingId)}
-                onPay={handlePayment}
-                onViewDetails={handleViewDetails}
-                onRequestCancel={() => {
-                  setSelectedBookingId(booking.id);
-                  setSelectedBookingType(booking.type);
-                  setDeleteDialogOpen(true);
-                }}
-              />
-            ))
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
+              {bookings.map((booking) => (
+                <BookingCard
+                  key={`${booking.type}-${booking.id}`}
+                  booking={booking}
+                  loading={loading}
+                  paying={payingBookingId === booking.id}
+                  anyPaying={Boolean(payingBookingId)}
+                  onPay={handlePayment}
+                  onRequestCancel={() => {
+                    setSelectedBookingId(booking.id);
+                    setSelectedBookingType(booking.type);
+                    setDeleteDialogOpen(true);
+                  }}
+                  onReviewClick={() => {
+                    if (booking.type === "SINGLE") {
+                      setSelectedReviewBooking(booking);
+                      setReviewDialogOpen(true);
+                    }
+                  }}
+                />
+              ))}
+            </div>
           )}
-        </section>
 
-        {/* ── Pagination ───────────────────────────────────────────── */}
-        {totalPages > 1 && (
-          <PaginationBar
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            disabled={loading}
-          />
-        )}
-      </div>
+          {/* ── Pagination ───────────────────────────────────────────── */}
+          {bookings.length > 0 && totalPages > 1 && (
+            <PaginationBar
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              disabled={loading}
+            />
+          )}
+        </div>
+      </section>
 
       {/* ── Dialogs (unchanged wiring) ────────────────────────────── */}
       <DeleteBookingDialog
@@ -325,92 +425,38 @@ export function PlayerBookingsPage() {
         onSuccess={handleReviewSuccess}
       />
 
-      <BookingDetailDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        booking={selectedBooking}
-        onReviewClick={() => {
-          if (selectedBooking && selectedBooking.type === "SINGLE") {
-            setSelectedReviewBooking(selectedBooking);
-            setReviewDialogOpen(true);
-          }
-        }}
-        canCreateReview={selectedBooking ? canCreateReviewBooking(selectedBooking) : false}
-        canUpdateReview={selectedBooking ? canUpdateReviewBooking(selectedBooking) : false}
-      />
+
     </div>
   );
 }
 
-// ─── Stat pill (header) ───────────────────────────────────────────────────
-function StatPill({
-  label,
-  value,
-  tone,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  tone: "amber" | "emerald" | "sky";
-  icon: LucideIcon;
-}) {
-  const toneClass: Record<typeof tone, string> = {
-    amber:
-      "border-amber-200/80 bg-amber-50/90 text-amber-800 [--dot:theme(colors.amber.500)]",
-    emerald:
-      "border-emerald-200/80 bg-emerald-50/90 text-emerald-800 [--dot:theme(colors.emerald.500)]",
-    sky: "border-sky-200/80 bg-sky-50/90 text-sky-800 [--dot:theme(colors.sky.500)]",
-  };
-
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 shadow-sm backdrop-blur-sm",
-        toneClass[tone],
-      )}
-    >
-      <span className="grid size-8 place-items-center rounded-xl bg-white/70">
-        <Icon className="size-4" />
-      </span>
-      <div className="flex flex-col leading-tight">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">
-          {label}
-        </span>
-        <span className="font-display text-lg font-black italic tabular-nums">
-          {value}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Booking ticket ───────────────────────────────────────────────────────
-interface BookingTicketProps {
+// ─── Booking card (grid-friendly) ───────────────────────────────────────
+interface BookingCardProps {
   booking: BookingResponse;
   loading: boolean;
   paying: boolean;
   anyPaying: boolean;
   onPay: (ids: string[], id: string) => void;
-  onViewDetails: (booking: BookingResponse) => void;
   onRequestCancel: () => void;
+  onReviewClick: () => void;
 }
 
-function BookingTicket({
+function BookingCard({
   booking,
   loading,
   paying,
   anyPaying,
   onPay,
-  onViewDetails,
   onRequestCancel,
-}: BookingTicketProps) {
+  onReviewClick,
+}: BookingCardProps) {
   const isSingle = booking.type === "SINGLE";
   const statusVisual = STATUS_VISUAL[booking.status];
   const StatusIcon = statusVisual.icon;
-
-  const stubClass =
-    SPORT_STUB_STYLE[booking.sport_type] ??
-    "bg-gradient-to-br from-slate-700 to-slate-900 text-white";
+  const canCancel = canCancelBooking(booking);
+  const isPending = booking.status === BookingStatus.PENDING;
+  const canReview = canCreateReviewBooking(booking);
+  const hasReview = canUpdateReviewBooking(booking);
 
   const statusLabel = isSingle
     ? BOOKING_STATUS_LABELS[booking.status] ?? booking.status
@@ -420,163 +466,125 @@ function BookingTicket({
     SPORT_TYPE_LABELS[booking.sport_type as keyof typeof SPORT_TYPE_LABELS] ??
     booking.sport_type;
 
-  // Primary date for stub
   const stubDate = isSingle
     ? new Date(booking.start_time)
     : new Date(booking.start_date);
 
-  const canCancel = canCancelBooking(booking);
-  const isPending = booking.status === BookingStatus.PENDING;
-
   return (
     <article
-      onClick={() => onViewDetails(booking)}
       className={cn(
-        "group relative isolate flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md sm:flex-row cursor-pointer",
-        isPending && "ring-1 ring-amber-200/70",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card hover:border-primary/40",
+        isPending && "ring-1 ring-amber-200/50",
       )}
     >
-      {/* Stub (date) */}
-      <div
-        className={cn(
-          "relative flex w-full shrink-0 items-center justify-between px-5 py-4 sm:w-[148px] sm:flex-col sm:items-start sm:justify-center sm:py-5",
-          stubClass,
-        )}
-      >
-        <div className="flex flex-col leading-none">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/70">
-            {format(stubDate, "EEEE", { locale: vi })}
-          </span>
-          <span className="mt-0.5 font-display text-4xl font-black italic tabular-nums">
-            {format(stubDate, "dd")}
-          </span>
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/85">
-            {format(stubDate, "MMM yyyy", { locale: vi })}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 rounded-full bg-black/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/95 backdrop-blur-sm sm:mt-4 sm:self-start">
-          {isSingle ? (
-            <CalendarDays className="size-3" />
-          ) : (
-            <RefreshCcw className="size-3" />
-          )}
-          {isSingle ? "Một lần" : "Định kỳ"}
-        </div>
-
-        {/* perforation (desktop only) */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -right-2 top-1/2 hidden size-4 -translate-y-1/2 rounded-full border border-border/70 bg-background sm:block"
-        />
-      </div>
-
-      {/* Body */}
-      <div className="flex min-w-0 flex-1 flex-col gap-3 border-t border-dashed border-border/70 p-4 sm:border-l sm:border-t-0 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className="border-primary/25 bg-primary/5 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-primary"
-              >
-                <Ticket className="size-3" data-icon="inline-start" />
-                {sportLabel}
-              </Badge>
-              {isPending && booking.expires_at && (
-                <ExpiresChip expiresAt={booking.expires_at} />
-              )}
-            </div>
-            <h3 className="truncate font-display text-lg font-bold leading-tight tracking-tight text-foreground">
-              {booking.complex_name}
-            </h3>
-            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <MapPin className="size-3.5 shrink-0 text-primary/70" />
-              <span className="truncate">
-                {booking.sub_field_name}
-                {booking.complex_address && (
-                  <span className="text-muted-foreground/70">
-                    {" "}
-                    · {booking.complex_address}
-                  </span>
-                )}
-              </span>
-            </p>
+      {/* ── Main Content ──────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 p-4 sm:p-5">
+        {/* Top row: Sport badge + Status */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-primary/25 bg-primary/5 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary"
+            >
+              <Ticket className="size-3" data-icon="inline-start" />
+              {sportLabel}
+            </Badge>
+            {isPending && booking.expires_at && (
+              <ExpiresChip expiresAt={booking.expires_at} />
+            )}
           </div>
-
           <Badge
             variant="outline"
             className={cn(
-              "gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+              "gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold shrink-0",
               statusVisual.className,
             )}
           >
-            <StatusIcon className="size-3.5" data-icon="inline-start" />
+            <StatusIcon className="size-3" data-icon="inline-start" />
             {statusLabel}
           </Badge>
         </div>
 
-        {/* Meta strip */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
+        {/* Complex name + Address */}
+        <div className="flex flex-col gap-1">
+          <h3 className="line-clamp-2 font-display text-base font-bold leading-tight tracking-tight text-foreground">
+            {booking.complex_name}
+          </h3>
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground line-clamp-2">
+            <MapPin className="size-3.5 shrink-0 text-primary/70" />
+            <span className="truncate">
+              {booking.sub_field_name}
+              {booking.complex_address && (
+                <span className="text-muted-foreground/70">
+                  {" "}
+                  · {booking.complex_address}
+                </span>
+              )}
+            </span>
+          </p>
+        </div>
+
+        {/* Date/Time + Recurrence info */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <div className="flex items-center gap-1 font-semibold text-foreground">
+            <CalendarDays className="size-3.5 text-primary/70" />
+            {format(stubDate, "dd MMM yyyy", { locale: vi })}
+          </div>
           {isSingle ? (
-            <MetaItem
-              icon={Clock}
-              label={`${format(new Date(booking.start_time), "HH:mm")} – ${format(
-                new Date(booking.end_time),
-                "HH:mm",
-              )}`}
-            />
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="size-3.5" />
+              {format(new Date(booking.start_time), "HH:mm")} –{" "}
+              {format(new Date(booking.end_time), "HH:mm")}
+            </div>
           ) : (
             <>
-              <MetaItem
-                icon={CalendarRange}
-                label={`${format(new Date(booking.start_date), "dd/MM")} – ${format(
-                  new Date(booking.end_date),
-                  "dd/MM/yyyy",
-                )}`}
-              />
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <RefreshCcw className="size-3.5" />
+                {booking.total_slots} buổi
+              </div>
               {booking.bookings.length > 0 && (
-                <MetaItem
-                  icon={Clock}
-                  label={`${format(
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Clock className="size-3.5" />
+                  {format(
                     new Date(booking.bookings[0].start_time),
                     "HH:mm",
-                  )} – ${format(
+                  )} –{" "}
+                  {format(
                     new Date(booking.bookings[0].end_time),
                     "HH:mm",
-                  )}`}
-                />
+                  )}
+                </div>
               )}
-              <MetaItem
-                icon={RefreshCcw}
-                label={`${booking.total_slots} buổi · ${
-                  RECURRENCE_TYPE_LABELS[booking.recurrence_type] ??
-                  booking.recurrence_type
-                }`}
-                tone="primary"
-              />
             </>
           )}
         </div>
-      </div>
 
-      {/* Right cuống — price + actions */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-t border-dashed border-border/70 bg-surface-2/60 px-4 py-3 sm:w-[220px] sm:flex-col sm:items-end sm:justify-center sm:border-l sm:border-t-0 sm:px-5 sm:py-5">
-        <div className="flex flex-col leading-tight sm:items-end sm:text-right">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Tổng tiền
+        {/* Price */}
+        <div className="flex items-baseline gap-1 border-t border-border/50 pt-3 mt-1">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Tổng:
           </span>
-          <span className="font-display text-2xl font-black italic tabular-nums text-foreground">
+          <span className="font-display text-xl font-black italic tabular-nums text-foreground">
             {formatPrice(booking.total_price)}
           </span>
         </div>
 
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        {/* Review section inline - always visible */}
+        {(canReview || hasReview) && (
+          <ReviewSectionInline
+            booking={booking as SingleBooking}
+            canCreate={canReview}
+            hasExisting={hasReview}
+            onEditClick={onReviewClick}
+          />
+        )}
+
+        {/* Action buttons - always visible */}
+        <div className="flex items-center gap-2 pt-2 flex-wrap">
           {isPending && (
             <Button
               size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 if (booking.type === "SINGLE") {
                   void onPay([booking.id], booking.id);
                   return;
@@ -587,7 +595,7 @@ function BookingTicket({
                 );
               }}
               disabled={loading || anyPaying}
-              className="h-9"
+              className="flex-1 min-w-32"
             >
               <CreditCard data-icon="inline-start" />
               {paying ? "Đang chuyển..." : "Thanh toán"}
@@ -604,15 +612,12 @@ function BookingTicket({
                   disabled={loading || paying}
                 >
                   <MoreHorizontal className="size-4" />
-                  <span className="sr-only">Mở menu hành động</span>
+                  <span className="sr-only">Menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRequestCancel();
-                  }}
+                  onClick={onRequestCancel}
                   className="text-rose-600 focus:bg-rose-50 focus:text-rose-700"
                 >
                   <X data-icon="inline-start" />
@@ -627,29 +632,67 @@ function BookingTicket({
   );
 }
 
-// ─── Meta item ────────────────────────────────────────────────────────────
-function MetaItem({
-  icon: Icon,
-  label,
-  tone = "muted",
+// ─── Review section (inline) ──────────────────────────────────────────────
+function ReviewSectionInline({
+  booking,
+  canCreate,
+  hasExisting,
+  onEditClick,
 }: {
-  icon: LucideIcon;
-  label: string;
-  tone?: "muted" | "primary";
+  booking: SingleBooking;
+  canCreate: boolean;
+  hasExisting: boolean;
+  onEditClick: () => void;
 }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5",
-        tone === "primary"
-          ? "font-semibold text-primary"
-          : "text-muted-foreground",
-      )}
-    >
-      <Icon className="size-3.5 shrink-0" />
-      <span className="whitespace-nowrap">{label}</span>
-    </span>
-  );
+  const [showDetails, setShowDetails] = useState(false);
+
+  if (!hasExisting && !canCreate) return null;
+
+  if (hasExisting && booking.review) {
+    return (
+      <div
+        className="rounded-lg bg-amber-50 border border-amber-200 p-3 transition-all cursor-pointer group"
+        onMouseEnter={() => setShowDetails(true)}
+        onMouseLeave={() => setShowDetails(false)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Star className="size-4 fill-amber-400 text-amber-400" />
+            <span className="font-semibold text-amber-900">
+              {booking.review.rating}/5 sao
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onEditClick}
+            className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            Chỉnh sửa
+          </Button>
+        </div>
+        {showDetails && booking.review.comment && (
+          <p className="text-xs text-amber-800 italic mt-2">"{booking.review.comment}"</p>
+        )}
+      </div>
+    );
+  }
+
+  if (canCreate) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEditClick}
+        className="w-full justify-center"
+      >
+        <Star className="size-4" data-icon="inline-start" />
+        Thêm đánh giá
+      </Button>
+    );
+  }
+
+  return null;
 }
 
 // ─── Expiry chip (for PENDING) ────────────────────────────────────────────
@@ -662,31 +705,43 @@ function ExpiresChip({ expiresAt }: { expiresAt: string }) {
   );
 }
 
-// ─── Skeleton list ────────────────────────────────────────────────────────
-function TicketSkeletonList() {
+// ─── Skeleton grid ────────────────────────────────────────────────────────
+function BookingCardSkeletonGrid() {
   return (
-    <div className="flex flex-col gap-3">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
+      {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card sm:flex-row"
+          className="flex flex-col gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card p-4 sm:p-5"
         >
-          <Skeleton className="h-24 w-full shrink-0 sm:h-auto sm:w-[148px]" />
-          <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
               <Skeleton className="h-5 w-20 rounded-full" />
-              <Skeleton className="h-5 w-28 rounded-full" />
             </div>
-            <Skeleton className="h-5 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-            <div className="flex gap-4">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-24" />
-            </div>
+            <Skeleton className="h-5 w-20 rounded-full" />
           </div>
-          <div className="flex items-center justify-between gap-3 border-t border-dashed border-border/70 bg-surface-2/60 px-4 py-3 sm:w-[220px] sm:flex-col sm:items-end sm:border-l sm:border-t-0 sm:py-5">
-            <Skeleton className="h-8 w-28" />
-            <Skeleton className="h-9 w-28 rounded-md" />
+
+          {/* Title */}
+          <Skeleton className="h-5 w-2/3" />
+
+          {/* Address */}
+          <Skeleton className="h-4 w-full" />
+
+          {/* Date/Time */}
+          <div className="flex gap-4">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+
+          {/* Price */}
+          <Skeleton className="h-6 w-32 mt-1" />
+
+          {/* Buttons */}
+          <div className="flex gap-2 pt-2">
+            <Skeleton className="h-9 flex-1 rounded-md" />
+            <Skeleton className="h-9 w-9 rounded-full" />
           </div>
         </div>
       ))}

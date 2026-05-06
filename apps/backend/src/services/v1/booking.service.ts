@@ -838,6 +838,7 @@ export const getPlayerBookings = async (
   player_id: string,
   page = 1,
   limit = 8,
+  status?: BookingStatus,
 ) => {
   const player = await prisma.player.findUnique({
     where: { id: player_id, status: "ACTIVE" },
@@ -846,9 +847,14 @@ export const getPlayerBookings = async (
     throw new ForbiddenError("You are not allowed to view bookings");
   }
 
-  const [singleBookings, recurringBookings] = await Promise.all([
+  const [singleBookings, recurringBookings, singleSummary, recurringSummary] =
+    await Promise.all([
     prisma.booking.findMany({
-      where: { player_id, recurring_booking_id: null },
+      where: {
+        player_id,
+        recurring_booking_id: null,
+        ...(status ? { status } : {}),
+      },
       select: {
         id: true,
         start_time: true,
@@ -884,10 +890,26 @@ export const getPlayerBookings = async (
       take: QUERY_HARD_LIMIT,
     }),
     prisma.recurringBooking.findMany({
-      where: { player_id },
+      where: {
+        player_id,
+        ...(status ? { status } : {}),
+      },
       select: recurringBookingSelect,
       orderBy: { created_at: "desc" },
       take: QUERY_HARD_LIMIT,
+    }),
+    prisma.booking.groupBy({
+      by: ["status"],
+      where: {
+        player_id,
+        recurring_booking_id: null,
+      },
+      _count: { status: true },
+    }),
+    prisma.recurringBooking.groupBy({
+      by: ["status"],
+      where: { player_id },
+      _count: { status: true },
     }),
   ]);
 
@@ -917,9 +939,32 @@ export const getPlayerBookings = async (
 
   const total = allBookings.length;
   const skip = (page - 1) * limit;
+  const statusSummary = {
+    PENDING: 0,
+    CONFIRMED: 0,
+    COMPLETED: 0,
+    CANCELED: 0,
+  };
+
+  for (const item of singleSummary) {
+    statusSummary[item.status] += item._count.status;
+  }
+  for (const item of recurringSummary) {
+    statusSummary[item.status] += item._count.status;
+  }
+
+  const totalSummary =
+    statusSummary.PENDING +
+    statusSummary.CONFIRMED +
+    statusSummary.COMPLETED +
+    statusSummary.CANCELED;
 
   return {
     bookings: allBookings.slice(skip, skip + limit),
+    summary: {
+      total: totalSummary,
+      by_status: statusSummary,
+    },
     pagination: {
       total,
       page,

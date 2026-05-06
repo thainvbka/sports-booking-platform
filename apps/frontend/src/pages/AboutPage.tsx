@@ -131,7 +131,7 @@ export function AboutPage() {
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
         />
 
-        <div className="page-shell relative z-10 pt-8 pb-20 md:pt-10 md:pb-28">
+        <div className="page-shell relative z-10 flex min-h-[340px] flex-col py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:py-20">
           <Breadcrumb>
             <BreadcrumbList className="text-white/70">
               <BreadcrumbItem>
@@ -146,11 +146,11 @@ export function AboutPage() {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="mt-10 grid items-center gap-10 lg:mt-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="mt-8 grid items-center gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <div className="flex flex-col gap-6">
               
 
-              <h1 className="font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
+              <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Sân thể thao,{" "}
                 <span className="bg-gradient-to-br from-accent-sport via-emerald-300 to-white bg-clip-text italic text-transparent">
                   không drama.
@@ -159,7 +159,7 @@ export function AboutPage() {
                 Đặt sân, đá liền.
               </h1>
 
-              <p className="max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
+              <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
                 T-Sport tin rằng việc tìm sân thể thao với bạn
                 thì không nên phức tạp hơn một cú vuốt điện thoại. Chúng tôi
                 dựng nên cây cầu giữa chủ sân và người chơi — rõ ràng, nhanh chóng,
@@ -247,6 +247,11 @@ export function AboutPage() {
             </div>
           </div>
         </div>
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background"
+        />
       </section>
 
       {/* ── STATS RIBBON ─────────────────────────────────────────────── */}

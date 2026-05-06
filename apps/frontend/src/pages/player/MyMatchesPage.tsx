@@ -5,6 +5,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -139,99 +147,131 @@ export function MyMatchesPage() {
   const displayName = user?.full_name || "Người chơi";
 
   return (
-    <div className="relative min-h-[60vh] bg-background">
-      {/* Decorative backdrop — stadium floodlight vibe */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-primary/8 via-accent-sport/5 to-transparent"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] sports-field-pattern opacity-[0.05]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-24 top-24 size-64 rounded-full bg-accent-sport/20 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-24 top-12 size-72 rounded-full bg-primary/15 blur-3xl"
-      />
+    <div className="min-h-[60vh] bg-background">
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-blue-950/80"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,hsl(142_76%_36%/0.35),transparent_55%),radial-gradient(circle_at_85%_30%,hsl(217_91%_60%/0.35),transparent_60%)]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 sports-field-pattern opacity-[0.1]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-24 top-24 size-72 rounded-full bg-accent-sport/30 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 top-12 size-80 rounded-full bg-primary/25 blur-3xl"
+        />
 
-      <div className="page-shell relative flex flex-col gap-8 py-8 lg:py-12">
-        {/* ─── Personal Header ──────────────────────────────────────── */}
-        <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex flex-col gap-3">
-           
+        <div className="page-shell relative flex min-h-[340px] flex-col gap-8 py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:gap-10 lg:py-20">
+          <Breadcrumb>
+            <BreadcrumbList className="text-white/60">
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild className="hover:text-white">
+                  <Link to="/">Trang chủ</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/30" />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild className="hover:text-white">
+                  <Link to="/matches">Kèo đấu</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/30" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-white">Kèo của tôi</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-            <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl">
+          {/* ─── Personal Header ──────────────────────────────────────── */}
+          <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex flex-col gap-3">
+              <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               Kèo của{" "}
               <span className="bg-gradient-to-r from-primary via-blue-500 to-accent-sport bg-clip-text text-transparent">
                 tôi
               </span>
             </h1>
 
-            <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
+              <p className="max-w-xl text-base text-white/70 sm:text-lg">
               Sổ tay cá nhân cho các kèo bạn đã tạo, đã tham gia và đang chờ
               chủ kèo duyệt.
             </p>
 
-            <div className="mt-1 inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-card/80 py-1 pl-1 pr-3 shadow-sm backdrop-blur-sm">
-              <Avatar className="size-6 shrink-0 ring-1 ring-border">
-                <AvatarImage src={user?.avatar ?? undefined} alt={displayName} />
-                <AvatarFallback className="bg-muted text-[10px] font-semibold">
-                  {getNameInitials(displayName, "P")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs font-semibold text-foreground">
-                {displayName}
-              </span>
-              <span
-                aria-hidden
-                className="inline-block h-3 w-px bg-border"
-              />
-              <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Player
-              </span>
+              <div className="mt-1 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1 pl-1 pr-3 shadow-sm backdrop-blur-sm">
+                <Avatar className="size-6 shrink-0 ring-1 ring-white/30">
+                  <AvatarImage src={user?.avatar ?? undefined} alt={displayName} />
+                  <AvatarFallback className="bg-white/20 text-[10px] font-semibold text-white">
+                    {getNameInitials(displayName, "P")}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-semibold text-white">
+                  {displayName}
+                </span>
+                <span
+                  aria-hidden
+                  className="inline-block h-3 w-px bg-white/30"
+                />
+                <span className="text-[11px] uppercase tracking-[0.18em] text-white/70">
+                  Player
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
-            <Select
-              value={status}
-              onValueChange={(value) => {
-                setStatus(parseMatchStatus(value));
-                setPage(1);
-              }}
-            >
-              <SelectTrigger
-                size="sm"
-                className="h-10 gap-1.5 rounded-lg border-border/60 bg-background text-sm font-medium"
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+              <Select
+                value={status}
+                onValueChange={(value) => {
+                  setStatus(parseMatchStatus(value));
+                  setPage(1);
+                }}
               >
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                {MATCH_STATUS_OPTIONS.map((item) => (
-                  <SelectItem key={item} value={item}>
-                    {MATCH_STATUS_BADGE_CONFIG[item].label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              asChild
-              size="lg"
-              className="self-start sm:self-auto"
-            >
-              <Link to="/matches">
-                <Sparkles data-icon="inline-start" />
-                Khám phá kèo mới
-                <ArrowUpRight data-icon="inline-end" />
-              </Link>
-            </Button>
-          </div>
-        </header>
+                <SelectTrigger
+                  size="sm"
+                  className="h-10 gap-1.5 rounded-lg border-white/30 bg-white/10 text-sm font-medium text-white"
+                >
+                  <SelectValue placeholder="Trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                  {MATCH_STATUS_OPTIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {MATCH_STATUS_BADGE_CONFIG[item].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                asChild
+                size="lg"
+                className="self-start bg-white text-slate-950 hover:bg-white/90 sm:self-auto"
+              >
+                <Link to="/matches">
+                  <Sparkles data-icon="inline-start" />
+                  Khám phá kèo mới
+                  <ArrowUpRight data-icon="inline-end" />
+                </Link>
+              </Button>
+            </div>
+          </header>
+        </div>
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background"
+        />
+      </section>
+
+      <section className="page-shell py-10">
+        <div className="flex flex-col gap-8">
 
         {/* ─── Category Tiles (Tabs) ────────────────────────────────── */}
         <Tabs
@@ -397,8 +437,9 @@ export function MyMatchesPage() {
             disabled={isLoading}
           />
         ) : null}
+        </div>
+      </section>
       </div>
-    </div>
   );
 }
 

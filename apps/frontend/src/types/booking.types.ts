@@ -95,6 +95,10 @@ export type BookingResponse = SingleBookingResponse | RecurringBookingResponse;
 
 export interface BookingListResponse {
   bookings: BookingResponse[];
+  summary?: {
+    total: number;
+    by_status: Record<BookingStatus, number>;
+  };
   pagination: PaginationMeta;
 }
 

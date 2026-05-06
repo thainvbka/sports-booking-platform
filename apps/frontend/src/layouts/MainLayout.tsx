@@ -57,8 +57,8 @@ type NavItem = {
 const BASE_NAV_ITEMS: NavItem[] = [
   { label: "Tìm sân", href: "/search", icon: MapPin, description: "Khám phá cụm sân quanh bạn" },
   { label: "Kèo đấu", href: "/matches", icon: Swords, description: "Tham gia trận mở đang tuyển" },
-  { label: "Về chúng tôi", href: "/about", icon: Info, description: "Câu chuyện T-Sport" },
   { label: "Liên hệ", href: "/contact", icon: LifeBuoy, description: "Hỗ trợ & góp ý" },
+  { label: "Về chúng tôi", href: "/about", icon: Info, description: "Câu chuyện T-Sport" },
 ];
 
 const PLAYER_ITEMS: NavItem[] = [

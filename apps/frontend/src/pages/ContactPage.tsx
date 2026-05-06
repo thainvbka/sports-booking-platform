@@ -139,79 +139,85 @@ export function ContactPage() {
   };
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-background">
-      {/* ── Atmospheric backdrop ─ */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-primary/8 via-primary/[0.03] to-transparent"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px] sports-field-pattern opacity-[0.08]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 right-[5%] size-[26rem] rounded-full bg-primary/15 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-20 left-[8%] size-80 rounded-full bg-accent-sport/12 blur-3xl"
-      />
+    <div className="min-h-screen bg-background">
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-blue-950/80"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 sports-field-pattern opacity-[0.1]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 right-[5%] size-[26rem] rounded-full bg-primary/25 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-20 left-[8%] size-80 rounded-full bg-accent-sport/22 blur-3xl"
+        />
 
-      <div className="page-shell relative z-10 pt-8 pb-16 md:pt-10 md:pb-20">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/">Trang chủ</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Liên hệ</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="page-shell relative z-10 flex min-h-[340px] flex-col gap-8 py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:gap-10 lg:py-20">
+          <Breadcrumb>
+            <BreadcrumbList className="text-white/60">
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild className="hover:text-white">
+                  <Link to="/">Trang chủ</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-white/30" />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="text-white">Liên hệ</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
-        {/* ── HERO ─────────────────────────────────────────────── */}
-        <header className="mt-8 flex flex-col gap-5">
+          <header className="flex flex-col gap-5">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div className="flex max-w-3xl flex-col gap-3">
+                <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+                  Cần một tay?{" "}
+                  <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
+                    Gọi chúng tôi vào sân.
+                  </span>
+                </h1>
+                <p className="max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">
+                  Đội hỗ trợ T-Sport trực 7 ngày trong tuần, từ 8h sáng tới 10h đêm.
+                  Có thắc mắc về booking, thanh toán hay hợp tác — hãy để lại tin,
+                  chúng tôi sẽ phản hồi sớm nhất có thể.
+                </p>
+              </div>
 
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div className="flex max-w-3xl flex-col gap-3">
-              <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem]">
-                Cần một tay?{" "}
-                <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
-                  Gọi chúng tôi vào sân.
-                </span>
-              </h1>
-              <p className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-                Đội hỗ trợ T-Sport trực 7 ngày trong tuần, từ 8h sáng tới 10h
-                đêm. Có thắc mắc về booking, thanh toán hay hợp tác — hãy để lại
-                tin, chúng tôi sẽ phản hồi sớm nhất có thể.
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="gap-1.5 rounded-full border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm"
+                >
+                  <Sparkles data-icon="inline-start" />
+                  Trả lời &lt; 10 phút
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="gap-1.5 rounded-full border-accent-sport/40 bg-accent-sport/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-sport"
+                >
+                  <LifeBuoy data-icon="inline-start" />
+                  Trực 7/7
+                </Badge>
+              </div>
             </div>
+          </header>
+        </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className="gap-1.5 rounded-full border-border/70 bg-background/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm"
-              >
-                <Sparkles data-icon="inline-start" />
-                Trả lời &lt; 10 phút
-              </Badge>
-              <Badge
-                variant="outline"
-                className="gap-1.5 rounded-full border-accent-sport/30 bg-accent-sport/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-sport"
-              >
-                <LifeBuoy data-icon="inline-start" />
-                Trực 7/7
-              </Badge>
-            </div>
-          </div>
-        </header>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-background"
+        />
+      </section>
 
+      <div className="page-shell py-10">
         {/* ── Main grid: channels + form ─────────────────────────── */}
-        <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           {/* LEFT column: channels + hours + FAQ */}
           <div className="flex flex-col gap-5">
             {/* Channels */}

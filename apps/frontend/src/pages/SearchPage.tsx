@@ -425,7 +425,7 @@ function SearchHero({
            
 
             <h1 className="mt-4 font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
-              Tìm sân, chốt lịch,
+              Tìm sân, đặt sân, chốt lịch,
               <br className="hidden sm:block" />{" "}
               <span className="italic text-accent-sport">ra sân ngay hôm nay.</span>
             </h1>

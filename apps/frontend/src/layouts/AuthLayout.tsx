@@ -67,7 +67,7 @@ export function AuthLayout() {
                   T-Sport
                 </span>
                 <span className="font-display text-sm font-bold italic">
-                  Matchday Access
+                  Cổng đăng nhập
                 </span>
               </span>
             </Link>
@@ -92,7 +92,7 @@ export function AuthLayout() {
                 <span className="absolute inset-0 animate-ping rounded-full bg-accent-sport/70" />
                 <span className="relative inline-block size-1.5 rounded-full bg-accent-sport" />
               </span>
-              Kickoff đang mở
+              Sẵn sàng vào trận
             </span>
 
             <h2 className="max-w-lg font-display text-4xl font-black leading-[1.05] tracking-tight text-white xl:text-5xl">
@@ -127,7 +127,7 @@ export function AuthLayout() {
               {[
                 { value: "500+", label: "Sân" },
                 { value: "50k+", label: "Người chơi" },
-                { value: "4.8", label: "Điểm" },
+                { value: "4.8/5", label: "Đánh giá" },
               ].map((stat, idx) => (
                 <div
                   key={stat.label}

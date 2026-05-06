@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 interface UseBookingsOptions {
   pageSize?: number;
+  status?: BookingStatus | "ALL";
 }
 
 interface UseBookingsResult {
@@ -13,6 +14,10 @@ interface UseBookingsResult {
   loading: boolean;
   page: number;
   totalPages: number;
+  summary: {
+    total: number;
+    byStatus: Record<BookingStatus, number>;
+  };
   setPage: (nextPage: number) => void;
   updateBookingStatus: (
     bookingId: string,
@@ -29,11 +34,21 @@ const DEFAULT_PAGE_SIZE = 8;
 
 export function useBookings({
   pageSize = DEFAULT_PAGE_SIZE,
+  status = "ALL",
 }: UseBookingsOptions = {}): UseBookingsResult {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPageState] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [summary, setSummary] = useState<UseBookingsResult["summary"]>({
+    total: 0,
+    byStatus: {
+      [BookingStatus.PENDING]: 0,
+      [BookingStatus.CONFIRMED]: 0,
+      [BookingStatus.COMPLETED]: 0,
+      [BookingStatus.CANCELED]: 0,
+    },
+  });
   const [searchParams, setSearchParams] = useSearchParams();
 
   const setPage = useCallback((nextPage: number) => {
@@ -44,17 +59,44 @@ export function useBookings({
     setLoading(true);
 
     try {
-      const res = await bookingService.getAllBookings(page, pageSize);
+      const effectiveStatus = status === "ALL" ? undefined : status;
+      const res = await bookingService.getAllBookings(
+        page,
+        pageSize,
+        effectiveStatus,
+      );
       setBookings(res.data.bookings || []);
       setTotalPages(res.data.pagination?.totalPages || 1);
+      setSummary({
+        total: res.data.summary?.total ?? 0,
+        byStatus: {
+          [BookingStatus.PENDING]:
+            res.data.summary?.by_status?.[BookingStatus.PENDING] ?? 0,
+          [BookingStatus.CONFIRMED]:
+            res.data.summary?.by_status?.[BookingStatus.CONFIRMED] ?? 0,
+          [BookingStatus.COMPLETED]:
+            res.data.summary?.by_status?.[BookingStatus.COMPLETED] ?? 0,
+          [BookingStatus.CANCELED]:
+            res.data.summary?.by_status?.[BookingStatus.CANCELED] ?? 0,
+        },
+      });
     } catch {
       toast.error("Đã xảy ra lỗi khi tải lịch đặt sân");
       setBookings([]);
       setTotalPages(1);
+      setSummary({
+        total: 0,
+        byStatus: {
+          [BookingStatus.PENDING]: 0,
+          [BookingStatus.CONFIRMED]: 0,
+          [BookingStatus.COMPLETED]: 0,
+          [BookingStatus.CANCELED]: 0,
+        },
+      });
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize]);
+  }, [page, pageSize, status]);
 
   useEffect(() => {
     const urlPage = parseInt(searchParams.get("page") || "1", 10);
@@ -110,6 +152,7 @@ export function useBookings({
     loading,
     page,
     totalPages,
+    summary,
     setPage,
     updateBookingStatus,
     updateSingleBookingReview,

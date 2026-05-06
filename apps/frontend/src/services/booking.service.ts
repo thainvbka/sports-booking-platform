@@ -1,6 +1,7 @@
 import { api } from "@/lib/axios";
 import type {
   ApiResponse,
+  BookingStatus,
   BookingListResponse,
   BookingReviewResponse,
   CreateBookingData,
@@ -41,9 +42,20 @@ export const bookingService = {
     return response.data;
   },
 
-  getAllBookings: async (page: number = 1, limit: number = 8) => {
+  getAllBookings: async (
+    page: number = 1,
+    limit: number = 8,
+    status?: BookingStatus,
+  ) => {
+    const searchParams = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (status) {
+      searchParams.set("status", status);
+    }
     const response = await api.get<ApiResponse<BookingListResponse>>(
-      `/bookings?page=${page}&limit=${limit}`,
+      `/bookings?${searchParams.toString()}`,
     );
     return response.data;
   },

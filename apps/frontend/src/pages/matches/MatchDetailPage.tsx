@@ -538,7 +538,7 @@ function MatchHero({
         )}
       />
 
-      <div className="page-shell relative pb-14 pt-8 lg:pb-16 lg:pt-10">
+      <div className="page-shell relative flex min-h-[340px] flex-col py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:py-20">
         {/* Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
@@ -576,11 +576,11 @@ function MatchHero({
         </div>
 
         {/* Title */}
-        <h1 className="mt-4 max-w-4xl font-display text-3xl font-black italic leading-[1.08] tracking-tight sm:text-4xl lg:text-5xl">
+        <h1 className="mt-4 max-w-4xl font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
           {title}
         </h1>
         {description ? (
-          <p className="mt-3 max-w-3xl text-sm text-white/70 sm:text-base">
+          <p className="mt-3 max-w-3xl text-base text-white/70 sm:text-lg">
             {description}
           </p>
         ) : null}
