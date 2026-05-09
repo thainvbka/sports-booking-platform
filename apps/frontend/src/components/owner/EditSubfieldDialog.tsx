@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -95,13 +94,13 @@ export function EditSubfieldDialog({
                 <Pencil className="size-5" />
               </span>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="h-5 w-fit gap-1 rounded-full border-primary/20 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-primary"
                 >
                   <Dribbble className="size-2.5" />
-                  Subfield editor
-                </Badge>
+                  Chỉnh sửa sân
+                </Badge> */}
                 <DialogTitle className="font-display text-lg font-black italic tracking-tight">
                   Chỉnh sửa sân con
                 </DialogTitle>

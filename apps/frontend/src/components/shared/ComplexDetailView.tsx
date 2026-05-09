@@ -1,7 +1,6 @@
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SubFieldCard } from "@/components/shared/SubFieldCard";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -26,7 +25,6 @@ import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import {
   MapPin,
   Search,
-  TriangleAlert,
 } from "lucide-react";
 import React, { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -183,7 +181,7 @@ export function ComplexDetailView({
         </Breadcrumb>
       ) : null}
 
-      {/* Temporary notice for testers (owner mode only) */}
+      {/* Temporary notice for testers (owner mode only)
       {mode === "owner" ? (
         <Alert className="border-amber-200 bg-amber-50 text-amber-900">
           <TriangleAlert className="h-4 w-4 text-amber-700" />
@@ -192,7 +190,7 @@ export function ComplexDetailView({
             chức năng khác (chưa có chức năng duyệt của admin).
           </AlertDescription>
         </Alert>
-      ) : null}
+      ) : null} */}
 
       {/* Hero Image Section */}
       {complex.complex_image && (

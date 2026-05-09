@@ -30,7 +30,7 @@ interface UseBookingsResult {
   ) => void;
 }
 
-const DEFAULT_PAGE_SIZE = 8;
+const DEFAULT_PAGE_SIZE = 9;
 
 export function useBookings({
   pageSize = DEFAULT_PAGE_SIZE,

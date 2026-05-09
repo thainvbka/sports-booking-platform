@@ -65,7 +65,7 @@ import { toast } from "sonner";
 
 type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 
 const STATUS_VISUAL: Record<
   BookingStatus,

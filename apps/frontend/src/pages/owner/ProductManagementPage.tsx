@@ -487,7 +487,7 @@ export function ProductManagementPage() {
           <div className="flex min-w-0 flex-col gap-1.5">
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
-              Kho hàng · <span className="italic text-primary">Pro shop</span>
+              Quản lý <span className="italic text-primary">Sản phẩm</span>
             </h1>
             <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
               Theo dõi danh mục, giá bán và tồn kho của từng cơ sở — cảnh báo
@@ -510,7 +510,7 @@ export function ProductManagementPage() {
         <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <StatTile
             icon={Layers}
-            label="Tổng SKU"
+            label="Tổng số sản phẩm"
             value={totalItems}
             tone="slate"
             hint="Toàn bộ mặt hàng"

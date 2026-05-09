@@ -16,7 +16,6 @@ import {
   ArrowRight,
   Loader2,
   PackagePlus,
-  TrendingUp,
   Warehouse,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -86,13 +85,13 @@ export function UpdateProductStockDialog({
                 <PackagePlus className="size-5" />
               </span>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="h-5 w-fit gap-1 rounded-full border-emerald-300/50 bg-emerald-100 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-emerald-700"
                 >
                   <TrendingUp className="size-2.5" />
                   Restock
-                </Badge>
+                </Badge> */}
                 <DialogTitle className="font-display text-lg font-black italic tracking-tight">
                   Nhập thêm kho
                 </DialogTitle>

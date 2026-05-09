@@ -19,9 +19,8 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -48,7 +47,6 @@ import { formatPrice, getSportTypeLabel } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-  Ban,
   CalendarIcon,
   CircleDot,
   Clock,
@@ -66,7 +64,7 @@ import {
   Trash2,
   Users,
   Wallet,
-  X,
+  X
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -431,13 +429,7 @@ export function SubFieldDetailPage() {
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"
             />
-            <Badge
-              variant="secondary"
-              className="absolute left-2 top-2 h-5 gap-1 rounded-full px-2 text-[9.5px] font-semibold uppercase tracking-[0.18em]"
-            >
-              <CircleDot className="size-2.5" />
-              Court
-            </Badge>
+            
           </div>
 
           {/* Identity + stats */}
@@ -530,7 +522,7 @@ export function SubFieldDetailPage() {
               className="h-5 gap-1 rounded-full border-border/60 bg-background/70 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
             >
               <Wallet className="size-2.5" />
-              Pricing Console
+              Bảng cấu hình giá sân
             </Badge>
             {isToday ? (
               <Badge
@@ -911,15 +903,15 @@ export function SubFieldDetailPage() {
           )}
         </CardContent>
 
-        <CardFooter className="flex items-center justify-between border-t border-border/60 bg-muted/20 px-4 py-2.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <Ban className="size-3" />
-            Cấu hình chỉ ảnh hưởng {currentDayLabel}
-          </span>
-          <span className="hidden tabular-nums sm:inline">
-            {format(date, "dd · MM · yyyy")}
-          </span>
-        </CardFooter>
+          {/* <CardFooter className="flex items-center justify-between border-t border-border/60 bg-muted/20 px-4 py-2.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Ban className="size-3" />
+              Cấu hình chỉ ảnh hưởng {currentDayLabel}
+            </span>
+            <span className="hidden tabular-nums sm:inline">
+              {format(date, "dd · MM · yyyy")}
+            </span>
+          </CardFooter> */}
       </Card>
 
       {/* ── Dialogs (logic unchanged) ─────────────────────── */}

@@ -361,10 +361,10 @@ export const getAnalytics = async () => {
     bookingStatusCounts.map((s) => [s.status, s._count.id]),
   );
   const totalCreated = Object.values(statusMap).reduce((a, b) => a + b, 0);
-  const pendingCount   = statusMap["PENDING"]   || 0;  // chưa thanh toán
-  const completedCount = statusMap["COMPLETED"] || 0;  // đã TT, chờ chủ sân xác nhận
-  const confirmedCount = statusMap["CONFIRMED"] || 0;  // chủ sân đã xác nhận
-  const canceledCount  = statusMap["CANCELED"]  || 0;  // đã hủy
+  const pendingCount = statusMap["PENDING"] || 0; // chưa thanh toán
+  const completedCount = statusMap["COMPLETED"] || 0; // đã TT, chờ chủ sân xác nhận
+  const confirmedCount = statusMap["CONFIRMED"] || 0; // chủ sân đã xác nhận
+  const canceledCount = statusMap["CANCELED"] || 0; // đã hủy
   // Kiểm chứng: pendingCount + completedCount + confirmedCount + canceledCount = totalCreated
 
   const pctOf = (n: number) =>
@@ -374,10 +374,22 @@ export const getAnalytics = async () => {
     // Stage 0: tổng tham chiếu
     { stage: "Tạo booking", value: totalCreated, dropOffPct: 100 },
     // 4 nhóm mutually exclusive — dropOffPct = % của tổng
-    { stage: "Chưa thanh toán", value: pendingCount,   dropOffPct: pctOf(pendingCount)   },
-    { stage: "Chờ xác nhận",    value: completedCount, dropOffPct: pctOf(completedCount) },
-    { stage: "Đã xác nhận",     value: confirmedCount, dropOffPct: pctOf(confirmedCount) },
-    { stage: "Đã hủy",          value: canceledCount,  dropOffPct: pctOf(canceledCount)  },
+    {
+      stage: "Chưa thanh toán",
+      value: pendingCount,
+      dropOffPct: pctOf(pendingCount),
+    },
+    {
+      stage: "Chờ xác nhận",
+      value: completedCount,
+      dropOffPct: pctOf(completedCount),
+    },
+    {
+      stage: "Đã xác nhận",
+      value: confirmedCount,
+      dropOffPct: pctOf(confirmedCount),
+    },
+    { stage: "Đã hủy", value: canceledCount, dropOffPct: pctOf(canceledCount) },
   ];
 
   // ─── 5. Peak Hours (dùng start_time — giờ SÂN HOẠT ĐỘNG, không phải giờ đặt) ──
@@ -423,9 +435,14 @@ export const getAnalytics = async () => {
     }))
     .sort((a, b) => b.revenue - a.revenue);
 
-  // ─── 8. Top 5 Complexes — Revenue + Rating + Utilization ─────────────────
-  //  Utilization rate = % giờ sân được đặt / tổng giờ khả dụng (ước tính 12h/day * 180 days)
-  const AVAILABLE_HOURS_PER_SUBFIELD = 12 * 180;
+  // ─── 8. Top 5 Complexes — Revenue (6m) + Rating + Utilization (30d) ─────
+  //  Revenue / bookings: tổng 6 tháng — phản ánh tài chính dài hạn để xếp hạng top.
+  //  Utilization: cửa sổ 30 ngày gần nhất theo start_time, peak 12h/ngày
+  //   đồng bộ window với operations/peak-hours, phản ánh "sức nóng" hiện tại.
+  const PEAK_HOURS_PER_DAY = 12;
+  const UTILIZATION_WINDOW_DAYS = 30;
+  const AVAILABLE_HOURS_PER_SUBFIELD =
+    PEAK_HOURS_PER_DAY * UTILIZATION_WINDOW_DAYS;
 
   const topComplexes = complexPerformance
     .map((c) => {
@@ -434,7 +451,11 @@ export const getAnalytics = async () => {
         (s, b) => s + Number(b.total_price),
         0,
       );
-      const bookedHours = allBookings.reduce((s, b) => {
+
+      // Utilization: chỉ đếm booking có start_time nằm trong cửa sổ 30 ngày gần nhất.
+      // Filter theo start_time (giờ sân thực sự được dùng), không phải created_at.
+      const recentBookedHours = allBookings.reduce((s, b) => {
+        if (new Date(b.start_time) < thirtyDaysAgo) return s;
         return (
           s +
           (new Date(b.end_time).getTime() - new Date(b.start_time).getTime()) /
@@ -451,7 +472,10 @@ export const getAnalytics = async () => {
         totalReviews: c.total_reviews,
         utilizationRate:
           totalAvailable > 0
-            ? Math.min(100, Math.round((bookedHours / totalAvailable) * 100))
+            ? Math.min(
+                100,
+                Math.round((recentBookedHours / totalAvailable) * 100),
+              )
             : 0,
       };
     })
@@ -1067,10 +1091,7 @@ export const getRecurringBookings = async (
   const recurringBookings = data.map((rb) => ({
     ...rb,
     child_count: rb.bookings.length,
-    total_value: rb.bookings.reduce(
-      (sum, b) => sum + Number(b.total_price),
-      0,
-    ),
+    total_value: rb.bookings.reduce((sum, b) => sum + Number(b.total_price), 0),
     status_breakdown: rb.bookings.reduce(
       (acc, b) => {
         acc[b.status] = (acc[b.status] || 0) + 1;

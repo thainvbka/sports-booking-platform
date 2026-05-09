@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,7 +40,6 @@ import {
   Loader2,
   PackagePlus,
   Pencil,
-  ShoppingBag,
   Tag,
   Warehouse,
 } from "lucide-react";
@@ -216,14 +214,14 @@ export function ProductFormDialog({
                 )}
               </span>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="h-5 w-fit gap-1 rounded-full border-primary/20 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-primary"
                 >
                   <ShoppingBag className="size-2.5" />
                   Pro shop ·{" "}
                   {mode === "create" ? "SKU mới" : "Chỉnh sửa SKU"}
-                </Badge>
+                </Badge> */}
                 <DialogTitle className="font-display text-lg font-black italic tracking-tight">
                   {mode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
                 </DialogTitle>

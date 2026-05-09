@@ -837,7 +837,7 @@ const recurringBookingSelect = {
 export const getPlayerBookings = async (
   player_id: string,
   page = 1,
-  limit = 8,
+  limit = 9,
   status?: BookingStatus,
 ) => {
   const player = await prisma.player.findUnique({

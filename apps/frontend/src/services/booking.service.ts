@@ -1,9 +1,9 @@
 import { api } from "@/lib/axios";
 import type {
   ApiResponse,
-  BookingStatus,
   BookingListResponse,
   BookingReviewResponse,
+  BookingStatus,
   CreateBookingData,
   CreateRecurringBookingData,
   RecurringBookingReviewResponse,
@@ -44,7 +44,7 @@ export const bookingService = {
 
   getAllBookings: async (
     page: number = 1,
-    limit: number = 8,
+    limit: number = 9,
     status?: BookingStatus,
   ) => {
     const searchParams = new URLSearchParams({
