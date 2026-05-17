@@ -1,5 +1,6 @@
 import { config } from "../../configs";
 import { sendNotificationIfNotExists } from "./notification.service";
+import { invalidatePlayerRecommendation } from "./recommendation.service";
 import {
   BookingStatus,
   PaymentProvider,
@@ -490,6 +491,14 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
         ]);
 
         console.log(`Bookings paid successfully: ${transactionCode}`);
+
+        // Invalidate recommendation cache for the player (fire-and-forget)
+        const playerId = session.metadata.playerId;
+        if (playerId) {
+          invalidatePlayerRecommendation(playerId).catch((err) =>
+            console.error("[Recommendation] Failed to invalidate cache after payment:", err),
+          );
+        }
       } catch (error: any) {
         console.error("Database update failed:", error);
         throw new Error("Database update failed: " + error.message);

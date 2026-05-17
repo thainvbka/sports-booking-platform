@@ -331,6 +331,69 @@ export const sendOwnerBookingConfirmationReminders = async () => {
 };
 
 export const startCronJobs = () => {
+  // Invalidate recommendation cache for players whose bookings just ended
+  // Runs every hour — finds CONFIRMED bookings with end_time < now and invalidates cache
+  cron.schedule("0 * * * *", async () => {
+    try {
+      console.log("[Cron] Running recommendation cache invalidation for ended bookings...");
+      const { invalidatePlayerRecommendation } = await import("./recommendation.service");
+
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+      // Find bookings that ended within the last hour
+      const endedBookings = await prisma.booking.findMany({
+        where: {
+          status: "CONFIRMED",
+          end_time: {
+            gte: oneHourAgo,
+            lt: now,
+          },
+        },
+        select: { player_id: true },
+        distinct: ["player_id"],
+      });
+
+      for (const booking of endedBookings) {
+        await invalidatePlayerRecommendation(booking.player_id);
+      }
+
+      if (endedBookings.length > 0) {
+        console.log(`[Cron] Invalidated recommendation cache for ${endedBookings.length} players`);
+      }
+    } catch (e) {
+      console.error("[Cron] Error in recommendation cache invalidation:", e);
+    }
+  });
+
+  // Weekly rebuild of all subfield embeddings (Sunday 3:00 AM)
+  // Prevents vector drift as prices, ratings, and booking patterns change over time
+  cron.schedule("0 3 * * 0", async () => {
+    try {
+      console.log("[Cron] Starting weekly subfield embedding rebuild...");
+      const { recomputeSubfieldEmbedding } = await import("./recommendation.service");
+
+      const subfields = await prisma.subField.findMany({
+        where: { isDelete: false },
+        select: { id: true },
+      });
+
+      let successCount = 0;
+      for (const sf of subfields) {
+        try {
+          await recomputeSubfieldEmbedding(sf.id);
+          successCount++;
+        } catch (err) {
+          console.error(`[Cron] Failed to recompute embedding for subfield ${sf.id}:`, err);
+        }
+      }
+
+      console.log(`[Cron] Weekly embedding rebuild complete: ${successCount}/${subfields.length} succeeded`);
+    } catch (e) {
+      console.error("[Cron] Error in weekly embedding rebuild:", e);
+    }
+  });
+
   // chay moi phut de huy cac booking le het han
   cron.schedule("*/1 * * * *", () => {
     console.log("Running cleanupExpiredBookings cron job...");
@@ -357,3 +420,4 @@ export const startCronJobs = () => {
     await syncMatchStatusesByTime();
   });
 };
+

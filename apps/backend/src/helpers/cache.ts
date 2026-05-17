@@ -13,19 +13,30 @@ export const CACHE_KEYS = {
   SUBFIELD: (id: string) => `subfield:${id}`,
 
   // List endpoints (High TTL: 2 hours)
-  COMPLEXES_LIST: (page: number, limit: number) => `complexes:list:${page}:${limit}`,
-  SUBFIELDS_LIST: (page: number, limit: number) => `subfields:list:${page}:${limit}`,
+  COMPLEXES_LIST: (page: number, limit: number) =>
+    `complexes:list:${page}:${limit}`,
+  SUBFIELDS_LIST: (page: number, limit: number) =>
+    `subfields:list:${page}:${limit}`,
 
   // Reviews (Medium TTL: 30 minutes)
   SUBFIELD_REVIEWS: (id: string) => `subfield:${id}:reviews`,
 
   // Pricing Rules (Medium TTL: 30 minutes) - OWNER only
-  PRICING_RULES: (subfieldId: string, dayOfWeek: number) => `pricing:${subfieldId}:${dayOfWeek}`,
+  PRICING_RULES: (subfieldId: string, dayOfWeek: number) =>
+    `pricing:${subfieldId}:${dayOfWeek}`,
 
   // Matches (Short TTL: 5 minutes) - PUBLIC
   MATCH: (id: string) => `match:${id}`,
-  MATCHES_LIST: (page: number, limit: number) => `matches:list:${page}:${limit}`,
-  MATCH_PARTICIPANTS: (matchId: string, page: number, limit: number) => `match:${matchId}:participants:${page}:${limit}`,
+  MATCHES_LIST: (page: number, limit: number) =>
+    `matches:list:${page}:${limit}`,
+  MATCH_PARTICIPANTS: (matchId: string, page: number, limit: number) =>
+    `match:${matchId}:participants:${page}:${limit}`,
+
+  // Recommendation (High TTL: 6 hours)
+  RECOMMENDATION: (playerId: string) => `rec:v2:${playerId}`,
+  RECOMMENDATION_LOCK: (playerId: string) => `rec:lock:${playerId}`,
+  RECOMMENDATION_POPULAR: "rec:popular:v1",
+  RECOMMENDATION_PRICE_RANGE: "rec:price_range",
 
   // Pattern wildcards for invalidation
   PATTERNS: {
@@ -64,13 +75,13 @@ export const buildComplexListCacheKey = (params: {
   maxPrice?: number;
 }): string => {
   const { page = 1, limit = 8, sport_types, minPrice, maxPrice } = params;
-  
+
   let key = `complexes:list:${page}:${limit}`;
-  
+
   if (sport_types?.length) key += `:types=${sport_types.join(",")}`;
   if (minPrice !== undefined) key += `:minPrice=${minPrice}`;
   if (maxPrice !== undefined) key += `:maxPrice=${maxPrice}`;
-  
+
   return key;
 };
 
@@ -88,16 +99,24 @@ export const buildSubfieldListCacheKey = (params: {
   minPrice?: number;
   maxPrice?: number;
 }): string => {
-  const { page = 1, limit = 8, sport_types, minCapacity, maxCapacity, minPrice, maxPrice } = params;
-  
+  const {
+    page = 1,
+    limit = 8,
+    sport_types,
+    minCapacity,
+    maxCapacity,
+    minPrice,
+    maxPrice,
+  } = params;
+
   let key = `subfields:list:${page}:${limit}`;
-  
+
   if (sport_types?.length) key += `:types=${sport_types.join(",")}`;
   if (minCapacity !== undefined) key += `:minCap=${minCapacity}`;
   if (maxCapacity !== undefined) key += `:maxCap=${maxCapacity}`;
   if (minPrice !== undefined) key += `:minPrice=${minPrice}`;
   if (maxPrice !== undefined) key += `:maxPrice=${maxPrice}`;
-  
+
   return key;
 };
 
@@ -113,13 +132,20 @@ export const buildReviewsCacheKey = (params: {
   has_images?: boolean;
   sort_by?: "newest" | "oldest" | "rating_desc" | "rating_asc";
 }): string => {
-  const { subfield_id, page = 1, limit = 10, rating, has_images, sort_by = "newest" } = params;
-  
+  const {
+    subfield_id,
+    page = 1,
+    limit = 10,
+    rating,
+    has_images,
+    sort_by = "newest",
+  } = params;
+
   let key = `subfield:${subfield_id}:reviews:${page}:${limit}:${sort_by}`;
-  
+
   if (rating !== undefined) key += `:rating=${rating}`;
   if (has_images) key += `:has_images=true`;
-  
+
   return key;
 };
 
@@ -148,14 +174,21 @@ export const buildPublicMatchesCacheKey = (params: {
   status?: string;
   sort?: string;
 }): string => {
-  const { page = 1, limit = 20, sport_type, skill_level, status, sort = "created_at:desc" } = params;
-  
+  const {
+    page = 1,
+    limit = 20,
+    sport_type,
+    skill_level,
+    status,
+    sort = "created_at:desc",
+  } = params;
+
   let key = `matches:list:${page}:${limit}:${sort}`;
-  
+
   if (sport_type) key += `:sport=${sport_type}`;
   if (skill_level) key += `:skill=${skill_level}`;
   if (status) key += `:status=${status}`;
-  
+
   return key;
 };
 
@@ -178,9 +211,9 @@ export const buildMatchParticipantsCacheKey = (params: {
   status?: string;
 }): string => {
   const { match_id, page = 1, limit = 10, status = "ALL" } = params;
-  
+
   let key = `match:${match_id}:participants:${page}:${limit}:${status}`;
-  
+
   return key;
 };
 
@@ -188,7 +221,11 @@ export const cacheHelper = {
   /**
    * Set data to Redis cache
    */
-  set: async (key: string, value: any, expiration: number = DEFAULT_EXPIRATION) => {
+  set: async (
+    key: string,
+    value: any,
+    expiration: number = DEFAULT_EXPIRATION,
+  ) => {
     try {
       const redis = getRedis();
       await redis.set(key, JSON.stringify(value), {
@@ -235,7 +272,10 @@ export const cacheHelper = {
       let hasAnyKey = false;
 
       // Use SCAN instead of KEYS to avoid blocking Redis on large keyspaces.
-      for await (const key of redis.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+      for await (const key of redis.scanIterator({
+        MATCH: pattern,
+        COUNT: 100,
+      })) {
         const keys = Array.isArray(key) ? key : [key];
         for (const item of keys) {
           pipeline.del(item);
@@ -248,6 +288,26 @@ export const cacheHelper = {
       }
     } catch (error) {
       console.error("Redis DelByPattern Error:", error);
+    }
+  },
+
+  /**
+   * Acquire a single-flight lock
+   */
+  acquireLock: async (
+    key: string,
+    expiration: number = 30,
+  ): Promise<boolean> => {
+    try {
+      const redis = getRedis();
+      const result = await redis.set(key, "1", {
+        NX: true,
+        EX: expiration,
+      });
+      return result === "OK";
+    } catch (error) {
+      console.error("Redis AcquireLock Error:", error);
+      return false; // Fail open or closed depending on preference, here failing closed to trigger degraded mode
     }
   },
 };

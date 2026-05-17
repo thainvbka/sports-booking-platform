@@ -15,6 +15,7 @@ import {
   restoreAddonStockForBooking,
 } from "./booking_addon.service";
 import { sendNotificationIfNotExists } from "./notification.service";
+import { invalidatePlayerRecommendation } from "./recommendation.service";
 
 export interface filter {
   search?: string;
@@ -601,6 +602,7 @@ export const ownerConfirmBooking = async (
     },
     select: {
       id: true,
+      player_id: true,
       player: {
         select: {
           account_id: true,
@@ -634,6 +636,11 @@ export const ownerConfirmBooking = async (
     target_role: "PLAYER",
     link_to: "/bookings",
   });
+
+  // Invalidate recommendation cache so player sees fresh results
+  invalidatePlayerRecommendation(booking.player_id).catch((err) =>
+    console.error("[Recommendation] Failed to invalidate cache after confirm:", err),
+  );
 
   return confirmedBooking;
 };

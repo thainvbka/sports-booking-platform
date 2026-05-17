@@ -4,6 +4,7 @@ import { CourtCard } from "@/components/shared/CourtCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SearchBar } from "@/components/shared/SearchBar";
+import { RecommendedCourts } from "@/components/player/RecommendedCourts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
@@ -155,6 +156,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <HeroSection />
+      <RecommendedCourts />
       <SportCategoriesSection />
       <LiveCourtsSection
         isLoading={isLoading}

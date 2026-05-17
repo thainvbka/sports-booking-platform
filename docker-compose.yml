@@ -1,7 +1,7 @@
 services:
   # ---  DATABASE ---
   postgres-db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: sports-booking-db
     ports:
       - "${POSTGRES_PORT}:5432"
@@ -9,11 +9,11 @@ services:
       - postgres-data:/var/lib/postgresql/data
     env_file:
       - ./.env
-    restart: always
+    # restart: always
     networks:
       - my-network
-  
-   # --- REDIS CACHE ---
+
+    # --- REDIS CACHE ---
   redis:
     image: redis:7-alpine
     container_name: sports-booking-redis
@@ -22,7 +22,7 @@ services:
     volumes:
       - redis-data:/data
     command: redis-server --save 60 1 --loglevel warning
-    restart: always
+    # restart: always
     networks:
       - my-network
 
@@ -44,7 +44,7 @@ services:
     depends_on:
       - postgres-db
       - redis
-    restart: always
+    # restart: always
     networks:
       - my-network
 
@@ -62,7 +62,7 @@ services:
       - /app/node_modules
     env_file:
       - ./apps/frontend/.env
-    restart: always
+    # restart: always
     networks:
       - my-network
 

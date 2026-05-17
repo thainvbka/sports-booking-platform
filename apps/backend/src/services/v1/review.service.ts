@@ -19,6 +19,7 @@ import {
   ReviewQueryInput,
   UpdateReviewInput,
 } from "../../validations";
+import { recomputeSubfieldEmbedding } from "./recommendation.service";
 
 type MulterFiles = {
   [fieldname: string]: Express.Multer.File[];
@@ -89,6 +90,11 @@ export const createReview = async (
   // Invalidate paginated/sorted review list cache for this subfield
   await invalidateSubfieldReviewsCache(booking.sub_field_id);
 
+  // Recompute embedding — avg_rating affects vector dimension [5]
+  recomputeSubfieldEmbedding(booking.sub_field_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after review create:", err),
+  );
+
   return review;
 };
 
@@ -133,6 +139,13 @@ export const updateReview = async (
   // Invalidate paginated/sorted review list cache for this subfield
   await invalidateSubfieldReviewsCache(existingReview.subfield_id);
 
+  // Recompute embedding if rating changed — avg_rating affects vector dimension [5]
+  if (data.rating !== undefined && data.rating !== existingReview.rating) {
+    recomputeSubfieldEmbedding(existingReview.subfield_id).catch((err) =>
+      console.error("[Recommendation] Failed to recompute embedding after review update:", err),
+    );
+  }
+
   return updatedReview;
 };
 
@@ -160,6 +173,11 @@ export const deleteReview = async (review_id: string, player_id: string) => {
 
   // Invalidate paginated/sorted review list cache for this subfield
   await invalidateSubfieldReviewsCache(existingReview.subfield_id);
+
+  // Recompute embedding — avg_rating affects vector dimension [5]
+  recomputeSubfieldEmbedding(existingReview.subfield_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after review delete:", err),
+  );
 
   return { success: true };
 };
@@ -201,6 +219,11 @@ export const ownerDeleteReview = async (
 
   // Invalidate paginated/sorted review list cache for this subfield
   await invalidateSubfieldReviewsCache(review.subfield_id);
+
+  // Recompute embedding — avg_rating affects vector dimension [5]
+  recomputeSubfieldEmbedding(review.subfield_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after owner review delete:", err),
+  );
 
   return { success: true };
 };

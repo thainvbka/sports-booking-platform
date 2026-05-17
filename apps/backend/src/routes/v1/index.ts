@@ -13,6 +13,7 @@ import paymentRouter from "./payment.routes";
 import pricingRuleRouter from "./pricing_rule.routes";
 import productRouter from "./product.routes";
 import publicRouter from "./public.routes";
+import recommendationRouter from "./recommendation.routes";
 import reviewRouter from "./review.routes";
 import subfieldRouter from "./subfield.routes";
 
@@ -39,5 +40,6 @@ router.use("/payments", apiLimiter, paymentRouter);
 router.use("/owner-dashboard", apiLimiter, ownerDashboardRouter);
 router.use("/notifications", apiLimiter, notificationRouter);
 router.use("/reviews", apiLimiter, reviewRouter);
+router.use("/recommendations", apiLimiter, recommendationRouter);
 
 export default router;

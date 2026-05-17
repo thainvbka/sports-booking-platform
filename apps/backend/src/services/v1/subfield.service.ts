@@ -7,6 +7,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { CreateSubfieldInput, UpdateSubfieldInput } from "../../validations";
+import { recomputeSubfieldEmbedding } from "./recommendation.service";
 
 interface CreateSubfieldData extends CreateSubfieldInput {
   files: { [fieldname: string]: Express.Multer.File[] };
@@ -69,6 +70,11 @@ export const createSubfield = async (
   // Public complex list/by-id caches snapshot those aggregates -> invalidate
   await cacheHelper.del(CACHE_KEYS.COMPLEX(complexId));
   await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
+
+  // Recompute embedding for the new subfield (fire-and-forget)
+  recomputeSubfieldEmbedding(newSubfield.id).catch((err) =>
+    console.error("[Recommendation] Failed to compute embedding for new subfield:", err),
+  );
 
   return newSubfield;
 };
@@ -218,6 +224,11 @@ export const updateSubfield = async (
   // Public complex list/by-id caches snapshot those aggregates -> invalidate
   await cacheHelper.del(CACHE_KEYS.COMPLEX(subfield.complex_id));
   await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.COMPLEXES_LIST);
+
+  // Recompute embedding after update (sport_type or other attributes may have changed)
+  recomputeSubfieldEmbedding(subfieldId).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after subfield update:", err),
+  );
 
   return updatedSubfield;
 };

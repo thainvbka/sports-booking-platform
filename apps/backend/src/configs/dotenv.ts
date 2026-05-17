@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
+import fs from "fs";
 import ms from "ms";
 import path from "path";
-import fs from "fs";
 
 // Production should primarily rely on environment variables injected by Docker/CI.
 // We only load local .env files as a fallback for development.
@@ -23,6 +23,12 @@ const config = {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as ms.StringValue,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as ms.StringValue,
   JWT_ACCESS_EXPIRATION: process.env.JWT_ACCESS_EXPIRATION as ms.StringValue,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+  RECOMMENDATION_CACHE_TTL: Number(
+    process.env.RECOMMENDATION_CACHE_TTL ?? 21600,
+  ),
+  RECOMMENDATION_LOCK_TTL: Number(process.env.RECOMMENDATION_LOCK_TTL ?? 30),
   JWT_REFRESH_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION as ms.StringValue,
   NODE_ENV: process.env.NODE_ENV || "development",
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:5173",

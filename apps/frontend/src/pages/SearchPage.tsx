@@ -6,6 +6,7 @@ import {
   type SearchFiltersValue,
 } from "@/components/shared/SearchFilters";
 import { SubFieldCard } from "@/components/shared/SubFieldCard";
+import { RecommendedCourtsBanner } from "@/components/player/RecommendedCourtsBanner";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -302,7 +303,9 @@ export function SearchPage() {
             className="mb-6"
           />
 
-          <Tabs defaultValue={defaultTab} className="flex flex-col gap-6">
+          <RecommendedCourtsBanner />
+
+          <Tabs defaultValue={defaultTab} className="mt-6 flex flex-col gap-6">
             <ResultTabsList
               complexesCount={complexPagination.total}
               subfieldsCount={subfieldPagination.total}

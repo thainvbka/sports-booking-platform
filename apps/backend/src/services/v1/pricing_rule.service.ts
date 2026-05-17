@@ -16,6 +16,7 @@ import {
     CreatePricingRuleInput,
     UpdatePricingRuleInput,
 } from "../../validations";
+import { recomputeSubfieldEmbedding } from "./recommendation.service";
 
 const invalidatePublicCachesAfterPricingChange = async (
   subFieldId: string,
@@ -138,6 +139,11 @@ export const createPricingRule = async (
     await cacheHelper.del(CACHE_KEYS.PRICING_RULES(data.sub_field_id, day));
   }
   await invalidatePublicCachesAfterPricingChange(data.sub_field_id, complexId);
+
+  // Recompute embedding — price changes affect vector dimensions [1] and [3]
+  recomputeSubfieldEmbedding(data.sub_field_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after pricing create:", err),
+  );
 
   return createdRules;
 };
@@ -283,6 +289,11 @@ export const updatePricingRule = async (
   }
   await invalidatePublicCachesAfterPricingChange(existingRule.sub_field_id, complexId);
 
+  // Recompute embedding — price changes affect vector dimensions [1] and [3]
+  recomputeSubfieldEmbedding(existingRule.sub_field_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after pricing update:", err),
+  );
+
   return updatedPricingRule;
 };
 
@@ -326,6 +337,11 @@ export const deletePricingRule = async (
   // Invalidate pricing cache
   await cacheHelper.del(CACHE_KEYS.PRICING_RULES(pricingRule.sub_field_id, pricingRule.day_of_week));
   await invalidatePublicCachesAfterPricingChange(pricingRule.sub_field_id, complexId);
+
+  // Recompute embedding — price changes affect vector dimensions [1] and [3]
+  recomputeSubfieldEmbedding(pricingRule.sub_field_id).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after pricing delete:", err),
+  );
 };
 
 // Bulk delete pricing rules
@@ -393,6 +409,14 @@ export const bulkDeletePricingRules = async (
   }
   for (const rule of pricingRules) {
     await cacheHelper.del(CACHE_KEYS.SUBFIELD(rule.sub_field_id));
+  }
+
+  // Recompute embeddings for all affected subfields
+  const affectedSubfieldIds = [...new Set(pricingRules.map((rule) => rule.sub_field_id))];
+  for (const subfieldId of affectedSubfieldIds) {
+    recomputeSubfieldEmbedding(subfieldId).catch((err) =>
+      console.error("[Recommendation] Failed to recompute embedding after bulk pricing delete:", err),
+    );
   }
 
   return { deletedCount: pricingRules.length };
@@ -491,6 +515,11 @@ export const copyPricingRules = async (
     await cacheHelper.del(CACHE_KEYS.PRICING_RULES(subFieldId, day));
   }
   await invalidatePublicCachesAfterPricingChange(subFieldId, complexId);
+
+  // Recompute embedding — price changes affect vector dimensions [1] and [3]
+  recomputeSubfieldEmbedding(subFieldId).catch((err) =>
+    console.error("[Recommendation] Failed to recompute embedding after pricing copy:", err),
+  );
 
   return {
     copiedFrom: sourceDayOfWeek,
