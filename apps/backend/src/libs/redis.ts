@@ -52,8 +52,15 @@ export const getRedis = (): RedisClient => {
 
 export const closeRedis = async () => {
   if (globalForRedis.redisClient) {
-    await globalForRedis.redisClient.quit();
-    globalForRedis.redisClient = undefined;
-    console.log(':::::Redis connection closed.');
+    try {
+      if (globalForRedis.redisClient.isOpen) {
+        await globalForRedis.redisClient.quit();
+      }
+    } catch (error) {
+      console.warn(":::::Redis quit warning:", error);
+    } finally {
+      globalForRedis.redisClient = undefined;
+      console.log(':::::Redis connection closed.');
+    }
   }
 };
