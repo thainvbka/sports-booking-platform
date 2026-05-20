@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { addDays, addMonths, isBefore } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { BOOKING_TIMEOUT } from "../../configs";
@@ -9,6 +10,7 @@ import {
   TIME_ZONE,
 } from "../../helpers/time.helper";
 import { prisma } from "../../libs/prisma";
+import { acquireLock, releaseLock } from "../../libs/redis";
 import {
   BadRequestError,
   ForbiddenError,
@@ -50,212 +52,222 @@ export const createRecurringBookingService = async (
   });
   if (!subField) throw new NotFoundError("Sub field not found");
 
-  // 2. Check overlap với recurring bookings đang active
-  const existingRecurrings = await prisma.recurringBooking.findMany({
-    where: {
-      sub_field_id,
-      status: { in: ["PENDING", "COMPLETED", "CONFIRMED"] },
-      OR: [
-        { start_date: { gte: data.start_date, lte: data.end_date } },
-        { end_date: { gte: data.start_date, lte: data.end_date } },
-        {
-          AND: [
-            { start_date: { lte: data.start_date } },
-            { end_date: { gte: data.end_date } },
-          ],
-        },
-      ],
-    },
-    include: {
-      bookings: {
-        take: 1,
-        orderBy: { start_time: "asc" },
+  const lockKey = `lock:booking:subfield:${sub_field_id}`;
+  const lockValue = crypto.randomUUID();
+  const lockTTL = 20; // 20 seconds for recurring booking
+
+  const acquired = await acquireLock(lockKey, lockValue, lockTTL);
+  if (!acquired) {
+    throw new BadRequestError("Sân đang có nhiều người đặt cùng lúc. Vui lòng thử lại sau giây lát.");
+  }
+
+  try {
+    // 2. Check overlap với recurring bookings đang active
+    const txResult = await prisma.$transaction(async (tx) => {
+      // 1. Pessimistic Lock on SubField row
+      await tx.$executeRaw`SELECT 1 FROM "SubField" WHERE id = ${sub_field_id}::uuid FOR UPDATE`;
+
+    // 2. Check overlap với recurring bookings đang active
+    const existingRecurrings = await tx.recurringBooking.findMany({
+      where: {
+        sub_field_id,
+        status: { in: ["PENDING", "COMPLETED", "CONFIRMED"] },
+        OR: [
+          { start_date: { gte: data.start_date, lte: data.end_date } },
+          { end_date: { gte: data.start_date, lte: data.end_date } },
+          {
+            AND: [
+              { start_date: { lte: data.start_date } },
+              { end_date: { gte: data.end_date } },
+            ],
+          },
+        ],
       },
-    },
-  });
+      include: {
+        bookings: {
+          take: 1,
+          orderBy: { start_time: "asc" },
+        },
+      },
+    });
 
-  // FIX: dùng getVietnamMinutes thay vì getHours() để so sánh đúng múi giờ
-  const newStartMin = startHour * 60 + startMinute;
-  const newEndMin = endHour * 60 + endMinute;
+    const newStartMin = startHour * 60 + startMinute;
+    const newEndMin = endHour * 60 + endMinute;
 
-  const existingRecurring = existingRecurrings.find((rb) => {
-    const firstBooking = rb.bookings[0];
-    if (!firstBooking) return false;
+    const existingRecurring = existingRecurrings.find((rb) => {
+      const firstBooking = rb.bookings[0];
+      if (!firstBooking) return false;
 
-    const existingStartMin = getVietnamMinutes(firstBooking.start_time);
-    const existingEndMin = getVietnamMinutes(firstBooking.end_time);
-
-    return existingStartMin < newEndMin && existingEndMin > newStartMin;
-  });
-
-  if (existingRecurring) {
-    if (existingRecurring.player_id === player_id) {
-      if (
-        existingRecurring.status === "COMPLETED" ||
-        existingRecurring.status === "CONFIRMED"
-      ) {
-        throw new BadRequestError(
-          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
-        );
-      }
-
-      // PENDING và CHÍNH XÁC cùng ngày + giờ → Gia hạn
-      const firstBooking = existingRecurring.bookings[0];
       const existingStartMin = getVietnamMinutes(firstBooking.start_time);
       const existingEndMin = getVietnamMinutes(firstBooking.end_time);
 
-      const sameTimeSlot =
-        existingStartMin === newStartMin && existingEndMin === newEndMin;
-      const sameDate =
-        existingRecurring.start_date.getTime() ===
-          new Date(data.start_date).getTime() &&
-        existingRecurring.end_date.getTime() ===
-          new Date(data.end_date).getTime();
+      return existingStartMin < newEndMin && existingEndMin > newStartMin;
+    });
 
-      if (sameTimeSlot && sameDate) {
-        await prisma.booking.updateMany({
-          where: { recurring_booking_id: existingRecurring.id },
-          data: {
-            expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING),
-          },
-        });
+    if (existingRecurring) {
+      if (existingRecurring.player_id === player_id) {
+        if (
+          existingRecurring.status === "COMPLETED" ||
+          existingRecurring.status === "CONFIRMED"
+        ) {
+          throw new BadRequestError(
+            "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
+          );
+        }
 
-        const totalPrice = existingRecurring.bookings.reduce(
-          (sum, b) => sum + Number(b.total_price),
-          0,
+        // PENDING và CHÍNH XÁC cùng ngày + giờ → Gia hạn
+        const firstBooking = existingRecurring.bookings[0];
+        const existingStartMin = getVietnamMinutes(firstBooking.start_time);
+        const existingEndMin = getVietnamMinutes(firstBooking.end_time);
+
+        const sameTimeSlot =
+          existingStartMin === newStartMin && existingEndMin === newEndMin;
+        const sameDate =
+          existingRecurring.start_date.getTime() ===
+            new Date(data.start_date).getTime() &&
+          existingRecurring.end_date.getTime() ===
+            new Date(data.end_date).getTime();
+
+        if (sameTimeSlot && sameDate) {
+          await tx.booking.updateMany({
+            where: { recurring_booking_id: existingRecurring.id },
+            data: {
+              expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING),
+            },
+          });
+
+          const totalPrice = existingRecurring.bookings.reduce(
+            (sum, b) => sum + Number(b.total_price),
+            0,
+          );
+
+          return {
+            message:
+              "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
+            recurring_booking_id: existingRecurring.id,
+            total_slots: existingRecurring.bookings.length,
+            total_price: totalPrice,
+          };
+        }
+
+        throw new BadRequestError(
+          "Bạn đã đặt một khung giờ khác trùng giờ với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
         );
-
-        return {
-          message:
-            "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
-          recurring_booking_id: existingRecurring.id,
-          total_slots: existingRecurring.bookings.length,
-          total_price: totalPrice,
-        };
       }
 
       throw new BadRequestError(
-        "Bạn đã đặt một khung giờ khác trùng giờ với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
+        `Đã có một booking đặt vào khung giờ từ ${formatVietnamTime(
+          existingRecurring.bookings[0].start_time,
+        )} đến ${formatVietnamTime(
+          existingRecurring.bookings[0].end_time,
+        )}. Vui lòng chọn khung giờ khác.`,
       );
     }
 
-    throw new BadRequestError(
-      `Đã có một booking đặt vào khung giờ từ ${formatVietnamTime(
-        existingRecurring.bookings[0].start_time,
-      )} đến ${formatVietnamTime(
-        existingRecurring.bookings[0].end_time,
-      )}. Vui lòng chọn khung giờ khác.`,
-    );
-  }
+    // 3. Tạo danh sách booking slots
+    const bookingSlots: { start: Date; end: Date }[] = [];
+    let currentDate = new Date(data.start_date);
+    const endDate = new Date(data.end_date);
 
-  // 3. Tạo danh sách booking slots
-  const bookingSlots: { start: Date; end: Date }[] = [];
-  let currentDate = new Date(data.start_date);
-  const endDate = new Date(data.end_date);
+    while (
+      isBefore(currentDate, endDate) ||
+      currentDate.getTime() === endDate.getTime()
+    ) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      const slotStart = fromZonedTime(
+        `${dateStr}T${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`,
+        TIME_ZONE,
+      );
+      const slotEnd = fromZonedTime(
+        `${dateStr}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`,
+        TIME_ZONE,
+      );
 
-  while (
-    isBefore(currentDate, endDate) ||
-    currentDate.getTime() === endDate.getTime()
-  ) {
-    // FIX: dùng fromZonedTime để tạo đúng UTC timestamp từ giờ VN
-    const dateStr = currentDate.toISOString().split("T")[0];
-    const slotStart = fromZonedTime(
-      `${dateStr}T${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}:00`,
-      TIME_ZONE,
-    );
-    const slotEnd = fromZonedTime(
-      `${dateStr}T${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}:00`,
-      TIME_ZONE,
-    );
+      bookingSlots.push({ start: slotStart, end: slotEnd });
 
-    bookingSlots.push({ start: slotStart, end: slotEnd });
-
-    if (data.recurring_type === RecurringBookingType.WEEKLY) {
-      currentDate = addDays(currentDate, 7);
-    } else if (data.recurring_type === RecurringBookingType.MONTHLY) {
-      currentDate = addMonths(currentDate, 1);
+      if (data.recurring_type === RecurringBookingType.WEEKLY) {
+        currentDate = addDays(currentDate, 7);
+      } else if (data.recurring_type === RecurringBookingType.MONTHLY) {
+        currentDate = addMonths(currentDate, 1);
+      }
     }
-  }
 
-  if (bookingSlots.length === 0) {
-    throw new BadRequestError(
-      "No booking slots generated for provided date range",
-    );
-  }
-
-  // 4. FIX N+1: batch fetch tất cả dữ liệu cần thiết trong 1 lần
-  const firstSlotStart = bookingSlots[0].start;
-  const lastSlotEnd = bookingSlots[bookingSlots.length - 1].end;
-
-  const [existingBookings, allPricingRules] = await Promise.all([
-    prisma.booking.findMany({
-      where: {
-        sub_field_id,
-        OR: [
-          { status: "PENDING", expires_at: { gt: new Date() } },
-          { status: "CONFIRMED" },
-        ],
-        start_time: { lt: lastSlotEnd },
-        end_time: { gt: firstSlotStart },
-      },
-    }),
-    prisma.pricingRule.findMany({
-      where: { sub_field_id },
-    }),
-  ]);
-
-  // 5. Xử lý từng slot hoàn toàn trong memory
-  const bookingsToCreate: any[] = [];
-  let totalRecurringPrice = 0;
-
-  for (const slot of bookingSlots) {
-    if (slot.start < new Date()) {
+    if (bookingSlots.length === 0) {
       throw new BadRequestError(
-        `Cannot create booking in the past: ${slot.start.toLocaleString()}`,
+        "No booking slots generated for provided date range",
       );
     }
 
-    // Check overlap trong memory thay vì query DB
-    const overlapping = existingBookings.find(
-      (b) => b.start_time < slot.end && b.end_time > slot.start,
-    );
+    // 4. FIX N+1: batch fetch tất cả dữ liệu cần thiết trong 1 lần
+    const firstSlotStart = bookingSlots[0].start;
+    const lastSlotEnd = bookingSlots[bookingSlots.length - 1].end;
 
-    if (overlapping) {
-      throw new BadRequestError(
-        `Slot at ${slot.start.toLocaleString()} is already booked. Recurring booking failed.`,
+    const [existingBookings, allPricingRules] = await Promise.all([
+      tx.booking.findMany({
+        where: {
+          sub_field_id,
+          OR: [
+            { status: "PENDING", expires_at: { gt: new Date() } },
+            { status: "CONFIRMED" },
+          ],
+          start_time: { lt: lastSlotEnd },
+          end_time: { gt: firstSlotStart },
+        },
+      }),
+      tx.pricingRule.findMany({
+        where: { sub_field_id },
+      }),
+    ]);
+
+    // 5. Xử lý từng slot hoàn toàn trong memory
+    const bookingsToCreate: any[] = [];
+    let totalRecurringPrice = 0;
+
+    for (const slot of bookingSlots) {
+      if (slot.start < new Date()) {
+        throw new BadRequestError(
+          `Cannot create booking in the past: ${slot.start.toLocaleString()}`,
+        );
+      }
+
+      const overlapping = existingBookings.find(
+        (b) => b.start_time < slot.end && b.end_time > slot.start,
       );
+
+      if (overlapping) {
+        throw new BadRequestError(
+          `Slot at ${slot.start.toLocaleString()} is already booked. Recurring booking failed.`,
+        );
+      }
+
+      const dayOfWeek = getVietnamDayOfWeek(slot.start);
+      const rulesForDay = allPricingRules.filter(
+        (r) => r.day_of_week === dayOfWeek,
+      );
+
+      if (!rulesForDay.length) {
+        throw new BadRequestError(
+          `No pricing rule found for ${slot.start.toDateString()}`,
+        );
+      }
+
+      const { totalPrice: slotPrice } = calculatePrice(
+        rulesForDay,
+        slot.start,
+        slot.end,
+      );
+
+      totalRecurringPrice += slotPrice;
+      bookingsToCreate.push({
+        start_time: slot.start,
+        end_time: slot.end,
+        total_price: slotPrice,
+        status: "PENDING",
+        expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING),
+      });
     }
 
-    // Tính giá trong memory — filter rules theo day_of_week
-    const dayOfWeek = getVietnamDayOfWeek(slot.start);
-    const rulesForDay = allPricingRules.filter(
-      (r) => r.day_of_week === dayOfWeek,
-    );
-
-    if (!rulesForDay.length) {
-      throw new BadRequestError(
-        `No pricing rule found for ${slot.start.toDateString()}`,
-      );
-    }
-
-    const { totalPrice: slotPrice } = calculatePrice(
-      rulesForDay,
-      slot.start,
-      slot.end,
-    );
-
-    totalRecurringPrice += slotPrice;
-    bookingsToCreate.push({
-      start_time: slot.start,
-      end_time: slot.end,
-      total_price: slotPrice,
-      status: "PENDING",
-      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.RECURRING),
-    });
-  }
-
-  // 6. Transaction: lưu tất cả vào DB
-  const result = await prisma.$transaction(async (tx) => {
+    // 6. Transaction: lưu tất cả vào DB
     const recurringBooking = await tx.recurringBooking.create({
       data: {
         player_id,
@@ -276,15 +288,18 @@ export const createRecurringBookingService = async (
       })),
     });
 
-    return recurringBooking;
+    return {
+      message: "Đặt sân định kỳ được tạo thành công",
+      recurring_booking_id: recurringBooking.id,
+      total_slots: bookingsToCreate.length,
+      total_price: totalRecurringPrice,
+    };
   });
 
-  return {
-    message: "Đặt sân định kỳ được tạo thành công",
-    recurring_booking_id: result.id,
-    total_slots: bookingsToCreate.length,
-    total_price: totalRecurringPrice,
-  };
+  return txResult;
+  } finally {
+    await releaseLock(lockKey, lockValue);
+  }
 };
 
 export const cancelRecurringBookingService = async (

@@ -1,8 +1,10 @@
 import { BookingStatus } from "@prisma/client";
+import crypto from "crypto";
 import { BOOKING_TIMEOUT } from "../../configs";
 import { fetchAndCalculatePrice } from "../../helpers/pricing.helper";
 import { formatVietnamTime } from "../../helpers/time.helper";
 import { prisma } from "../../libs/prisma";
+import { acquireLock, releaseLock } from "../../libs/redis";
 import {
   BadRequestError,
   ForbiddenError,
@@ -54,77 +56,6 @@ export const createBooking = async (
     throw new NotFoundError("Sub field not found");
   }
 
-  const overlappingBooking = await prisma.booking.findFirst({
-    where: {
-      sub_field_id,
-      OR: [
-        { status: "PENDING", expires_at: { gt: new Date() } },
-        { status: "COMPLETED" },
-        { status: "CONFIRMED" },
-      ],
-      start_time: { lt: data.end_time },
-      end_time: { gt: data.start_time },
-    },
-  });
-
-  if (overlappingBooking) {
-    if (overlappingBooking.player_id === player_id) {
-      if (
-        overlappingBooking.status === "COMPLETED" ||
-        overlappingBooking.status === "CONFIRMED"
-      ) {
-        throw new BadRequestError(
-          "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
-        );
-      }
-
-      // PENDING và CHÍNH XÁC cùng thời gian → Gia hạn
-      if (
-        overlappingBooking.start_time.getTime() ===
-          new Date(data.start_time).getTime() &&
-        overlappingBooking.end_time.getTime() ===
-          new Date(data.end_time).getTime()
-      ) {
-        const updatedBooking = await prisma.booking.update({
-          where: { id: overlappingBooking.id },
-          data: {
-            expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
-          },
-          include: {
-            booking_addons: {
-              include: {
-                product: {
-                  select: {
-                    name: true,
-                    image: true,
-                  },
-                },
-              },
-            },
-          },
-        });
-
-        return {
-          message:
-            "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
-          booking: updatedBooking,
-        };
-      }
-
-      throw new BadRequestError(
-        "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
-      );
-    }
-
-    throw new BadRequestError(
-      `Đã có người đặt khoảng thời gian từ ${formatVietnamTime(
-        overlappingBooking.start_time,
-      )} đến ${formatVietnamTime(
-        overlappingBooking.end_time,
-      )} trên sân này. Vui lòng chọn khung giờ khác.`,
-    );
-  }
-
   const { totalPrice, breakdown } = await fetchAndCalculatePrice(
     sub_field_id,
     data.start_time,
@@ -134,7 +65,92 @@ export const createBooking = async (
   console.log("Price Breakdown:::::", breakdown);
   console.log("Total Price:::::", totalPrice);
 
-  const booking = await prisma.$transaction(async (tx) => {
+  const lockKey = `lock:booking:subfield:${sub_field_id}`;
+  const lockValue = crypto.randomUUID();
+  const lockTTL = 15; // 15 seconds
+
+  const acquired = await acquireLock(lockKey, lockValue, lockTTL);
+  if (!acquired) {
+    throw new BadRequestError("Sân đang có nhiều người đặt cùng lúc. Vui lòng thử lại sau giây lát.");
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+    // 1. Pessimistic Lock on SubField row to prevent concurrent bookings
+    await tx.$executeRaw`SELECT 1 FROM "SubField" WHERE id = ${sub_field_id}::uuid FOR UPDATE`;
+
+    // 2. Check for overlapping bookings
+    const overlappingBooking = await tx.booking.findFirst({
+      where: {
+        sub_field_id,
+        OR: [
+          { status: "PENDING", expires_at: { gt: new Date() } },
+          { status: "COMPLETED" },
+          { status: "CONFIRMED" },
+        ],
+        start_time: { lt: data.end_time },
+        end_time: { gt: data.start_time },
+      },
+    });
+
+    if (overlappingBooking) {
+      if (overlappingBooking.player_id === player_id) {
+        if (
+          overlappingBooking.status === "COMPLETED" ||
+          overlappingBooking.status === "CONFIRMED"
+        ) {
+          throw new BadRequestError(
+            "Bạn đã đặt khung thời gian này. Vui lòng xem lại lịch sử đặt sân của bạn.",
+          );
+        }
+
+        // PENDING và CHÍNH XÁC cùng thời gian → Gia hạn
+        if (
+          overlappingBooking.start_time.getTime() ===
+            new Date(data.start_time).getTime() &&
+          overlappingBooking.end_time.getTime() ===
+            new Date(data.end_time).getTime()
+        ) {
+          const updatedBooking = await tx.booking.update({
+            where: { id: overlappingBooking.id },
+            data: {
+              expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
+            },
+            include: {
+              booking_addons: {
+                include: {
+                  product: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          return {
+            message:
+              "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
+            booking: updatedBooking,
+          };
+        }
+
+        throw new BadRequestError(
+          "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
+        );
+      }
+
+      throw new BadRequestError(
+        `Đã có người đặt khoảng thời gian từ ${formatVietnamTime(
+          overlappingBooking.start_time,
+        )} đến ${formatVietnamTime(
+          overlappingBooking.end_time,
+        )} trên sân này. Vui lòng chọn khung giờ khác.`,
+      );
+    }
+
     const productIds = normalizedAddons.map((item) => item.product_id);
     const products = productIds.length
       ? await tx.product.findMany({
@@ -249,13 +265,16 @@ export const createBooking = async (
       throw new NotFoundError("Booking not found after creation");
     }
 
-    return createdWithAddons;
+    return {
+      message: "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
+      booking: createdWithAddons,
+    };
   });
 
-  return {
-    message: "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
-    booking,
-  };
+  return result;
+  } finally {
+    await releaseLock(lockKey, lockValue);
+  }
 };
 
 export const getBookingCheckoutDetails = async (
@@ -362,29 +381,6 @@ export const updateBooking = async (
 
   const { sub_field_id } = existingBooking;
 
-  const overlappingBooking = await prisma.booking.findFirst({
-    where: {
-      sub_field_id,
-      id: { not: booking_id },
-      OR: [
-        { status: "PENDING", expires_at: { gt: new Date() } },
-        { status: "CONFIRMED" },
-      ],
-      start_time: { lt: data.end_time },
-      end_time: { gt: data.start_time },
-    },
-  });
-
-  if (overlappingBooking) {
-    throw new BadRequestError(
-      `Đã có một booking khung giờ từ ${formatVietnamTime(
-        overlappingBooking.start_time,
-      )} đến ${formatVietnamTime(
-        overlappingBooking.end_time,
-      )}. Vui lòng chọn khung giờ khác.`,
-    );
-  }
-
   const { totalPrice } = await fetchAndCalculatePrice(
     sub_field_id,
     data.start_time,
@@ -394,18 +390,60 @@ export const updateBooking = async (
 
   console.log("Total Price:::::", totalPrice);
 
-  return await prisma.booking.update({
-    where: { id: booking_id },
-    data: {
-      player_id,
-      sub_field_id,
-      start_time: data.start_time,
-      end_time: data.end_time,
-      total_price: totalPrice + addonSubtotal,
-      status: "PENDING",
-      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
-    },
+  const lockKey = `lock:booking:subfield:${sub_field_id}`;
+  const lockValue = crypto.randomUUID();
+  const lockTTL = 15;
+
+  const acquired = await acquireLock(lockKey, lockValue, lockTTL);
+  if (!acquired) {
+    throw new BadRequestError("Sân đang có người thao tác. Vui lòng thử lại sau giây lát.");
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+    // 1. Pessimistic Lock on SubField row
+    await tx.$executeRaw`SELECT 1 FROM "SubField" WHERE id = ${sub_field_id}::uuid FOR UPDATE`;
+
+    // 2. Check overlap inside transaction
+    const overlappingBooking = await tx.booking.findFirst({
+      where: {
+        sub_field_id,
+        id: { not: booking_id },
+        OR: [
+          { status: "PENDING", expires_at: { gt: new Date() } },
+          { status: "CONFIRMED" },
+        ],
+        start_time: { lt: data.end_time },
+        end_time: { gt: data.start_time },
+      },
+    });
+
+    if (overlappingBooking) {
+      throw new BadRequestError(
+        `Đã có một booking khung giờ từ ${formatVietnamTime(
+          overlappingBooking.start_time,
+        )} đến ${formatVietnamTime(
+          overlappingBooking.end_time,
+        )}. Vui lòng chọn khung giờ khác.`,
+      );
+    }
+
+    return await tx.booking.update({
+      where: { id: booking_id },
+      data: {
+        player_id,
+        sub_field_id,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        total_price: totalPrice + addonSubtotal,
+        status: "PENDING",
+        expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
+      },
+    });
   });
+  } finally {
+    await releaseLock(lockKey, lockValue);
+  }
 };
 
 export const cancelBooking = async (booking_id: string, player_id: string) => {

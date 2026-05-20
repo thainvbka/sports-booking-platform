@@ -64,3 +64,37 @@ export const closeRedis = async () => {
     }
   }
 };
+
+export const acquireLock = async (key: string, value: string, ttlSeconds: number): Promise<boolean> => {
+  try {
+    const client = getRedis();
+    const result = await client.set(key, value, {
+      EX: ttlSeconds,
+      NX: true,
+    });
+    return result === 'OK';
+  } catch (err) {
+    console.error(`:::::Failed to acquire lock for key ${key}:`, err);
+    // On Redis error, fail open to database layer pessimistic lock
+    return true; 
+  }
+};
+
+export const releaseLock = async (key: string, value: string): Promise<void> => {
+  try {
+    const client = getRedis();
+    const script = `
+      if redis.call("get", KEYS[1]) == ARGV[1] then
+        return redis.call("del", KEYS[1])
+      else
+        return 0
+      end
+    `;
+    await client.eval(script, {
+      keys: [key],
+      arguments: [value],
+    });
+  } catch (err) {
+    console.error(`:::::Failed to release lock for key ${key}:`, err);
+  }
+};

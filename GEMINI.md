@@ -1,99 +1,87 @@
-# Sports Booking Platform - Project Overview
+# Sports Booking Platform
 
-A comprehensive sports facility booking platform built with a modern TypeScript architecture. The project supports multiple user roles (Admin, Owner, Player) and various sports (Football, Basketball, Tennis, Badminton, Volleyball, Pickleball).
+A comprehensive, multi-tenant sports facility booking platform designed for players, facility owners, and platform administrators.
 
-## Project Structure
+## Project Overview
 
-This project is organized into two main applications and shared infrastructure:
+This is a monorepo containing a full-stack application built with modern technologies. It features a robust booking engine, dynamic pricing, real-time match-making, and seamless payment integration.
 
-- `apps/backend`: Express.js server (v5.1.0), Prisma ORM, PostgreSQL.
-- `apps/frontend`: React 19 (Vite), Tailwind CSS 4, Shadcn UI, Zustand, React Router 7.
-- `docker-compose.yml`: Orchestration for local development (Postgres, Backend, Frontend).
-- `docs/`: Technical design documents and feature plans.
+### Core Architecture
 
-## Tech Stack
+- **Backend:** Express.js (v5) with TypeScript, Prisma ORM, and PostgreSQL.
+- **Frontend:** React (v19) with Vite, TypeScript, Tailwind CSS (v4), and Zustand.
+- **Database:** PostgreSQL with `pgvector` for recommendation features.
+- **Caching:** Redis for session and data caching.
+- **Integrations:** Stripe for payments, Cloudinary for media, and Socket.io for real-time updates.
 
-### Backend
-- **Framework:** Express.js (v5.1.0)
-- **Language:** TypeScript
-- **ORM:** Prisma with PostgreSQL
-- **Authentication:** JWT with refresh token support (stored in HTTP-only cookies and database)
-- **Validation:** Zod for strict request/response validation
-- **Storage:** Cloudinary for image uploads
-- **Payments:** Stripe integration with webhook support
-- **Background Tasks:** node-cron for automated cleanup of expired bookings and system maintenance
-- **Time Management:** date-fns and date-fns-tz (Primary timezone: `Asia/Ho_Chi_Minh`)
+## Repository Structure
 
-### Frontend
-- **Framework:** React 19 + Vite 7
-- **Routing:** React Router 7 (using `createBrowserRouter`)
-- **State Management:** Zustand (feature-based stores)
-- **Styling:** Tailwind CSS 4 with Shadcn UI (Radix UI primitives)
-- **API Client:** Axios with centralized interceptors for token refresh and global error handling
-- **Forms:** React Hook Form + Zod
+- `apps/backend/`: Express.js API service. [See Backend Guide](./apps/backend/GEMINI.md)
+- `apps/frontend/`: React frontend application. [See Frontend Guide](./apps/frontend/GEMINI.md)
+- `docs/`: Project documentation and diagrams.
+- `nginx/`: Nginx configuration for production deployment.
 
-## Building and Running
+## Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
+
 - Docker and Docker Compose
-- `.env` file (copied from `.env.example` at the root and within apps)
+- Node.js (v18+) and npm (for local development outside Docker)
 
-### Using Docker (Recommended)
+### Running with Docker
+
+The easiest way to start the entire stack is using Docker Compose:
+
 ```bash
-# Start all services (Postgres, Backend, Frontend)
-docker-compose up -d
+# Start all services in development mode
+docker-compose up
 ```
 
-### Manual Local Development
-**Backend:**
-```bash
-cd apps/backend
-npm install
-npx prisma generate
-npx prisma migrate dev
-npm run dev
-```
+This will spin up:
+- PostgreSQL at `localhost:5432`
+- Redis at `localhost:6379`
+- Backend API at `localhost:3000`
+- Prisma Studio at `localhost:5555`
+- Frontend application at `localhost:5173`
 
-**Frontend:**
-```bash
-cd apps/frontend
-npm install
-npm run dev
-```
+### Environment Configuration
 
-## Core Features
-- **Multi-Role RBAC:** Dedicated dashboards for Admin, Owner (Facility Manager), and Player (Customer).
-- **Facility Management:** Owners can manage "Complexes" (venues) and "Sub-fields" with specific sport types and capacity.
-- **Dynamic Pricing Engine:** Advanced pricing rules based on `day_of_week` and time segments.
-- **Booking System:**
-  - Support for single and recurring (weekly/monthly) bookings.
-  - Automated expiration of pending bookings.
-  - Integration with Stripe for secure payments and refunds.
-- **Matchmaking:** Players can create or join matches to find teammates or opponents.
-- **Reviews & Ratings:** Comprehensive review system for facilities.
-- **Notification System:** In-app and email notifications via Nodemailer.
+1. Copy `.env.example` to `.env` in the root directory.
+2. Copy `apps/backend/.env.example` to `apps/backend/.env`.
+3. Copy `apps/frontend/.env.example` to `apps/frontend/.env`.
+
+## Key Features
+
+- **Facility Management:** Owners can manage sports complexes, sub-fields, and pricing rules.
+- **Booking Engine:** Supports single and recurring (weekly/monthly) bookings with overlap prevention.
+- **Pricing Engine:** Segmented pricing based on time of day and day of the week.
+- **Match-Making:** Players can create or join matches to find partners/opponents.
+- **Payments:** Secure transaction handling via Stripe.
+- **Notifications:** Multi-role notification system for system alerts and booking updates.
+- **Recommendations:** AI-powered recommendations using `pgvector` for sports complexes.
 
 ## Development Conventions
 
-### Standardized API Response
-The backend returns a consistent JSON structure via the `SuccessResponse` class and `errorHandler` middleware:
-- **Success:** `{ success: true, status: 200, code: 200, message: "...", data: { ... }, reason: "..." }`
-- **Failure:** `{ success: false, status: 4xx/5xx, code: 4xx/5xx, message: "...", data: null, reason: "..." }`
+### General
 
-### Error Handling
-- **Backend:** Use `asyncHandler` for all route handlers. Throw specialized error classes (e.g., `BadRequestError`, `NotFoundError`) from `src/utils/error.response.ts`.
-- **Frontend:** Axios interceptor in `src/lib/axios.ts` automatically handles 401 Unauthorized errors by attempting a token refresh and redirects to login if it fails. It also provides global error notifications via `sonner` toasts.
+- **TypeScript:** Strict typing is enforced across the codebase. Avoid `any`.
+- **Validation:** Zod is used for schema validation on both frontend and backend.
+- **Time Handling:** Default timezone is `Asia/Ho_Chi_Minh` (UTC+7). Use helpers in `apps/backend/src/helpers/time.helper.ts` and `apps/frontend/src/utils/` for date/time operations.
 
-### Database Patterns
-- Access the database using the singleton Prisma client in `apps/backend/src/libs/prisma.ts`.
-- Use Enums for all status and type fields (e.g., `SportType`, `BookingStatus`, `PaymentStatus`).
-- Implement caching at the database level for frequent lookups (e.g., `min_price`, `max_price`, `avg_rating` in the `Complex` model).
+### Backend
 
-### Environment Variables
-Key variables required in `.env`:
-- `DATABASE_URL`: PostgreSQL connection string
-- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`: Secrets for authentication
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: For image management
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`: For payment processing
-- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS`: For email notifications
+- Follow the **Controller-Service-Repository** pattern.
+- All API responses follow a standardized JSON format.
+- Use `asyncHandler` for Express route handlers.
+- [Detailed Backend Instructions](./apps/backend/GEMINI.md)
+
+### Frontend
+
+- Use **Zustand** for state management.
+- **Tailwind CSS 4** for utility-first styling.
+- **React Router 7** for navigation.
+- [Detailed Frontend Instructions](./apps/frontend/GEMINI.md)
+
+## Deployment
+
+Production deployment is managed via Docker Compose (`docker-compose.prod.yml`) and Nginx. CI/CD workflows are located in `.github/workflows/deploy.yml`.
