@@ -8,10 +8,11 @@ import type { ApiError, BookingReviewResponse } from "@/types";
 import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { ArrowLeft, Calendar, Clock, MapPin, Trophy } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Trophy, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function BookingReviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ export default function BookingReviewPage() {
   const [booking, setBooking] = useState<BookingReviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "VNPAY">("STRIPE");
 
   useEffect(() => {
     if (!id) return;
@@ -44,7 +46,11 @@ export default function BookingReviewPage() {
     setIsPaying(true);
 
     try {
-      const result = await bookingService.createCheckoutSession([booking.id]);
+      const result =
+        paymentMethod === "STRIPE"
+          ? await bookingService.createCheckoutSession([booking.id])
+          : await bookingService.createVnpayCheckoutSession([booking.id]);
+
       if (result?.data?.url) {
         window.location.href = result.data.url;
       } else {
@@ -196,6 +202,42 @@ export default function BookingReviewPage() {
               <Separator />
             </>
           ) : null}
+
+          {/* Chọn phương thức thanh toán */}
+          <div className="space-y-3 rounded-lg border p-4 bg-card shadow-xs">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <CreditCard className="h-4 w-4 text-primary" />
+              Chọn phương thức thanh toán
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("STRIPE")}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all gap-1 text-xs font-semibold cursor-pointer text-center",
+                  paymentMethod === "STRIPE"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border hover:bg-muted/50 text-muted-foreground"
+                )}
+              >
+                <span className="font-bold">Thẻ Quốc Tế (Stripe)</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Visa, Mastercard, JCB...</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("VNPAY")}
+                className={cn(
+                  "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all gap-1 text-xs font-semibold cursor-pointer text-center",
+                  paymentMethod === "VNPAY"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border hover:bg-muted/50 text-muted-foreground"
+                )}
+              >
+                <span className="font-bold">Cổng VNPAY (ATM / QR)</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Quét mã QR, Thẻ nội địa...</span>
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-2 rounded-lg border bg-muted/30 p-4">
             <div className="flex items-center justify-between text-sm text-muted-foreground">

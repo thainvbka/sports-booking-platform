@@ -7,6 +7,7 @@ import {
   CreditCard,
   LayoutPanelLeft,
   Users,
+  Wallet,
 } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
@@ -65,6 +66,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Thanh toán",
           url: "/admin/payments",
           icon: CreditCard,
+        },
+        {
+          title: "Đối soát Payout",
+          url: "/admin/payouts",
+          icon: Wallet,
         },
       ],
     },

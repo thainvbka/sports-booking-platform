@@ -7,8 +7,18 @@ import {
   PaymentStatus,
   prisma,
   RecurringStatus,
+  PayoutStatus,
 } from "../../libs/prisma";
 import stripe from "../../libs/stripe";
+import vnpay from "../../libs/vnpay";
+import {
+  IpnSuccess,
+  IpnOrderNotFound,
+  IpnInvalidAmount,
+  IpnFailChecksum,
+  InpOrderAlreadyConfirmed,
+  IpnUnknownError,
+} from "vnpay";
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
 
 // Tạo Stripe Connect Account cho Owner
@@ -504,5 +514,301 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
         throw new Error("Database update failed: " + error.message);
       }
     }
+  }
+};
+
+/**
+ * Tạo link thanh toán VNPAY cho Player
+ */
+export const createVnpayCheckoutSession = async (
+  playerId: string,
+  bookingIds: string[],
+  ipAddress: string,
+) => {
+  console.log(
+    `Creating VNPay checkout session for player: ${playerId}, bookings: ${bookingIds}`,
+  );
+  if (!bookingIds || bookingIds.length === 0) {
+    throw new BadRequestError("No bookings provided for payment");
+  }
+
+  // Lấy danh sách booking
+  const bookings = await prisma.booking.findMany({
+    where: {
+      id: { in: bookingIds },
+      player_id: playerId,
+      status: "PENDING",
+    },
+    select: {
+      id: true,
+      total_price: true,
+      sub_field: {
+        select: {
+          sub_field_name: true,
+          complex: {
+            select: {
+              id: true,
+              complex_address: true,
+              complex_name: true,
+              owner: {
+                select: {
+                  id: true,
+                  account_id: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (bookings.length !== bookingIds.length) {
+    console.log(
+      "ERROR: Mismatch in booking count. Some are missing or not PENDING.",
+    );
+    throw new BadRequestError(
+      "Một số booking không hợp lệ hoặc đã được thanh toán",
+    );
+  }
+
+  const firstBooking = bookings[0];
+  const owner = firstBooking.sub_field.complex.owner;
+
+  const hasDifferentOwners = bookings.some(
+    (booking) =>
+      booking.sub_field.complex.owner.id !== owner.id,
+  );
+
+  if (hasDifferentOwners) {
+    throw new BadRequestError(
+      "Không thể thanh toán booking của nhiều chủ sân trong cùng một giao dịch",
+    );
+  }
+
+  // Tính tổng số tiền (expectedAmount)
+  const expectedAmount = bookings.reduce(
+    (sum, booking) => sum + Math.round(Number(booking.total_price)),
+    0,
+  );
+
+  // Tạo transaction code duy nhất
+  const transactionCode = `VNP_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+  // Tạo Payment và cập nhật Bookings trong transaction
+  await prisma.$transaction(async (tx) => {
+    // 1. Tạo Payment record ở trạng thái FAILED (mặc định cho đến khi IPN cập nhật thành SUCCESS)
+    const newPayment = await tx.payment.create({
+      data: {
+        amount: expectedAmount,
+        provider: PaymentProvider.VNPAY,
+        transaction_code: transactionCode,
+        status: PaymentStatus.FAILED,
+      },
+    });
+
+    // 2. Cập nhật booking: liên kết payment_id và gia hạn expires_at thêm 30 phút
+    await tx.booking.updateMany({
+      where: {
+        id: { in: bookingIds },
+        status: BookingStatus.PENDING,
+      },
+      data: {
+        payment_id: newPayment.id,
+        expires_at: new Date(Date.now() + 30 * 60 * 1000), // Reset về 30 phút
+      },
+    });
+  });
+
+  // Build URL thanh toán VNPAY
+  const paymentUrl = vnpay.buildPaymentUrl({
+    vnp_Amount: expectedAmount,
+    vnp_IpAddr: ipAddress || "127.0.0.1",
+    vnp_TxnRef: transactionCode,
+    vnp_OrderInfo: `Thanh toan booking: ${bookingIds.join(", ")}`,
+    vnp_ReturnUrl: config.VNPAY_RETURN_URL,
+  });
+
+  return { url: paymentUrl };
+};
+
+/**
+ * Xử lý IPN Webhook callback từ VNPAY
+ */
+export const handleVnpayIpn = async (query: any) => {
+  console.log("::: Received VNPAY IPN webhook signature verification request:", query);
+
+  // 1. Xác thực chữ ký IPN bằng verifyIpnCall
+  const verifyResult = vnpay.verifyIpnCall(query);
+  if (!verifyResult.isVerified) {
+    console.log("::: VNPAY IPN: Signature verification failed");
+    return IpnFailChecksum;
+  }
+
+  const transactionCode = verifyResult.vnp_TxnRef;
+  const vnpAmount = verifyResult.vnp_Amount; // Đã được chia cho 100 bởi thư viện vnpay
+  const responseCode = verifyResult.vnp_ResponseCode;
+
+  // 2. Tìm Payment theo transactionCode
+  const payment = await prisma.payment.findUnique({
+    where: { transaction_code: transactionCode },
+    include: {
+      bookings: {
+        include: {
+          player: {
+            select: {
+              account_id: true,
+            },
+          },
+          sub_field: {
+            include: {
+              complex: {
+                include: {
+                  owner: {
+                    select: {
+                      id: true,
+                      account_id: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    console.log(`::: VNPAY IPN: Payment record not found for transaction_code: ${transactionCode}`);
+    return IpnOrderNotFound;
+  }
+
+  // 3. Kiểm tra số tiền
+  if (Math.round(Number(payment.amount)) !== Math.round(Number(vnpAmount))) {
+    console.log(`::: VNPAY IPN: Amount mismatch. Expected=${payment.amount}, Received=${Number(vnpAmount)}`);
+    return IpnInvalidAmount;
+  }
+
+  // 4. Nếu đơn hàng đã SUCCESS từ trước
+  if (payment.status === PaymentStatus.SUCCESS) {
+    console.log(`::: VNPAY IPN: Order already successfully processed. TxnRef: ${transactionCode}`);
+    return InpOrderAlreadyConfirmed;
+  }
+
+  // 5. Giao dịch thành công từ phía VNPAY (responseCode === "00")
+  if (responseCode === "00") {
+    try {
+      const notificationContext = await prisma.$transaction(async (tx) => {
+        // Cập nhật trạng thái Payment
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: { status: PaymentStatus.SUCCESS },
+        });
+
+        // Cập nhật trạng thái Bookings thành COMPLETED (Thanh toán xong, chờ xác nhận)
+        const bookingIds = payment.bookings.map((b) => b.id);
+        await tx.booking.updateMany({
+          where: {
+            id: { in: bookingIds },
+            status: BookingStatus.PENDING,
+          },
+          data: {
+            status: BookingStatus.COMPLETED,
+            paid_at: new Date(),
+          },
+        });
+
+        // Cập nhật trạng thái RecurringBooking nếu cần
+        const recurringBookingIds = Array.from(
+          new Set(
+            payment.bookings
+              .map((booking) => booking.recurring_booking_id)
+              .filter((value): value is string => Boolean(value)),
+          ),
+        );
+
+        for (const recurringBookingId of recurringBookingIds) {
+          const pendingCount = await tx.booking.count({
+            where: {
+              recurring_booking_id: recurringBookingId,
+              status: BookingStatus.PENDING,
+            },
+          });
+
+          if (pendingCount === 0) {
+            await tx.recurringBooking.update({
+              where: { id: recurringBookingId },
+              data: { status: RecurringStatus.COMPLETED },
+            });
+          }
+        }
+
+        // Tạo bản ghi OwnerPayout nợ (PENDING) cho chủ sân
+        const firstBooking = payment.bookings[0];
+        const owner = firstBooking.sub_field.complex.owner;
+        const totalAmount = Number(payment.amount);
+        const platformFee = Math.round(totalAmount * 0.1); // Phí 10%
+        const payoutAmount = totalAmount - platformFee;
+
+        await tx.ownerPayout.create({
+          data: {
+            owner_id: owner.id,
+            payment_id: payment.id,
+            total_amount: totalAmount,
+            platform_fee: platformFee,
+            payout_amount: payoutAmount,
+            status: PayoutStatus.PENDING,
+          },
+        });
+
+        return {
+          playerAccountId: firstBooking.player.account_id,
+          ownerAccountId: owner.account_id,
+          complexName: firstBooking.sub_field.complex.complex_name,
+          bookingIds,
+        };
+      });
+
+      // Gửi Notification (không làm gián đoạn transaction)
+      const bookingLink = `/bookings?ids=${notificationContext.bookingIds.join(",")}`;
+      await Promise.all([
+        sendNotificationIfNotExists(notificationContext.playerAccountId, {
+          message: `Thanh toán thành công cho booking tại ${notificationContext.complexName} qua VNPAY.`,
+          type: "PAYMENT",
+          target_role: "PLAYER",
+          link_to: bookingLink,
+        }),
+        sendNotificationIfNotExists(notificationContext.ownerAccountId, {
+          message: `Bạn vừa nhận được một lượt đặt sân mới thanh toán qua VNPAY tại ${notificationContext.complexName}.`,
+          type: "BOOKING",
+          target_role: "OWNER",
+          link_to: "/owner/bookings",
+        }),
+      ]);
+
+      // Invalidate recommendation cache
+      const firstBooking = payment.bookings[0];
+      if (firstBooking?.player_id) {
+        invalidatePlayerRecommendation(firstBooking.player_id).catch((err) =>
+          console.error("[Recommendation] Failed to invalidate cache after VNPAY payment:", err),
+        );
+      }
+
+      console.log(`::: VNPAY IPN: Payment processed successfully: ${transactionCode}`);
+      return IpnSuccess;
+    } catch (error: any) {
+      console.error("::: VNPAY IPN: Error while updating DB transaction:", error);
+      return IpnUnknownError;
+    }
+  } else {
+    // VNPAY thanh toán thất bại
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: PaymentStatus.FAILED },
+    });
+
+    console.log(`::: VNPAY IPN: Transaction failed at gateway. ResponseCode=${responseCode}`);
+    return IpnSuccess; // Vẫn trả về success cho VNPAY để xác nhận đã xử lý IPN thành công
   }
 };

@@ -7,8 +7,8 @@ import path from "path";
 // We only load local .env files as a fallback for development.
 const envCandidates = [
   process.env.ENV_FILE_PATH,
-  path.resolve(process.cwd(), ".env"),
-  path.resolve(__dirname, "../../.env"),
+  path.resolve(__dirname, "../../.env"), // backend-specific .env (higher precedence)
+  path.resolve(process.cwd(), ".env"),   // monorepo root .env (fallback)
 ].filter((p): p is string => Boolean(p));
 
 for (const envPath of envCandidates) {
@@ -43,6 +43,10 @@ const config = {
   MAIL_USER: process.env.MAIL_USER,
   MAIL_PASS: process.env.MAIL_PASS,
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
+  VNPAY_TMN_CODE: process.env.VNPAY_TMN_CODE || "2QXUI4B4", // default sandbox tmnCode from readme
+  VNPAY_SECURE_SECRET: process.env.VNPAY_SECURE_SECRET || "secret",
+  VNPAY_HOST: process.env.VNPAY_HOST || "https://sandbox.vnpayment.vn",
+  VNPAY_RETURN_URL: process.env.VNPAY_RETURN_URL || "http://localhost:5173/bookings/success",
 };
 
 export default config;

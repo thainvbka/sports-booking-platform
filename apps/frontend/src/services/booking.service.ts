@@ -83,4 +83,21 @@ export const bookingService = {
     );
     return response.data;
   },
+
+  createVnpayCheckoutSession: async (bookingIds: string[]) => {
+    const response = await api.post<ApiResponse<{ url: string }>>(
+      `/payments/vnpay/checkout-session`,
+      {
+        booking_ids: bookingIds,
+      },
+    );
+    return response.data;
+  },
+
+  verifyVnpayPayment: async (queryString: string) => {
+    const response = await api.get<{ RspCode: string; Message: string }>(
+      `/payments/vnpay/ipn${queryString}`,
+    );
+    return response.data;
+  },
 };

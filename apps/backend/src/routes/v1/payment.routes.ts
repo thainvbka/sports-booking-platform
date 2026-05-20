@@ -7,6 +7,8 @@ import {
   checkStripeAccountStatusController,
   createCheckoutSessionController,
   createConnectAccountController,
+  createVnpayCheckoutSessionController,
+  handleVnpayIpnController,
 } from "../../controllers/v1/payment.controller";
 
 const router = Router();
@@ -32,4 +34,17 @@ router.post(
   asyncHandler(createCheckoutSessionController),
 );
 
+router.post(
+  "/vnpay/checkout-session", // Tạo checkout session VNPAY
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(createVnpayCheckoutSessionController),
+);
+
+router.get(
+  "/vnpay/ipn", // Xử lý IPN từ VNPAY (Public endpoint)
+  asyncHandler(handleVnpayIpnController),
+);
+
 export default router;
+

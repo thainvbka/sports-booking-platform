@@ -27,11 +27,13 @@ import { OwnerDashboardPage } from "@/pages/owner/DashboardPage";
 import { OwnerBookingsPage } from "@/pages/owner/OwnerBookingsPage";
 import { ProductManagementPage } from "@/pages/owner/ProductManagementPage";
 import { SubFieldDetailPage } from "@/pages/owner/SubFieldDetailPage";
+import { WalletPage } from "@/pages/owner/WalletPage";
 import { PaymentFailedPage } from "@/pages/payment/PaymentFailedPage";
 import { PaymentSuccessPage } from "@/pages/payment/PaymentSuccessPage";
 import { PlayerBookingsPage } from "@/pages/player/BookingHistory";
 import { MyMatchesPage } from "@/pages/player/MyMatchesPage";
 
+import AdminPayoutsPage from "@/pages/admin/payments/AdminPayoutsPage";
 import { PublicComplexDetailPage } from "@/pages/public/PublicComplexDetailPage";
 import { PublicSubfieldDetailPage } from "@/pages/public/PublicSubfieldDetailPage";
 import { SearchPage } from "@/pages/SearchPage";
@@ -226,6 +228,10 @@ export const router = createBrowserRouter([
         element: <ProductManagementPage />,
       },
       {
+        path: "wallet",
+        element: <WalletPage />,
+      },
+      {
         path: "stripe/return",
         element: <StripeReturnPage />,
       },
@@ -266,6 +272,10 @@ export const router = createBrowserRouter([
       {
         path: "payments",
         element: <AdminPaymentsPage />,
+      },
+      {
+        path: "payouts",
+        element: <AdminPayoutsPage />,
       },
     ],
   },

@@ -43,6 +43,14 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PayoutStatus {
+  PENDING
+  REQUESTED
+  PROCESSING
+  PAID
+  CANCELLED
+}
+
 enum AdminStatus {
   ACTIVE
   INACTIVE
@@ -145,14 +153,23 @@ model Admin {
 }
 
 model Owner {
-  id                         String      @id @default(uuid()) @db.Uuid
-  account_id                 String      @unique @db.Uuid
-  account                    Account     @relation(fields: [account_id], references: [id], onDelete: Cascade)
-  company_name               String      @db.VarChar(100)
-  stripe_account_id          String?     @db.VarChar(100)
-  stripe_onboarding_complete Boolean     @default(false)
+  id                         String        @id @default(uuid()) @db.Uuid
+  account_id                 String        @unique @db.Uuid
+  account                    Account       @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  company_name               String        @db.VarChar(100)
+  stripe_account_id          String?       @db.VarChar(100)
+  stripe_onboarding_complete Boolean       @default(false)
   status                     OwnerStatus
   complexes                  Complex[]
+
+  // --- Domestic Bank Account for VNPAY manual Payouts ---
+  bank_name                  String?       @db.VarChar(100)
+  bank_account_number        String?       @db.VarChar(50)
+  bank_account_name          String?       @db.VarChar(100)
+  bank_branch                String?       @db.VarChar(150)
+
+  payouts                    OwnerPayout[]
+  payout_batches             PayoutBatch[]
 }
 
 model Player {
@@ -310,6 +327,7 @@ model Payment {
   status           PaymentStatus
   bookings         Booking[]
   created_at       DateTime        @default(now()) @db.Timestamptz(0)
+  owner_payout     OwnerPayout?
 }
 
 model Notification {
@@ -424,4 +442,46 @@ model Review {
   @@index([subfield_id])
   @@index([subfield_id, rating])
   @@index([player_id])
+}
+
+model OwnerPayout {
+  id               String       @id @default(uuid()) @db.Uuid
+  owner_id         String       @db.Uuid
+  owner            Owner        @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  payment_id       String       @unique @db.Uuid
+  payment          Payment      @relation(fields: [payment_id], references: [id], onDelete: Restrict)
+  batch_id         String?      @db.Uuid
+  batch            PayoutBatch? @relation(fields: [batch_id], references: [id], onDelete: SetNull)
+  
+  total_amount     Decimal      @db.Decimal(10, 2)
+  platform_fee     Decimal      @db.Decimal(10, 2)
+  payout_amount    Decimal      @db.Decimal(10, 2)
+  
+  status           PayoutStatus @default(PENDING)
+  created_at       DateTime     @default(now()) @db.Timestamptz(0)
+  paid_at          DateTime?    @db.Timestamptz(0)
+  
+  @@index([owner_id, status])
+  @@index([batch_id])
+}
+
+model PayoutBatch {
+  id                String        @id @default(uuid()) @db.Uuid
+  owner_id          String        @db.Uuid
+  owner             Owner         @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  
+  total_payout      Decimal       @db.Decimal(10, 2)
+  status            PayoutStatus  @default(PENDING)
+  payout_period     String        @db.VarChar(50)
+  
+  transaction_ref   String?       @db.VarChar(100)
+  receipt_image     String?       @db.Text
+  note              String?       @db.Text
+  
+  created_at        DateTime      @default(now()) @db.Timestamptz(0)
+  paid_at           DateTime?     @db.Timestamptz(0)
+  
+  payouts           OwnerPayout[]
+
+  @@index([owner_id, status])
 }

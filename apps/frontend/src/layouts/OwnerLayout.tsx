@@ -43,6 +43,7 @@ import {
   Settings,
   UserPlus,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { useMemo, useState } from "react";
@@ -61,6 +62,7 @@ const OWNER_MENU_ITEMS: MenuItem[] = [
   { icon: Building2, label: "Khu phức hợp", path: "/owner/complexes" },
   { icon: Calendar, label: "Lịch đặt sân", path: "/owner/bookings" },
   { icon: Package, label: "Sản phẩm", path: "/owner/products" },
+  { icon: Wallet, label: "Ví & Đối soát", path: "/owner/wallet" },
   { icon: Settings, label: "Cài đặt", path: "/owner/settings", disabled: true },
 ];
 
