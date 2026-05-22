@@ -52,3 +52,41 @@ export const formatMinutesToTime = (minutes: number): string => {
   const m = (minutes % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
 };
+
+/**
+ * Format time from backend (handles both string and Date)
+ * Always returns 24-hour format HH:MM
+ */
+export const formatTime = (time: string | Date | unknown): string => {
+  if (!time) return "--:--";
+
+  if (typeof time === "string") {
+    if (/^\d{2}:\d{2}$/.test(time)) return time;
+    if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
+    if (time.includes("T") && time.includes("Z")) {
+      const timePart = time.split("T")[1].split("Z")[0];
+      return timePart.slice(0, 5);
+    }
+    if (time.includes("T") || time.includes("-")) {
+      const date = new Date(time);
+      const hours = String(date.getUTCHours()).padStart(2, "0");
+      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
+    }
+    return time.slice(0, 5);
+  }
+
+  if (time instanceof Date) {
+    const hours = String(time.getUTCHours()).padStart(2, "0");
+    const minutes = String(time.getUTCMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+
+  const str = String(time);
+  if (str.includes(":")) {
+    return str.slice(0, 5);
+  }
+
+  return "--:--";
+};
+

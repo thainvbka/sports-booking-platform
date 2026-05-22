@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAdminPaymentStore } from "@/store/admin/useAdminPaymentStore";
+import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/lib/constants";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -42,17 +43,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  SUCCESS: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
-  FAILED: "bg-red-100 text-red-800 dark:bg-rose-500/15 dark:text-rose-300",
-  REFUNDED: "bg-blue-100 text-blue-800 dark:bg-sky-500/15 dark:text-sky-300",
-};
 
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  SUCCESS: "Thành công",
-  FAILED: "Thất bại",
-  REFUNDED: "Đã hoàn tiền",
-};
 
 export default function AdminPaymentsPage() {
   const {

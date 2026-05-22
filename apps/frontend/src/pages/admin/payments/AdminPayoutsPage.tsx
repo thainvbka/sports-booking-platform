@@ -1,23 +1,14 @@
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
+import {
+  AdminDetailDialog,
+  DetailInfoCard,
+  DetailSummaryRow,
+} from "@/components/admin/details/AdminDetailDialog";
 import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
+import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { DataTable, type Column } from "@/components/shared/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -26,44 +17,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { PAYOUT_STATUS_COLORS, PAYOUT_STATUS_LABELS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import {
   payoutService,
   type AdminPayoutBatchRecord,
   type PayoutStatus,
 } from "@/services/payout.service";
-import { formatPrice } from "@/utils";
+import { formatPrice, getBankDisplayName } from "@/utils";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import {
-  Receipt,
-  User,
-  CreditCard,
-  Building,
-  Calendar,
   CheckCircle2,
-  Clock,
-  RefreshCw,
-  XCircle,
-  FileText,
-  Eye,
   ExternalLink,
-  MessageSquare,
+  Eye,
+  Receipt,
+  RefreshCw,
+  XCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-slate-100 text-slate-800 dark:bg-slate-500/15 dark:text-slate-300",
-  REQUESTED: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
-  PROCESSING: "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300",
-  PAID: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
-  CANCELLED: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300",
-};
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "Tích lũy",
-  REQUESTED: "Yêu cầu rút",
-  PROCESSING: "Đang xử lý",
-  PAID: "Đã quyết toán",
-  CANCELLED: "Đã từ chối",
-};
+
+
 
 export default function AdminPayoutsPage() {
   const [batches, setBatches] = useState<AdminPayoutBatchRecord[]>([]);
@@ -223,7 +210,7 @@ export default function AdminPayoutsPage() {
           <div className="flex flex-col gap-0.5 rounded-lg bg-muted/40 p-2 text-xs border border-border/40">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Bank:</span>
-              <span className="font-semibold">{batch.owner.bank_name}</span>
+              <span className="font-semibold">{getBankDisplayName(batch.owner.bank_name)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">STK:</span>
@@ -253,10 +240,10 @@ export default function AdminPayoutsPage() {
         <Badge
           className={cn(
             "h-5 border-none text-[10px] shadow-none font-semibold uppercase tracking-wider py-0",
-            STATUS_COLORS[batch.status]
+            PAYOUT_STATUS_COLORS[batch.status]
           )}
         >
-          {STATUS_LABELS[batch.status]}
+          {PAYOUT_STATUS_LABELS[batch.status]}
         </Badge>
       ),
     },
@@ -315,7 +302,7 @@ export default function AdminPayoutsPage() {
         index={5}
         eyebrow="Payout · Settlement"
         title="Bảng đối soát chi trả"
-        description="Nhấp vào biểu tượng con mắt ở cuối dòng để thực hiện chi tiền và duyệt đợt thanh toán."
+        description="Nhấp vào bất kỳ dòng nào trên bảng để xem chi tiết đối soát chứng từ và duyệt đợt thanh toán."
         count={filteredBatches.length}
         countLabel="đợt chi trả"
       >
@@ -324,6 +311,10 @@ export default function AdminPayoutsPage() {
           columns={columns}
           isLoading={isLoading}
           paginationStyle="search"
+          onRowClick={(batch) => {
+            setSelectedBatch(batch);
+            setDetailOpen(true);
+          }}
           pagination={{
             page: 1,
             totalPages: 1,
@@ -334,162 +325,201 @@ export default function AdminPayoutsPage() {
       </AdminTableSection>
 
       {/* ── DETAIL DIALOG ─────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <Receipt className="size-4 text-primary" />
-              Chi tiết Đợt Quyết toán
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Mã đối soát: {selectedBatch?.id}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedBatch && (
-            <div className="space-y-4 pt-2 text-xs">
-              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border bg-muted/20 p-3.5">
+      <AdminDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        title="Chi tiết Đợt Quyết toán"
+        icon={Receipt}
+        statusLabel={
+          selectedBatch
+            ? PAYOUT_STATUS_LABELS[selectedBatch.status]
+            : undefined
+        }
+        statusClassName={
+          selectedBatch
+            ? PAYOUT_STATUS_COLORS[selectedBatch.status]
+            : undefined
+        }
+      >
+        {selectedBatch && (
+          <div className="max-h-[75vh] space-y-5 overflow-y-auto bg-background p-5 text-xs">
+            <DetailSummaryRow
+              leftLabel="Chủ sân (Owner)"
+              leftValue={
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Chủ sân</span>
-                  <span className="text-sm font-bold text-foreground">{selectedBatch.owner?.company_name}</span>
-                  <span className="text-[10px] text-muted-foreground">{selectedBatch.owner?.account?.email}</span>
-                </div>
-                <div className="flex flex-col gap-0.5 items-end text-right">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Số tiền yêu cầu</span>
-                  <span className="font-display text-xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
-                    {formatPrice(Number(selectedBatch.total_payout))}
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                    {selectedBatch.owner?.company_name || "N/A"}
                   </span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "h-5 border-none px-2 mt-1 text-[9.5px] font-semibold uppercase tracking-wider",
-                      STATUS_COLORS[selectedBatch.status]
-                    )}
-                  >
-                    {STATUS_LABELS[selectedBatch.status]}
-                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedBatch.owner?.account?.email}
+                  </span>
                 </div>
+              }
+              rightLabel="Số tiền quyết toán"
+              rightValue={
+                <span className="font-display text-lg font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
+                  {formatPrice(Number(selectedBatch.total_payout))}
+                </span>
+              }
+            />
+
+            {/* Bank Account Info Card */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Thông tin Tài khoản Thụ hưởng
+              </h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <DetailInfoCard
+                  label="Ngân hàng"
+                  value={getBankDisplayName(selectedBatch.owner?.bank_name || "")}
+                />
+                <DetailInfoCard
+                  label="Số tài khoản"
+                  value={
+                    <span className="font-mono font-bold text-primary">
+                      {selectedBatch.owner?.bank_account_number || "N/A"}
+                    </span>
+                  }
+                />
+                <DetailInfoCard
+                  label="Họ và tên thụ hưởng"
+                  value={selectedBatch.owner?.bank_account_name || "N/A"}
+                />
+                {selectedBatch.owner?.bank_branch && (
+                  <DetailInfoCard
+                    label="Chi nhánh"
+                    value={selectedBatch.owner.bank_branch}
+                  />
+                )}
               </div>
+            </div>
 
-              {/* Bank Account Info Card */}
-              <div className="rounded-xl border border-border bg-background p-3.5 space-y-3">
-                <h4 className="font-semibold flex items-center gap-1.5 border-b border-border pb-1.5 text-xs">
-                  <CreditCard className="size-3.5 text-primary" />
-                  Thông tin Tài khoản Thụ hưởng
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-muted-foreground text-[10px] uppercase">Ngân hàng</span>
-                    <span className="font-bold">{selectedBatch.owner?.bank_name}</span>
-                  </div>
-                  <div className="flex flex-col gap-0.5 text-right">
-                    <span className="text-muted-foreground text-[10px] uppercase">Số tài khoản</span>
-                    <span className="font-mono font-bold text-primary">{selectedBatch.owner?.bank_account_number}</span>
-                  </div>
-                  <div className="flex flex-col gap-0.5 mt-2">
-                    <span className="text-muted-foreground text-[10px] uppercase">Họ và tên thụ hưởng</span>
-                    <span className="font-mono font-bold uppercase">{selectedBatch.owner?.bank_account_name}</span>
-                  </div>
-                  {selectedBatch.owner?.bank_branch && (
-                    <div className="flex flex-col gap-0.5 text-right mt-2">
-                      <span className="text-muted-foreground text-[10px] uppercase">Chi nhánh</span>
-                      <span className="font-medium text-muted-foreground">{selectedBatch.owner.bank_branch}</span>
-                    </div>
-                  )}
+            {/* VietQR Quick Generator (WOW factor) */}
+            {selectedBatch.status !== "PAID" && selectedBatch.owner?.bank_name && (
+              <div className="rounded-xl border border-dashed border-primary/20 bg-primary/5 p-4 flex flex-col items-center gap-3">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase">
+                  <ExternalLink className="size-4" />
+                  Quét mã chuyển khoản VietQR tự động
+                </span>
+                <div className="bg-white p-2.5 rounded-lg shadow-sm border border-border">
+                  <img
+                    src={`https://img.vietqr.io/image/${selectedBatch.owner.bank_name}-${selectedBatch.owner.bank_account_number}-compact.png?amount=${selectedBatch.total_payout}&addInfo=${encodeURIComponent(
+                      selectedBatch.payout_period
+                    )}&accountName=${encodeURIComponent(selectedBatch.owner.bank_account_name || "")}`}
+                    alt="VietQR code"
+                    className="size-32 object-contain"
+                  />
                 </div>
+                <p className="text-[10px] text-center text-muted-foreground leading-normal max-w-xs">
+                  Mở ứng dụng Mobile Banking của bạn, quét mã QR này để tự động điền thông tin người nhận, số tiền và nội dung chuyển khoản chính xác 100%.
+                </p>
+              </div>
+            )}
 
-                {/* VietQR Quick Generator (WOW factor) */}
-                {selectedBatch.status !== "PAID" && selectedBatch.owner?.bank_name && (
-                  <div className="pt-3 border-t border-dashed border-border/80 flex justify-center">
+            {/* Payout batch logs */}
+            {selectedBatch.status === "PAID" && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Chứng từ thanh toán
+                </h4>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <DetailInfoCard
+                    label="Mã giao dịch đối soát"
+                    value={
+                      <span className="font-mono text-xs font-semibold text-foreground">
+                        {selectedBatch.transaction_ref}
+                      </span>
+                    }
+                  />
+                  <DetailInfoCard
+                    label="Thời gian hoàn thành chi"
+                    value={
+                      selectedBatch.paid_at
+                        ? new Date(selectedBatch.paid_at).toLocaleString("vi-VN")
+                        : "N/A"
+                    }
+                  />
+                </div>
+                {selectedBatch.note && (
+                  <DetailInfoCard
+                    label="Ghi chú đối soát"
+                    value={
+                      <p className="text-xs italic leading-relaxed text-muted-foreground">
+                        {selectedBatch.note}
+                      </p>
+                    }
+                  />
+                )}
+                {selectedBatch.receipt_image && (
+                  <div className="rounded-lg border border-slate-200 p-3 space-y-2">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                      Ảnh hóa đơn/UNC
+                    </p>
                     <a
-                      href={`https://img.vietqr.io/image/${selectedBatch.owner.bank_name}-${selectedBatch.owner.bank_account_number}-compact.png?amount=${selectedBatch.total_payout}&addInfo=${encodeURIComponent(
-                        selectedBatch.payout_period
-                      )}&accountName=${encodeURIComponent(selectedBatch.owner.bank_account_name || "")}`}
+                      href={selectedBatch.receipt_image}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                      className="relative block rounded-lg overflow-hidden border border-border group hover:border-primary/50 transition-colors max-w-xs"
                     >
-                      <ExternalLink className="size-3.5" />
-                      Quét mã chuyển khoản VietQR tự động
+                      <img
+                        src={selectedBatch.receipt_image}
+                        alt="UNC Receipt"
+                        className="w-full max-h-32 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] text-white font-bold uppercase tracking-wider">
+                          Xem ảnh gốc
+                        </span>
+                      </div>
                     </a>
                   </div>
                 )}
               </div>
+            )}
 
-              {/* Payout batch logs */}
-              {selectedBatch.status === "PAID" && (
-                <div className="rounded-xl border border-border bg-background p-3.5 space-y-2.5">
-                  <h4 className="font-semibold text-xs border-b border-border pb-1.5">Chứng từ thanh toán</h4>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Mã giao dịch đối soát:</span>
-                    <span className="font-mono font-semibold">{selectedBatch.transaction_ref}</span>
-                  </div>
-                  {selectedBatch.paid_at && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Thời gian hoàn thành chi:</span>
-                      <span>{new Date(selectedBatch.paid_at).toLocaleString("vi-VN")}</span>
-                    </div>
-                  )}
-                  {selectedBatch.note && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-muted-foreground">Ghi chú đối soát:</span>
-                      <p className="bg-muted/40 p-2 rounded-lg text-muted-foreground italic leading-normal">
-                        {selectedBatch.note}
-                      </p>
-                    </div>
-                  )}
-                  {selectedBatch.receipt_image && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-muted-foreground">Ảnh ủy nhiệm chi (UNC):</span>
-                      <a href={selectedBatch.receipt_image} target="_blank" rel="noopener noreferrer" className="block max-w-xs mt-1">
-                        <img src={selectedBatch.receipt_image} alt="UNC Receipt" className="rounded-lg max-h-24 object-cover border border-border" />
-                      </a>
-                    </div>
-                  )}
-                </div>
+            {/* Action Box based on Status */}
+            <div className="flex flex-wrap gap-2 pt-2 justify-end border-t border-slate-100 mt-4">
+              {selectedBatch.status === "REQUESTED" && (
+                <Button
+                  onClick={() => handleProcessBatch(selectedBatch.id)}
+                  disabled={isSubmitting}
+                  className="h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-colors"
+                >
+                  <RefreshCw className={cn("size-3 mr-1", isSubmitting && "animate-spin")} />
+                  Bắt đầu Xử lý đợt chi
+                </Button>
               )}
 
-              {/* Action Box based on Status */}
-              <div className="flex gap-2 pt-2 justify-end">
-                {selectedBatch.status === "REQUESTED" && (
+              {(selectedBatch.status === "REQUESTED" || selectedBatch.status === "PROCESSING") && (
+                <>
                   <Button
-                    onClick={() => handleProcessBatch(selectedBatch.id)}
-                    disabled={isSubmitting}
-                    className="h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-xs font-semibold"
+                    onClick={() => setApproveOpen(true)}
+                    className="h-8 rounded-full bg-green-600 hover:bg-green-500 text-xs font-semibold text-white transition-colors"
                   >
-                    Bắt đầu Xử lý đợt chi
+                    <CheckCircle2 className="size-3 mr-1" />
+                    Xác nhận Đã chuyển khoản
                   </Button>
-                )}
-
-                {(selectedBatch.status === "REQUESTED" || selectedBatch.status === "PROCESSING") && (
-                  <>
-                    <Button
-                      onClick={() => setApproveOpen(true)}
-                      className="h-8 rounded-full bg-green-600 hover:bg-green-500 text-xs font-semibold"
-                    >
-                      Xác nhận Đã chuyển khoản
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCancelOpen(true)}
-                      className="h-8 rounded-full text-rose-600 hover:bg-rose-50/50 hover:text-rose-600 text-xs font-semibold px-3"
-                    >
-                      Từ chối chi trả
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => setDetailOpen(false)}
-                  className="h-8 rounded-full text-xs font-semibold"
-                >
-                  Đóng lại
-                </Button>
-              </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setCancelOpen(true)}
+                    className="h-8 rounded-full text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-xs font-semibold px-3 transition-colors"
+                  >
+                    <XCircle className="size-3 mr-1" />
+                    Từ chối chi trả
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setDetailOpen(false)}
+                className="h-8 rounded-full text-xs font-semibold transition-colors"
+              >
+                Đóng lại
+              </Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </AdminDetailDialog>
 
       {/* ── APPROVE PAYOUT DIALOG ─────────────────────────── */}
       <Dialog open={approveOpen} onOpenChange={setApproveOpen}>

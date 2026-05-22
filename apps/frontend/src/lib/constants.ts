@@ -13,7 +13,7 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   [BookingStatus.PENDING]: "Chưa thanh toán",
   [BookingStatus.CONFIRMED]: "Đã xác nhận",
   [BookingStatus.CANCELED]: "Đã hủy",
-  [BookingStatus.COMPLETED]: "Chờ xác nhận",
+  [BookingStatus.COMPLETED]: "Đã hoàn thành",
 };
 
 export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
@@ -31,7 +31,7 @@ export const RECURRENCE_TYPE_LABELS: Record<string, string> = {
 export const RECURRING_STATUS_LABELS: Record<string, string> = {
   PENDING: "Chưa thanh toán",
   CONFIRMED: "Đã xác nhận",
-  COMPLETED: "Chờ xác nhận",
+  COMPLETED: "Đã hoàn thành",
   CANCELED: "Đã hủy",
 };
 
@@ -99,3 +99,35 @@ export const PRODUCT_STATUS_COLORS: Record<ProductStatus, string> = {
   ACTIVE: "bg-green-100 text-green-800 hover:bg-green-200",
   INACTIVE: "bg-gray-100 text-gray-700 hover:bg-gray-200",
 };
+
+// Payout & Wallet Statuses
+export const PAYOUT_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Tích lũy",
+  REQUESTED: "Chờ duyệt",
+  PROCESSING: "Đang xử lý",
+  PAID: "Đã quyết toán",
+  CANCELLED: "Đã từ chối",
+};
+
+export const PAYOUT_STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-slate-100 text-slate-800 dark:bg-slate-500/15 dark:text-slate-300",
+  REQUESTED: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  PROCESSING: "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300",
+  PAID: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+  CANCELLED: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300",
+};
+
+// Payment Statuses
+export const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  SUCCESS: "Thành công",
+  FAILED: "Thất bại",
+  REFUNDED: "Đã hoàn tiền",
+};
+
+export const PAYMENT_STATUS_COLORS: Record<string, string> = {
+  SUCCESS: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+  FAILED: "bg-red-100 text-red-800 dark:bg-rose-500/15 dark:text-rose-300",
+  REFUNDED: "bg-blue-100 text-blue-800 dark:bg-sky-500/15 dark:text-sky-300",
+};
+
+

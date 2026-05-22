@@ -18,6 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PAYMENT_STATUS_LABELS } from "@/lib/constants";
 
 export interface RecentPayment {
   id: string;
@@ -49,7 +50,7 @@ const STATUS_CONFIG: Record<
   }
 > = {
   SUCCESS: {
-    label: "Thành công",
+    label: PAYMENT_STATUS_LABELS.SUCCESS,
     Icon: CheckCircle2,
     stripe: "bg-emerald-500",
     rowBg:
@@ -57,7 +58,7 @@ const STATUS_CONFIG: Record<
     textColor: "text-emerald-600 dark:text-emerald-400",
   },
   PENDING: {
-    label: "Đang xử lý",
+    label: PAYMENT_STATUS_LABELS.PENDING,
     Icon: Clock,
     stripe: "bg-amber-500",
     rowBg:
@@ -65,7 +66,7 @@ const STATUS_CONFIG: Record<
     textColor: "text-amber-600 dark:text-amber-400",
   },
   FAILED: {
-    label: "Thất bại",
+    label: PAYMENT_STATUS_LABELS.FAILED,
     Icon: XCircle,
     stripe: "bg-rose-500",
     rowBg:
@@ -73,7 +74,7 @@ const STATUS_CONFIG: Record<
     textColor: "text-rose-600 dark:text-rose-400",
   },
   REFUNDED: {
-    label: "Hoàn tiền",
+    label: PAYMENT_STATUS_LABELS.REFUNDED,
     Icon: RefreshCcw,
     stripe: "bg-blue-500",
     rowBg:

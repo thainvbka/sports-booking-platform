@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { usePricingStore } from "@/store/owner/usePricingStore";
 import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import type { PricingRule } from "@/types";
-import { formatPrice, getSportTypeLabel } from "@/utils";
+import { formatPrice, getSportTypeLabel, formatTime } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -74,41 +74,6 @@ interface PricingRuleFormData {
   days: number[];
   time_slots: { start_time: string; end_time: string; base_price: number }[];
 }
-
-// Format time from backend (handles both string and Date)
-// Always returns 24-hour format HH:MM
-const formatTime = (time: string | Date | unknown): string => {
-  if (!time) return "--:--";
-
-  if (typeof time === "string") {
-    if (/^\d{2}:\d{2}$/.test(time)) return time;
-    if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
-    if (time.includes("T") && time.includes("Z")) {
-      const timePart = time.split("T")[1].split("Z")[0];
-      return timePart.slice(0, 5);
-    }
-    if (time.includes("T") || time.includes("-")) {
-      const date = new Date(time);
-      const hours = String(date.getUTCHours()).padStart(2, "0");
-      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
-    }
-    return time.slice(0, 5);
-  }
-
-  if (time instanceof Date) {
-    const hours = String(time.getUTCHours()).padStart(2, "0");
-    const minutes = String(time.getUTCMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-  }
-
-  const str = String(time);
-  if (str.includes(":")) {
-    return str.slice(0, 5);
-  }
-
-  return "--:--";
-};
 
 // ── Duration util (minutes between HH:MM strings, handles overnight) ──────
 function minutesBetween(start: string, end: string): number {

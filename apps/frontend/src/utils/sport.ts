@@ -1,13 +1,6 @@
-import { SportType } from "@/types";
+import { SPORT_TYPE_LABELS } from "@/lib/constants";
+import type { SportType } from "@/types";
 
-export const getSportTypeLabel = (sportType: SportType): string => {
-  const labels: Record<SportType, string> = {
-    [SportType.FOOTBALL]: "Bóng đá",
-    [SportType.BASKETBALL]: "Bóng rổ",
-    [SportType.TENNIS]: "Tennis",
-    [SportType.BADMINTON]: "Cầu lông",
-    [SportType.VOLLEYBALL]: "Bóng chuyền",
-    [SportType.PICKLEBALL]: "Pickleball",
-  };
-  return labels[sportType];
+export const getSportTypeLabel = (sportType: SportType | string): string => {
+  return SPORT_TYPE_LABELS[sportType as SportType] || String(sportType);
 };
