@@ -4,10 +4,10 @@ import {
   buildSubfieldVector,
   buildUserVector,
   findSimilarSubfields,
+  RerankCandidate,
   rerankWithGemini,
   updateSubfieldEmbedding,
   UserProfileSummary,
-  RerankCandidate,
 } from "../../helpers/recommendation";
 import { prisma } from "../../libs/prisma";
 import { ForbiddenError } from "../../utils/error.response";
@@ -35,7 +35,7 @@ export const getPopularFallback = async (): Promise<RecommendationResponse> => {
   const popularSubfields = await prisma.subField.findMany({
     where: { isDelete: false },
     orderBy: [{ avg_rating: "desc" }, { total_reviews: "desc" }],
-    take: 5,
+    take: 10,
     include: {
       complex: {
         select: {
@@ -197,11 +197,11 @@ export const getRecommendationsForPlayer = async (
       rerankedItems = await rerankWithGemini(userProfileSummary, candidates);
     } catch (error) {
       console.warn(
-        "Gemini rerank failed, falling back to top 5 vector results:",
+        "Gemini rerank failed, falling back to top 10 vector results:",
         error,
       );
-      // Fallback: Top 5 from vector search
-      rerankedItems = similarSubfields.slice(0, 5).map((sf) => ({
+      // Fallback: Top 10 from vector search
+      rerankedItems = similarSubfields.slice(0, 10).map((sf) => ({
         sub_field_id: sf.id,
         score: sf.similarity_score,
         reason: null,
