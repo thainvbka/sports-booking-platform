@@ -11,6 +11,7 @@ import {
   normalizeRecency,
   normalizeSport,
   normalizeWeekday,
+  extractLocationScope,
 } from "./normalizer";
 
 export const buildUserVector = async (
@@ -77,7 +78,10 @@ export const buildUserVector = async (
 
     // District
     const address = b.sub_field.complex.complex_address;
-    districtCount[address] = (districtCount[address] || 0) + 1;
+    const locScope = extractLocationScope(address);
+    if (locScope) {
+      districtCount[locScope] = (districtCount[locScope] || 0) + 1;
+    }
 
     // Rating
     if (b.review) {

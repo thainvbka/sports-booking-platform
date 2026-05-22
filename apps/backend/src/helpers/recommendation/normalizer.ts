@@ -36,34 +36,112 @@ export const normalizePrice = (
   return Math.max(0, Math.min(normalized, 1));
 };
 
-export const normalizeDistrict = (address: string): number => {
-  // Mapping of districts based on seed data
-  const districtMap: Record<string, number> = {
-    "Quận 1": 0.0,
-    "Quận 3": 0.1,
-    "Quận 4": 0.2,
-    "Quận 5": 0.3,
-    "Quận 7": 0.4,
-    "Quận 10": 0.5,
-    "Quận 11": 0.6,
-    "Quận 12": 0.7,
-    "Quận Phú Nhuận": 0.8,
-    "TP Thủ Đức": 0.9,
-    "Quận Bình Thạnh": 1.0,
-  };
+const cleanProvince = (province: string): string => {
+  let p = province.toLowerCase().trim();
+  p = p.replace(/^(thành\s+phố|tỉnh|tp\.?)\s+/i, "");
+  if (p === "hcm" || p === "hồ chí minh" || p === "tp.hcm" || p === "ho chi minh") {
+    return "hồ chí minh";
+  }
+  if (p === "hn" || p === "hà nội" || p === "ha noi") {
+    return "hà nội";
+  }
+  if (p === "đn" || p === "đà nẵng" || p === "da nang") {
+    return "đà nẵng";
+  }
+  return p;
+};
 
-  // Sort keys longest-first to avoid partial matches (e.g., "Quận 1" matching "Quận 10")
-  const sortedKeys = Object.keys(districtMap).sort(
-    (a, b) => b.length - a.length,
-  );
+const cleanDistrict = (district: string): string => {
+  let d = district.toLowerCase().trim();
+  d = d.replace(/^tp\.?\s+/i, "thành phố ");
+  return d;
+};
 
-  for (const key of sortedKeys) {
-    if (address.includes(key)) {
-      return districtMap[key];
+export const extractLocationScope = (address: string): string => {
+  if (!address) return "";
+  
+  const parts = address.split(",").map(p => p.trim());
+  
+  if (parts.length >= 2) {
+    const rawDistrict = parts[parts.length - 2];
+    const rawProvince = parts[parts.length - 1];
+    
+    const cleanD = cleanDistrict(rawDistrict);
+    const cleanP = cleanProvince(rawProvince);
+    
+    if (cleanD && cleanP) {
+      return `${cleanD} - ${cleanP}`;
+    }
+  }
+  
+  // Fallback for single-part or raw inputs (without commas)
+  const cleanAddr = address.toLowerCase().trim();
+  const provinces = [
+    // Tên chuẩn tiếng Việt có dấu
+    "thành phố hồ chí minh", "thành phố hải phòng", "thành phố đà nẵng", "thành phố cần thơ", 
+    "thừa thiên huế", "thái nguyên", "tuyên quang", "thanh hóa", "quảng ninh", "quảng ngãi", 
+    "quảng trị", "ninh bình", "khánh hòa", "lâm đồng", "lạng sơn", "lai châu", "điện biên", 
+    "hưng yên", "bắc ninh", "đắk lắk", "đồng nai", "tây ninh", "vĩnh long", "đồng tháp", 
+    "an giang", "nghệ an", "hà nội", "hà tĩnh", "cao bằng", "sơn la", "lào cai", "phú thọ", 
+    "cà mau", "huế",
+
+    // Biến thể không dấu bọc lót lỗi gõ
+    "thành pho ho chi minh", "thanh pho hai phong", "thanh pho da nang", "thanh pho can tho",
+    "ho chi minh", "hai phong", "da nang", "can tho", "thua thien hue", "thai nguyen", 
+    "tuyen quang", "thanh hoa", "quang ninh", "quang ngai", "quang tri", "ninh binh", 
+    "khanh hoa", "lam dong", "lang son", "lai chau", "dien bien", "hung yen", "bac ninh", 
+    "dak lak", "dong nai", "tay ninh", "vinh long", "dong thap", "an giang", "nghe an", 
+    "ha noi", "ha tinh", "cao bang", "son la", "lao cai", "phu tho", "ca mau", "hue",
+
+    // Các ký tự viết tắt thương mại phổ biến
+    "tp.hcm", "tphcm", "hcm", "hn", "đn", "dn", "hp", "ct"
+  ];
+
+  let detectedProvince = "";
+  for (const prov of provinces) {
+    if (cleanAddr.endsWith(prov) || cleanAddr.includes(` ${prov}`)) {
+      detectedProvince = prov;
+      break;
     }
   }
 
-  return 0.5; // fallback
+  if (detectedProvince) {
+    const cleanP = cleanProvince(detectedProvince);
+    const beforeProvince = cleanAddr.substring(0, cleanAddr.indexOf(detectedProvince)).trim();
+    // Match the last admin unit: quận, huyện, thị xã, thành phố, tp, xã, phường
+    const match = beforeProvince.match(/(quận|huyện|thị\s*xã|thành\s*phố|tp|xã|phường)\s+[a-zà-ỹ0-9\s]+/gi);
+    if (match && match.length > 0) {
+      const cleanD = cleanDistrict(match[match.length - 1]);
+      return `${cleanD} - ${cleanP}`;
+    }
+    const cleanD = beforeProvince.replace(/,\s*$/, "").trim();
+    if (cleanD) {
+      return `${cleanDistrict(cleanD)} - ${cleanP}`;
+    }
+  }
+  
+  return cleanAddr;
+};
+
+const hashString = (str: string): number => {
+  let hash = 5381;
+  const normalizedStr = str.trim().toLowerCase();
+  for (let i = 0; i < normalizedStr.length; i++) {
+    hash = (hash * 33) ^ normalizedStr.charCodeAt(i);
+  }
+  // Convert to [0, 1] range deterministically
+  return (hash >>> 0) / 0xffffffff;
+};
+
+export const normalizeDistrict = (address: string): number => {
+  if (!address) return 0.5;
+
+  const locScope = extractLocationScope(address);
+  if (!locScope) {
+    return 0.5; // fallback
+  }
+
+  return hashString(locScope);
 };
 
 export const normalizeRating = (avg: number | null): number => {
