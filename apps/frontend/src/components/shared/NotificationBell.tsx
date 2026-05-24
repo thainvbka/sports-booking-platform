@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -100,32 +101,36 @@ export function NotificationBell({ targetRole, className }: NotificationBellProp
             ) : null}
 
             {notifications.map((item) => (
-              <Link
+              <DropdownMenuItem
+                asChild
                 key={item.id}
-                to={item.link_to || "#"}
                 className={cn(
-                  "rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted",
+                  "w-full cursor-pointer rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted focus:bg-muted focus:text-foreground",
                   !item.link_to && "pointer-events-none",
                   !item.is_read && "bg-primary/5",
                 )}
-                onClick={() => {
-                  void markAsRead(item.id);
-                }}
               >
-                <div className="flex items-start gap-2">
-                  {!item.is_read ? (
-                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
-                  ) : (
-                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2">{item.message}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {formatRelative(item.created_at)}
-                    </p>
+                <Link
+                  to={item.link_to || "#"}
+                  onClick={() => {
+                    void markAsRead(item.id);
+                  }}
+                >
+                  <div className="flex items-start gap-2 w-full">
+                    {!item.is_read ? (
+                      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+                    ) : (
+                      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/30" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 text-foreground font-medium">{item.message}</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        {formatRelative(item.created_at)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </DropdownMenuItem>
             ))}
           </div>
         </ScrollArea>

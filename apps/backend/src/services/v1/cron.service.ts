@@ -263,7 +263,7 @@ export const sendUpcomingBookingReminders = async () => {
         message: `Nhắc lịch: Bạn có lịch đá tại ${booking.sub_field.complex.complex_name} - ${booking.sub_field.sub_field_name} vào lúc ${startTime}.`,
         type: "SYSTEM",
         target_role: "PLAYER",
-        link_to: `/bookings/${booking.id}`,
+        link_to: "/bookings",
       });
     }
   } catch (error) {

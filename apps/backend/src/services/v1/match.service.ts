@@ -725,7 +725,7 @@ export const joinMatch = async (
       message: `${requester.account.full_name} muốn tham gia kèo ${matchMeta.title} của bạn.`,
       type: "MATCH",
       target_role: "PLAYER",
-      link_to: `/player/matches/${matchId}`,
+      link_to: `/matches/${matchId}`,
     });
   }
 
@@ -1178,7 +1178,7 @@ export const acceptMatchParticipant = async (
       message: `Yêu cầu tham gia kèo ${acceptedParticipant.match.title} của bạn đã được chấp nhận.`,
       type: "MATCH",
       target_role: "PLAYER",
-      link_to: `/player/matches/${matchId}`,
+      link_to: `/matches/${matchId}`,
     });
   }
 
@@ -1299,7 +1299,7 @@ export const rejectMatchParticipant = async (
       message: `Yêu cầu tham gia kèo ${rejectedParticipant.match.title} của bạn đã bị từ chối.`,
       type: "MATCH",
       target_role: "PLAYER",
-      link_to: `/player/matches/${matchId}`,
+      link_to: `/matches/${matchId}`,
     });
   }
 
