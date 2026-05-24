@@ -1,35 +1,58 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { XCircle, ArrowRight, RefreshCw } from "lucide-react";
 
 export function PaymentFailedPage() {
   const navigate = useNavigate();
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-4">
-      <div className="text-red-500 mb-4">
-        <svg
-          className="w-20 h-20"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M6 18L18 6M6 6l12 12"
-          ></path>
-        </svg>
-      </div>
-      <h1 className="text-2xl font-bold mb-2">Thanh toán thất bại</h1>
-      <p className="text-muted-foreground mb-6">
-        Giao dịch đã bị hủy hoặc xảy ra lỗi khi thanh toán.
-      </p>
-      <div className="flex gap-4">
-        <Button onClick={() => navigate("/search")}>Tiếp tục đặt sân</Button>
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          Thanh toán lại
-        </Button>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[85vh] text-center px-4 relative overflow-hidden bg-background">
+      {/* Failed Red Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-destructive/10 blur-[120px] pointer-events-none" />
+      
+      <Card className="relative z-10 max-w-md w-full border border-destructive/20 bg-card/60 backdrop-blur-lg shadow-2xl">
+        <CardHeader className="space-y-4 pt-8">
+          <div className="w-16 h-16 bg-destructive/10 border border-destructive/20 rounded-full flex items-center justify-center mx-auto text-destructive animate-pulse">
+            <XCircle className="w-10 h-10" />
+          </div>
+          <CardTitle className="text-2xl font-extrabold text-foreground">Thanh toán thất bại</CardTitle>
+          <CardDescription className="text-muted-foreground text-sm leading-relaxed px-4">
+            Giao dịch thanh toán của bạn đã bị từ chối, hết hạn hoặc bị hủy bỏ. Số dư khả dụng của bạn chưa bị trừ tiền.
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="px-6 py-2">
+          <div className="p-4 bg-muted/40 border border-border/80 rounded-xl text-left text-sm space-y-2">
+            <p className="text-muted-foreground text-xs leading-normal">
+              💡 **Gợi ý xử lý:**
+            </p>
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+              <li>Kiểm tra lại số dư hoặc hạn mức thẻ của bạn.</li>
+              <li>Đảm bảo thông tin thẻ (số thẻ, OTP) nhập chính xác.</li>
+              <li>Thử lại bằng phương thức thanh toán khác (VNPAY / Stripe).</li>
+            </ul>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-col sm:flex-row gap-3 px-6 pb-6 pt-2">
+          <Button 
+            className="w-full sm:flex-1 bg-foreground text-background hover:bg-foreground/90 font-medium flex items-center justify-center gap-2" 
+            onClick={() => navigate("/search")}
+          >
+            Quay lại đặt sân
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            className="w-full sm:flex-1 border-border hover:bg-muted font-medium flex items-center justify-center gap-2" 
+            onClick={() => navigate(-1)}
+          >
+            <RefreshCw className="w-4 h-4 text-muted-foreground" />
+            Thử thanh toán lại
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
