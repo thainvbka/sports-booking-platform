@@ -10,12 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Pagination,
   PaginationContent,
@@ -46,16 +41,16 @@ import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
 import {
   AlarmClock,
+  ArrowRight,
   BadgeCheck,
   CalendarDays,
   Clock,
   CreditCard,
   MapPin,
-  MoreHorizontal,
   RefreshCcw,
+  ShieldCheck,
   Star,
   Ticket,
-  X,
   XCircle,
   Zap
 } from "lucide-react";
@@ -152,13 +147,28 @@ export function PlayerBookingsPage() {
     useState<SingleBooking | null>(null);
   const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
 
+  // Payment Dialog states
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentDialogBookingIds, setPaymentDialogBookingIds] = useState<string[]>([]);
+  const [paymentDialogBookingId, setPaymentDialogBookingId] = useState<string | null>(null);
+
   // ─── Handlers (logic preserved) ──────────────────────────────────────────
-  const handlePayment = async (bookingIds: string[], bookingId: string) => {
-    if (payingBookingId) return;
-    setPayingBookingId(bookingId);
+  const handlePayment = (bookingIds: string[], bookingId: string) => {
+    setPaymentDialogBookingIds(bookingIds);
+    setPaymentDialogBookingId(bookingId);
+    setPaymentDialogOpen(true);
+  };
+
+  const handleSelectPaymentMethod = async (method: "STRIPE" | "VNPAY") => {
+    if (!paymentDialogBookingId || payingBookingId) return;
+    setPayingBookingId(paymentDialogBookingId);
+    setPaymentDialogOpen(false);
 
     try {
-      const result = await bookingService.createCheckoutSession(bookingIds);
+      const result = method === "STRIPE"
+        ? await bookingService.createCheckoutSession(paymentDialogBookingIds)
+        : await bookingService.createVnpayCheckoutSession(paymentDialogBookingIds);
+        
       const checkoutUrl = result.data?.url;
 
       if (!checkoutUrl) {
@@ -168,7 +178,7 @@ export function PlayerBookingsPage() {
 
       window.location.href = checkoutUrl;
     } catch (err: unknown) {
-      console.error("Create checkout session failed", err);
+      console.error(`Create ${method} checkout session failed`, err);
       const apiError = err as { message?: string };
       toast.error(
         apiError?.message ||
@@ -176,6 +186,8 @@ export function PlayerBookingsPage() {
       );
     } finally {
       setPayingBookingId(null);
+      setPaymentDialogBookingId(null);
+      setPaymentDialogBookingIds([]);
     }
   };
 
@@ -425,7 +437,12 @@ export function PlayerBookingsPage() {
         onSuccess={handleReviewSuccess}
       />
 
-
+      <PaymentMethodDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        onSelect={handleSelectPaymentMethod}
+        loading={Boolean(payingBookingId)}
+      />
     </div>
   );
 }
@@ -580,7 +597,7 @@ function BookingCard({
         )}
 
         {/* Action buttons - always visible */}
-        <div className="flex items-center gap-2 pt-2 flex-wrap">
+        <div className="flex items-center gap-2 pt-2 w-full flex-wrap sm:flex-nowrap">
           {isPending && (
             <Button
               size="sm"
@@ -595,36 +612,24 @@ function BookingCard({
                 );
               }}
               disabled={loading || anyPaying}
-              className="flex-1 min-w-32"
+              className="flex-1"
             >
-              <CreditCard data-icon="inline-start" />
+              <CreditCard data-icon="inline-start" className="mr-1.5 size-4" />
               {paying ? "Đang chuyển..." : "Thanh toán"}
             </Button>
           )}
 
           {canCancel && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="size-9 rounded-full"
-                  disabled={loading || paying}
-                >
-                  <MoreHorizontal className="size-4" />
-                  <span className="sr-only">Menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={onRequestCancel}
-                  className="text-rose-600 focus:bg-rose-50 focus:text-rose-700"
-                >
-                  <X data-icon="inline-start" />
-                  Hủy đặt sân
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRequestCancel}
+              disabled={loading || paying}
+              className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 flex items-center justify-center gap-1.5 font-medium"
+            >
+              <XCircle className="size-4" />
+              Hủy đặt sân
+            </Button>
           )}
         </div>
       </div>
@@ -877,5 +882,71 @@ function canUpdateReviewBooking(
     booking.type === "SINGLE" &&
     booking.status === BookingStatus.CONFIRMED &&
     !!booking.review
+  );
+}
+
+// ─── Payment method dialog component ───────────────────────────────────────
+interface PaymentMethodDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (method: "STRIPE" | "VNPAY") => void;
+  loading: boolean;
+}
+
+function PaymentMethodDialog({
+  open,
+  onOpenChange,
+  onSelect,
+  loading,
+}: PaymentMethodDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md w-full p-6 rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
+        <DialogHeader className="space-y-2 text-left">
+          <DialogTitle className="text-xl font-bold tracking-tight">Chọn phương thức thanh toán</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
+            Vui lòng chọn cổng thanh toán phù hợp để tiếp tục giao dịch.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 gap-4 pt-4">
+          <Button
+            variant="outline"
+            className="flex items-center justify-between p-5 h-auto border-border/80 hover:border-primary/50 hover:bg-primary/5 group transition-all rounded-xl text-left"
+            disabled={loading}
+            onClick={() => onSelect("STRIPE")}
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 group-hover:bg-blue-500/20">
+                <CreditCard className="size-6" />
+              </div>
+              <div>
+                <div className="font-bold text-foreground text-sm">Thanh toán Stripe</div>
+                <div className="text-xs text-muted-foreground">Hỗ trợ các thẻ quốc tế Visa, Mastercard, JCB</div>
+              </div>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
+          </Button>
+
+          <Button
+            variant="outline"
+            className="flex items-center justify-between p-5 h-auto border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 group transition-all rounded-xl text-left"
+            disabled={loading}
+            onClick={() => onSelect("VNPAY")}
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 group-hover:bg-emerald-500/20">
+                <ShieldCheck className="size-6" />
+              </div>
+              <div>
+                <div className="font-bold text-foreground text-sm">Cổng thanh toán VNPAY</div>
+                <div className="text-xs text-muted-foreground">ATM nội địa, QR Pay, Ví điện tử</div>
+              </div>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground group-hover:text-emerald-500 transition-transform group-hover:translate-x-0.5" />
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
