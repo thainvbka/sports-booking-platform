@@ -1,4 +1,4 @@
-import { BookingStatus, ProductStatus, SportType } from "@/types";
+import { BookingStatus, ProductStatus, ProductType, SportType } from "@/types";
 
 export const SPORT_TYPE_LABELS: Record<SportType, string> = {
   [SportType.FOOTBALL]: "Bóng đá",
@@ -98,6 +98,16 @@ export const PRODUCT_STATUS_LABELS: Record<ProductStatus, string> = {
 export const PRODUCT_STATUS_COLORS: Record<ProductStatus, string> = {
   ACTIVE: "bg-green-100 text-green-800 hover:bg-green-200",
   INACTIVE: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+};
+
+export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
+  [ProductType.SALE]: "Bán lẻ",
+  [ProductType.RENTAL]: "Cho thuê",
+};
+
+export const PRODUCT_TYPE_COLORS: Record<ProductType, string> = {
+  [ProductType.SALE]: "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300",
+  [ProductType.RENTAL]: "bg-sky-100 text-sky-800 hover:bg-sky-200 dark:bg-sky-500/15 dark:text-sky-300",
 };
 
 // Payout & Wallet Statuses

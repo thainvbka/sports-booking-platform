@@ -91,6 +91,11 @@ enum ProductStatus {
   INACTIVE
 }
 
+enum ProductType {
+  SALE
+  RENTAL
+}
+
 enum MatchStatus {
   OPEN
   FULL
@@ -313,6 +318,7 @@ model Booking {
   booking_addons       BookingAddon[]
   match                Match?
   review               Review?
+  rental_returned      Boolean           @default(false)
 
 
   @@index([sub_field_id, start_time])
@@ -358,6 +364,7 @@ model Product {
   stock          Int           @default(0) @db.Integer
   image          String?       @db.Text
   status         ProductStatus @default(ACTIVE)
+  type           ProductType   @default(SALE)
   created_at     DateTime      @default(now()) @db.Timestamptz(0)
   updated_at     DateTime      @updatedAt @db.Timestamptz(0)
   booking_addons BookingAddon[]

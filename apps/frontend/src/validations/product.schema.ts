@@ -1,4 +1,4 @@
-import { ProductStatus, SportType } from "@/types";
+import { ProductStatus, ProductType, SportType } from "@/types";
 import { z } from "zod";
 
 const optionalTrimmedString = z.preprocess(
@@ -43,6 +43,7 @@ const createProductBodySchema = z.object({
     .min(0, "Tồn kho không được âm"),
   sport_type: z.nativeEnum(SportType).nullable().optional(),
   status: z.nativeEnum(ProductStatus).optional(),
+  type: z.nativeEnum(ProductType).optional(),
 });
 
 export const createProductFormSchema = createProductBodySchema;
@@ -63,6 +64,7 @@ export const ownerProductFilterSchema = z
     complex_id: z.string().uuid("Cơ sở không hợp lệ").optional(),
     status: z.nativeEnum(ProductStatus).optional(),
     sport_type: z.nativeEnum(SportType).optional(),
+    type: z.nativeEnum(ProductType).optional(),
     search: optionalTrimmedString,
     min_price: optionalPositiveNumber,
     max_price: optionalPositiveNumber,

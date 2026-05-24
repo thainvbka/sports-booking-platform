@@ -16,6 +16,8 @@ import {
 import {
   PRODUCT_STATUS_COLORS,
   PRODUCT_STATUS_LABELS,
+  PRODUCT_TYPE_COLORS,
+  PRODUCT_TYPE_LABELS,
   SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -332,7 +334,7 @@ export function ProductManagementPage() {
       ),
     },
     {
-      header: "Loại",
+      header: "Môn thể thao",
       className: "w-36 whitespace-nowrap",
       cell: (product) => (
         <Badge
@@ -397,6 +399,20 @@ export function ProductManagementPage() {
           </div>
         );
       },
+    },
+    {
+      header: "Loại",
+      className: "w-32 whitespace-nowrap",
+      cell: (product) => (
+        <Badge
+          className={cn(
+            "h-6 rounded-full px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.14em]",
+            PRODUCT_TYPE_COLORS[product.type],
+          )}
+        >
+          {PRODUCT_TYPE_LABELS[product.type]}
+        </Badge>
+      ),
     },
     {
       header: "Trạng thái",

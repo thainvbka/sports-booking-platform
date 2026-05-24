@@ -93,3 +93,48 @@ export const restoreAddonStockForBooking = async (
   tx: Prisma.TransactionClient,
   booking_id: string,
 ) => restoreAddonStockForBookingIds(tx, [booking_id]);
+
+/**
+ * CHỈ khôi phục tồn kho cho dụng cụ THUÊ (RENTAL) khi booking hoàn thành/kết thúc thời gian chơi
+ */
+export const restoreRentalAddonStockForBookingIds = async (
+  tx: Prisma.TransactionClient,
+  bookingIds: string[],
+) => {
+  if (!bookingIds.length) return;
+
+  // Lấy các addon đi kèm thuộc loại RENTAL
+  const rentalAddons = await tx.bookingAddon.findMany({
+    where: {
+      booking_id: { in: bookingIds },
+      product: {
+        type: "RENTAL",
+      },
+    },
+    select: {
+      product_id: true,
+      quantity: true,
+    },
+  });
+
+  if (!rentalAddons.length) return;
+
+  const quantityByProduct = new Map<string, number>();
+  for (const addon of rentalAddons) {
+    const current = quantityByProduct.get(addon.product_id) ?? 0;
+    quantityByProduct.set(addon.product_id, current + addon.quantity);
+  }
+
+  // Cộng lại stock cho các dụng cụ thuê
+  await Promise.all(
+    Array.from(quantityByProduct.entries()).map(([product_id, quantity]) =>
+      tx.product.update({
+        where: { id: product_id },
+        data: {
+          stock: { increment: quantity },
+        },
+      }),
+    ),
+  );
+};
+

@@ -1,6 +1,8 @@
 import { ImageFallback } from "@/components/shared/ImageFallback";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PRODUCT_TYPE_COLORS, PRODUCT_TYPE_LABELS } from "@/lib/constants";
 import type { SubfieldProduct } from "@/types";
 import { formatPrice } from "@/utils";
 import { Flame, Minus, Package, Plus } from "lucide-react";
@@ -76,9 +78,20 @@ export function BookingAddonsStep({
 
               {/* Info */}
               <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <p className="truncate text-sm font-semibold text-foreground">
-                  {product.name}
-                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {product.name}
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "h-4 rounded-full px-1.5 py-0 text-[9px] font-bold uppercase tracking-[0.12em]",
+                      PRODUCT_TYPE_COLORS[product.type],
+                    )}
+                  >
+                    {PRODUCT_TYPE_LABELS[product.type]}
+                  </Badge>
+                </div>
                 {product.description && (
                   <p className="line-clamp-2 text-xs text-muted-foreground">
                     {product.description}
@@ -89,7 +102,7 @@ export function BookingAddonsStep({
                     {formatPrice(Number(product.price))}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    / sản phẩm
+                    {product.type === "RENTAL" ? "/ lượt thuê" : "/ sản phẩm"}
                   </span>
                   <span
                     className={cn(

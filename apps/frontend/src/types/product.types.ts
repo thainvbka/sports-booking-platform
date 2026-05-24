@@ -1,4 +1,5 @@
-import type { PaginationMeta, ProductStatus, SportType } from "./index";
+import type { PaginationMeta, ProductStatus, ProductType, SportType } from "./index";
+
 
 export interface OwnerProduct {
   id: string;
@@ -10,6 +11,7 @@ export interface OwnerProduct {
   image?: string | null;
   sport_type?: SportType | null;
   status: ProductStatus;
+  type: ProductType;
   created_at: string;
   updated_at: string;
   complex: {
@@ -47,6 +49,7 @@ export interface CreateProductPayload {
   stock: number;
   sport_type?: SportType | null;
   status?: ProductStatus;
+  type?: ProductType;
   image?: string;
 }
 
@@ -57,6 +60,7 @@ export interface UpdateProductPayload {
   stock?: number;
   sport_type?: SportType | null;
   status?: ProductStatus;
+  type?: ProductType;
   image?: string;
 }
 

@@ -32,6 +32,13 @@ export const ProductStatus = {
 } as const;
 export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
 
+export const ProductType = {
+  SALE: "SALE",
+  RENTAL: "RENTAL",
+} as const;
+export type ProductType = (typeof ProductType)[keyof typeof ProductType];
+
+
 const RecurrenceType = {
   WEEKLY: "WEEKLY",
   MONTHLY: "MONTHLY",

@@ -3,6 +3,7 @@ import { prisma } from "../../libs/prisma";
 import {
   restoreAddonStockForBooking,
   restoreAddonStockForBookingIds,
+  restoreRentalAddonStockForBookingIds,
 } from "./booking_addon.service";
 import {
   cancelMatchesByCanceledBookings,
@@ -330,6 +331,55 @@ export const sendOwnerBookingConfirmationReminders = async () => {
   }
 };
 
+export const autoReturnEndedRentalAddons = async () => {
+  try {
+    const now = new Date();
+
+    // 1. Tìm các booking CONFIRMED đã kết thúc nhưng chưa hoàn đồ thuê
+    const endedBookings = await prisma.booking.findMany({
+      where: {
+        status: "CONFIRMED",
+        end_time: {
+          lt: now,
+        },
+        rental_returned: false,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (endedBookings.length === 0) return;
+
+    const bookingIds = endedBookings.map((b) => b.id);
+    let processedCount = 0;
+
+    // 2. Chạy transaction xử lý
+    await prisma.$transaction(async (tx) => {
+      // Hoàn trả stock dụng cụ RENTAL
+      await restoreRentalAddonStockForBookingIds(tx, bookingIds);
+
+      // Đánh dấu đã hoàn trả trên Booking
+      await tx.booking.updateMany({
+        where: {
+          id: { in: bookingIds },
+        },
+        data: {
+          rental_returned: true,
+        },
+      });
+
+      processedCount = bookingIds.length;
+    });
+
+    if (processedCount > 0) {
+      console.log(`[Cron] Tự động hoàn trả đồ thuê cho ${processedCount} booking đã kết thúc lúc ${now.toISOString()}`);
+    }
+  } catch (error) {
+    console.error("[Cron] Lỗi trong tiến trình tự động trả đồ thuê autoReturnEndedRentalAddons:", error);
+  }
+};
+
 export const startCronJobs = () => {
   // Invalidate recommendation cache for players whose bookings just ended
   // Runs every hour — finds CONFIRMED bookings with end_time < now and invalidates cache
@@ -418,6 +468,12 @@ export const startCronJobs = () => {
   cron.schedule("*/1 * * * *", async () => {
     await cancelMatchesByCanceledBookings();
     await syncMatchStatusesByTime();
+  });
+
+  // chạy mỗi phút để tự động hoàn trả đồ thuê khi booking đã kết thúc
+  cron.schedule("*/1 * * * *", () => {
+    console.log("Running autoReturnEndedRentalAddons cron job...");
+    autoReturnEndedRentalAddons();
   });
 };
 

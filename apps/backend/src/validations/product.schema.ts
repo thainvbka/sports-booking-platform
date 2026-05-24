@@ -1,4 +1,4 @@
-import { ProductStatus, SportType } from "@prisma/client";
+import { ProductStatus, ProductType, SportType } from "@prisma/client";
 import { z } from "zod";
 
 const nullableSportTypeSchema = z.preprocess((value) => {
@@ -20,6 +20,7 @@ const baseProductBody = z.object({
     .min(0, "Tồn kho không được âm"),
   sport_type: nullableSportTypeSchema,
   status: z.nativeEnum(ProductStatus).optional(),
+  type: z.nativeEnum(ProductType).optional().default(ProductType.SALE),
   image: z.string().trim().optional(),
 });
 
@@ -45,6 +46,7 @@ export const ownerGetProductsQuerySchema = z.object({
       complex_id: z.string().uuid().optional(),
       status: z.nativeEnum(ProductStatus).optional(),
       sport_type: z.nativeEnum(SportType).optional(),
+      type: z.nativeEnum(ProductType).optional(),
       search: z.string().trim().optional(),
       min_price: z.coerce.number().positive().optional(),
       max_price: z.coerce.number().positive().optional(),

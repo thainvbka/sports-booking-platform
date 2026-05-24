@@ -25,6 +25,7 @@ import type {
   CreateProductPayload,
   OwnerProduct,
   ProductStatus,
+  ProductType,
   SportType,
   UpdateProductPayload,
 } from "@/types";
@@ -40,6 +41,7 @@ import {
   Loader2,
   PackagePlus,
   Pencil,
+  ShoppingBag,
   Tag,
   Warehouse,
 } from "lucide-react";
@@ -66,6 +68,7 @@ interface ProductFormState {
   stock: string;
   sport_type: SportType | "NONE";
   status: ProductStatus;
+  type: ProductType;
 }
 
 const defaultFormState: ProductFormState = {
@@ -76,6 +79,7 @@ const defaultFormState: ProductFormState = {
   stock: "0",
   sport_type: "NONE",
   status: "ACTIVE",
+  type: "SALE",
 };
 
 export function ProductFormDialog({
@@ -105,6 +109,7 @@ export function ProductFormDialog({
         stock: String(product.stock),
         sport_type: product.sport_type || "NONE",
         status: product.status,
+        type: product.type || "SALE",
       });
       setImageFile(null);
       setImagePreview(product.image || "");
@@ -145,6 +150,7 @@ export function ProductFormDialog({
       stock: formState.stock,
       sport_type: formState.sport_type === "NONE" ? null : formState.sport_type,
       status: formState.status,
+      type: formState.type,
     };
 
     return payload;
@@ -366,6 +372,33 @@ export function ProductFormDialog({
                 />
                 {errors.stock && (
                   <p className="text-xs text-destructive">{errors.stock}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <ShoppingBag className="size-3.5" />
+                  Loại sản phẩm
+                </Label>
+                <Select
+                  value={formState.type}
+                  onValueChange={(selectedValue) =>
+                    updateField("type", selectedValue as ProductType)
+                  }
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Chọn loại" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="SALE">Bán sản phẩm (đồ uống, tất...)</SelectItem>
+                      <SelectItem value="RENTAL">Cho thuê vật phẩm (vợt, bóng...)</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {errors.type && (
+                  <p className="text-xs text-destructive">{errors.type}</p>
                 )}
               </div>
 

@@ -1,4 +1,4 @@
-import type { Complex, PaginationMeta, SubField } from "./index";
+import type { Complex, PaginationMeta, ProductType, SubField } from "./index";
 
 export interface GetPublicComplexesResponse {
   complexes: Complex[];
@@ -82,6 +82,7 @@ export interface SubfieldProduct {
   image?: string | null;
   sport_type?: string | null;
   status: string;
+  type: ProductType;
   created_at: string;
   updated_at: string;
 }

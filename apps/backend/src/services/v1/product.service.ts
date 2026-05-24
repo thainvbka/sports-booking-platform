@@ -83,6 +83,7 @@ export const getProductsBySubfield = async (subfield_id: string) => {
       image: true,
       sport_type: true,
       status: true,
+      type: true,
       created_at: true,
       updated_at: true,
     },
@@ -110,6 +111,7 @@ export const ownerGetProducts = async (
     ...(query.complex_id ? { complex_id: query.complex_id } : {}),
     ...(query.status ? { status: query.status } : {}),
     ...(query.sport_type ? { sport_type: query.sport_type } : {}),
+    ...(query.type ? { type: query.type } : {}),
     ...(query.min_price !== undefined || query.max_price !== undefined
       ? {
           price: {
@@ -158,6 +160,7 @@ export const ownerGetProducts = async (
         image: true,
         sport_type: true,
         status: true,
+        type: true,
         created_at: true,
         updated_at: true,
         complex: {
@@ -202,6 +205,7 @@ export const ownerCreateProduct = async (
       stock: data.stock,
       sport_type: data.sport_type as SportType | null | undefined,
       status: data.status ?? ProductStatus.ACTIVE,
+      type: data.type,
       image: product_image ?? data.image,
     },
   });
@@ -264,6 +268,7 @@ export const ownerUpdateProduct = async (
         ? { sport_type: data.sport_type as SportType | null }
         : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(data.type !== undefined ? { type: data.type } : {}),
       ...(nextImage !== undefined ? { image: nextImage } : {}),
     },
   });
