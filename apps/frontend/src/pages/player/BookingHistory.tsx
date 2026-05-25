@@ -1,6 +1,5 @@
 import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
 import { ReviewDialog } from "@/components/player/ReviewDialog";
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,8 +24,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBookings } from "@/hooks/useBookings";
 import {
   BOOKING_STATUS_LABELS,
-  RECURRING_STATUS_LABELS,
-  SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { bookingService } from "@/services/booking.service";
@@ -35,54 +32,25 @@ import {
   type BookingResponse,
   type ReviewItem,
 } from "@/types";
-import { formatPrice } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
 import {
-  AlarmClock,
   ArrowRight,
   BadgeCheck,
-  CalendarDays,
   Clock,
   CreditCard,
-  MapPin,
-  RefreshCcw,
   ShieldCheck,
-  Star,
   Ticket,
   XCircle,
   Zap
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;
+import { BookingCard, type SingleBooking } from "@/components/player/BookingCard";
+import { CreateMatchDialog } from "@/components/matches/CreateMatchDialog";
 
 const PAGE_SIZE = 9;
-
-const STATUS_VISUAL: Record<
-  BookingStatus,
-  { icon: LucideIcon; className: string }
-> = {
-  [BookingStatus.PENDING]: {
-    icon: CreditCard,
-    className: "border-amber-200 bg-amber-50 text-amber-700",
-  },
-  [BookingStatus.CONFIRMED]: {
-    icon: BadgeCheck,
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  [BookingStatus.COMPLETED]: {
-    icon: Clock,
-    className: "border-sky-200 bg-sky-50 text-sky-700",
-  },
-  [BookingStatus.CANCELED]: {
-    icon: XCircle,
-    className: "border-rose-200 bg-rose-50 text-rose-700",
-  },
-};
 
 const BOOKING_STATUS_TAB_META: Record<
   BookingStatus,
@@ -121,6 +89,7 @@ const BOOKING_STATUS_TAB_META: Record<
 
 // ─── Main page ─────────────────────────────────────────────────────────────
 export function PlayerBookingsPage() {
+  const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus | "ALL">(
     "ALL",
   );
@@ -151,6 +120,10 @@ export function PlayerBookingsPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentDialogBookingIds, setPaymentDialogBookingIds] = useState<string[]>([]);
   const [paymentDialogBookingId, setPaymentDialogBookingId] = useState<string | null>(null);
+
+  // Create Match states
+  const [createMatchDialogOpen, setCreateMatchDialogOpen] = useState(false);
+  const [selectedMatchBooking, setSelectedMatchBooking] = useState<BookingResponse | null>(null);
 
   // ─── Handlers (logic preserved) ──────────────────────────────────────────
   const handlePayment = (bookingIds: string[], bookingId: string) => {
@@ -375,8 +348,6 @@ export function PlayerBookingsPage() {
             <BookingCardSkeletonGrid />
           ) : bookings.length === 0 ? (
             <EmptyLedger />
-          ) : bookings.length === 0 ? (
-            <EmptyLedger />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
               {bookings.map((booking) => (
@@ -392,11 +363,13 @@ export function PlayerBookingsPage() {
                     setSelectedBookingType(booking.type);
                     setDeleteDialogOpen(true);
                   }}
-                  onReviewClick={() => {
-                    if (booking.type === "SINGLE") {
-                      setSelectedReviewBooking(booking);
-                      setReviewDialogOpen(true);
-                    }
+                  onReviewClick={(b) => {
+                    setSelectedReviewBooking(b);
+                    setReviewDialogOpen(true);
+                  }}
+                  onCreateMatchClick={(b) => {
+                    setSelectedMatchBooking(b);
+                    setCreateMatchDialogOpen(true);
                   }}
                 />
               ))}
@@ -443,270 +416,16 @@ export function PlayerBookingsPage() {
         onSelect={handleSelectPaymentMethod}
         loading={Boolean(payingBookingId)}
       />
+
+      <CreateMatchDialog
+        open={createMatchDialogOpen}
+        booking={selectedMatchBooking}
+        onOpenChange={setCreateMatchDialogOpen}
+        onSuccess={() => {
+          navigate("/player/matches");
+        }}
+      />
     </div>
-  );
-}
-
-// ─── Booking card (grid-friendly) ───────────────────────────────────────
-interface BookingCardProps {
-  booking: BookingResponse;
-  loading: boolean;
-  paying: boolean;
-  anyPaying: boolean;
-  onPay: (ids: string[], id: string) => void;
-  onRequestCancel: () => void;
-  onReviewClick: () => void;
-}
-
-function BookingCard({
-  booking,
-  loading,
-  paying,
-  anyPaying,
-  onPay,
-  onRequestCancel,
-  onReviewClick,
-}: BookingCardProps) {
-  const isSingle = booking.type === "SINGLE";
-  const statusVisual = STATUS_VISUAL[booking.status];
-  const StatusIcon = statusVisual.icon;
-  const canCancel = canCancelBooking(booking);
-  const isPending = booking.status === BookingStatus.PENDING;
-  const canReview = canCreateReviewBooking(booking);
-  const hasReview = canUpdateReviewBooking(booking);
-
-  const statusLabel = isSingle
-    ? BOOKING_STATUS_LABELS[booking.status] ?? booking.status
-    : RECURRING_STATUS_LABELS[booking.status] ?? booking.status;
-
-  const sportLabel =
-    SPORT_TYPE_LABELS[booking.sport_type as keyof typeof SPORT_TYPE_LABELS] ??
-    booking.sport_type;
-
-  const stubDate = isSingle
-    ? new Date(booking.start_time)
-    : new Date(booking.start_date);
-
-  return (
-    <article
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card hover:border-primary/40",
-        isPending && "ring-1 ring-amber-200/50",
-      )}
-    >
-      {/* ── Main Content ──────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 p-4 sm:p-5">
-        {/* Top row: Sport badge + Status */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-primary/25 bg-primary/5 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary"
-            >
-              <Ticket className="size-3" data-icon="inline-start" />
-              {sportLabel}
-            </Badge>
-            {isPending && booking.expires_at && (
-              <ExpiresChip expiresAt={booking.expires_at} />
-            )}
-          </div>
-          <Badge
-            variant="outline"
-            className={cn(
-              "gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold shrink-0",
-              statusVisual.className,
-            )}
-          >
-            <StatusIcon className="size-3" data-icon="inline-start" />
-            {statusLabel}
-          </Badge>
-        </div>
-
-        {/* Complex name + Address */}
-        <div className="flex flex-col gap-1">
-          <h3 className="line-clamp-2 font-display text-base font-bold leading-tight tracking-tight text-foreground">
-            {booking.complex_name}
-          </h3>
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground line-clamp-2">
-            <MapPin className="size-3.5 shrink-0 text-primary/70" />
-            <span className="truncate">
-              {booking.sub_field_name}
-              {booking.complex_address && (
-                <span className="text-muted-foreground/70">
-                  {" "}
-                  · {booking.complex_address}
-                </span>
-              )}
-            </span>
-          </p>
-        </div>
-
-        {/* Date/Time + Recurrence info */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <div className="flex items-center gap-1 font-semibold text-foreground">
-            <CalendarDays className="size-3.5 text-primary/70" />
-            {format(stubDate, "dd MMM yyyy", { locale: vi })}
-          </div>
-          {isSingle ? (
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="size-3.5" />
-              {format(new Date(booking.start_time), "HH:mm")} –{" "}
-              {format(new Date(booking.end_time), "HH:mm")}
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <RefreshCcw className="size-3.5" />
-                {booking.total_slots} buổi
-              </div>
-              {booking.bookings.length > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Clock className="size-3.5" />
-                  {format(
-                    new Date(booking.bookings[0].start_time),
-                    "HH:mm",
-                  )} –{" "}
-                  {format(
-                    new Date(booking.bookings[0].end_time),
-                    "HH:mm",
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-1 border-t border-border/50 pt-3 mt-1">
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Tổng:
-          </span>
-          <span className="font-display text-xl font-black italic tabular-nums text-foreground">
-            {formatPrice(booking.total_price)}
-          </span>
-        </div>
-
-        {/* Review section inline - always visible */}
-        {(canReview || hasReview) && (
-          <ReviewSectionInline
-            booking={booking as SingleBooking}
-            canCreate={canReview}
-            hasExisting={hasReview}
-            onEditClick={onReviewClick}
-          />
-        )}
-
-        {/* Action buttons - always visible */}
-        <div className="flex items-center gap-2 pt-2 w-full flex-wrap sm:flex-nowrap">
-          {isPending && (
-            <Button
-              size="sm"
-              onClick={() => {
-                if (booking.type === "SINGLE") {
-                  void onPay([booking.id], booking.id);
-                  return;
-                }
-                void onPay(
-                  booking.bookings.map((slot) => slot.id),
-                  booking.id,
-                );
-              }}
-              disabled={loading || anyPaying}
-              className="flex-1"
-            >
-              <CreditCard data-icon="inline-start" className="mr-1.5 size-4" />
-              {paying ? "Đang chuyển..." : "Thanh toán"}
-            </Button>
-          )}
-
-          {canCancel && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRequestCancel}
-              disabled={loading || paying}
-              className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 flex items-center justify-center gap-1.5 font-medium"
-            >
-              <XCircle className="size-4" />
-              Hủy đặt sân
-            </Button>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// ─── Review section (inline) ──────────────────────────────────────────────
-function ReviewSectionInline({
-  booking,
-  canCreate,
-  hasExisting,
-  onEditClick,
-}: {
-  booking: SingleBooking;
-  canCreate: boolean;
-  hasExisting: boolean;
-  onEditClick: () => void;
-}) {
-  const [showDetails, setShowDetails] = useState(false);
-
-  if (!hasExisting && !canCreate) return null;
-
-  if (hasExisting && booking.review) {
-    return (
-      <div
-        className="rounded-lg bg-amber-50 border border-amber-200 p-3 transition-all cursor-pointer group"
-        onMouseEnter={() => setShowDetails(true)}
-        onMouseLeave={() => setShowDetails(false)}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Star className="size-4 fill-amber-400 text-amber-400" />
-            <span className="font-semibold text-amber-900">
-              {booking.review.rating}/5 sao
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onEditClick}
-            className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            Chỉnh sửa
-          </Button>
-        </div>
-        {showDetails && booking.review.comment && (
-          <p className="text-xs text-amber-800 italic mt-2">"{booking.review.comment}"</p>
-        )}
-      </div>
-    );
-  }
-
-  if (canCreate) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onEditClick}
-        className="w-full justify-center"
-      >
-        <Star className="size-4" data-icon="inline-start" />
-        Thêm đánh giá
-      </Button>
-    );
-  }
-
-  return null;
-}
-
-// ─── Expiry chip (for PENDING) ────────────────────────────────────────────
-function ExpiresChip({ expiresAt }: { expiresAt: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-amber-800">
-      <AlarmClock className="size-3" />
-      Hết hạn {format(new Date(expiresAt), "HH:mm dd/MM")}
-    </span>
   );
 }
 
@@ -802,29 +521,30 @@ function PaginationBar({
           <PaginationPrevious
             href="#"
             aria-disabled={page === 1 || disabled}
-            className={cn(
-              (page === 1 || disabled) && "pointer-events-none opacity-50",
-            )}
+            className={cn((page === 1 || disabled) && "pointer-events-none opacity-50")}
             onClick={(event) => go(event, page - 1)}
           />
         </PaginationItem>
-        {items.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
+        {items.map((item, index) => {
+          if (item === "ellipsis") {
+            return (
+              <PaginationItem key={`ellipsis-${index}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            );
+          }
+          return (
             <PaginationItem key={item}>
               <PaginationLink
                 href="#"
-                isActive={item === page}
+                isActive={page === item}
                 onClick={(event) => go(event, item)}
               >
                 {item}
               </PaginationLink>
             </PaginationItem>
-          ),
-        )}
+          );
+        })}
         <PaginationItem>
           <PaginationNext
             href="#"
@@ -854,35 +574,6 @@ function buildPageList(
   if (current < total - 2) items.push("ellipsis");
   items.push(total);
   return items;
-}
-
-// ─── Predicate helpers (logic preserved) ──────────────────────────────────
-function canCancelBooking(booking: BookingResponse): boolean {
-  if (!["PENDING", "COMPLETED"].includes(booking.status)) return false;
-  if (booking.type === "SINGLE") {
-    return new Date(booking.start_time) > new Date();
-  }
-  return new Date(booking.start_date) > new Date();
-}
-
-function canCreateReviewBooking(
-  booking: BookingResponse,
-): booking is SingleBooking {
-  return (
-    booking.type === "SINGLE" &&
-    booking.status === BookingStatus.CONFIRMED &&
-    !booking.review
-  );
-}
-
-function canUpdateReviewBooking(
-  booking: BookingResponse,
-): booking is SingleBooking {
-  return (
-    booking.type === "SINGLE" &&
-    booking.status === BookingStatus.CONFIRMED &&
-    !!booking.review
-  );
 }
 
 // ─── Payment method dialog component ───────────────────────────────────────

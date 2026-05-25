@@ -154,6 +154,10 @@ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp
 
 ## 2.4 Yêu cầu phi chức năng
 
+Trong phần này, sinh viên đưa ra các yêu cầu khác nếu có, bao gồm các yêu cầu
+phi chức năng như hiệu năng, độ tin cậy, tính dễ dùng, tính dễ bảo trì, hoặc các yêu
+cầu về mặt kỹ thuật như về CSDL, công nghệ sử dụng, v.v.
+
 ## Kết luận chương 2
 
 (Phần tổng kết chương này sẽ được tự động hoàn thiện nội dung sau khi viết xong các mục 2.3 và 2.4).
@@ -161,7 +165,25 @@ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp
 # CHƯƠNG 3. NỀN TẢNG LÝ THUYẾT VÀ CÔNG NGHỆ SỬ DỤNG
 
 (Mở đầu: Giới thiệu những nội dung sẽ trình bày trong chương 3)
-
+Chương này có độ dài không quá 10 trang. Nếu cần trình bày dài hơn, sinh viên
+đưa vào phần phụ lục. Chú ý đây là kiến thức đã có sẵn; SV sau khi tìm hiểu được
+thì phân tích và tóm tắt lại. Sinh viên không trình bày dài dòng, chi tiết.
+Với đồ án ứng dụng, sinh viên để tên chương là “Nền tảng lý thuyết và Công
+nghệ sử dụng”. Trong chương này, sinh viên giới thiệu về các công nghệ, nền tảng
+lý thuyết sử dụng trong đồ án. Sinh viên cũng có thể trình bày thêm nền tảng lý
+thuyết nào đó nếu cần dùng tới.
+Với từng công nghệ/nền tảng/lý thuyết được trình bày, sinh viên phải phân tích
+rõ công nghệ/nền tảng/lý thuyết đó dùng để để giải quyết vấn đề/yêu cầu cụ thể nào
+ở Chương 2. Hơn nữa, với từng vấn đề/yêu cầu, sinh viên phải liệt kê danh sách các
+công nghệ/hướng tiếp cận tương tự có thể dùng làm lựa chọn thay thế, rồi giải thích
+rõ sự lựa chọn của mình.
+Lưu ý: Nội dung ĐATN phải có tính chất liên kết, liền mạch, và nhất quán. Vì
+vậy, các công nghệ/thuật toán trình bày trong chương này phải khớp với nội dung
+giới thiệu của sinh viên ở phần trước đó.
+Trong chương này, để tăng tính khoa học và độ tin cậy, sinh viên nên chỉ rõ
+nguồn kiến thức mình thu thập được ở tài liệu nào, đồng thời đưa tài liệu đó vào
+trong danh sách tài liệu tham khảo rồi tạo các tham chiếu chéo (xem hướng dẫn ở
+phụ lục A.7)
 (Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 3)
 
 # CHƯƠNG 4. PHÂN TÍCH THIẾT KẾ, TRIỂN KHAI VÀ ĐÁNH GIÁ HỆ THỐNG
@@ -172,6 +194,14 @@ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp
 
 ### 4.1.1 Lựa chọn kiến trúc phần mềm
 
+Mục này có độ dài từ một đến ba trang. Sinh viên cần lựa chọn kiến trúc phần
+mềm cho ứng dụng của mình như: kiến trúc ba lớp MVC, MVP, SOA, Microservice, v.v. rồi giải thích sơ bộ về kiến trúc đó (không giải thích chi tiết/dài dòng). Sử
+dụng kiến trúc phần mềm đã chọn ở trên, sinh viên mô tả kiến trúc cụ thể cho ứng
+dụng của mình. Gợi ý: sinh viên áp dụng lý thuyết chung vào hệ thống/sản phẩm
+của mình như thế nào, có thay đổi, bổ sung hoặc cải tiến gì không. Ví dụ, thành
+phần M trong kiến trúc lý thuyết MVC sẽ là những thành phần cụ thể nào (ví dụ: là
+interface I + class C1 + class C2, v.v.) trong kiến trúc phần mềm của sinh viên.
+
 ### 4.1.2 Thiết kế tổng quan
 
 ### 4.1.3 Thiết kế chi tiết gói
@@ -180,28 +210,92 @@ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp
 
 ### 4.2.1 Thiết kế giao diện
 
+Phần này có độ dài từ hai đến ba trang. Sinh viên đặc tả thông tin về màn hình
+mà ứng dụng của mình hướng tới, bao gồm độ phân giải màn hình, kích thước màn
+hình, số lượng màu sắc hỗ trợ, v.v. Tiếp đến, sinh viên đưa ra các thống nhất/chuẩn
+hóa của mình khi thiết kế giao diện như thiết kế nút, điều khiển, vị trí hiển thị thông
+điệp phản hồi, phối màu, v.v. Sau cùng sinh viên đưa ra một số hình ảnh minh họa
+thiết kế giao diện cho các chức năng quan trọng nhất. Lưu ý, sinh viên không nhầm
+lẫn giao diện thiết kế với giao diện của sản phẩm sau cùng
+
 ### 4.2.2 Thiết kế lớp
 
 ### 4.2.3 Thiết kế cơ sở dữ liệu
+
+Phần này có độ dài từ hai đến bốn trang. Sinh viên thiết kế, vẽ và giải thích biểu
+đồ thực thể liên kết (E-R diagram). Từ đó, sinh viên thiết kế cơ sở dữ liệu tùy theo
+hệ quản trị cơ sở dữ liệu mà mình sử dụng (SQL, NoSQL, Firebase, v.v.)
 
 ## 4.3 Xây dựng ứng dụng
 
 ### 4.3.1 Thư viện và công cụ sử dụng
 
+Sinh viên liệt kê các công cụ, ngôn ngữ lập trình, API, thư viện, IDE, công cụ
+kiểm thử, v.v. mà mình sử dụng để phát triển ứng dụng. Mỗi công cụ phải được chỉ
+rõ phiên bản sử dụng. SV nên kẻ bảng mô tả tương tự như Bảng ??. Nếu có nhiều
+nội dung trình bày, sinh viên cần xoay ngang bảng.
+Mục đích | Công cụ | Địa chỉ URL
+|----------|---------|-------------|
+| IDE lập trình | Eclipse Oxygen a64 bit | http://www.eclipse.org/ |
+| v.v. | v.v. | v.v. |
+Bảng 4.1: Danh sách thư viện và công cụ sử dụng
+
 ### 4.3.2 Kết quả đạt được
+
+Sinh viên trước tiên mô tả kết quả đạt được của mình là gì, ví dụ như các sản
+phẩm được đóng gói là gì, bao gồm những thành phần nào, ý nghĩa, vai trò?
+Sinh viên cần thống kê các thông tin về ứng dụng của mình như: số dòng code,
+số lớp, số gói, dung lượng toàn bộ mã nguồn, dung lượng của từng sản phẩm đóng
+gói, v.v. Tương tự như phần liệt kê về công cụ sử dụng, sinh viên cũng nên dùng
+bảng để mô tả phần thông tin thống kê này
 
 ### 4.3.3 Minh họa các chức năng chính
 
+Sinh viên lựa chọn và đưa ra màn hình cho các chức năng chính, quan trọng, và
+thú vị nhất. Mỗi giao diện cần phải có lời giải thích ngắn gọn. Khi giải thích, sinh
+viên có thể kết hợp với các chú thích ở trong hình ảnh giao diện
+
 ## 4.4 Kiểm thử
+
+Phần này có độ dài từ hai đến ba trang. Sinh viên thiết kế các trường hợp kiểm
+thử cho hai đến ba chức năng quan trọng nhất. Sinh viên cần chỉ rõ các kỹ thuật
+kiểm thử đã sử dụng. Chi tiết các trường hợp kiểm thử khác, nếu muốn trình bày,
+sinh viên đưa vào phần phụ lục. Sinh viên sau cùng tổng kết về số lượng các trường
+hợp kiểm thử và kết quả kiểm thử. Sinh viên cần phân tích lý do nếu kết quả kiểm
+thử không đạt.
 
 ## 4.5 Triển khai
 
+Sinh viên trình bày mô hình và/hoặc cách thức triển khai thử nghiệm/thực tế.
+Ứng dụng của sinh viên được triển khai trên server/thiết bị gì, cấu hình như thế
+nào. Kết quả triển khai thử nghiệm nếu có (số lượng người dùng, số lượng truy cập,
+thời gian phản hồi, phản hồi người dùng, khả năng chịu tải, các thống kê, v.v.)
 (Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 4)
 
 # CHƯƠNG 5. CÁC GIẢI PHÁP VÀ ĐÓNG GÓP NỔI BẬT
 
 (Mở đầu: Giới thiệu những nội dung sẽ trình bày trong chương 5)
-
+Chương này có độ dài tối thiểu 5 trang, tối đa không giới hạn.1 Sinh viên cần
+trình bày tất cả những nội dung đóng góp mà mình thấy tâm đắc nhất trong suốt
+quá trình làm ĐATN. Đó có thể là một loạt các vấn đề khó khăn mà sinh viên đã
+từng bước giải quyết được, là giải thuật cho một bài toán cụ thể, là giải pháp tổng
+quát cho một lớp bài toán, hoặc là mô hình/kiến trúc hữu hiệu nào đó được sinh
+viên thiết kế.
+Chương này là cơ sở quan trọng để các thầy cô đánh giá sinh viên. Vì vậy, sinh
+viên cần phát huy tính sáng tạo, khả năng phân tích, phản biện, lập luận, tổng quát
+hóa vấn đề và tập trung viết cho thật tốt. Mỗi giải pháp hoặc đóng góp của sinh viên
+cần được trình bày trong một mục độc lập bao gồm ba mục con: (i) dẫn dắt/giới
+thiệu về bài toán/vấn đề, (ii) giải pháp, và (iii) kết quả đạt được (nếu có).
+Sinh viên lưu ý không trình bày lặp lại nội dung. Những nội dung đã trình bày
+chi tiết trong các chương trước không được trình bày lại trong chương này. Vì vậy,
+với nội dung hay, mang tính đóng góp/giải pháp, sinh viên chỉ nên tóm lược/mô tả
+sơ bộ trong các chương trước, đồng thời tạo tham chiếu chéo tới đề mục tương ứng
+trong Chương 5 này. Chi tiết thông tin về đóng góp/giải pháp được trình bày trong
+mục đó.
+Ví dụ, trong Chương 4, sinh viên có thiết kế được kiến trúc đáng lưu ý gì đó, là
+sự kết hợp của các kiến trúc MVC, MVP, SOA, v.v. Khi đó, sinh viên sẽ chỉ mô tả
+ngắn gọn kiến trúc đó ở Chương 4, rồi thêm các câu có dạng: “Chi tiết về kiến trúc
+này sẽ được trình bày trong phần 5.1"
 (Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 5)
 
 # CHƯƠNG 6. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
@@ -210,6 +304,17 @@ vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp
 
 ## 6.1 Kết luận
 
+Sinh viên so sánh kết quả nghiên cứu hoặc sản phẩm của mình với các nghiên
+cứu hoặc sản phẩm tương tự.
+Sinh viên phân tích trong suốt quá trình thực hiện ĐATN, mình đã làm được
+gì, chưa làm được gì, các đóng góp nổi bật là gì, và tổng hợp những bài học kinh
+nghiệm rút ra nếu có
+
 ## 6.2 Hướng phát triển
 
+Trong phần này, sinh viên trình bày định hướng công việc trong tương lai để
+hoàn thiện sản phẩm hoặc nghiên cứu của mình.
+Trước tiên, sinh viên trình bày các công việc cần thiết để hoàn thiện các chức
+năng/nhiệm vụ đã làm. Sau đó sinh viên phân tích các hướng đi mới cho phép cải
+thiện và nâng cấp các chức năng/nhiệm vụ đã làm.
 (Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 6)

@@ -842,6 +842,19 @@ const formatRecurringBooking = (
       end_time: b.end_time,
       total_price: b.total_price,
       status: b.status,
+      review: b.review
+        ? {
+            id: b.review.id,
+            booking_id: b.review.booking_id,
+            player_id: b.review.player_id,
+            subfield_id: b.review.subfield_id,
+            rating: b.review.rating,
+            comment: b.review.comment,
+            images: b.review.images,
+            created_at: b.review.created_at,
+            updated_at: b.review.updated_at,
+          }
+        : null,
     })),
     ...(includePlayer && {
       player_name: recurring.player.account.full_name,
@@ -874,6 +887,19 @@ const recurringBookingSelect = {
       total_price: true,
       status: true,
       expires_at: true,
+      review: {
+        select: {
+          id: true,
+          booking_id: true,
+          player_id: true,
+          subfield_id: true,
+          rating: true,
+          comment: true,
+          images: true,
+          created_at: true,
+          updated_at: true,
+        },
+      },
     },
     orderBy: { start_time: "desc" as const },
   },

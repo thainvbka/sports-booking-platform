@@ -88,6 +88,7 @@ export interface RecurringBookingResponse {
     end_time: string;
     total_price: number;
     status: BookingStatus;
+    review?: BookingReviewSummary | null;
   }[];
 }
 

@@ -137,11 +137,23 @@ export function useBookings({
   const updateSingleBookingReview = useCallback(
     (bookingId: string, review: BookingReviewSummary) => {
       setBookings((previousBookings) =>
-        previousBookings.map((booking) =>
-          booking.type === "SINGLE" && booking.id === bookingId
-            ? { ...booking, review }
-            : booking,
-        ),
+        previousBookings.map((booking) => {
+          if (booking.type === "SINGLE" && booking.id === bookingId) {
+            return { ...booking, review };
+          }
+          if (booking.type === "RECURRING") {
+            const hasSubBooking = booking.bookings.some((b) => b.id === bookingId);
+            if (hasSubBooking) {
+              return {
+                ...booking,
+                bookings: booking.bookings.map((b) =>
+                  b.id === bookingId ? { ...b, review } : b
+                ),
+              };
+            }
+          }
+          return booking;
+        }),
       );
     },
     [],
