@@ -360,7 +360,6 @@ export const adminApprovePayoutBatch = async (
         status: PayoutStatus.PAID,
         paid_at: new Date(),
         transaction_ref: data.transaction_ref,
-        receipt_image: data.receipt_image || null,
         note: data.note || null,
       },
     });
@@ -431,7 +430,7 @@ export const adminCancelPayoutBatch = async (batchId: string, note?: string) => 
 
     // Trả các OwnerPayout về PENDING và tháo batch_id
     await tx.ownerPayout.updateMany({
-      where: { batch_id: batchId },
+      where: { batch_id: batchId, status: PayoutStatus.REQUESTED },
       data: {
         status: PayoutStatus.PENDING,
         batch_id: null,
@@ -460,3 +459,66 @@ export const adminCancelPayoutBatch = async (batchId: string, note?: string) => 
 
   return result.updatedBatch;
 };
+
+/**
+ * Admin lấy danh sách ví và số dư của tất cả Owner trong hệ thống
+ */
+export const adminGetOwnerWallets = async () => {
+  const owners = await prisma.owner.findMany({
+    orderBy: { company_name: "asc" },
+    include: {
+      account: {
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+          phone_number: true,
+        },
+      },
+      payouts: {
+        select: {
+          status: true,
+          payout_amount: true,
+        },
+      },
+    },
+  });
+
+  return owners.map((owner) => {
+    let pending = 0;
+    let requested = 0;
+    let paid = 0;
+
+    for (const payout of owner.payouts) {
+      const amount = Number(payout.payout_amount);
+      if (payout.status === PayoutStatus.PENDING) {
+        pending += amount;
+      } else if (
+        payout.status === PayoutStatus.REQUESTED ||
+        payout.status === PayoutStatus.PROCESSING
+      ) {
+        requested += amount;
+      } else if (payout.status === PayoutStatus.PAID) {
+        paid += amount;
+      }
+    }
+
+    return {
+      id: owner.id,
+      company_name: owner.company_name,
+      bankDetails: {
+        bank_name: owner.bank_name,
+        bank_account_number: owner.bank_account_number,
+        bank_account_name: owner.bank_account_name,
+        bank_branch: owner.bank_branch,
+      },
+      balances: {
+        pending,
+        requested,
+        paid,
+      },
+      account: owner.account,
+    };
+  });
+};
+

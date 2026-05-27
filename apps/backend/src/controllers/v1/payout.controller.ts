@@ -10,6 +10,7 @@ import {
   adminProcessPayoutBatch,
   adminApprovePayoutBatch,
   adminCancelPayoutBatch,
+  adminGetOwnerWallets,
 } from "../../services/v1/payout.service";
 
 /**
@@ -105,7 +106,7 @@ export const adminProcessPayoutBatchController = async (req: Request, res: Respo
  */
 export const adminApprovePayoutBatchController = async (req: Request, res: Response) => {
   const { batchId } = req.params;
-  const { transaction_ref, receipt_image, note } = req.body;
+  const { transaction_ref, note } = req.body;
 
   if (!batchId) {
     throw new BadRequestError("Missing batchId parameter.");
@@ -116,7 +117,6 @@ export const adminApprovePayoutBatchController = async (req: Request, res: Respo
 
   const result = await adminApprovePayoutBatch(batchId as string, {
     transaction_ref,
-    receipt_image,
     note,
   });
 
@@ -143,3 +143,16 @@ export const adminCancelPayoutBatchController = async (req: Request, res: Respon
     data: result,
   }).send(res);
 };
+
+/**
+ * Admin lấy danh sách ví và số dư của tất cả Owner trong hệ thống
+ */
+export const adminGetOwnerWalletsController = async (req: Request, res: Response) => {
+  const result = await adminGetOwnerWallets();
+
+  return new SuccessResponse({
+    message: "Admin fetched owner wallets successfully",
+    data: result,
+  }).send(res);
+};
+

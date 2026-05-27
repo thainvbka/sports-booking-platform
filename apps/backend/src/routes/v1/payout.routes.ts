@@ -10,6 +10,7 @@ import {
   adminProcessPayoutBatchController,
   adminApprovePayoutBatchController,
   adminCancelPayoutBatchController,
+  adminGetOwnerWalletsController,
 } from "../../controllers/v1/payout.controller";
 
 const router = Router();
@@ -42,6 +43,13 @@ router.get(
   authenticate,
   authorize(["ADMIN"]),
   asyncHandler(adminGetPayoutBatchesController),
+);
+
+router.get(
+  "/admin/wallets",
+  authenticate,
+  authorize(["ADMIN"]),
+  asyncHandler(adminGetOwnerWalletsController),
 );
 
 router.post(

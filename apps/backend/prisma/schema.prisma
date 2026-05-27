@@ -482,7 +482,6 @@ model PayoutBatch {
   payout_period     String        @db.VarChar(50)
   
   transaction_ref   String?       @db.VarChar(100)
-  receipt_image     String?       @db.Text
   note              String?       @db.Text
   
   created_at        DateTime      @default(now()) @db.Timestamptz(0)

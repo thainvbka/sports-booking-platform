@@ -1005,7 +1005,7 @@ export const getPlayerBookings = async (
   );
 
   const allBookings = [...formattedSingle, ...formattedRecurring].sort(
-    (a, b) => b.created_at.getTime() - a.created_at.getTime(),
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   const total = allBookings.length;
@@ -1098,22 +1098,49 @@ export const ownerGetAllBookings = async (
     whereCondition.status = filter.status;
   }
 
-  // FIX: date filter không còn bị bỏ trống
+  // Clone condition for single bookings (needs start_time)
+  const whereSingle: any = {
+    ...whereCondition,
+    recurring_booking_id: null,
+  };
+
+  // Clone condition for recurring bookings (needs start_date)
+  const whereRecurring: any = {
+    ...whereCondition,
+  };
+
+  // Apply separate date filters for Single and Recurring models
   if (filter.start_date || filter.end_date) {
-    whereCondition.start_time = {};
+    whereSingle.start_time = {};
+    whereRecurring.start_date = {};
+
     if (filter.start_date) {
-      whereCondition.start_time.gte = new Date(filter.start_date);
+      const start = new Date(filter.start_date);
+      whereSingle.start_time.gte = start;
+      whereRecurring.start_date.gte = start;
     }
     if (filter.end_date) {
       const end = new Date(filter.end_date);
       end.setUTCHours(23, 59, 59, 999);
-      whereCondition.start_time.lte = end;
+      whereSingle.start_time.lte = end;
+      whereRecurring.start_date.lte = end;
+    }
+  }
+
+  // DB-level min/max price filter for Single Bookings (Recurring Booking price is computed in-memory)
+  if (filter.min_price !== undefined || filter.max_price !== undefined) {
+    whereSingle.total_price = {};
+    if (filter.min_price !== undefined) {
+      whereSingle.total_price.gte = filter.min_price;
+    }
+    if (filter.max_price !== undefined) {
+      whereSingle.total_price.lte = filter.max_price;
     }
   }
 
   const [singleBookings, recurringBookings] = await Promise.all([
     prisma.booking.findMany({
-      where: { ...whereCondition, recurring_booking_id: null },
+      where: whereSingle,
       select: {
         id: true,
         start_time: true,
@@ -1143,7 +1170,7 @@ export const ownerGetAllBookings = async (
       take: QUERY_HARD_LIMIT,
     }),
     prisma.recurringBooking.findMany({
-      where: whereCondition,
+      where: whereRecurring,
       select: {
         ...recurringBookingSelect,
         player: {
@@ -1164,7 +1191,7 @@ export const ownerGetAllBookings = async (
     type: "SINGLE" as const,
     start_time: b.start_time,
     end_time: b.end_time,
-    total_price: b.total_price,
+    total_price: Number(b.total_price),
     status: b.status,
     sub_field_name: b.sub_field.sub_field_name,
     sport_type: b.sub_field.sport_type,
@@ -1180,8 +1207,27 @@ export const ownerGetAllBookings = async (
     formatRecurringBooking(r, true),
   );
 
-  const allBookings = [...formattedSingle, ...formattedRecurring].sort(
-    (a, b) => b.created_at.getTime() - a.created_at.getTime(),
+  // In-memory price filter for Recurring bookings and double check for Single Bookings
+  let filteredSingle = formattedSingle;
+  if (filter.min_price !== undefined || filter.max_price !== undefined) {
+    filteredSingle = formattedSingle.filter((s) => {
+      if (filter.min_price !== undefined && s.total_price < Number(filter.min_price)) return false;
+      if (filter.max_price !== undefined && s.total_price > Number(filter.max_price)) return false;
+      return true;
+    });
+  }
+
+  let filteredRecurring = formattedRecurring;
+  if (filter.min_price !== undefined || filter.max_price !== undefined) {
+    filteredRecurring = formattedRecurring.filter((r) => {
+      if (filter.min_price !== undefined && r.total_price < Number(filter.min_price)) return false;
+      if (filter.max_price !== undefined && r.total_price > Number(filter.max_price)) return false;
+      return true;
+    });
+  }
+
+  const allBookings = [...filteredSingle, ...filteredRecurring].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   const total = allBookings.length;

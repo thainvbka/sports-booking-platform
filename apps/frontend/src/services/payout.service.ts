@@ -17,7 +17,6 @@ export interface PayoutBatchRecord {
   status: PayoutStatus;
   payout_period: string;
   transaction_ref: string | null;
-  receipt_image: string | null;
   note: string | null;
   created_at: string;
   paid_at: string | null;
@@ -57,6 +56,23 @@ export interface AdminPayoutBatchRecord extends PayoutBatchRecord {
   };
 }
 
+export interface AdminOwnerWalletRecord {
+  id: string;
+  company_name: string;
+  bankDetails: BankDetails;
+  balances: {
+    pending: number;
+    requested: number;
+    paid: number;
+  };
+  account: {
+    id: string;
+    full_name: string;
+    email: string;
+    phone_number: string;
+  };
+}
+
 export const payoutService = {
   // --- OWNER WALLET & PAYOUT ACTIONS ---
   getOwnerWallet: async () => {
@@ -87,6 +103,11 @@ export const payoutService = {
     return response.data;
   },
 
+  adminGetOwnerWallets: async () => {
+    const response = await api.get<ApiResponse<AdminOwnerWalletRecord[]>>("/payouts/admin/wallets");
+    return response.data;
+  },
+
   adminProcessPayoutBatch: async (batchId: string) => {
     const response = await api.post<ApiResponse<PayoutBatchRecord>>(
       `/payouts/admin/${batchId}/process`
@@ -98,7 +119,6 @@ export const payoutService = {
     batchId: string,
     data: {
       transaction_ref: string;
-      receipt_image?: string;
       note?: string;
     }
   ) => {

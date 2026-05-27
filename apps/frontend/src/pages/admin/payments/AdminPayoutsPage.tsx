@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import {
   payoutService,
   type AdminPayoutBatchRecord,
+  type AdminOwnerWalletRecord,
   type PayoutStatus,
 } from "@/services/payout.service";
 import { formatPrice, getBankDisplayName } from "@/utils";
@@ -53,11 +54,17 @@ import { toast } from "sonner";
 
 
 export default function AdminPayoutsPage() {
+  const [activeTab, setActiveTab] = useState<"requests" | "wallets">("requests");
   const [batches, setBatches] = useState<AdminPayoutBatchRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Wallets Overview States
+  const [wallets, setWallets] = useState<AdminOwnerWalletRecord[]>([]);
+  const [isWalletsLoading, setIsWalletsLoading] = useState(false);
+  const [walletSearchTerm, setWalletSearchTerm] = useState("");
 
   // Dialog States
   const [selectedBatch, setSelectedBatch] = useState<AdminPayoutBatchRecord | null>(null);
@@ -67,7 +74,6 @@ export default function AdminPayoutsPage() {
 
   // Form Fields
   const [transactionRef, setTransactionRef] = useState("");
-  const [receiptImage, setReceiptImage] = useState("");
   const [adminNote, setAdminNote] = useState("");
 
   const loadPayoutBatches = async () => {
@@ -85,9 +91,31 @@ export default function AdminPayoutsPage() {
     }
   };
 
+  const loadOwnerWallets = async () => {
+    setIsWalletsLoading(true);
+    try {
+      const response = await payoutService.adminGetOwnerWallets();
+      if (response.success && response.data) {
+        setWallets(response.data);
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Không thể tải danh sách ví chủ sân");
+    } finally {
+      setIsWalletsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadPayoutBatches();
-  }, [statusFilter]);
+    if (activeTab === "requests") {
+      loadPayoutBatches();
+    }
+  }, [statusFilter, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "wallets") {
+      loadOwnerWallets();
+    }
+  }, [activeTab]);
 
   const handleProcessBatch = async (batchId: string) => {
     setIsSubmitting(true);
@@ -117,7 +145,6 @@ export default function AdminPayoutsPage() {
     try {
       const response = await payoutService.adminApprovePayoutBatch(selectedBatch.id, {
         transaction_ref: transactionRef,
-        receipt_image: receiptImage || undefined,
         note: adminNote || undefined,
       });
 
@@ -126,7 +153,6 @@ export default function AdminPayoutsPage() {
         setApproveOpen(false);
         setDetailOpen(false);
         setTransactionRef("");
-        setReceiptImage("");
         setAdminNote("");
         loadPayoutBatches();
       }
@@ -266,6 +292,87 @@ export default function AdminPayoutsPage() {
     },
   ];
 
+  const walletColumns: Column<AdminOwnerWalletRecord>[] = [
+    {
+      header: "Chủ sân (Owner)",
+      className: "w-56",
+      cell: (w) => (
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold">{w.company_name}</span>
+          <span className="text-[10.5px] text-muted-foreground">{w.account?.email}</span>
+          <span className="text-[10px] text-muted-foreground">{w.account?.phone_number}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Tài khoản nhận",
+      className: "w-64",
+      cell: (w) => {
+        if (!w.bankDetails?.bank_name) {
+          return <span className="text-xs italic text-rose-500">Chưa thiết lập ngân hàng</span>;
+        }
+        return (
+          <div className="flex flex-col gap-0.5 rounded-lg bg-muted/40 p-2 text-xs border border-border/40">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Bank:</span>
+              <span className="font-semibold">{getBankDisplayName(w.bankDetails.bank_name)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">STK:</span>
+              <span className="font-mono font-bold text-primary">{w.bankDetails.bank_account_number}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tên:</span>
+              <span className="uppercase font-mono font-semibold">{w.bankDetails.bank_account_name}</span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      header: "Chưa quyết toán (Tích lũy)",
+      className: "w-44 text-right",
+      cell: (w) => (
+        <div className="text-right font-display text-sm font-black italic tracking-tight text-amber-600 dark:text-amber-400">
+          {formatPrice(w.balances.pending)}
+        </div>
+      ),
+    },
+    {
+      header: "Đang yêu cầu rút",
+      className: "w-44 text-right",
+      cell: (w) => (
+        <div className="text-right font-display text-sm font-black italic tracking-tight text-blue-600 dark:text-blue-400">
+          {formatPrice(w.balances.requested)}
+        </div>
+      ),
+    },
+    {
+      header: "Đã chi trả (Paid)",
+      className: "w-44 text-right",
+      cell: (w) => (
+        <div className="text-right font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
+          {formatPrice(w.balances.paid)}
+        </div>
+      ),
+    },
+  ];
+
+  const filteredWallets = wallets.filter((w) => {
+    const ownerName = w.company_name || "";
+    const bankName = w.bankDetails?.bank_name || "";
+    const bankNum = w.bankDetails?.bank_account_number || "";
+    const email = w.account?.email || "";
+    const s = walletSearchTerm.toLowerCase();
+
+    return (
+      ownerName.toLowerCase().includes(s) ||
+      bankName.toLowerCase().includes(s) ||
+      bankNum.includes(s) ||
+      email.toLowerCase().includes(s)
+    );
+  });
+
   return (
     <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
@@ -275,54 +382,111 @@ export default function AdminPayoutsPage() {
         description="Duyệt yêu cầu rút tiền từ VNPAY của các chủ sân, gom giao dịch và ghi nhận đối soát chứng từ."
       />
 
-      <AdminFiltersBar>
-        <div className="relative flex-1">
-          <Input
-            placeholder="Tìm theo chủ sân, ngân hàng, STK thụ hưởng..."
-            className="h-9 pl-3 text-xs rounded-xl"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px] rounded-xl text-xs">
-            <SelectValue placeholder="Trạng thái" />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-            <SelectItem value="REQUESTED">Chờ duyệt</SelectItem>
-            <SelectItem value="PROCESSING">Đang xử lý</SelectItem>
-            <SelectItem value="PAID">Đã quyết toán</SelectItem>
-            <SelectItem value="CANCELLED">Đã từ chối</SelectItem>
-          </SelectContent>
-        </Select>
-      </AdminFiltersBar>
+      {/* Tab Switcher */}
+      <div className="flex gap-2 border-b border-border/60 pb-3">
+        <Button
+          variant={activeTab === "requests" ? "default" : "ghost"}
+          className="rounded-full text-xs font-semibold h-8"
+          onClick={() => setActiveTab("requests")}
+        >
+          Yêu cầu chi trả ({batches.filter(b => b.status === "REQUESTED").length} chờ duyệt)
+        </Button>
+        <Button
+          variant={activeTab === "wallets" ? "default" : "ghost"}
+          className="rounded-full text-xs font-semibold h-8"
+          onClick={() => setActiveTab("wallets")}
+        >
+          Số dư & Ví chủ sân ({wallets.length})
+        </Button>
+      </div>
 
-      <AdminTableSection
-        index={5}
-        eyebrow="Payout · Settlement"
-        title="Bảng đối soát chi trả"
-        description="Nhấp vào bất kỳ dòng nào trên bảng để xem chi tiết đối soát chứng từ và duyệt đợt thanh toán."
-        count={filteredBatches.length}
-        countLabel="đợt chi trả"
-      >
-        <DataTable
-          data={filteredBatches}
-          columns={columns}
-          isLoading={isLoading}
-          paginationStyle="search"
-          onRowClick={(batch) => {
-            setSelectedBatch(batch);
-            setDetailOpen(true);
-          }}
-          pagination={{
-            page: 1,
-            totalPages: 1,
-            onPageChange: () => {},
-          }}
-          emptyMessage="Không tìm thấy yêu cầu chi trả nào phù hợp"
-        />
-      </AdminTableSection>
+      {activeTab === "requests" ? (
+        <>
+          <AdminFiltersBar>
+            <div className="relative flex-1">
+              <Input
+                placeholder="Tìm theo chủ sân, ngân hàng, STK thụ hưởng..."
+                className="h-9 pl-3 text-xs rounded-xl"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px] rounded-xl text-xs">
+                <SelectValue placeholder="Trạng thái" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                <SelectItem value="REQUESTED">Chờ duyệt</SelectItem>
+                <SelectItem value="PROCESSING">Đang xử lý</SelectItem>
+                <SelectItem value="PAID">Đã quyết toán</SelectItem>
+                <SelectItem value="CANCELLED">Đã từ chối</SelectItem>
+              </SelectContent>
+            </Select>
+          </AdminFiltersBar>
+
+          <AdminTableSection
+            index={5}
+            eyebrow="Payout · Settlement"
+            title="Bảng đối soát chi trả"
+            description="Nhấp vào bất kỳ dòng nào trên bảng để xem chi tiết đối soát chứng từ và duyệt đợt thanh toán."
+            count={filteredBatches.length}
+            countLabel="đợt chi trả"
+          >
+            <DataTable
+              data={filteredBatches}
+              columns={columns}
+              isLoading={isLoading}
+              paginationStyle="search"
+              onRowClick={(batch) => {
+                setSelectedBatch(batch);
+                setDetailOpen(true);
+              }}
+              pagination={{
+                page: 1,
+                totalPages: 1,
+                onPageChange: () => {},
+              }}
+              emptyMessage="Không tìm thấy yêu cầu chi trả nào phù hợp"
+            />
+          </AdminTableSection>
+        </>
+      ) : (
+        <>
+          <AdminFiltersBar>
+            <div className="relative flex-1">
+              <Input
+                placeholder="Tìm theo tên chủ sân, email, ngân hàng, STK..."
+                className="h-9 pl-3 text-xs rounded-xl"
+                value={walletSearchTerm}
+                onChange={(e) => setWalletSearchTerm(e.target.value)}
+              />
+            </div>
+          </AdminFiltersBar>
+
+          <AdminTableSection
+            index={5}
+            eyebrow="Owners · Wallets"
+            title="Bảng tổng quan ví & số dư chủ sân"
+            description="Theo dõi toàn bộ số dư tích lũy chưa quyết toán (nợ đọng), đang yêu cầu rút, và lũy kế đã trả của từng chủ sân."
+            count={filteredWallets.length}
+            countLabel="chủ sân"
+          >
+            <DataTable
+              data={filteredWallets}
+              columns={walletColumns}
+              isLoading={isWalletsLoading}
+              paginationStyle="search"
+              pagination={{
+                page: 1,
+                totalPages: 1,
+                onPageChange: () => {},
+              }}
+              emptyMessage="Không tìm thấy ví chủ sân nào phù hợp"
+            />
+          </AdminTableSection>
+        </>
+      )}
 
       {/* ── DETAIL DIALOG ─────────────────────────────────── */}
       <AdminDetailDialog
@@ -450,30 +614,6 @@ export default function AdminPayoutsPage() {
                     }
                   />
                 )}
-                {selectedBatch.receipt_image && (
-                  <div className="rounded-lg border border-slate-200 p-3 space-y-2">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                      Ảnh hóa đơn/UNC
-                    </p>
-                    <a
-                      href={selectedBatch.receipt_image}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative block rounded-lg overflow-hidden border border-border group hover:border-primary/50 transition-colors max-w-xs"
-                    >
-                      <img
-                        src={selectedBatch.receipt_image}
-                        alt="UNC Receipt"
-                        className="w-full max-h-32 object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-[10px] text-white font-bold uppercase tracking-wider">
-                          Xem ảnh gốc
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-                )}
               </div>
             )}
 
@@ -550,18 +690,7 @@ export default function AdminPayoutsPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="receiptImg" className="text-xs font-medium">
-                  Đường dẫn ảnh hóa đơn/UNC (Receipt Image)
-                </Label>
-                <Input
-                  id="receiptImg"
-                  placeholder="Ví dụ: https://image-url.com/receipt.jpg"
-                  value={receiptImage}
-                  onChange={(e) => setReceiptImage(e.target.value)}
-                  className="h-9 text-xs rounded-xl"
-                />
-              </div>
+
 
               <div className="space-y-1.5">
                 <Label htmlFor="note" className="text-xs font-medium">

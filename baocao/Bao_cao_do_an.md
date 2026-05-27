@@ -104,7 +104,7 @@ Sau khi xác định mục tiêu và phạm vi ở Chương 1, mục 2.2 trình 
 
 Hệ thống được tổ chức theo bốn nhóm tác nhân tương tác với các phân hệ chức năng tương ứng. Đối với khách vãng lai, phân hệ tra cứu công khai cho phép xem thông tin cụm sân, sân con, khung giá, khả dụng theo thời gian, đánh giá và danh sách kèo giao lưu mà không bắt buộc đăng nhập; đồng thời người dùng có thể đăng ký, đăng nhập hoặc đăng xuất để chuyển sang vai trò người chơi. Đối với người chơi, phân hệ đặt chỗ và giao dịch hỗ trợ đặt sân đơn lẻ hoặc chuỗi định kỳ, thanh toán trực tuyến, mua sản phẩm kèm theo booking, theo dõi và hủy lịch đặt, đánh giá sau sử dụng, tham gia hoặc rời kèo giao lưu, nhận thông báo và xem gợi ý sân cá nhân hóa. Đối với chủ sân, phân hệ vận hành cho phép quản lý khu phức hợp, sân con, quy tắc giá, danh mục sản phẩm, lịch đặt, xác nhận booking, theo dõi doanh thu, khai báo tài khoản ngân hàng và yêu cầu quyết toán. Đối với quản trị viên, phân hệ giám sát hỗ trợ duyệt đăng ký cụm sân, quản lý trạng thái người dùng và cơ sở, theo dõi giao dịch, xử lý quyết toán và tổng hợp báo cáo.
 
-Bên cạnh các chức năng gắn với từng vai trò, hệ thống còn có các chức năng nền phục vụ vận hành liên tục. Cơ chế kiểm soát tranh chấp khi nhiều người cùng đặt một sân được tích hợp vào luồng tạo và cập nhật booking. Các tác vụ định kỳ trên máy chủ đảm nhiệm hủy phiên đặt quá hạn, dọn chuỗi đặt định kỳ hết hiệu lực, gửi nhắc lịch, đồng bộ trạng thái kèo giao lưu và làm mới dữ liệu phục vụ gợi ý. Nhờ cách phân tách này, phần mềm vừa bao phủ nghiệp vụ tương tác trực tiếp, vừa duy trì tính nhất quán dữ liệu theo thời gian mà không làm phình phạm vi mô tả ở mức tổng quan.
+Bên cạnh các chức năng gắn với từng vai trò, hệ thống còn có các chức năng nền phục vụ vận hành liên tục. Cơ chế kiểm soát tranh chấp khi nhiều người cùng đặt một sân được tích hợp vào luồng tạo và cập nhật booking. Các tác vụ định kỳ đảm nhiệm hủy phiên đặt quá hạn, dọn chuỗi đặt định kỳ hết hiệu lực, gửi nhắc lịch, đồng bộ trạng thái kèo giao lưu và làm mới dữ liệu phục vụ gợi ý. Nhờ cách phân tách này, phần mềm vừa bao phủ nghiệp vụ tương tác trực tiếp, vừa duy trì tính nhất quán dữ liệu theo thời gian.
 
 Mối quan hệ giữa các tác nhân và các use case chính được mô hình hóa bằng biểu đồ use case tổng quát tại mục 2.2.1; các use case quan trọng sẽ được phân rã và đặc tả chi tiết ở các mục tiếp theo.
 
@@ -112,25 +112,37 @@ Mối quan hệ giữa các tác nhân và các use case chính được mô hì
 
 Biểu đồ use case tổng quát (Hình 2.1) mô tả ranh giới hệ thống và các tương tác chính giữa bốn tác nhân với nền tảng quản lý và đặt lịch sân thể thao. Mô hình này là cơ sở để thống nhất tên gọi và phạm vi các chức năng trước khi phân rã ở mục 2.2.2 và đặc tả ở mục 2.3.
 
+![Biều đồ usecase tổng quan](/images/BieudoUseCaseTongQuan.png)
+
 Khách vãng lai là người truy cập chưa đăng nhập hoặc chưa có vai trò nghiệp vụ trong hệ thống. Tác nhân này tra cứu cụm sân, sân con, giá và tình trạng còn trống; xem đánh giá và danh sách kèo giao lưu công khai; thực hiện đăng ký, đăng nhập hoặc đăng xuất. Các use case này tạo điều kiện thu thập thông tin trước khi người dùng chuyển sang các nghiệp vụ yêu cầu xác thực.
 
-Người chơi là người dùng đã xác thực với vai trò PLAYER. Tác nhân này quản lý hồ sơ cá nhân; tạo một lượt đặt sân hoặc tạo chuỗi đặt định kỳ; thực hiện thanh toán qua cổng trực tuyến; mua thêm vật phẩm gắn với booking; xem lịch sử đặt sân, hủy đặt sân và đánh giá sân sau khi sử dụng; tạo kèo, tham gia hoặc rời kèo giao lưu; xem gợi ý sân và nhận thông báo. Trên biểu đồ, use case «Tạo một lượt đặt sân» có quan hệ «include» với «Thực hiện thanh toán» vì booking ở trạng thái chờ thanh toán cần hoàn tất giao dịch trong thời hạn quy định. Use case «Tạo kèo» «extend» từ «Tạo một lượt đặt sân» khi người chơi muốn mở kèo gắn với phiên vừa đặt. Use case «Hủy đặt sân» «extend» từ «Xem lịch sử đặt sân» vì thao tác hủy được thực hiện trong ngữ cảnh quản lý lịch sử. Use case «Mua thêm vật phẩm» liên kết mở rộng với luồng đặt sân đơn lẻ; chuỗi đặt định kỳ không hỗ trợ mua kèm ở bước khởi tạo theo quy tắc nghiệp vụ hiện tại.
+Người chơi là người dùng đã xác thực với vai trò PLAYER. Tác nhân này có thể tạo một lượt đặt sân hoặc tạo chuỗi đặt định kỳ; thực hiện thanh toán qua cổng trực tuyến; mua thêm vật phẩm gắn với booking; xem lịch sử đặt sân, hủy đặt sân và đánh giá sân sau khi sử dụng; tạo kèo, tham gia hoặc rời kèo giao lưu; xem gợi ý sân và nhận thông báo. 
 
-Chủ sân là người dùng đã xác thực với vai trò OWNER, chịu trách nhiệm vận hành một hoặc nhiều khu phức hợp. Tác nhân này quản lý khu phức hợp và sân con; thiết lập bảng giá theo khung giờ và ngày trong tuần; quản lý danh mục vật phẩm bán kèm; xem lịch đặt của sân; xác nhận hoặc từ chối booking; theo dõi thống kê doanh thu; khai báo tài khoản ngân hàng và gửi yêu cầu quyết toán đối với giao dịch thu qua VNPay. Use case «Xác nhận hoặc hủy đặt sân» «extend» từ «Xem lịch đặt của sân» vì thao tác xử lý booking được thực hiện khi chủ sân rà soát lịch.
+Chủ sân là người dùng đã xác thực với vai trò OWNER, chịu trách nhiệm vận hành một hoặc nhiều khu phức hợp. Tác nhân này quản lý khu phức hợp và sân con; thiết lập bảng giá theo khung giờ và ngày trong tuần; quản lý danh mục vật phẩm bán kèm; xem lịch đặt của sân; xác nhận hoặc từ chối booking; theo dõi thống kê doanh thu; khai báo tài khoản ngân hàng và gửi yêu cầu quyết toán đối với giao dịch thu qua VNPay.
 
-Quản trị viên là người dùng với vai trò ADMIN, có quyền giám sát toàn nền tảng. Tác nhân này duyệt hoặc từ chối đăng ký khu phức hợp mới; quản lý trạng thái tài khoản người chơi, chủ sân và quản trị viên; theo dõi giao dịch; xử lý đối soát và các đợt quyết toán cho chủ sân; xem thống kê và lập báo cáo tổng hợp. Nhóm use case này bảo đảm tính minh bạch và kiểm soát vận hành ở cấp hệ thống.
+Quản trị viên là người dùng với vai trò ADMIN, có quyền giám sát toàn nền tảng. Tác nhân này duyệt hoặc từ chối đăng ký khu phức hợp mới; quản lý trạng thái tài khoản người chơi, chủ sân và quản trị viên; theo dõi giao dịch; xử lý đối soát và các đợt quyết toán cho chủ sân; xem thống kê và lập báo cáo tổng hợp.
 
-Từ biểu đồ tổng quát có thể nhận thấy phần lớn use case của người chơi và chủ sân xoay quanh vòng đời booking, trong khi quản trị viên tập trung vào duyệt cơ sở, giám sát giao dịch và quyết toán. Các quan hệ «include» và «extend» được sử dụng để thể hiện phụ thuộc bắt buộc hoặc tùy chọn giữa các chức năng, giúp giảm trùng lặp trên sơ đồ và làm cơ sở cho việc phân rã chi tiết ở mục kế tiếp.
+### 2.2.2 Biểu đồ use case phân rã "Đặt sân"
 
-### 2.2.2 Biểu đồ use case phân rã XYZ
+![Biều đồ usecase phân rã 'Đặt sân'](/images/phanradatsan.png)
 
-Với mỗi use case mức cao trong biểu đồ use case tổng quan, sinh viên tạo một
-mục riêng như mục 2.2.2 và tiến hành phân rã use case đó. Lưu ý tên use case cần
-phân rã trong biểu đồ use case tổng quan phải khớp với tên đề mục.
-Trong mỗi mục như vậy, sinh viên vẽ và giải thích ngắn gọn các use case phân
-rã.
+### 2.2.3 Biểu đồ use case phân rã "Tham gia, Quản lý kèo đấu"
 
-### 2.2.3 Quy trình nghiệp vụ
+![Biều đồ usecase phân rã 'Tham gia, Quản lý kèo đấu'](/images/phanraquanlikeodau.png)
+
+### 2.2.4 Biểu đồ use case phân rã "Quản lý sân và khu phức hợp"
+
+![Biều đồ usecase phân rã 'Quản lý sân và khu phức hợp'](/images/phanraquanlikhuphuchopvasandau.png)
+
+### 2.2.5 Biểu đồ use case phân rã  "Quản lý lịch sử đặt sân"
+
+![Biều đồ usecase phân rã  "Quản lý lịch sử đặt sân"](/images/phanralichsudatsan.png)
+
+### 2.2.6
+
+![Biều đồ usecase phân rã   "Quản lý công nợ và quyết toán"](/images/phanraquanlicongnovaquyettoan.png)
+
+### 2.2.7 Quy trình nghiệp vụ
 
 Nếu sản phẩm/hệ thống cần xây dựng có quy trình nghiệp vụ quan trọng/đáng
 chú ý, sinh viên cần mô tả và vẽ biểu đồ hoạt động minh họa quy trình nghiệp vụ
