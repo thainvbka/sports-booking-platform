@@ -2,620 +2,113 @@
 =========================================
 DIAGRAM PAGE 1: Page-1
 =========================================
-  - Người chơi
-  - Khách vãng lai
-  - Đăng ký, đăng nhập, đăng xuất
-  - Tìm kiếm sân
-  - Quản lý sân và khu phức hợp
-  - Thiết lập bảng giá
-  - Quản lý hồ sơ cá nhân
-  - Tạo một lượt đặt sân
-  - Thực hiện thanh toán
-  - Xem thống kê
-  - Xem lịch sử đặt sân
-  - Hủy đặt sân
-  - Xem lịch đặt của sân
-  - Xác nhận / hủy đặt sân
-  - Quản lý người dùng
-  - Quản lý sân, khu phức hợp
-  - Quản lý thanh toán
-  - Chủ khu phức hợp
-  - Quản trị hệ thống
-  - <<include>>
-  - <<extend>>
-  - Tạo lượt đặt sân định kỳ
-  - Báo cáo
-  - Tạo lượt đặt sân
-  - Đặt sân một lần
-  - Thanh toán
-  - Tạo kèo
-  - Đặt sân định kì
-  - Đặt sân
-  - Quản lý lịch sử đặt sân
-  - Quản lý lịch đặt của sân
-  - Quản lý đăng ký khu phức hợp
-  - Quản lý doanh thu
-  - Quản lý thanh toán người chơi
-  - Tham gia, quản lý kèo đấu
-  - Đánh giá chất lượng
-  - Quản lý vật phẩm
-  - Quản lý công nợ và quyết toán
-  - Mua kèm vật phẩm
-  - Xem danh sách sân
-  - Phê duyệt lượt đặt sân
-  - Xem danh sách lịch đặt sân
-  - Xem chi tiết lượt đặt sân
-  - Từ chối/ Hủy đặt sân
-  - Xem kèo của tôi
-  - Xem chi tiết kèo
-  - Tham gia kèo
-  - Xem kèo đấu công khai
-  - Rời kèo
-  - Duyệt/ xóa thành viên tham gia
-  - Kèo tham gia
-  - Kèo tôi tạo
-  - Quản lý khu phức hợp
-  - Xem chi tiết khu phức hợp
-  - Đăng ký khu phức hợp mới
-  - Xem chi tiết sân con
-  - Cập nhật khu phức hợp
-  - Thêm sân con
-  - Cập nhật sân con
-  - Thêm/ sửa bảng giá
-  - Xem các yêu cầu quyết toán
-  - Xác nhận, phê duyệt yêu cầu
-  - Từ chối yêu cầu
-  - Quyết toán
-  - Xem công nợ đối với chủ sân
+ USE CASE TỔNG QUAN
+
+ 1. Người chơi
+
+Đặt sân
+Đánh giá chất lượng
+Tham gia, quản lý kèo đấu
+Quản lý lịch sử đặt sân
+Xem danh sách sân
+
+2. Khách vãng lai
+
+Đăng ký, đăng nhập, đăng xuất
+Xem danh sách sân
+Tìm kiếm sân
+
+3. Chủ khu phức hợp
+
+Quản lý vật phẩm
+Quản lý lịch đặt của sân
+Xem thống kê
+Quản lý sân và khu phức hợp
+Quản lý doanh thu
+
+4. Quản trị hệ thống
+
+Xem thống kê
+Quản lý công nợ và quyết toán
+Quản lý người dùng
+Quản lý đăng ký khu phức hợp
+Quản lý thanh toán người chơi
+
+CÁC USE CASE PHÂN RÃ NỔI BẬT
+
+1. Đặt sân (Người chơi)
+Tạo lượt đặt sân là use case trung tâm, actor Người chơi trực tiếp thực hiện. Có 2 hình thức đặt (kế thừa):
+
+Đặt sân định kì — là một loại của Tạo lượt đặt sân
+Đặt sân một lần — là một loại của Tạo lượt đặt sân, sau khi đặt có thể Mua kèm vật phẩm (extend)
+
+Tạo lượt đặt sân có thể: Thanh toán (include), Tạo kèo (extend)
+
+2. Tham gia, quản lý kèo đấu (Người chơi)
+Người chơi có 2 use case chính:
+
+Xem kèo đấu công khai → có thể Xem chi tiết kèo (extend) → từ đó có thể Tham gia kèo (extend)
+Xem kèo của tôi — có 2 trường hợp cụ thể (kế thừa):
+
+Kèo tôi tạo → có thể Duyệt/xóa thành viên tham gia (extend)
+Kèo tham gia → có thể Rời kèo (extend)
+
+3. Quản lý lịch sử đặt sân (Người chơi + Chủ khu phức hợp)
+Có 2 actor tham gia với 2 use case riêng biệt:
+
+Người chơi — Xem lịch sử đặt sân, gồm:
+
+Có thể Xem chi tiết lượt đặt sân (extend) → từ đó có thể Hủy đặt sân (extend)
+Có thể Từ chối/Hủy đặt sân (extend)
+
+
+Chủ khu phức hợp — Xem danh sách lịch đặt sân, gồm:
+
+Có thể Phê duyệt lượt đặt sân (extend)
+Có thể Từ chối/Hủy đặt sân (extend)
+
+
+4. Quản lý sân và khu phức hợp (Chủ khu phức hợp)
+Quản lý khu phức hợp là use case trung tâm, gồm:
+
+Có thể Đăng ký khu phức hợp mới (extend)
+Có thể Xem chi tiết khu phức hợp (extend), từ đó tiếp tục:
+
+Có thể Thêm sân con (extend)
+Có thể Cập nhật khu phức hợp (extend)
+
+
+Có thể Xem chi tiết sân con (extend), từ đó tiếp tục:
+
+Có thể Cập nhật sân con (extend)
+Có thể Thêm/sửa bảng giá (extend)
+
+
+5. Quản lý công nợ và quyết toán (Quản trị hệ thống)
+Quản trị hệ thống có 2 use case chính:
+
+Xem công nợ đối với chủ sân — đứng độc lập, không có extend hay include
+Xem các yêu cầu quyết toán, gồm:
+
+Có thể Xác nhận, phê duyệt yêu cầu (extend) → bắt buộc Quyết toán (include)
+Có thể Từ chối yêu cầu (extend)
 
 =========================================
 DIAGRAM PAGE 2: Page-2
 =========================================
-  - Chủ sân
-  - Frontend (Web-Owner)
-  - Backend (Node.js API)
-  - Database (Prisma)
-  - 1. Điền thông tin (email, pass, tên...)
-  - 2. POST /api/auth/register/owner (gửi DTO)
-  - 3. Tìm xem email/SĐT đã tồn tại chưa
-  - 4. Không tồn tại (null)
-  - 5. Băm mật khẩu (bcrypt)
-  - 6. prisma.$transaction([ Tạo Account, Tạo Owner ])
-  - 7. Trả về Account và Owner mới
-  - 8. Tạo AccessToken & RefreshToken (JWT)
-  - 9. Lưu RefreshToken
-  - 10. Đã lưu
-  - 11. 201 Created (Gửi Token & Dữ liệu User)
-  - 12. Hiển thị thông báo thành công & Đăng nhập
-  - Chủ sân (Đã đăng nhập)
-  - Stripe API (Dịch vụ ngoài)
-  - 1. Nhấn nút "Kết nối Stripe"
-  - 2. POST /api/stripe/onboard (gửi Auth Token)
-  - 3. Lấy thông tin Owner (từ Auth Token)
-  - 4. Thông tin Owner (email, ...)
-  - 5. Gửi yêu cầu: stripe.accounts.create()
-  - 6. Trả về: Stripe Account ID (vd: 'acct_...')
-  - 7. CẬP NHẬT 'owners' SET 'stripe_account_id'
-  - 8. Đã cập nhật
-  - 9. Gửi yêu cầu: stripe.accountLinks.create()
-  - 10. Trả về: Onboarding URL
-  - 11. 200 OK (Gửi Onboarding URL)
-  - 12. Chuyển hướng (Redirect) đến trang của Stripe
-  - 13. [Webhook] Gửi sự kiện 'account.updated'
-  - 14. Xác thực chữ ký Webhook
-  - 15. CẬP NHẬT 'owners' SET 'stripe_onboarding_complete = true'
-  - 16. Đã cập nhật
-  - 17. 200 OK (Xác nhận đã nhận Webhook)
-  - Owner nhập thông tin ngân hàng trên Stripe...
-  - Cloudinary (Dịch vụ ngoài)
-  - alt
-  - [Owner đã kết nối Stripe? (stripe_onboarding_complete == true)]
-  - [Owner chưa kết nối Stripe]
-  - 1. Điền form tạo Complex
-  - 2. POST /api/complexes (Gửi DTO & Files)
-  - 4. Thông tin Owner
-  - 5. Tải file (giấy tờ, ảnh) lên Cloudinary
-  - 6. Trả về danh sách URLs
-  - 7. INSERT INTO 'complexes' (status='PENDING_APPROVAL', verification_docs=URLs)
-  - 8. Trả về Complex mới
-  - 9. 201 Created (Thông báo "Đã gửi duyệt")
-  - 10. 403 Forbidden (Lỗi: Vui lòng kết nối thanh toán trước)
-  - Admin sẽ duyệt và đổi status='ACTIVE' trong một luồng khác.
-  - 1. Chọn Sân con, nhập (Thứ 7, 18:00-20:00, 300k)
-  - 2. POST /api/pricing-rules (gửi DTO: sub_field_id, day_of_week, ...)
-  - 3. Lấy thông tin SubField (để kiểm tra quyền sở hữu của Owner)
-  - 4. Thông tin SubField (gồm complex.owner_id)
-  - 5. Xác thực Owner này sở hữu SubField
-  - 6. Kiểm tra xem có luật giá nào bị trùng không
-  - 7. Không tìm thấy (null)
-  - 8. INSERT INTO 'pricing_rules' (tạo luật giá mới)
-  - 9. Trả về Rule mới
-  - 10. 201 Created (Tạo luật giá thành công)
-  - [Quyền sở hữu hợp lệ]
-  - [Quyền sở hữu không hợp lệ HOẶC Tên bị trùng]
-  - 1. Điền form (tên sân, loại sân, upload ảnh)
-  - 2. POST /api/subfields (gửi DTO: complex_id, name, ... & File ảnh)
-  - 3. Lấy owner_id (từ Auth Token) & Lấy Complex (từ DTO.complex_id)
-  - 4. Trả về thông tin Complex
-  - 5. Xác thực: complex.owner_id == owner_id (Owner này có sở hữu Complex này không?)
-  - 6. Kiểm tra tên sân con đã tồn tại chưa
-  - 7. Trả về null (Tên hợp lệ)
-  - 8. Tải 'sub_field_image' lên Cloudinary
-  - 9. Trả về Image URL
-  - 10. INSERT INTO 'sub_fields' (lưu sân con mới với Image URL)
-  - 11. Trả về SubField mới
-  - 12. 201 Created (Tạo sân con thành công)
-  - 13. 403 Forbidden (Không có quyền) / 409 Conflict (Tên trùng)
-  - owner kết nối thanh toán
-
+ 
 =========================================
 DIAGRAM PAGE 3: Page-3
 =========================================
-  - Player (Người chơi)
-  - Frontend (Mobile/Web App)
-  - Backend (Node.js API)
-  - Database (Prisma)
-  - Stripe API (Dịch vụ ngoài)
-  - 1. Chọn Sân con & Khung giờ
-  - 2. POST /api/bookings (gửi sub_field_id, start_time, end_time)
-  - 3. Kiểm tra xung đột (SELECT * FROM bookings WHERE status='CONFIRMED' AND...)
-  - 4. (null) - Không bị trùng
-  - 5. Lấy PricingRule, SpecialDayPrice (nếu có)
-  - 6. Trả về giá
-  - 7. Tính total_price & expires_at (vd: 15 phút)
-  - 8. INSERT INTO 'bookings' (status='PENDING', expires_at=...)
-  - 9. Trả về booking_id
-  - 10. 201 Created (trả về booking_id, total_price)
-  - 11. Nhấn nút "Thanh toán"
-  - 12. POST /api/payments/create-session (gửi booking_id)
-  - 13. Lấy Booking, SubField, Complex, Owner
-  - 14. Trả về thông tin (gồm owner.stripe_account_id)
-  - 15. Kiểm tra: owner.stripe_onboarding_complete == true? (hợp lệ)
-  - 16. Gọi Stripe: stripe.checkout.sessions.create()
-  - 17. Trả về client_secret & charge_id
-  - 18. INSERT INTO 'payments' (status='PENDING', transaction_code=charge_id)
-  - 19. Đã tạo Payment
-  - 20. 200 OK (trả về client_secret)
-  - 21. Hiển thị Form nhập thẻ (Stripe Elements)
-  - 22. Nhập thông tin thẻ & Xác nhận
-  - 23. [WEBHOOK] Gửi tín hiệu 'checkout.session.completed'
-  - 24. Xác thực tín hiệu Webhook
-  - 25. CẬP NHẬT 'payments' SET status='SUCCESS' (dựa trên transaction_code)
-  - 26. Đã cập nhật
-  - 27. CẬP NHẬT 'bookings' SET status='CONFIRMED'
-  - 28. Đã cập nhật
-  - 29. Tạo 'Notification' & Gửi 'FCM Token' (báo Player đặt thành công)
-  - 30. 200 OK (Xác nhận đã nhận Webhook)
-  - 31. (Frontend) Hiển thị "Thanh toán thành công!"
-  - Gửi: amount (tổng tiền) application_fee_amount (phí hoa hồng cho Admin) destination (stripe_account_id của Owner)
-  - Frontend gửi thông tin thẻ trực tiếp đến Stripe (bảo mật)
-  - đặt sân 1 lượt và thanh toán
-  - Job Queue (BullMQ,...)
-  - Worker (Tiến trình nền)
-  - S
-  - 1. Chọn Sân, Quy luật lặp (vd: T3 hàng tuần), và Ngày (1/12 - 31/12)
-  - 2. POST /api/recurring-bookings/check (Kiểm tra tính khả dụng)
-  - 3. Tạo danh sách các créneau giờ tiềm năng (4 lượt)
-  - 4. Kiểm tra xung đột (SELECT * FROM bookings WHERE status='CONFIRMED' AND [trùng với 1 trong 4 lượt])
-  - 5. (null) - Không bị trùng
-  - 6. Tính tổng giá dự kiến
-  - 7. 200 OK (Hợp lệ, tổng 4 lượt = 800k)
-  - 8. Nhấn "Xác nhận Đặt"
-  - 9. POST /api/recurring-bookings (Tạo bản mẫu)
-  - 10. INSERT INTO 'recurring_booking' (tạo 1 bản mẫu)
-  - 11. Trả về recurring_booking_id
-  - 12. Gửi Job vào Hàng đợi (Nội dung: { recurring_booking_id })
-  - 13. 201 Created (Thông báo "Đang xử lý, vui lòng chờ")
-  - 14. Nhận Job
-  - 15. Lấy thông tin 'recurring_booking' từ ID
-  - 16. Trả về thông tin (quy luật, ngày, sân...)
-  - 17. Tạo lại danh sách 4 créneau giờ
-  - 18. Tính tổng tiền (800k)
-  - 19. prisma.$transaction([ ... ])
-  - 20. INSERT INTO 'bookings' (Tạo 4 lượt đặt PENDING, cùng recurring_booking_id)
-  - (tạo xong)
-  - 21. INSERT INTO 'payments' (Tạo 1 Payment 800k, liên kết với booking ĐẦU TIÊN)
-  - 22. Tạo 'Notification' & Gửi 'FCM Token' (báo Player "Yêu cầu đã xử lý, chờ thanh toán")
-  - 24. CẬP NHẬT 'payments' SET status='SUCCESS'
-  - 25. Đã cập nhật
-  - 26. Lấy recurring_booking_id từ Payment
-  - 27. Trả về recurring_booking_id
-  - 28. CẬP NHẬT 'bookings' SET status='CONFIRMED' WHERE recurring_booking_id = ...
-  - 29. Đã cập nhật
-  - 30. Tạo 'Notification' (báo đặt thành công)
-  - 31. 200 OK (Xác nhận Webhook)
-  - Bắt đầu Giao dịch
-  - Kết thúc Giao dịch
-  - Player thấy yêu cầu thanh toán (800k) và thực hiện thanh toán... ...Quy trình thanh toán qua Stripe diễn ra...
-  - Cập nhật HÀNG LOẠT (cả 4 lượt)
-  - đặt sân định kỳ và thanh toán
-  - 1. Chọn Sân con, Ngày, và Khung giờ
-  - 3. Kiểm tra xung đột [bị trùng giờ])
-  - 5. Lấy luật giá cho khung giờ này
-  - 6. Trả về giá (ví dụ: 200k)
-  - 7. Tính total_price (200k) & expires_at (hiện tại + 15 phút)
-  - 8. INSERT INTO 'bookings' (status='PENDING', total_price=200k, expires_at=...)
-  - 9. Trả về bản ghi Booking mới (gồm booking_id)
-  - 11. Hiển thị màn hình "Xác nhận & Thanh toán"
-  - tạo lượt đặt sân
-  - Job Queue (Hàng đợi)
-  - 1. Chọn Sân, Quy luật lặp (vd: T3 19:00, 1/12-31/12)
-  - 3. Tạo danh sách các ngày tiềm năng (vd: 4 lượt)
-  - 4. Kiểm tra xung đột
-  - 6. 200 OK (Hợp lệ, tổng 4 lượt = 800k)
-  - 7. Nhấn "Xác nhận Đặt"
-  - 8. POST /api/recurring-bookings (Tạo bản mẫu)
-  - 9. INSERT INTO 'recurring_booking' (tạo 1 bản mẫu, status='PENDING')
-  - 10. Trả về recurring_booking_id
-  - 11. Gửi Job vào Hàng đợi (Nội dung: { recurring_booking_id })
-  - 12. 201 Created (Thông báo "Đang xử lý, chờ thanh toán...")
-  - 13. Nhận Job
-  - 14. Lấy thông tin 'recurring_booking' từ ID
-  - 15. Trả về thông tin (quy luật, ngày, sân...)
-  - 16. Tạo lại danh sách 4 booking
-  - 17. prisma.booking.createMany(...)
-  - 18. (Tạo xong)
-  - 19. Gửi 'Notification' (báo Player "Đã tạo xong, chờ thanh toán")
-  - Tạo 4 bản ghi 'Booking' (status='PENDING', recurring_booking_id=...)
-  - alt
-  - [Thanh toán 1 lượt (có booking_id)]
-  - [Thanh toán định kỳ (có recurring_booking_id)]
-  - [Thanh toán 1 lượt]
-  - [Thanh toán định kỳ]
-  - loop
-  - [Xử lý Bất đồng bộ]
-  - 1. Nhấn nút "Thanh toán"
-  - 2. POST /api/payments/create-session (gửi booking_id HOẶC recurring_booking_id)
-  - 3a. Lấy 1 Booking (giá 200k)
-  - 4a. total_price = 200k
-  - 3b. Lấy TẤT CẢ Bookings (status='PENDING') thuộc recurring_booking_id
-  - 4b. total_price = SUM(4 lượt) = 800k
-  - 5. Lấy Owner (từ Booking) để lấy 'stripe_account_id'
-  - 6. Trả về 'owner.stripe_account_id'
-  - 7. Gọi Stripe: stripe.checkout.sessions.create()
-  - 8. Trả về client_secret & charge_id
-  - 9. INSERT INTO 'payments' (amount=total_price, transaction_code=charge_id, status='PENDING')
-  - 10. Đã tạo Payment
-  - 11. 200 OK (trả về client_secret)
-  - 12. Hiển thị Form nhập thẻ & Player xác nhận
-  - 13. [WEBHOOK] 'checkout.session.completed'
-  - 14. Xác thực tín hiệu Webhook
-  - 15. CẬP NHẬT 'payments' SET status='SUCCESS'
-  - 16a. CẬP NHẬT 'bookings' SET status='CONFIRMED' (cho 1 booking_id)
-  - 16b. Lấy recurring_booking_id từ payment
-  - 17b. CẬP NHẬT 'bookings' SET status='CONFIRMED' (cho TẤT CẢ booking thuộc recurring_booking_id)
-  - 18b. CẬP NHẬT 'recurring_booking' SET status='ACTIVE'
-  - 19. Gửi 'Notification' (báo Player đặt thành công)
-  - 20. 200 OK (Xác nhận Webhook)
-  - Gửi: total_price, application_fee (hoa hồng), destination (cho Owner)
-  - Người dùng (Guest)
-  - Frontend (Web)
-  - [roleType === 'PLAYER']
-  - [roleType === 'OWNER']
-  - [Email đã tồn tại (Account != null)]
-  - [Email hợp lệ (Account == null)]
-  - 1. Chọn vai trò & Điền form (email, pass...)
-  - 2. POST /api/auth/register (DTO: {email, pass, ..., roleType})
-  - 3. Tìm 'account' theo email
-  - 4. Trả về kết quả (Account hoặc null)
-  - 5a. 409 Conflict ("Email đã được sử dụng")
-  - 6a. Hiển thị lỗi "Email đã tồn tại"
-  - 5b. Băm mật khẩu (bcrypt)
-  - 6b. prisma.$transaction([ Tạo 'accounts', Tạo 'players' ])
-  - 7b. Trả về Account & Player mới
-  - 6c. prisma.$transaction([ Tạo 'accounts', Tạo 'owners' ])
-  - 7c. Trả về Account & Owner mới
-  - 8b. Tạo AccessToken & RefreshToken (JWT)
-  - 9b. Lưu RefreshToken (vào 'refresh_tokens')
-  - 10b. Đã lưu
-  - 11b. 201 Created (Gửi Token & Dữ liệu User)
-  - 12b. Hiển thị thông báo & Tự động đăng nhập
-  - Khách vãng lai (Guest)
-  - Mail Service
-  - par
-  - 1. Chọn sân, giờ & nhấn "Tiếp tục"
-  - 2. Hiển thị form checkout (Yêu cầu Email, Tên, SĐT)
-  - 3. Điền thông tin & Xác nhận Đặt sân
-  - 4. POST /api/bookings/guest (DTO: {bookingInfo, guestInfo})
-  - 5. Tìm 'account' theo email (từ guestInfo)
-  - 6. Trả về kết quả (Account hoặc null)
-  - 7a. 409 Conflict ("Email đã tồn tại, vui lòng đăng nhập")
-  - 8a. Hiển thị thông báo, yêu cầu đăng nhập
-  - 7b. prisma.$transaction([ ... ])
-  - 8b. Trả về [newAccount, newPlayer, newBooking]
-  - 9b. 201 Created (Gửi chi tiết booking thành công)
-  - 10b. Hiển thị "Đặt sân thành công!"
-  - 11b. (Async) Gửi email xác nhận đặt sân
-  - (Đã nhận)
-  - 12b. (Async) Gửi email "Kích hoạt tài khoản"
-  - Thực thi 3 bước trong 1 giao dịch: 1. Tạo 'accounts' (với guestInfo, pass=null) 2. Tạo 'players' (liên kết account_id) 3. Tạo 'bookings' (liên kết player_id)
 
 =========================================
 DIAGRAM PAGE 4: Page-4
 =========================================
-  - Lưu trữ & Hạ tầng
-  - Dịch vụ ngoài
-  - User
-  - Nginx Reverse Proxy
-  - UI Component
-  - Zustand Store
-  - FE Service
-  - Controller
-  - Business Service
-  - Prisma Client
-  - PostgreSQL
-  - Stripe / Cloudinary / Email/ VNPay
-  - HTTPS
-  - API Request
-  - Update UI
-  - HTTP/Axios
-  - Frontend
-  - Backend
-  - Hệ thống ứng dụng
-  - Dịch vụ bên thứ ba (External Services)
-  - Hạ tầng Container (Docker Compose Network)
-  - Tầng Lưu trữ & Caching
-  - Container Backend (Express.js / TS)
-  - Container Frontend (Thực thi trên Browser)
-  - Người chơi / Chủ sân / Admin
-  - Nginx Web Server & Proxy
-  - React UI Components
-  - FE Services / Axios
-  - Socket.io Client
-  - Controllers
-  - Socket.io Server
-  - Business Services
-  - Cron Scheduler - Đối soát/Gợi ý
-  - Prisma Client ORM
-  - Redis Cache v7
-  - PostgreSQL CSDL + pgvector
-  - Stripe Payment Gateway
-  - Cổng thanh toán VNPAY
-  - Media Cloudinary
-  - Nodemailer Email Service
-  - HTTPS / Cổng 80-443
-  - 1. Serve Static Files / SPA Routing
-  - Quản lý State
-  - 2. Gọi API
-  - 3. Lắng nghe thông báo
-  - Gửi API Request /api
-  - Kết nối WebSocket
-  - 4. Proxy Pass API
-  - 5. Proxy Upgrade Connection
-  - Lưu trữ Session & Cache Sân
-  - Truy vấn SQL & Độ tương đồng Vector
-  - Thanh toán thẻ
-  - Thanh toán ATM/QR
-  - Lưu trữ ảnh sân
-  - Gửi hóa đơn/xác nhận
-  - Dịch vụ bên thứ ba
-  - Tầng lưu trữ & Caching
-  - React Frontend App
-  - Express.js Backend API
-  - Redis Cache
-  - PostgreSQL + pgvector
-  - Stripe / VNPAY / Cloudinary / Nodemailer
-  - Serve Static Web / Trả file tĩnh
-  - Gửi API & Socket.io
-  - Proxy chuyển tiếp REST & WS
-  - Truy vấn dữ liệu
-  - Đọc / Ghi Cache
-  - Kết nối dịch vụ
-  - Backend Express API
-  - Frontend React App
-  - Người dùng
-  - UI Components React / Shadcn UI
-  - Zustand Store Quản lý State
-  - Axios Services Gọi API tĩnh
-  - Socket.io Client Nhận tin thời gian thực
-  - Controller Tiếp nhận REST API
-  - Business Service Xử lý nghiệp vụ
-  - Socket.io Server Đẩy tin thời gian thực
-  - Prisma Client ORM Access
-  - 1. Gọi Action
-  - 2. Gọi REST API
-  - 3. Cập nhật State
-  - Cập nhật thông báo
-  - 4. Render UI / Update UI
-  - Serve Static Web
-  - API Request /api
-  - Proxy Pass REST
-  - WebSocket Connection /socket.io
-  - Proxy Upgrade WebSockets
-  - Kết nối API
-  - Axios Services Gọi API REST
-  - Socket.io Client Lắng nghe Real-time
-  - Socket.io Server Tổng đài Real-time
-  - REST API Request /api
-  - WebSocket Tunnel /socket.io
-  - Proxy Upgrade Socket
 
 =========================================
 DIAGRAM PAGE 5: Page-5
 =========================================
-  - Table
-  - PK
-  - UniqueID
-  - Row 1
-  - Row 2
-  - Row 3
-  - "Account"
-  - "id" UUID DEFAULT gen_random_uuid()
-  - "email" VARCHAR(50) NOT NULL UNIQUE
-  - "password" TEXT NOT NULL
-  - "full_name" VARCHAR(100) NOT NULL
-  - "phone_number" VARCHAR(15) NOT NULL UNIQUE
-  - "avatar" TEXT
-  - "email_verified" BOOLEAN NOT NULL DEFAULT false
-  - "phone_verified" BOOLEAN NOT NULL DEFAULT false
-  - "verification_token" TEXT UNIQUE
-  - "verification_expires_at" TIMESTAMPTZ(0)
-  - "reset_password_token" TEXT UNIQUE
-  - "reset_password_expires_at" TIMESTAMPTZ(0)
-  - "created_at" TIMESTAMPTZ(0) NOT NULL DEFAULT NOW()
-  - "updated_at" TIMESTAMPTZ(0) NOT NULL DEFAULT NOW()
-  - "Admin"
-  - "account_id" UUID NOT NULL UNIQUE
-  - "status" "AdminStatus" NOT NULL
-  - CONSTRAINT "Admin_account_id_fkey"
-  - FOREIGN KEY ("account_id") REFERENCES "Account"("id") ON DELETE CASCADE
-  - "Owner"
-  - "company_name" VARCHAR(100) NOT NULL
-  - "stripe_account_id" VARCHAR(100)
-  - "stripe_onboarding_complete" BOOLEAN NOT NULL DEFAULT false
-  - "status" "OwnerStatus" NOT NULL
-  - CONSTRAINT "Owner_account_id_fkey"
-  - "Player"
-  - "status" "PlayerStatus" NOT NULL
-  - CONSTRAINT "Player_account_id_fkey"
-  - "RefreshToken"
-  - "token" TEXT NOT NULL UNIQUE
-  - "account_id" UUID NOT NULL
-  - "revoked" BOOLEAN NOT NULL DEFAULT false
-  - "expires_at" TIMESTAMPTZ(0) NOT NULL
-  - CONSTRAINT "RefreshToken_account_id_fkey"
-  - "SocialAccount"
-  - "provider" VARCHAR(50) NOT NULL
-  - "provider_id" VARCHAR(100) NOT NULL
-  - CONSTRAINT "SocialAccount_provider_provider_id_key"
-  - UNIQUE ("provider", "provider_id")
-  - CONSTRAINT "SocialAccount_account_id_provider_key"
-  - UNIQUE ("account_id", "provider")
-  - CONSTRAINT "SocialAccount_account_id_fkey"
-  - "Complex"
-  - "owner_id" UUID NOT NULL
-  - "complex_name" VARCHAR(100) NOT NULL
-  - "complex_address" TEXT NOT NULL
-  - "status" "ComplexStatus" NOT NULL
-  - "verification_docs" JSON NOT NULL
-  - "complex_image" TEXT
-  - "min_price" INTEGER
-  - "max_price" INTEGER
-  - "total_subfields" SMALLINT NOT NULL DEFAULT 0
-  - "sport_types" VARCHAR(50)[] NOT NULL DEFAULT '{}'
-  - "avg_rating" DECIMAL(3, 2)
-  - "total_reviews" INTEGER NOT NULL DEFAULT 0
-  - CONSTRAINT "Complex_owner_id_fkey"
-  - FOREIGN KEY ("owner_id") REFERENCES "Owner"("id") ON DELETE RESTRICT
-  - "SubField"
-  - "complex_id" UUID NOT NULL
-  - "sub_field_name" VARCHAR(100) NOT NULL
-  - "capacity" SMALLINT NOT NULL
-  - "sub_field_image" TEXT
-  - "sport_type" "SportType" NOT NULL
-  - "isDelete" BOOLEAN NOT NULL DEFAULT false
-  - CONSTRAINT "SubField_complex_id_sub_field_name_key"
-  - UNIQUE ("complex_id", "sub_field_name", "isDelete")
-  - CONSTRAINT "SubField_complex_id_fkey"
-  - FOREIGN KEY ("complex_id") REFERENCES "Complex"("id") ON DELETE RESTRICT
-  - "PricingRule"
-  - "sub_field_id" UUID NOT NULL
-  - "day_of_week" SMALLINT NOT NULL
-  - "start_time" TIME(0) NOT NULL
-  - "end_time" TIME(0) NOT NULL
-  - "base_price" DECIMAL(10, 2) NOT NULL
-  - CONSTRAINT "PricingRule_unique"
-  - UNIQUE ("sub_field_id", "day_of_week", "start_time", "end_time")
-  - CONSTRAINT "PricingRule_sub_field_id_fkey"
-  - FOREIGN KEY ("sub_field_id") REFERENCES "SubField"("id") ON DELETE CASCADE
-  - "Payment"
-  - "amount" DECIMAL(10, 2) NOT NULL
-  - "provider" "PaymentProvider" NOT NULL
-  - "transaction_code" TEXT NOT NULL UNIQUE
-  - "status" "PaymentStatus" NOT NULL
-  - "RecurringBooking"
-  - "player_id" UUID NOT NULL
-  - "recurrence_type" "RecurrenceType" NOT NULL
-  - "start_date" DATE NOT NULL
-  - "end_date" DATE NOT NULL
-  - "status" "RecurringStatus" NOT NULL
-  - CONSTRAINT "RecurringBooking_player_id_fkey"
-  - FOREIGN KEY ("player_id") REFERENCES "Player"("id") ON DELETE CASCADE
-  - CONSTRAINT "RecurringBooking_sub_field_id_fkey"
-  - "Booking"
-  - "start_time" TIMESTAMPTZ(0) NOT NULL
-  - "end_time" TIMESTAMPTZ(0) NOT NULL
-  - "total_price" DECIMAL(10, 2) NOT NULL
-  - "status" "BookingStatus" NOT NULL
-  - "paid_at" TIMESTAMPTZ(0)
-  - "payment_id" UUID
-  - "recurring_booking_id" UUID
-  - CONSTRAINT "Booking_player_id_fkey"
-  - FOREIGN KEY ("player_id") REFERENCES "Player"("id") ON DELETE RESTRICT
-  - CONSTRAINT "Booking_sub_field_id_fkey"
-  - FOREIGN KEY ("sub_field_id") REFERENCES "SubField"("id") ON DELETE RESTRICT
-  - CONSTRAINT "Booking_payment_id_fkey"
-  - FOREIGN KEY ("payment_id") REFERENCES "Payment"("id")
-  - CONSTRAINT "Booking_recurring_booking_id_fkey"
-  - FOREIGN KEY ("recurring_booking_id") REFERENCES "RecurringBooking"("id")
-  - "Notification"
-  - "message" TEXT NOT NULL
-  - "is_read" BOOLEAN NOT NULL DEFAULT false
-  - "type" TEXT NOT NULL
-  - "link_to" TEXT
-  - "metadata" JSON
-  - CONSTRAINT "Notification_account_id_fkey"
-  - "Product"
-  - "sport_type" "SportType"
-  - "name" VARCHAR(200) NOT NULL
-  - "description" TEXT
-  - "price" DECIMAL(10, 2) NOT NULL
-  - "stock" INTEGER NOT NULL DEFAULT 0
-  - "image" TEXT
-  - "status" "ProductStatus" NOT NULL DEFAULT 'ACTIVE'
-  - CONSTRAINT "Product_complex_id_fkey"
-  - FOREIGN KEY ("complex_id") REFERENCES "Complex"("id") ON DELETE CASCADE
-  - "BookingAddon"
-  - "booking_id" UUID NOT NULL
-  - "product_id" UUID NOT NULL
-  - "quantity" INTEGER NOT NULL
-  - "unit_price" DECIMAL(10, 2) NOT NULL
-  - CONSTRAINT "BookingAddon_booking_id_product_id_key"
-  - UNIQUE ("booking_id", "product_id")
-  - CONSTRAINT "BookingAddon_booking_id_fkey"
-  - FOREIGN KEY ("booking_id") REFERENCES "Booking"("id") ON DELETE CASCADE
-  - CONSTRAINT "BookingAddon_product_id_fkey"
-  - FOREIGN KEY ("product_id") REFERENCES "Product"("id") ON DELETE RESTRICT
-  - "Match"
-  - "booking_id" UUID NOT NULL UNIQUE
-  - "creator_id" UUID NOT NULL
-  - "title" VARCHAR(200) NOT NULL
-  - "slots_needed" SMALLINT NOT NULL
-  - "slots_filled" SMALLINT NOT NULL DEFAULT 0
-  - "skill_level" "SkillLevel" NOT NULL
-  - "status" "MatchStatus" NOT NULL DEFAULT 'OPEN'
-  - CONSTRAINT "Match_booking_id_fkey"
-  - CONSTRAINT "Match_creator_id_fkey"
-  - FOREIGN KEY ("creator_id") REFERENCES "Player"("id") ON DELETE CASCADE
-  - "MatchParticipant"
-  - "match_id" UUID NOT NULL
-  - "status" "ParticipantStatus" NOT NULL DEFAULT 'PENDING'
-  - "introduction" TEXT
-  - CONSTRAINT "MatchParticipant_match_id_player_id_key"
-  - UNIQUE ("match_id", "player_id")
-  - CONSTRAINT "MatchParticipant_match_id_fkey"
-  - FOREIGN KEY ("match_id") REFERENCES "Match"("id") ON DELETE CASCADE
-  - CONSTRAINT "MatchParticipant_player_id_fkey"
-  - "Review"
-  - "rating_field" SMALLINT NOT NULL
-  - "rating_cleanliness" SMALLINT NOT NULL
-  - "rating_facility" SMALLINT NOT NULL
-  - "rating_service" SMALLINT NOT NULL
-  - "avg_rating" DECIMAL(3, 2) NOT NULL
-  - "comment" VARCHAR(500)
-  - "images" TEXT[] NOT NULL DEFAULT '{}'
-  - CONSTRAINT "Review_rating_field_check"
-  - CHECK ("rating_field" BETWEEN 1 AND 5)
-  - CONSTRAINT "Review_rating_cleanliness_check"
-  - CHECK ("rating_cleanliness" BETWEEN 1 AND 5)
-  - CONSTRAINT "Review_rating_facility_check"
-  - CHECK ("rating_facility" BETWEEN 1 AND 5)
-  - CONSTRAINT "Review_rating_service_check"
-  - CHECK ("rating_service" BETWEEN 1 AND 5)
-  - CONSTRAINT "Review_booking_id_fkey"
-  - CONSTRAINT "Review_player_id_fkey"
-  - CONSTRAINT "Review_complex_id_fkey"
-
+  
 =========================================
 DIAGRAM PAGE 6: Trang-6
 =========================================
