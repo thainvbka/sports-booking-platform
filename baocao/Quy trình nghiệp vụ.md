@@ -156,3 +156,233 @@ endif
 3. **Bước 3: Thực hiện thanh toán:** Người chơi thực hiện giao dịch trực tuyến qua cổng thanh toán Stripe hoặc VNPay.
 4. **Bước 4: Chủ sân phê duyệt:** Chủ sân tiếp nhận thông tin thanh toán thành công và thực hiện xác nhận lịch đặt.
 5. **Bước 5: Tự động dọn dẹp (Ngoại lệ):** Hệ thống tự động hủy lượt đặt sân và khôi phục tồn kho vật phẩm nếu giao dịch không hoàn tất đúng thời hạn.
+
+---
+
+#### 2. Quy trình ghép cặp giao lưu (Matchmaking) kết nối người chơi
+
+##### a. Sơ đồ hoạt động PlantUML tổng quát
+```plantuml
+@startuml
+skinparam ActivityBorderColor #2B6CB0
+skinparam ActivityBackgroundColor #E6F0FA
+skinparam ActorBorderColor #2D3748
+skinparam ActorBackgroundColor #EDF2F7
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam StartColor #2E7D32
+skinparam EndColor #C62828
+skinparam ActivityDiamondBackgroundColor #FFF5CC
+skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityBarColor #2D3748
+skinparam swimlaneBorderColor #2D3748
+skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneWidth same
+skinparam nodeSep 15
+skinparam rankSep 15
+skinparam wrapWidth 120
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title act Quy trình tạo, tham gia kèo
+
+|Người tạo kèo|
+|Hệ thống|
+|Người tham gia|
+
+|Người tạo kèo|
+start
+:Đặt sân và\nthanh toán thành công; <<#FFF2CC>>
+:Yêu cầu tạo kèo\ntrên lịch đặt; <<#FFF2CC>>
+
+|Hệ thống|
+:Tiếp nhận thông tin\ncủa kèo đấu;
+:Công khai kèo đấu\nlên bảng tin tìm kiếm; <<#FFF2CC>>
+
+|Người tham gia|
+:Xem danh sách kèo\nvà gửi yêu cầu tham gia; <<#FFF2CC>>
+
+|Hệ thống|
+:Gửi thông báo\nđến Người tạo kèo;
+
+|Người tạo kèo|
+:Xem ứng viên; <<#FFF2CC>>
+if () then ([Chấp nhận])
+  |Hệ thống|
+  :Thêm thành viên và\ncập nhật số chỗ trống;
+  :Gửi thông báo chấp nhận\nđến Người tham gia;
+  if () then ([Đủ người])
+    :Cập nhật trạng thái kèo\nsang FULL (Đóng kèo);
+  else ([Chưa đủ])
+    :Kèo đấu tiếp tục\nhiển thị trên bảng tin;
+  endif
+else ([Từ chối])
+  |Hệ thống|
+  :Gửi thông báo từ chối\nđến Người tham gia; <<#FADBD8>>
+endif
+stop
+@enduml
+```
+
+##### b. Các bước tổng quát của quy trình
+1. **Bước 1: Tạo lịch chơi:** Người tạo kèo hoàn tất quy trình đặt sân và thanh toán trực tuyến thành công.
+2. **Bước 2: Công khai kèo:** Người tạo kèo thiết lập yêu cầu giao lưu (trình độ, số lượng thành viên), hệ thống tiến hành mở kèo lên bảng tin cộng đồng.
+3. **Bước 3: Đăng ký tham gia:** Người tham gia duyệt danh sách kèo công khai và gửi yêu cầu xin ứng tuyển kèm lời giới thiệu.
+4. **Bước 4: Kiểm duyệt hồ sơ:** Người tạo kèo xem xét thông báo, kiểm tra hồ sơ ứng viên và đưa ra quyết định chấp nhận hoặc từ chối.
+5. **Bước 5: Chốt danh sách:** Hệ thống tự động cập nhật số chỗ, gửi thông báo phê duyệt đến người tham gia, và chuyển trạng thái kèo đấu sang FULL khi đã đủ người.
+
+---
+
+#### 3. Quy trình đăng ký và kích hoạt cụm sân mới hoạt động
+
+##### a. Sơ đồ hoạt động PlantUML tổng quát
+```plantuml
+@startuml
+skinparam ActivityBorderColor #2B6CB0
+skinparam ActivityBackgroundColor #E6F0FA
+skinparam ActorBorderColor #2D3748
+skinparam ActorBackgroundColor #EDF2F7
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam StartColor #2E7D32
+skinparam EndColor #C62828
+skinparam ActivityDiamondBackgroundColor #FFF5CC
+skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityBarColor #2D3748
+skinparam swimlaneBorderColor #2D3748
+skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneWidth same
+skinparam nodeSep 15
+skinparam rankSep 15
+skinparam wrapWidth 120
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title act Quy trình đăng ký và kích hoạt cụm sân mới
+
+|Chủ khu phức hợp|
+|Hệ thống|
+|Quản trị hệ thống|
+
+|Chủ khu phức hợp|
+start
+:Đăng ký tài khoản chủ sân\nvà kết nối ví; <<#FFF2CC>>
+:Gửi đăng ký khu phức hợp\nkèm tài liệu pháp lý; <<#FFF2CC>>
+
+|Hệ thống|
+:Ghi nhận trạng thái cụm sân\nlà PENDING;
+:Chuyển hồ sơ đến trang\nquản lý của quản trị;
+
+|Quản trị hệ thống|
+: Xác thực tính hợp lệ\ncủa tài liệu pháp lý; <<#FFF2CC>>
+if () then ([Hợp lệ])
+  :Phê duyệt kích hoạt hồ sơ; <<#FFF2CC>>
+  
+  |Hệ thống|
+  :Cập nhật trạng thái ACTIVE;
+  :Gửi thông báo thành công\nđến Chủ khu phức hợp;
+  
+  |Chủ khu phức hợp|
+  :Khai báo thông tin các sân con; <<#FFF2CC>>
+  :Thiết lập luật bảng giá\ntheo khung giờ và ngày; <<#FFF2CC>>
+else ([Không hợp lệ])
+  |Quản trị hệ thống|
+  :Từ chối phê duyệt hồ sơ; <<#FFF2CC>>
+  
+  |Hệ thống|
+  :Cập nhật trạng thái REJECTED;
+  :Gửi thông báo từ chối kèm lý do; <<#FADBD8>>
+endif
+stop
+@enduml
+```
+
+##### b. Các bước tổng quát của quy trình
+1. **Bước 1: Nộp hồ sơ đăng ký:** Chủ khu phức hợp đăng ký tài khoản chủ sân, hoàn tất ví thụ hưởng và gửi hồ sơ pháp lý cơ sở lên hệ thống.
+2. **Bước 2: Lưu vết hồ sơ:** Hệ thống tự động tiếp nhận thông tin cụm sân ở trạng thái chờ duyệt và thông báo cho ban quản trị.
+3. **Bước 3: Kiểm định hồ sơ:** Quản trị hệ thống tiến hành đối soát tính xác thực của tài liệu pháp lý và thực hiện phê duyệt (hoặc từ chối).
+4. **Bước 4: Kích hoạt cụm sân:** Hệ thống cập nhật trạng thái hoạt động chính thức và mở khóa các chức năng cấu hình cho cơ sở.
+5. **Bước 5: Cấu hình hạ tầng:** Chủ khu phức hợp hoàn tất cấu hình hạ tầng sân con và thiết lập bảng giá biểu phí khung giờ hoạt động.
+
+---
+
+#### 4. Quy trình đối soát công nợ và quyết toán tài chính chủ sân (Áp dụng cho cổng VNPAY)
+
+Nền tảng hỗ trợ song song hai mô hình xử lý giao dịch tài chính tùy thuộc vào cổng thanh toán người dùng lựa chọn:
+*   **Mô hình tự động chia tiền (Áp dụng cho cổng Stripe):** Hệ thống sử dụng giải pháp **Stripe Connect (Destination Charge)**. Khi người chơi hoàn tất thanh toán, Stripe tự động khấu trừ ngay 10% phí nền tảng (`application_fee_amount`) chuyển về tài khoản của hệ thống, và tự động chuyển khoản trực tiếp 90% còn lại đến tài khoản Stripe liên kết của Chủ sân (`stripe_account_id`). Quy trình này diễn ra hoàn toàn tự động ở tầng hạ tầng cổng thanh toán và không thông qua luồng quản lý công nợ thủ công của Admin.
+*   **Mô hình quyết toán thủ công (Áp dụng cho cổng VNPAY):** Dành cho các giao dịch thẻ ngân hàng nội địa qua VNPAY. Dòng tiền thanh toán từ người chơi được VNPAY chuyển toàn bộ về tài khoản ngân hàng doanh nghiệp trung gian của hệ thống. Vì thế, hệ thống sẽ tự động ghi nhận công nợ tích lũy cho chủ sân và thực hiện quy trình rút tiền quyết toán thủ công theo sơ đồ dưới đây.
+
+##### a. Sơ đồ hoạt động PlantUML tổng quát
+```plantuml
+@startuml
+skinparam ActivityBorderColor #2B6CB0
+skinparam ActivityBackgroundColor #E6F0FA
+skinparam ActorBorderColor #2D3748
+skinparam ActorBackgroundColor #EDF2F7
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam StartColor #2E7D32
+skinparam EndColor #C62828
+skinparam ActivityDiamondBackgroundColor #FFF5CC
+skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityBarColor #2D3748
+skinparam swimlaneBorderColor #2D3748
+skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneWidth same
+skinparam nodeSep 15
+skinparam rankSep 15
+skinparam wrapWidth 120
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title act Quy trình đối soát quyết toán (Cổng VNPAY)
+
+|Chủ khu phức hợp|
+|Hệ thống|
+|Quản trị hệ thống|
+
+|Chủ khu phức hợp|
+start
+:Theo dõi số dư tích lũy trên ví; <<#FFF2CC>>
+:Gửi yêu cầu quyết toán doanh thu; <<#FFF2CC>>
+
+|Hệ thống|
+:Khởi tạo yêu cầu quyết toán mới;
+fork
+  :Gửi thông báo đang chờ duyệtđến Chủ sân;
+fork again
+  :Gửi thông báo có yêu cầu mới\nđến Quản trị;
+end fork
+
+|Quản trị hệ thống|
+:Tiến hành kiểm duyệt và chuyển sang trạng thái đang xử lý; <<#FFF2CC>>
+
+|Hệ thống|
+:Cập nhật trạng thái đang xử lý\nvà gửi thông báo đến Chủ sân;
+
+|Quản trị hệ thống|
+if () then ([Phê duyệt])
+  :Thực hiện chuyển tiền thủ công\ncho chủ sân; <<#FFF2CC>>
+  :Xác nhận quyết toán; <<#FFF2CC>>
+  
+  |Hệ thống|
+  :Cập nhật trạng thái đã được thanh toán;
+  :Gửi thông báo thành công đến Chủ sân;
+else ([Từ chối])
+  |Quản trị hệ thống|
+  :Từ chối yêu cầu quyết toán\nvà ghi rõ lý do; <<#FFF2CC>>
+  
+  |Hệ thống|
+  :Hủy yêu cầu và hoàn lại số dư; <<#FADBD8>>
+  :Gửi thông báo từ chối đến Chủ sân;
+endif
+stop
+@enduml
+```
+
+##### b. Các bước tổng quát của quy trình
+1. **Bước 1: Tạm giữ doanh thu và trích phí:** Ngay khi khách đặt sân thanh toán thành công qua cổng VNPay, hệ thống tự động trích 10% phí dịch vụ nền tảng và ghi nhận doanh thu thuần còn lại vào số dư tích lũy (chờ rút) của chủ sân.
+2. **Bước 2: Cấu hình thụ hưởng:** Chủ sân thực hiện thiết lập và cập nhật thông tin tài khoản ngân hàng nội địa để làm căn cứ nhận tiền quyết toán.
+3. **Bước 3: Yêu cầu quyết toán:** Chủ sân gửi yêu cầu rút tiền. Hệ thống tự động gom toàn bộ các khoản doanh thu tích lũy thành một đợt quyết toán mới ở trạng thái chờ duyệt, đồng thời gửi thông báo real-time cho cả chủ sân và ban quản trị.
+4. **Bước 4: Kiểm tra và xử lý:** Quản trị hệ thống tiến hành đối soát dòng tiền trên cổng thanh toán, chuyển yêu cầu quyết toán sang trạng thái đang xử lý để bắt đầu thực hiện kiểm duyệt.
+5. **Bước 5: Hoàn tất quyết toán:** Ban quản trị đưa ra quyết định: phê duyệt giải ngân (thực hiện chuyển khoản ngân hàng, cập nhật mã giao dịch, và chuyển trạng thái đợt quyết toán sang đã thanh toán) hoặc từ chối yêu cầu (ghi nhận lý do từ chối, hủy đợt quyết toán, và hoàn trả toàn bộ số dư doanh thu về trạng thái tích lũy ban đầu để chủ sân có thể rút lại sau).
