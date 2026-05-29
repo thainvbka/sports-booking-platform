@@ -11,3 +11,5 @@ không dùng các từ phóng đại, thái quá, các từ thiếu khách quan,
 về quan điểm cá nhân như “tuyệt vời”, “cực hay”, “cực kỳ hữu ích”, v.v. Các câu
 văn cần được tối ưu hóa, đảm bảo rất khó để thể thêm hoặc bớt đi được dù chỉ một
 từ. Cách diễn đạt cần ngắn gọn, súc tích, không dài dòng
+
+ cần đặc biệt lưu ý cách hành văn, cần có ý tứ rõ ràng. Trong văn phong khoa học, không được dùng từ trong văn nói, không dùng các từ phóng đại, thái quá, các từ thiếu khách quan, thiên về cảm xúc, về quan điểm cá nhân như “tuyệt vời”, “cực hay”, “cực kỳ hữu ích”, v.v. Các câu văn cần được tối ưu hóa, đảm bảo rất khó để thể thêm hoặc bớt đi được dù chỉ một từ. Cách diễn đạt cần ngắn gọn, súc tích, không dài dòng.

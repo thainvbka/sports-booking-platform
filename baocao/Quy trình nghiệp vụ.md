@@ -61,7 +61,7 @@ Dưới đây là kết quả rà soát toàn bộ dự án (cả frontend và b
 
 ### === BIỂU ĐỒ HOẠT ĐỘNG TỔNG QUÁT (ACTIVITY DIAGRAMS) ===
 
-#### 1. Quy trình đặt sân một lần, mua kèm vật phẩm và thanh toán trực tuyến
+#### 1. Quy trình đặt sân và thanh toán
 
 ##### a. Sơ đồ hoạt động PlantUML tổng quát
 ```plantuml
@@ -95,7 +95,7 @@ title act Quy trình đặt sân và thanh toán
 
 |Người chơi|
 start
-:Lựa chọn sân\nvà dịch vụ đi kèm; <<#FFF2CC>>
+:Tìm kiếm và lựa chọn sân; <<#FFF2CC>>
 :Gửi yêu cầu\nđặt sân;
 
 |Hệ thống|

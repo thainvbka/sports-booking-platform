@@ -112,6 +112,7 @@ DIAGRAM PAGE 5: Page-5
 =========================================
 DIAGRAM PAGE 6: Trang-6
 =========================================
+Kiến trúc hệ thống
   - Người dùng
   - Nginx Reverse Proxy
   - UI Components React / Shadcn UI

@@ -154,22 +154,19 @@ Biểu đồ phân rã ở Hình 2.6 mô tả các chức năng quản lý tài 
 
 ### 2.2.7 Quy trình nghiệp vụ
 
-Nếu sản phẩm/hệ thống cần xây dựng có quy trình nghiệp vụ quan trọng/đáng
-chú ý, sinh viên cần mô tả và vẽ biểu đồ hoạt động minh họa quy trình nghiệp vụ
-đó. Sinh viên lưu ý đây không phải là luồng sự kiện của từng use case, mà là luồng
-hoạt động kết hợp nhiều use case để thực hiện một nghiệp vụ nào đó.
-Ví dụ, một hệ thống quản lý thư viện có quy trình nghiệp vụ mượn trả với mô tả
-sơ bộ như sau: Sinh viên làm thẻ mượn, sau đó sinh viên đăng ký mượn sách, thủ
-thư cho mượn, và cuối cùng sinh viên trả lại sách cho thư viện. Một hệ thống có
-thể có một vài quy trình nghiệp vụ quan trọng như vậy.
+#### 2.2.7.a Quy trình nghiệp vụ đặt sân và thanh toán
+![Quy trình nghiệp vụ đặt sân và thanh toán](/images/quytrinhdatsanvathanhtoan.png)
+
+#### 2.2.7.b Quy trình nghiệp vụ tạo và tham gia kèo đấu
+![Quy trình nghiệp vụ tạo và tham gia kèo đấu](/images/quytrinhtaovathamgiakeodau.png)
+
+#### 2.2.7.c Quy trình nghiệp vụ đăng ký và kích hoạt khu phức hợp
+![Quy trình nghiệp vụ đăng ký và kích hoạt khu phức hợp](/images/quytrinhdangkyvakichhoatkhuphuchop.png)
+
+#### 2.2.7.d Quy trình nghiệp vụ đối soát và quyết toán
+![Quy trình nghiệp vụ đối soát và quyết toán](/images/quytrinhdoisoatquyettoan.png)
 
 ## 2.3 Đặc tả chức năng
-
-Sinh viên lựa chọn từ 4 đến 7 use case quan trọng nhất của đồ án để đặc tả chi
-tiết. Mỗi đặc tả bao gồm ít nhất các thông tin sau: (i) Tên use case, (ii) Luồng sự
-kiện (chính và phát sinh), (iii) Tiền điều kiện, và (iv) Hậu điều kiện. Sinh viên chỉ
-vẽ bổ sung biểu đồ hoạt động khi đặc tả use case phức tạp.
-
 ### 2.3.1 Đặc tả use case A
 
 ### 2.3.2 Đặc tả use case B
@@ -217,32 +214,23 @@ phụ lục A.7)
 ### 4.1.1 Lựa chọn kiến trúc phần mềm
 
 Mục này có độ dài từ một đến ba trang. Sinh viên cần lựa chọn kiến trúc phần
-mềm cho ứng dụng của mình như: kiến trúc ba lớp MVC, MVP, SOA, Microservice, v.v. rồi giải thích sơ bộ về kiến trúc đó (không giải thích chi tiết/dài dòng). Sử
-dụng kiến trúc phần mềm đã chọn ở trên, sinh viên mô tả kiến trúc cụ thể cho ứng
-dụng của mình. Gợi ý: sinh viên áp dụng lý thuyết chung vào hệ thống/sản phẩm
-của mình như thế nào, có thay đổi, bổ sung hoặc cải tiến gì không. Ví dụ, thành
-phần M trong kiến trúc lý thuyết MVC sẽ là những thành phần cụ thể nào (ví dụ: là
-interface I + class C1 + class C2, v.v.) trong kiến trúc phần mềm của sinh viên.
+mềm cho ứng dụng của mình như: kiến trúc ba lớp MVC, MVP, SOA, Microservice, v.v. rồi giải thích sơ bộ về kiến trúc đó (không giải thích chi tiết/dài dòng). Sử dụng kiến trúc phần mềm đã chọn ở trên, sinh viên mô tả kiến trúc cụ thể cho ứng dụng của mình. Gợi ý: sinh viên áp dụng lý thuyết chung vào hệ thống/sản phẩm của mình như thế nào, có thay đổi, bổ sung hoặc cải tiến gì không. Ví dụ, thành phần M trong kiến trúc lý thuyết MVC sẽ là những thành phần cụ thể nào (ví dụ: là interface I + class C1 + class C2, v.v.) trong kiến trúc phần mềm của sinh viên.
 
 ### 4.1.2 Thiết kế tổng quan
+![Thiết kế tổng quan](/images/kientruc.png)
 
-### 4.1.3 Thiết kế chi tiết gói
+<!-- ### 4.1.3 Thiết kế chi tiết gói -->
 
 ## 4.2 Thiết kế chi tiết
 
 ### 4.2.1 Thiết kế giao diện
 
-Phần này có độ dài từ hai đến ba trang. Sinh viên đặc tả thông tin về màn hình
-mà ứng dụng của mình hướng tới, bao gồm độ phân giải màn hình, kích thước màn
-hình, số lượng màu sắc hỗ trợ, v.v. Tiếp đến, sinh viên đưa ra các thống nhất/chuẩn
-hóa của mình khi thiết kế giao diện như thiết kế nút, điều khiển, vị trí hiển thị thông
-điệp phản hồi, phối màu, v.v. Sau cùng sinh viên đưa ra một số hình ảnh minh họa
-thiết kế giao diện cho các chức năng quan trọng nhất. Lưu ý, sinh viên không nhầm
-lẫn giao diện thiết kế với giao diện của sản phẩm sau cùng
+Phần này có độ dài từ hai đến ba trang. Sinh viên đặc tả thông tin về màn hình mà ứng dụng của mình hướng tới, bao gồm độ phân giải màn hình, kích thước màn hình, số lượng màu sắc hỗ trợ, v.v. Tiếp đến, sinh viên đưa ra các thống nhất/chuẩn hóa của mình khi thiết kế giao diện như thiết kế nút, điều khiển, vị trí hiển thị thông điệp phản hồi, phối màu, v.v. Sau cùng sinh viên đưa ra một số hình ảnh minh họa thiết kế giao diện cho các chức năng quan trọng nhất. Lưu ý, sinh viên không nhầm lẫn giao diện thiết kế với giao diện của sản phẩm sau cùng
 
 ### 4.2.2 Thiết kế lớp
 
 ### 4.2.3 Thiết kế cơ sở dữ liệu
+![Biểu đổ thực thể liên kết](/images/sports-booking.pdf)
 
 Phần này có độ dài từ hai đến bốn trang. Sinh viên thiết kế, vẽ và giải thích biểu
 đồ thực thể liên kết (E-R diagram). Từ đó, sinh viên thiết kế cơ sở dữ liệu tùy theo
