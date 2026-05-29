@@ -232,9 +232,160 @@ Phần này có độ dài từ hai đến ba trang. Sinh viên đặc tả thô
 ### 4.2.3 Thiết kế cơ sở dữ liệu
 ![Biểu đổ thực thể liên kết](/images/sports-booking.pdf)
 
-Phần này có độ dài từ hai đến bốn trang. Sinh viên thiết kế, vẽ và giải thích biểu
-đồ thực thể liên kết (E-R diagram). Từ đó, sinh viên thiết kế cơ sở dữ liệu tùy theo
-hệ quản trị cơ sở dữ liệu mà mình sử dụng (SQL, NoSQL, Firebase, v.v.)
+Hệ thống sử dụng hệ quản trị cơ sở dữ liệu quan hệ PostgreSQL làm nền tảng lưu trữ dữ liệu bền vững, phối hợp cùng công cụ Prisma ORM để quản lý các thao tác truy xuất dữ liệu trong mã nguồn. Cấu trúc thực thể liên kết được thiết kế tối ưu hóa nhằm đáp ứng toàn bộ các yêu cầu phi chức năng về tính toàn vẹn dữ liệu, hiệu năng truy vấn và khả năng mở rộng hệ thống.
+
+#### a. Danh mục các thực thể dữ liệu tổng quan
+
+Dưới đây là danh sách toàn bộ các bảng dữ liệu được thiết kế và triển khai trong cơ sở dữ liệu của hệ thống:
+
+| STT | Tên bảng | Mô tả chức năng |
+| :---: | :--- | :--- |
+| 1 | `Account` | Lưu trữ tài khoản và thông tin cá nhân dùng chung. |
+| 2 | `Admin` | Lưu trữ tài khoản quản trị viên hệ thống. |
+| 3 | `Owner` | Lưu trữ thông tin đối tác chủ sân và cấu hình thụ hưởng. |
+| 4 | `Player` | Lưu trữ thông tin tài khoản người chơi. |
+| 5 | `RefreshToken` | Quản lý mã làm mới phiên đăng nhập. |
+| 6 | `Complex` | Lưu trữ thông tin khu phức hợp thể thao. |
+| 7 | `SubField` | Lưu trữ danh sách các sân đấu con. |
+| 8 | `PricingRule` | Thiết lập bảng giá thuê sân theo khung giờ. |
+| 9 | `RecurringBooking` | Lưu trữ cấu hình lịch đặt sân định kỳ. |
+| 10 | `Booking` | Lưu trữ thông tin giao dịch đặt sân. |
+| 11 | `Payment` | Lưu trữ thông tin trạng thái giao dịch thanh toán. |
+| 12 | `Notification` | Lưu trữ thông báo hệ thống phân phối cho người dùng. |
+| 13 | `Product` | Quản lý sản phẩm bán lẻ và trang thiết bị cho thuê kèm. |
+| 14 | `BookingAddon` | Chi tiết sản phẩm thuê kèm của lượt đặt sân. |
+| 15 | `Match` | Lưu trữ thông tin kèo đấu ghép cặp. |
+| 16 | `MatchParticipant` | Quản lý thành viên đăng ký tham gia kèo ghép đấu. |
+| 17 | `Review` | Lưu trữ phản hồi và đánh giá từ phía người chơi. |
+| 18 | `OwnerPayout` | Phân tách chi tiết dòng tiền doanh thu đối soát. |
+| 19 | `PayoutBatch` | Quản lý các đợt yêu cầu và lịch sử quyết toán tài chính. |
+
+Bảng 4.2: Danh sách các bảng dữ liệu trong hệ thống
+
+#### b. Mô tả chi tiết cấu trúc các bảng quan trọng
+
+Để đảm bảo tính minh bạch và chuẩn hóa trong thiết kế vật lý cơ sở dữ liệu, dưới đây là đặc tả chi tiết cấu trúc trường của các thực thể cốt lõi trong hệ thống:
+
+##### * Thực thể tài khoản người dùng (`Account`)
+
+Bảng `Account` đóng vai trò lưu trữ tập trung thông tin danh tính của mọi tài khoản đăng nhập vào hệ thống, đảm bảo tính bảo mật và kiểm soát phân quyền tập trung.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của tài khoản trong hệ thống. |
+| 2 | `email` | VARCHAR(255) | Địa chỉ thư điện tử dùng để đăng nhập, có ràng buộc duy nhất (Unique). |
+| 3 | `password` | TEXT | Mật khẩu truy cập đã được mã hóa bằng thuật toán băm bảo mật. |
+| 4 | `full_name` | VARCHAR(100) | Họ và tên đầy đủ của chủ sở hữu tài khoản. |
+| 5 | `phone_number` | VARCHAR(20) | Số điện thoại liên lạc cá nhân phục vụ xác thực giao dịch. |
+| 6 | `avatar` | TEXT | Đường dẫn lưu trữ hình ảnh đại diện của người dùng. |
+| 7 | `email_verified` | BOOLEAN | Trạng thái xác minh địa chỉ thư điện tử đã hoàn thành hay chưa. |
+
+Bảng 4.3: Mô tả chi tiết cấu trúc bảng Account
+
+##### * Thực thể khu phức hợp thể thao (`Complex`)
+
+Bảng `Complex` lưu trữ thông tin thực thể cơ sở vật chất của đối tác sở hữu, đóng vai trò hạt nhân liên kết các sân đấu con và các quy tắc hoạt động.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của khu phức hợp thể thao. |
+| 2 | `owner_id` | UUID | Khóa ngoại, liên kết đến chủ thể sở hữu thuộc bảng `Owner`. |
+| 3 | `complex_name` | VARCHAR(255) | Tên thương mại hiển thị của khu phức hợp thể thao trên nền tảng. |
+| 4 | `complex_address` | TEXT | Địa chỉ địa lý chi tiết phục vụ chức năng tìm kiếm định vị. |
+| 5 | `status` | ComplexStatus | Trạng thái kiểm duyệt và vận hành (DRAFT, PENDING, ACTIVE, REJECTED). |
+| 6 | `verification_docs` | JSON | Lưu trữ chứng từ pháp lý đính kèm chứng minh quyền sở hữu khu đất. |
+| 7 | `sport_types` | VARCHAR[] | Mảng lưu trữ danh sách các môn thể thao được hỗ trợ tại tổ hợp. |
+| 8 | `avg_rating` | DECIMAL(3,2) | Điểm số đánh giá trung bình phản hồi từ phía khách hàng. |
+
+Bảng 4.4: Mô tả chi tiết cấu trúc bảng Complex
+
+##### * Thực thể lịch đặt sân đấu (`Booking`)
+
+Bảng `Booking` là trung tâm của động cơ đặt chỗ, quản lý toàn bộ các giao dịch thuê sân, ràng buộc thời gian để ngăn chặn xung đột lịch đặt.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của lượt đặt sân. |
+| 2 | `start_time` | TIMESTAMPTZ | Thời điểm bắt đầu sử dụng sân con (hỗ trợ múi giờ thực tế). |
+| 3 | `end_time` | TIMESTAMPTZ | Thời điểm kết thúc sử dụng sân con (hỗ trợ múi giờ thực tế). |
+| 4 | `total_price` | DECIMAL(12,2) | Tổng số tiền cần thanh toán cho lượt thuê (sau khi tính biểu giá và addon). |
+| 5 | `status` | BookingStatus | Trạng thái xử lý lượt đặt (PENDING, CONFIRMED, CANCELED, COMPLETED). |
+| 6 | `player_id` | UUID | Khóa ngoại, liên kết đến tài khoản người chơi thuộc bảng `Player`. |
+| 7 | `sub_field_id` | UUID | Khóa ngoại, liên kết đến đối tượng sân đấu con thuộc bảng `SubField`. |
+| 8 | `payment_id` | UUID | Khóa ngoại, tham chiếu đến giao dịch thanh toán thuộc bảng `Payment`. |
+| 9 | `recurring_booking_id` | UUID | Khóa ngoại, tham chiếu đến cấu hình đặt định kỳ thuộc bảng `RecurringBooking`. |
+
+Bảng 4.5: Mô tả chi tiết cấu trúc bảng Booking
+
+##### * Thực thể sân đấu thành viên (`SubField`)
+
+Bảng `SubField` lưu trữ danh mục các sân đấu thành viên thuộc khu phức hợp, đóng vai trò lưu trữ sức chứa và véc-tơ đặc trưng phục vụ thuật toán gợi ý sân.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của đối tượng sân con. |
+| 2 | `complex_id` | UUID | Khóa ngoại, liên kết đến khu phức hợp quản lý thuộc bảng `Complex`. |
+| 3 | `sub_field_name` | VARCHAR(255) | Tên định danh hiển thị của sân đấu thành viên. |
+| 4 | `capacity` | SMALLINT | Sức chứa tối đa của người chơi thi đấu trên sân. |
+| 5 | `sub_field_image` | TEXT | Đường dẫn lưu trữ hình ảnh thực tế của sân đấu con. |
+| 6 | `sport_type` | SportType | Loại hình bộ môn thể thao tương thích của sân đấu. |
+| 7 | `isDelete` | BOOLEAN | Đánh dấu trạng thái xóa mềm để lưu vết dữ liệu lịch sử. |
+| 8 | `avg_rating` | DECIMAL(3,2) | Điểm số đánh giá chất lượng trung bình từ người chơi. |
+| 9 | `embedding` | vector(8) | Véc-tơ đặc trưng 8 chiều phục vụ chức năng tìm kiếm gợi ý sân nâng cao. |
+| 10 | `embedding_updated_at` | TIMESTAMPTZ | Thời gian cập nhật gần nhất của véc-tơ đặc trưng tương ứng. |
+
+Bảng 4.6: Mô tả chi tiết cấu trúc bảng SubField
+
+##### * Thực thể kèo ghép đấu thể thao (`Match`)
+
+Bảng `Match` hỗ trợ tính năng kết nối cộng đồng, cho phép người chơi chia sẻ lịch đặt sân con để tuyển thêm thành viên thi đấu cùng.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của kèo đấu ghép cặp. |
+| 2 | `booking_id` | UUID | Khóa ngoại, liên kết trực tiếp đến lượt đặt sân thuộc bảng `Booking`. |
+| 3 | `creator_id` | UUID | Khóa ngoại, định danh người chơi khởi tạo kèo đấu thuộc bảng `Player`. |
+| 4 | `sport_type` | SportType | Phân loại bộ môn thi đấu thể thao của kèo ghép cặp. |
+| 5 | `skill_level` | MatchSkillLevel | Tiêu chuẩn trình độ yêu cầu đối với thành viên (BEGINNER, INTERMEDIATE, ADVANCED). |
+| 6 | `title` | VARCHAR(200) | Tiêu đề mô tả ngắn gọn thông tin về kèo đấu ghép cặp. |
+| 7 | `slots_needed` | SMALLINT | Tổng số lượng vị trí tuyển thêm cần thiết của trận đấu. |
+| 8 | `slots_filled` | SMALLINT | Số lượng thành viên đăng ký đã được chấp thuận tham gia kèo. |
+| 9 | `status` | MatchStatus | Trạng thái tuyển thành viên (OPEN, FULL, CLOSED, EXPIRED, CANCELED). |
+
+Bảng 4.7: Mô tả chi tiết cấu trúc bảng Match
+
+##### * Thực thể đối soát dòng tiền giao dịch (`OwnerPayout`)
+
+Bảng `OwnerPayout` lưu trữ chi tiết việc đối soát dòng tiền thu từ cổng thanh toán của từng giao dịch đơn lẻ, phân tách doanh thu thô, phí hệ thống và doanh thu ròng.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của bản ghi giao dịch dòng tiền. |
+| 2 | `owner_id` | UUID | Khóa ngoại, tham chiếu đến chủ sở hữu nhận thụ hưởng thuộc bảng `Owner`. |
+| 3 | `payment_id` | UUID | Khóa ngoại, liên kết đến hóa đơn thanh toán gốc thuộc bảng `Payment`. |
+| 4 | `batch_id` | UUID | Khóa ngoại, tham chiếu đến đợt quyết toán tài chính thuộc bảng `PayoutBatch`. |
+| 5 | `total_amount` | DECIMAL(12,2) | Tổng doanh thu thô chưa khấu trừ phí dịch vụ của lượt giao dịch. |
+| 6 | `platform_fee` | DECIMAL(12,2) | Khoản phí trung gian được khấu trừ giữ lại cho hệ thống (theo cấu hình tỷ lệ %). |
+| 7 | `payout_amount` | DECIMAL(12,2) | Doanh thu ròng thực nhận của đối tác chủ sân sau khi đã khấu trừ phí. |
+| 8 | `status` | PayoutStatus | Trạng thái quyết toán dòng tiền của giao dịch (PENDING, REQUESTED, PAID, CANCELLED). |
+
+Bảng 4.8: Mô tả chi tiết cấu trúc bảng OwnerPayout
+
+##### * Thực thể đợt quyết toán tài chính (`PayoutBatch`)
+
+Bảng `PayoutBatch` lưu trữ dữ liệu đối soát tài chính định kỳ giữa Ban quản trị hệ thống và các Đối tác chủ sân, quản lý lịch sử chuyển tiền thực tế.
+
+| STT | Tên trường | Kiểu dữ liệu | Mô tả |
+| :---: | :--- | :--- | :--- |
+| 1 | `id` | UUID | Khóa chính, định danh duy nhất của đợt quyết toán tài chính. |
+| 2 | `owner_id` | UUID | Khóa ngoại, định danh chủ sân nhận tiền thuộc bảng `Owner`. |
+| 3 | `total_payout` | DECIMAL(12,2) | Tổng số tiền thực tế hệ thống thực hiện quyết toán chi trả cho chủ sân. |
+| 4 | `status` | PayoutStatus | Trạng thái xử lý quyết toán (REQUESTED, PROCESSING, PAID, CANCELLED). |
+| 5 | `payout_period` | VARCHAR(50) | Nội dung ghi nhận thời gian và chu kỳ kế toán của đợt quyết toán. |
+| 6 | `transaction_ref` | VARCHAR(255) | Mã giao dịch đối soát ngân hàng phục vụ lưu trữ biên lai chuyển khoản thủ công. |
+| 7 | `note` | TEXT | Ghi chú phản hồi đối soát chi tiết của quản trị viên hệ thống. |
+
+Bảng 4.9: Mô tả chi tiết cấu trúc bảng PayoutBatch
 
 ## 4.3 Xây dựng ứng dụng
 
