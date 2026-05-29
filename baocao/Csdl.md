@@ -33,7 +33,7 @@ Dưới đây là toàn bộ mã nguồn LaTeX đã được sửa đổi triệ
 15 & Match & Lưu trữ thông tin kèo đấu ghép cặp. \\ \hline
 16 & MatchParticipant & Quản lý thành viên đăng ký tham gia kèo ghép đấu. \\ \hline
 17 & Review & Lưu trữ phản hồi và đánh giá từ phía người chơi. \\ \hline
-18 & OwnerPayout & Phân tách chi tiết dòng tiền doanh thu đối soát. \\ \hline
+18 & OwnerPayout & Quản lý công nợ và chi tiết doanh thu chi trả cho chủ sân. \\ \hline
 19 & PayoutBatch & Quản lý các đợt yêu cầu và lịch sử quyết toán tài chính. \\ \hline
 \end{tabular}
 \end{table}
@@ -216,7 +216,7 @@ Dưới đây là toàn bộ mã nguồn LaTeX đã được sửa đổi triệ
 2 & owner\_id & UUID & Khóa ngoại, liên kết bảng Owner. \\ \hline
 3 & total\_payout & DECIMAL(12,2) & Tổng số tiền quyết toán. \\ \hline
 4 & status & PayoutStatus & Trạng thái xử lý quyết toán đợt. \\ \hline
-5 & payout\_period & VARCHAR(50) & Chu kỳ kế toán quyết toán. \\ \hline
+5 & payout\_period & VARCHAR(50) & Tiêu đề hiển thị của đợt quyết toán. \\ \hline
 6 & transaction\_ref & VARCHAR(255) & Mã giao dịch đối soát ngân hàng. \\ \hline
 7 & note & TEXT & Ghi chú từ quản trị viên. \\ \hline
 \end{tabular}
