@@ -238,11 +238,19 @@ Bảng 2.6 thể hiện đặc tả use case quản lý công nợ và quyết t
 
 ## 2.4 Yêu cầu phi chức năng
 
-Trong phần này, sinh viên đưa ra các yêu cầu khác nếu có, bao gồm các yêu cầu phi chức năng như hiệu năng, độ tin cậy, tính dễ dùng, tính dễ bảo trì, hoặc các yêu cầu về mặt kỹ thuật như về CSDL, công nghệ sử dụng, v.v.
+Yêu cầu phi chức năng của hệ thống tập trung vào hiệu năng xử lý, độ tin cậy của giao dịch, bảo mật thông tin và khả năng tương thích giao diện. Các ràng buộc này được thiết lập làm tiêu chí kiểm thử nhằm đảm bảo chất lượng vận hành ổn định của nền tảng khi đưa vào sử dụng thực tế.
+
+Về hiệu năng và tải, thời gian phản hồi trung bình của các yêu cầu khi người dùng thực hiện truy vấn danh sách khu phức hợp, thông tin chi tiết sân hoặc tìm kiếm lịch trống không vượt quá 1 giây trong điều kiện tải thông thường. Phân hệ tính toán và đưa ra danh sách đề xuất sân cá nhân hóa cho người chơi cần hoàn thành xử lý dữ liệu và trả kết quả hiển thị trong thời gian dưới 3 giây kể từ thời điểm nhận được yêu cầu từ máy khách.
+
+Về độ tin cậy và tính nhất quán dữ liệu, hệ thống bắt buộc phải kiểm soát hiện tượng đặt chỗ đồng thời, đảm bảo không xảy ra trạng thái chồng lấn khung giờ của cùng một sân con. Đối với các lượt đặt sân trực tuyến chưa hoàn tất thanh toán, hệ thống yêu cầu thiết lập giới hạn thời gian giữ chỗ tạm thời. Quá thời hạn này, trạng thái lượt đặt phải tự động chuyển sang hủy bỏ nhằm giải phóng khung giờ trống cho người chơi khác, tránh hiện tượng chiếm dụng tài nguyên bất hợp lý.
+
+Về bảo mật và phân quyền, toàn bộ thông tin tài khoản bao gồm mật khẩu và thông tin giao dịch tài chính phải được mã hóa an toàn trước khi lưu trữ vào cơ sở dữ liệu. Quy trình xác thực thông tin và kiểm tra quyền hạn phải được thực thi nghiêm ngặt, đảm bảo các tài nguyên dữ liệu và chức năng của từng nhóm tác nhân được phân tách rõ ràng và chỉ được truy cập đúng phạm vi quyền hạn được cấp phép.
+
+Về tính khả dụng và khả năng tương thích, giao diện ứng dụng web phải thiết kế tương thích linh hoạt, hiển thị và hoạt động ổn định trên cả màn hình máy tính và thiết bị di động. Đồng thời, hệ thống phải hỗ trợ thông báo thời gian thực đến người dùng ngay trên màn hình hiển thị mà không yêu cầu thực hiện tải lại trang thủ công.
 
 ## Kết luận chương 2
 
-(Phần tổng kết chương này sẽ được tự động hoàn thiện nội dung sau khi viết xong các mục 2.3 và 2.4).
+Chương 2 đã hoàn thành việc khảo sát hiện trạng nghiệp vụ đặt sân thể thao thực tế và phân tích chi tiết các yêu cầu của hệ thống. Thông qua việc phân rã các biểu đồ use case tổng quát và đặc tả sáu use case cốt lõi, hành vi và quy trình tương tác của các nhóm tác nhân đã được mô tả cụ thể. Đồng thời, các yêu cầu phi chức năng về hiệu năng, độ tin cậy và bảo mật dữ liệu cũng được xác lập làm tiêu chuẩn đo lường kỹ thuật. Đây là tiền đề trực tiếp để triển khai lựa chọn nền tảng công nghệ, thiết kế kiến trúc phần mềm và xây dựng cơ sở dữ liệu trong các chương tiếp theo.
 
 # CHƯƠNG 3. NỀN TẢNG LÝ THUYẾT VÀ CÔNG NGHỆ SỬ DỤNG
 
