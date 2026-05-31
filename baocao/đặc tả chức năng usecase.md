@@ -36,15 +36,14 @@ Yêu cầu về mức độ chi tiết:
 #### a. Bảng đặc tả chức năng (Định dạng Markdown)
 
 | Thành phần đặc tả | Nội dung mô tả chi tiết |
-| :--- | :--- |
-| **Tên Use Case** | Đặt sân |
-| **Mã Use Case** | UC-01 |
+|-------------------|-------------------------|
+| **Tên Use Case** | Quản lý đặt sân |
 | **Tác nhân** | Người chơi (Player) |
-| **Mục đích sử dụng** | Cho phép người chơi tìm kiếm sân trống, đặt sân, thuê vật phẩm đi kèm và thanh toán trực tuyến. |
-| **Tiền điều kiện** | Tài khoản người chơi và cụm sân được chọn đang hoạt động bình thường. |
-| **Luồng chính** | 1. Người chơi chọn cụm sân, ngày chơi và xem sơ đồ sân trống.<br>2. Hệ thống hiển thị sơ đồ các khung giờ trống và bảng giá thuê tương ứng.<br>3. Người chơi chọn giờ chơi, chọn sân con và nhấn tiếp tục.<br>4. Hệ thống hiển thị danh sách các vật phẩm đi kèm khả dụng của cụm sân.<br>5. Người chơi chọn số lượng vật phẩm cần thuê và nhấn xác nhận.<br>6. Hệ thống kiểm tra giờ trống, tồn kho vật phẩm và tạo lượt đặt tạm thời.<br>7. Hệ thống giữ chỗ trong 10 phút và hiển thị hóa đơn tạm tính.<br>8. Người chơi xác nhận hóa đơn và chọn thanh toán trực tuyến.<br>9. Hệ thống chuyển hướng người chơi đến cổng thanh toán liên kết.<br>10. Người chơi thực hiện thanh toán trực tuyến thành công.<br>11. Hệ thống cập nhật trạng thái lịch đặt thành công và gửi thông báo xác nhận. |
-| **Luồng thay thế** | - **Trùng lịch đặt (bước 6):** Hệ thống báo trùng giờ đặt và yêu cầu người chơi chọn giờ khác.<br>- **Hết vật phẩm (bước 6):** Hệ thống báo hết hàng và yêu cầu điều chỉnh lại số lượng.<br>- **Quá hạn thanh toán (bước 8-10):** Quá 10 phút giữ chỗ chưa thanh toán, hệ thống tự động hủy lượt đặt tạm thời và khôi phục tồn kho vật phẩm. |
-| **Hậu điều kiện** | Lịch đặt được ghi nhận; tồn kho cập nhật chính xác; hóa đơn giao dịch được lưu trữ. |
+| **Mục đích sử dụng** | Tìm kiếm sân trống, đặt giờ chơi, thuê hoặc mua vật phẩm đi kèm và thanh toán trực tuyến. |
+| **Tiền điều kiện** | Tài khoản người chơi và sân được chọn đang hoạt động bình thường. |
+| **Luồng chính** | 1. Người chơi chọn sân và ngày chơi.<br>2. Hệ thống hiển thị các khung giờ trống và bảng giá thuê.<br>3. Người chơi chọn giờ chơi.<br>4. Hệ thống hiển thị danh sách các vật phẩm đi kèm khả dụng.<br>5. Người chơi chọn số lượng vật phẩm cần mua hoặc thuê và xác nhận.<br>6. Hệ thống kiểm tra giờ trống, tồn kho và tạo lượt đặt tạm thời.<br>7. Hệ thống giữ chỗ trong 10 phút, hiển thị hóa đơn tạm tính.<br>8. Người chơi xác nhận hóa đơn và chọn thanh toán trực tuyến.<br>9. Hệ thống chuyển hướng người chơi đến cổng thanh toán.<br>10. Người chơi thực hiện thanh toán trực tuyến thành công.<br>11. Hệ thống cập nhật trạng thái lịch đặt thành công và gửi thông báo. |
+| **Luồng thay thế** | - **Trùng giờ (bước 6):** Hệ thống báo trùng lịch và yêu cầu chọn giờ khác.<br>- **Hết vật phẩm (bước 6):** Hệ thống báo hết hàng và yêu cầu chỉnh sửa số lượng.<br>- **Quá hạn (bước 8-10):** Quá 10 phút giữ chỗ chưa thanh toán, hệ thống tự động hủy lượt đặt tạm thời và khôi phục tồn kho. |
+| **Hậu điều kiện** | Lịch đặt được ghi nhận, tồn kho được cập nhật và thông tin thanh toán được lưu trữ. |
 
 #### b. Mã nguồn bảng đặc tả (Định dạng LaTeX)
 
@@ -59,7 +58,6 @@ Yêu cầu về mức độ chi tiết:
 \hline
 \textbf{Thành phần đặc tả} & \textbf{Nội dung mô tả chi tiết} \\ \hline
 \textbf{Tên Use Case} & Quản lý đặt sân \\ \hline
-\textbf{Mã Use Case} & UC-01 \\ \hline
 \textbf{Tác nhân} & \raggedright\arraybackslash Người chơi (Player) \\ \hline
 \textbf{Mục đích sử dụng} & \raggedright\arraybackslash Tìm kiếm sân trống, đặt giờ chơi, thuê vật phẩm đi kèm và thanh toán trực tuyến. \\ \hline
 \textbf{Tiền điều kiện} & \raggedright\arraybackslash Tài khoản người chơi và cụm sân được chọn hoạt động bình thường. \\ \hline
@@ -91,15 +89,14 @@ Yêu cầu về mức độ chi tiết:
 #### a. Bảng đặc tả chức năng (Định dạng Markdown)
 
 | Thành phần đặc tả | Nội dung mô tả chi tiết |
-| :--- | :--- |
+|-------------------|-------------------------|
 | **Tên Use Case** | Tham gia, quản lý kèo đấu |
-| **Mã Use Case** | UC-02 |
 | **Tác nhân** | Người chơi (Player) |
-| **Mục đích sử dụng** | Cho phép người chơi tìm kiếm kèo đấu, gửi yêu cầu ghép cặp, và cho phép chủ kèo duyệt thành viên hoặc rời khỏi kèo đấu. |
+| **Mục đích sử dụng** | Tìm kiếm kèo đấu, gửi yêu cầu ghép cặp, duyệt thành viên và rời khỏi kèo đấu. |
 | **Tiền điều kiện** | Tài khoản người chơi đang hoạt động bình thường. |
-| **Luồng chính** | 1. Người chơi xem danh sách kèo đấu công khai, lọc theo trình độ.<br>2. Hệ thống hiển thị danh sách kèo đấu kèm thông tin chi tiết.<br>3. Người chơi chọn kèo đấu phù hợp và nhấn đăng ký tham gia.<br>4. Hệ thống hiển thị biểu mẫu điền thông tin tự giới thiệu ngắn.<br>5. Người chơi nhập thông tin tự giới thiệu và nhấn gửi yêu cầu.<br>6. Hệ thống kiểm tra điều kiện thời gian đăng ký và tránh trùng kèo.<br>7. Hệ thống lưu yêu cầu ở trạng thái chờ duyệt và gửi thông báo cho chủ kèo.<br>8. Chủ kèo truy cập danh sách yêu cầu ứng tuyển của kèo đấu tương ứng.<br>9. Hệ thống hiển thị danh sách các ứng viên kèm theo lời tự giới thiệu.<br>10. Chủ kèo xem xét thông tin ứng viên và nhấn phê duyệt ứng viên phù hợp.<br>11. Hệ thống cập nhật trạng thái đã tham gia, tăng số lượng vị trí điền đầy và thông báo cho người chơi. |
-| **Luồng thay thế** | - **Từ chối ứng viên (bước 10):** Chủ kèo chọn từ chối. Hệ thống cập nhật trạng thái bị từ chối và gửi thông báo cho ứng viên.<br>- **Kèo đấu đủ người (bước 11):** Khi đủ số lượng người chơi, hệ thống tự động khóa đăng ký kèo đấu.<br>- **Rời kèo đấu:** Người chơi xin rời kèo đấu trước giờ đấu. Hệ thống cập nhật giải phóng vị trí trống để đón nhận ứng viên mới. |
-| **Hậu điều kiện** | Yêu cầu kèo đấu được cập nhật; số lượng chỗ trống đồng bộ; các bên liên quan nhận được thông báo kết quả. |
+| **Luồng chính** | 1. Người chơi xem danh sách kèo đấu công khai.<br>2. Người chơi chọn kèo đấu phù hợp và nhấn đăng ký tham gia.<br>3. Hệ thống hiển thị biểu mẫu điền thông tin giới thiệu.<br>4. Người chơi nhập thông tin giới thiệu và nhấn gửi yêu cầu.<br>5. Hệ thống kiểm tra thời gian đăng ký và tránh đăng ký trùng kèo.<br>6. Hệ thống ghi nhận yêu cầu chờ duyệt và thông báo cho chủ kèo.<br>7. Chủ kèo truy cập danh sách yêu cầu ứng tuyển của kèo đấu.<br>8. Hệ thống hiển thị danh sách các ứng viên kèm lời giới thiệu.<br>9. Chủ kèo xem xét thông tin và nhấn phê duyệt ứng viên phù hợp.<br>10. Hệ thống cập nhật trạng thái đã tham gia và gửi thông báo xác nhận. |
+| **Luồng thay thế** | - **Từ chối ứng viên (bước 10):** Chủ kèo từ chối. Hệ thống cập nhật trạng thái bị từ chối và gửi thông báo cho ứng viên.<br>- **Kèo đấu đủ người (bước 11):** Khi đủ số người chơi, hệ thống tự động khóa đăng ký.<br>- **Rời kèo đấu:** Người chơi xin rời kèo đấu. Hệ thống giải phóng chỗ trống để nhận ứng viên mới. |
+| **Hậu điều kiện** | Yêu cầu kèo đấu được cập nhật; số lượng chỗ trống được đồng bộ; thông báo được gửi đến các bên liên quan. |
 
 #### b. Mã nguồn bảng đặc tả (Định dạng LaTeX)
 
