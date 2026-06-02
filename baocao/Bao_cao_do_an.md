@@ -383,46 +383,150 @@ Chương 3 đã làm rõ các cơ sở lý thuyết và công nghệ nền tản
 
 ### 4.1.1 Lựa chọn kiến trúc phần mềm
 
-Hệ thống đặt sân thể thao đa chủ thể được thiết kế theo mô hình kiến trúc Khách - Chủ (Client-Server) kết hợp phân chia ba lớp chức năng (3-Tier Architecture). Lý do lựa chọn mô hình này xuất phát từ nhu cầu phân tách độc lập giữa phần giao diện người dùng và phần xử lý logic nghiệp vụ. Cách tiếp cận này giúp nhóm phát triển có thể xây dựng, bảo trì và nâng cấp các thành phần độc lập mà không làm ảnh hưởng đến hoạt động của toàn bộ hệ thống. Mô hình kết nối chi tiết giữa các tầng chức năng được mô tả trực quan tại Biểu đồ thiết kế kiến trúc tổng quan ở phần 4.1.2 (Hình 4.1).
+Kiến trúc phân lớp - Layered Architecture là một trong những kiến trúc phần mềm được sử dụng phổ biến trong các hệ thống hiện nay. Kiến trúc này chia hệ thống thành các tầng có trách nhiệm riêng biệt, trong đó mỗi tầng chỉ tập trung giải quyết một nhóm chức năng nhất định và tương tác với các tầng liên quan thông qua các giao diện đã được xác định trước. Việc phân chia này giúp giảm sự phụ thuộc giữa các thành phần, đồng thời tạo thuận lợi cho quá trình phát triển, bảo trì và mở rộng hệ thống.
 
-Trong đó, phần xử lý nghiệp vụ phía Backend được tổ chức theo cấu trúc Controller - Service - Repository. Đây là biến thể cải tiến từ mô hình MVC (Model-View-Controller) truyền thống, với phần View được giao hoàn toàn cho ứng dụng Frontend độc lập đảm nhận. Cấu trúc này giúp phân định rõ ràng vai trò của từng lớp mã nguồn: lớp Controller tiếp nhận yêu cầu, lớp Service xử lý nghiệp vụ, và lớp Repository đảm nhận nhiệm vụ tương tác trực tiếp với cơ sở dữ liệu.
+Đối với hệ thống quản lý và đặt lịch sân thể thao, em lựa chọn kiến trúc phân lớp, cụ thể là kiến trúc ba lớp. Kiến trúc này bao gồm ba tầng chính: tầng trình diễn (Presentation Tier), tầng xử lý nghiệp vụ (Business Logic Tier) và tầng dữ liệu (Data Tier). Mỗi tầng đảm nhận một vai trò riêng và phối hợp với nhau để thực hiện các chức năng của hệ thống. 
 
-Về mặt triển khai thực tế, tầng giao diện (Client) được xây dựng độc lập bằng thư viện React và ngôn ngữ TypeScript. Để tối ưu hóa trải nghiệm người dùng, ứng dụng sử dụng công cụ Zustand Store nhằm quản lý trạng thái tập trung của hệ thống, giúp đồng bộ dữ liệu nhanh chóng giữa các component giao diện. Mọi tương tác của người chơi hay chủ sân sẽ gửi yêu cầu API đến phía Backend thông qua giao thức HTTPS hoặc kết nối thời gian thực bằng Socket.io Client.
+Tầng trình diễn có nhiệm vụ cung cấp giao diện tương tác cho người dùng. Trong hệ thống, tầng này được xây dựng bằng React và TypeScript. Các chức năng của người chơi, chủ sân và quản trị viên được tổ chức thành các trang giao diện riêng như tìm kiếm sân, xem chi tiết sân, đặt sân, quản lý lịch đặt, quản lý khu phức hợp thể thao và quản lý đối soát thanh toán. Bên cạnh các trang chức năng, tầng trình diễn còn bao gồm các thành phần giao diện dùng chung và các dịch vụ gọi API để trao đổi dữ liệu với máy chủ.
 
-Đứng giữa ứng dụng Client và máy chủ Backend là hệ thống máy chủ Nginx Reverse Proxy. Nginx đóng vai trò là cổng điều phối kết nối tập trung, chịu trách nhiệm phân phối ứng dụng web tĩnh đến trình duyệt của người dùng, đồng thời chuyển tiếp các yêu cầu gọi API (Proxy Pass) một cách hợp lý đến máy chủ Express phía sau. Ngoài ra, Nginx cũng xử lý cấu hình WebSockets để duy trì các kết nối thời gian thực ổn định giữa client và server.
+Tầng xử lý nghiệp vụ là thành phần trung tâm của hệ thống. Tầng này được xây dựng bằng Express.js và được tổ chức theo mô hình Controller – Service. Các lớp Controller tiếp nhận yêu cầu từ phía giao diện, xử lý dữ liệu đầu vào và chuyển tiếp đến các lớp Service. Các lớp Service chứa các quy tắc nghiệp vụ của hệ thống như quản lý đặt sân, quản lý tài khoản, thanh toán, quản lý kèo và quản lý khu phức hợp thể thao. Việc tách biệt Controller và Service giúp hạn chế sự phụ thuộc giữa xử lý giao tiếp và xử lý nghiệp vụ, từ đó làm cho mã nguồn dễ bảo trì hơn.
 
-Phía máy chủ Backend được triển khai bằng framework Express.js chạy trên môi trường Node.js. Lớp Controller của Backend sử dụng Zod schema để kiểm tra tính hợp lệ của dữ liệu đầu vào. Tiếp đó, lớp Service thực hiện xử lý các nghiệp vụ cốt lõi của đồ án như tự động tính giá sân theo khung giờ, đối soát công nợ hoặc kiểm tra lịch đặt trùng. Để gửi thông tin real-time như thông báo đặt sân hay kèo ghép đấu, hệ thống tích hợp Socket.io Server để giao tiếp trực tiếp với Client.
+Tầng dữ liệu chịu trách nhiệm lưu trữ và truy xuất dữ liệu của hệ thống. Trong đề tài này, tầng dữ liệu được xây dựng trên PostgreSQL và sử dụng Prisma ORM để thực hiện các thao tác với cơ sở dữ liệu. Dữ liệu được tổ chức dưới dạng các bảng quan hệ, bao gồm thông tin người dùng, khu phức hợp thể thao, sân đấu, lịch đặt sân, thanh toán và các dữ liệu nghiệp vụ khác. Prisma đóng vai trò trung gian giữa mã nguồn ứng dụng và cơ sở dữ liệu, giúp việc truy xuất dữ liệu được thực hiện thống nhất và dễ quản lý hơn.
 
-Tầng lưu trữ của hệ thống sử dụng cơ sở dữ liệu quan hệ PostgreSQL phối hợp với Prisma ORM để tối giản hóa việc viết câu lệnh SQL thủ công. Cơ sở dữ liệu cũng được tích hợp tiện ích mở rộng pgvector nhằm lưu trữ véc-tơ phục vụ thuật toán gợi ý sân đấu. Nhằm tăng tốc độ phản hồi, hệ thống sử dụng thêm bộ đệm Redis để lưu thông tin phiên đăng nhập. Cuối cùng, hệ thống kết nối với các dịch vụ bên thứ ba bao gồm cổng thanh toán Stripe và VNPAY, Cloudinary để lưu ảnh sân, và Nodemailer để gửi email thông báo.
+Ngoài ba tầng chính, hệ thống sử dụng thêm một số thành phần hỗ trợ như Zod để kiểm tra dữ liệu đầu vào, Middleware để xử lý xác thực và phân quyền, Redis để lưu trữ dữ liệu tạm thời và Socket.io để trao đổi dữ liệu thời gian thực. Hệ thống cũng tích hợp với các dịch vụ bên ngoài như Stripe, VNPAY và Cloudinary nhằm phục vụ các chức năng thanh toán và lưu trữ hình ảnh. Các thành phần này được bổ sung để hỗ trợ quá trình vận hành của hệ thống nhưng không làm thay đổi kiến trúc phân lớp đã lựa chọn.
+
+Kiến trúc ba lớp được lựa chọn vì phù hợp với đặc điểm của hệ thống. Việc tách biệt giao diện, xử lý nghiệp vụ và lưu trữ dữ liệu giúp các thành phần của hệ thống có thể được phát triển độc lập. Đồng thời, cách tổ chức này cũng tạo điều kiện thuận lợi cho việc kiểm thử, bảo trì và mở rộng chức năng khi số lượng người dùng và nghiệp vụ của hệ thống tăng lên trong tương lai.
 
 ### 4.1.2 Thiết kế tổng quan
+Kiến trúc tổng quan của hệ thống được trình bày trong Hình 4.1. Dựa trên kiến trúc phân lớp đã lựa chọn, hệ thống được triển khai thành các thành phần chính gồm ứng dụng phía người dùng, máy chủ ứng dụng, hệ thống lưu trữ dữ liệu và các dịch vụ bên ngoài. Các thành phần này được tổ chức tách biệt nhưng vẫn phối hợp với nhau trong quá trình xử lý nghiệp vụ.
+
 ![Thiết kế tổng quan](/images/kientruc.png)
-*Hình 4.1. Sơ đồ kiến trúc hệ thống Client-Server 3 lớp kết hợp Reverse Proxy*
+*Hình 4.1. Sơ đồ kiến trúc phần mềm ba lớp mở rộng kết hợp Reverse Proxy*
 
-Hình 4.1 minh họa kiến trúc tổng quan của hệ thống từ tầng biên đến tầng lưu trữ dữ liệu. Tầng Nginx Reverse Proxy đón nhận lưu lượng truy cập ban đầu từ Client, điều phối các tài nguyên tĩnh và các yêu cầu gọi API động đến máy chủ ứng dụng Express. Tầng dịch vụ nghiệp vụ Backend thực hiện xử lý logic, tương tác với cơ sở dữ liệu PostgreSQL thông qua Prisma ORM, truy cập nhanh bộ nhớ cache Redis và điều phối dữ liệu với các API dịch vụ bên ngoài để hoàn tất luồng nghiệp vụ.
+Khi người dùng thực hiện một thao tác trên giao diện, yêu cầu sẽ được gửi đến máy chủ thông qua Nginx Reverse Proxy. Từ đây, các yêu cầu API được chuyển tiếp đến hệ thống Backend để xử lý nghiệp vụ. Sau khi hoàn thành xử lý, kết quả được trả về cho giao diện và hiển thị cho người dùng. Đối với các chức năng yêu cầu cập nhật theo thời gian thực, dữ liệu được trao đổi thông qua kết nối Socket.io giữa phía người dùng và máy chủ
 
-### 4.1.3 Thiết kế chi tiết gói
+<!-- ### 4.1.3 Thiết kế chi tiết gói
 
 Dựa theo cấu trúc thư mục thực tế của dự án, phần mã nguồn Backend được phân chia thành các thư mục cấu trúc tương ứng với các gói chức năng độc lập nhằm phục vụ mục tiêu quản lý và bảo trì mã nguồn. Cụ thể bao gồm: gói `routes` quản lý các đường dẫn API và phân luồng yêu cầu, gói `controllers` tiếp nhận yêu cầu gửi lên từ phía máy khách và điều phối phản hồi, gói `validations` sử dụng thư viện Zod để kiểm tra tính hợp lệ của dữ liệu đầu vào, gói `services` chứa toàn bộ mã nguồn xử lý logic nghiệp vụ chính của hệ thống, và gói `repositories` sử dụng Prisma Client để thực hiện tương tác trực tiếp với cơ sở dữ liệu quan hệ.
 
 Việc phân tách cấu trúc này giúp mã nguồn đạt tính mô-đun hóa cao, phân định ranh giới trách nhiệm rõ ràng cho từng thành phần và ngăn ngừa hiện tượng phụ thuộc chéo vòng lặp giữa các lớp đối tượng trong Backend. Sơ đồ dưới đây mô tả cấu trúc phân gói và mối quan hệ phụ thuộc giữa các thành phần trong mã nguồn Backend:
 
 ![Biểu đồ gói hệ thống (UML Package Diagram)](/images/uml_package_diagram.png)
-*Hình 4.2. Biểu đồ gói hệ thống (UML Package Diagram)*
+*Hình 4.2. Biểu đồ gói hệ thống (UML Package Diagram)* -->
 
 ## 4.2 Thiết kế chi tiết
 
 ### 4.2.1 Thiết kế giao diện
 
-Giao diện ứng dụng được thiết kế tuân thủ các nguyên tắc thiết kế hiện đại và hướng tới trải nghiệm người dùng nhất quán. Đặc tả thiết kế giao diện được chuẩn hóa dựa trên các thông số kỹ thuật cốt lõi nhằm đảm bảo tính thẩm mỹ và khả năng tương thích cao.
+Giao diện ứng dụng được thiết kế để phục vụ ba nhóm người dùng gồm người chơi, chủ sân và quản trị viên. Phần này đặc tả các thông số thiết kế màn hình mục tiêu, quy chuẩn về phối màu, kiểu chữ, nút bấm, biểu mẫu nhập liệu và vị trí hiển thị thông báo phản hồi của hệ thống.
 
-Về độ phân giải và kích thước màn hình, giao diện ứng dụng web được tối ưu hóa cho màn hình máy tính cá nhân ở độ phân giải tiêu chuẩn 1920x1080 pixel và màn hình thiết bị di động thông minh ở độ phân giải chiều rộng tối thiểu 375 pixel. Hệ thống giao diện sử dụng nguyên tắc lưới linh hoạt (Flexbox và Grid Layout) của CSS để tự động co giãn và sắp xếp lại các thành phần hiển thị dựa trên kích thước khung nhìn thực tế của thiết bị đầu cuối.
+Giao diện của hệ thống được thiết kế theo hướng đáp ứng (Responsive Web Design) để hiển thị phù hợp trên cả máy tính và thiết bị di động. Trên máy tính cá nhân, giao diện hiển thị tối ưu ở độ phân giải 1920x1080 pixel và tự co giãn theo các kích thước màn hình phổ biến từ 13 inch đến 27 inch. Trên điện thoại di động, giao diện được căn chỉnh cho màn hình có chiều rộng tối thiểu 375 pixel, phù hợp với các dòng điện thoại thông minh thông dụng. Cơ chế bố cục lưới của CSS được sử dụng để tự động sắp xếp các thành phần giao diện khi thay đổi kích thước trình duyệt hoặc thiết bị hiển thị.
 
-Về hệ màu sắc chủ đạo, ứng dụng sử dụng bảng màu thương hiệu chuyên biệt để phân tách các khu vực chức năng. Màu chủ đạo là xanh lục bảo đại diện cho tinh thần thể thao và năng động, kết hợp với các gam màu trung tính xám đen của chế độ nền tối (Dark Mode) để tạo cảm giác chuyên nghiệp, hiện đại. Các nút hành động chính (Primary Buttons), nút phụ (Secondary Buttons) và các trạng thái cảnh báo (thành công, lỗi, đang xử lý) được quy chuẩn hóa về mã màu sắc thống nhất trên toàn bộ hệ thống giao diện.
+Hệ thống hỗ trợ cả chế độ sáng (Light Mode) và chế độ tối (Dark Mode), trong đó chế độ tối được sử dụng làm giao diện mặc định nhằm giảm độ chói màn hình khi sử dụng trong thời gian dài. Tông màu nền chính là màu xám tối và đen, kết hợp với màu xanh dương chủ đạo đại diện cho thương hiệu để tô điểm cho thanh điều hướng và các nút bấm quan trọng. Màu xanh lục được dùng làm điểm nhấn cho các biểu tượng thể thao và hiển thị trạng thái đặt sân thành công, còn màu đỏ được dành riêng cho các cảnh báo lỗi hoặc hủy giao dịch.
 
-Về phản hồi người dùng và thông điệp kiểm lỗi, tất cả các biểu mẫu tương tác (Forms) trong ứng dụng đều tích hợp cơ chế kiểm lỗi hai lớp. Khi người dùng nhập dữ liệu không hợp lệ, hệ thống giao diện sẽ lập tức hiển thị cảnh báo đỏ ngay dưới trường nhập tương ứng nhờ cơ chế xác thực đầu vào phía Client. Các thông báo trạng thái giao dịch như đặt sân thành công, thanh toán thất bại hay gửi yêu cầu rút tiền đang chờ xử lý được hiển thị tập trung tại góc màn hình thông qua các thành phần thông báo nổi (Toast Notifications) với hiệu ứng chuyển động mượt mà.
+Phông chữ được sử dụng thống nhất trên toàn bộ ứng dụng là phông không chân `Inter` và `Plus Jakarta Sans` để người dùng dễ đọc trên các kích thước màn hình khác nhau. Kích thước chữ được phân cấp rõ ràng giữa tiêu đề trang in đậm cỡ lớn, tiêu đề phân khu chức năng cỡ vừa, và phần nội dung văn bản chính có kích thước nhỏ gọn nhưng rõ nét.
 
-### 4.2.2 Thiết kế lớp
+Các nút bấm trong hệ thống được thiết kế đồng bộ với các góc bo tròn nhẹ. Hệ thống quy định rõ ba kiểu nút cơ bản bao gồm nút bấm chính (như Đặt sân, Thanh toán) sử dụng màu xanh dương nổi bật, nút phụ (như Quay lại, Hủy) sử dụng màu nền xám tối hoặc chỉ hiển thị viền ngoài, và nút nguy hiểm (như Xóa lịch, Hủy đơn) sử dụng màu nền đỏ để người dùng dễ dàng nhận biết.
+
+Các biểu mẫu nhập liệu như biểu mẫu đăng ký, đặt sân hay điền thông tin cá nhân đều có các ô nhập liệu được thiết kế đồng nhất về chiều cao, viền mỏng màu xám và bo góc nhẹ. Khi phát hiện thông tin nhập vào không đúng định dạng, hệ thống sẽ hiển thị một dòng thông báo lỗi ngắn màu đỏ ngay phía dưới ô nhập tương ứng để người dùng kịp thời điều chỉnh.
+
+Các thông điệp phản hồi nhanh của hệ thống như thông báo đặt sân thành công được quy định hiển thị ở góc trên bên phải màn hình đối với máy tính, và ở chính giữa phía trên đối với điện thoại. Các thông báo này tự động ẩn đi sau 3 giây để tránh gây cản trở tầm nhìn của người dùng.
+
+#### c. Bản vẽ thiết kế bố cục giao diện (UI Layout Wireframes)
+
+Để tránh nhầm lẫn giao diện thiết kế wireframe với giao diện của sản phẩm sau cùng, nhóm phát triển xây dựng các bản vẽ thiết kế cấu trúc khung dây (Wireframe) dạng sơ đồ khối nhằm mô tả cách phân bổ các vùng chức năng của ba màn hình quan trọng nhất trong hệ thống:
+
+##### 1. Khung dây trang tìm kiếm và đặt sân (ComplexesPage & SubFieldDetailPage Wireframe)
+
+Trang này đóng vai trò cốt lõi trong việc giúp người chơi tìm kiếm các khu phức hợp thể thao, lựa chọn sân con và tiến hành đặt lịch. Bố cục được thiết kế theo tỷ lệ 1:3 chia làm hai cột chính trên màn hình Desktop nhằm tối ưu hóa tầm nhìn của người dùng:
+
+```
++-----------------------------------------------------------------------------------+
+|  [Logo]   [Tìm sân]   [Ghép kèo]   [Thông báo]                      [Tài khoản]   |  <-- Header
++-----------------------------------------------------------------------------------+
+|  BỘ LỌC TÌM KIẾM (25%)          |  DANH SÁCH KHU PHỨC HỢP THỂ THAO (75%)          |
+|                                 |                                                 |
+|  * Loại môn thể thao:           |  +-------------------------------------------+  |
+|    [ ] Bóng đá                  |  |  [Hình ảnh tổ hợp sân đấu thể thao]       |  |
+|    [ ] Cầu lông                 |  |  **Tên cụm sân**: Cụm sân cỏ nhân tạo A   |  |
+|    [ ] Pickleball               |  |  * Địa chỉ*: 142 Nguyễn Văn Cừ, Quận 5    |  |
+|                                 |  |  * Khoảng cách*: 1.2 km (Gần nhất)        |  |
+|  * Khoảng cách tối đa:          |  |  * Đánh giá*: [5.0 sao]  * Giá*: 150k/h   |  |
+|  [=====================o---] 5km |  |  [Chi tiết & Đặt sân]                     |  |  <-- Nút hành động
+|                                 |  +-------------------------------------------+  |
+|  * Khung giờ hoạt động:         |                                                 |
+|    Từ: [ 06:00 ] Đến: [ 22:00 ] |  +-------------------------------------------+  |
+|                                 |  |  [Hình ảnh tổ hợp sân đấu thể thao]       |  |
+|  * Mức giá mong muốn:           |  |  **Tên cụm sân**: Cụm sân Cầu lông B      |  |
+|  [ 100,000đ ] - [ 500,000đ ]    |  |  * Địa chỉ*: 256 Lý Thường Kiệt, Q.10     |  |
+|                                 |  |  * Khoảng cách*: 2.8 km                   |  |
+|  [Áp dụng bộ lọc]               |  |  * Đánh giá*: [4.8 sao]  * Giá*: 80k/h    |  |
+|                                 |  |  [Chi tiết & Đặt sân]                     |  |
+|                                 |  +-------------------------------------------+  |
++-----------------------------------------------------------------------------------+
+```
+
+##### 2. Khung dây trang quản lý lịch đặt sân của chủ sân (OwnerBookingsPage Wireframe)
+
+Trang dành riêng cho đối tác chủ sân để quản lý toàn bộ các giao dịch đặt sân con thuộc quyền sở hữu của mình. Cấu trúc trang được thiết kế dạng bảng dữ liệu trực quan giúp thao tác nhanh:
+
+```
++-----------------------------------------------------------------------------------+
+|  [Logo Owner]  [Thống kê]  [Quản lý sân]  [Lịch đặt sân]            [Thông báo]   |  <-- Header
++-----------------------------------------------------------------------------------+
+|  TỔNG QUAN HÔM NAY                                                                |
+|  +-------------------+  +-------------------+  +-------------------+              |
+|  | Tổng lịch đặt: 12 |  | Do thu tạm tính:  |  | Sân đang sử dụng: |              |  <-- Cards Thống kê
+|  | (8 đã xác nhận)   |  | 2,450,000đ        |  | 4 / 6 sân con     |              |
+|  +-------------------+  +-------------------+  +-------------------+              |
+|                                                                                   |
+|  DANH SÁCH YÊU CẦU ĐẶT LỊCH                                                       |
+|  Bộ lọc trạng thái: [Tất cả] [Chờ xác nhận] [Đã thanh toán] [Đã hủy]               |
+|                                                                                   |
+|  +-----------------------------------------------------------------------------+  |
+|  | Mã lịch đặt | Khách hàng | Sân con |  Khung giờ   | Tổng tiền | Trạng thái  | Action|
+|  +-------------+------------+---------+--------------+-----------+-------------+-------+
+|  | #BK09841    | Nguyễn A   | Sân số 1| 17:00 - 18:30|  250,000đ | [Thành công]| [Hủy] |  |
+|  | #BK09842    | Trần B     | Sân số 3| 18:00 - 19:30|  300,000đ | [Chờ duyệt] | [Duyệt]|  |  <-- Tương tác nhanh
+|  | #BK09843    | Lê C       | Sân số 2| 19:30 - 21:00|  250,000đ | [Đã hủy]    | [-]   |  |
+|  +-------------+------------+---------+--------------+-----------+-------------+-------+
++-----------------------------------------------------------------------------------+
+```
+
+##### 3. Khung dây giao diện phân hệ ghép kèo thể thao (MatchmakingPage Wireframe)
+
+Trang giao diện xã hội giúp kết nối những người chơi đơn lẻ có nhu cầu tìm đồng đội hoặc đối thủ thi đấu dựa trên khoảng cách địa lý và trình độ tương đương:
+
+```
++-----------------------------------------------------------------------------------+
+|  [Logo]   [Tìm sân]   [Ghép kèo]   [Thông báo]                      [Tài khoản]   |  <-- Header
++-----------------------------------------------------------------------------------+
+|  BẢN ĐỒ GỢI Ý KÈO GẦN NHẤT       |  DANH SÁCH KÈO GHÉP ĐANG TUYỂN THÀNH VIÊN       |
+|                                  |                                                 |
+|  +----------------------------+  |  +-------------------------------------------+  |
+|  | [BẢN ĐỒ INTERACTIVE MAP]   |  |  **Tên kèo**: Ghép bóng đá 5v5 tối nay       |  |
+|  |                            |  |  * Địa điểm*: Sân bóng cỏ nhân tạo A         |  |
+|  |   (o) Kèo của Nguyễn A     |  |  * Khung giờ*: 19:00 - 20:30 | Ngày: Hôm nay |  |
+|  |       Cách bạn 800m        |  |  * Số lượng hiện tại*: 7 / 10 người          |  |
+|  |                            |  |  * Trình độ yêu cầu*: Trung bình             |  |
+|  |   (o) Kèo của Trần B       |  |  * Chi phí tạm tính*: 25,000đ / người        |  |
+|  |       Cách bạn 1.5km       |  |  [Đăng ký tham gia kèo]                      |  |  <-- Nút tương tác
+|  +----------------------------+  |  +-------------------------------------------+  |
+|                                  |                                                 |
+|  [+ Tạo kèo ghép mới]            |  +-------------------------------------------+  |
+|                                  |  |  **Tên kèo**: Tìm đối giao lưu Badminton  |  |
+|                                  |  |  * Địa điểm*: Cụm sân Cầu lông B          |  |
+|                                  |  |  * Khung giờ*: 18:00 - 20:00 | Ngày: Mai      |  |
+|                                  |  |  * Trình độ yêu cầu*: Khá - Tốt              |  |
+|                                  |  |  * Số lượng hiện tại*: 2 / 4 người           |  |
+|                                  |  |  [Đăng ký tham gia kèo]                      |  |
+|                                  |  +-------------------------------------------+  |
++-----------------------------------------------------------------------------------+
+```
+
+Hệ thống cấu trúc khung dây trên đóng vai trò là kim chỉ nam định hướng trực quan cho đội ngũ lập trình viên thiết kế giao diện chi tiết ở giai đoạn hiện thực hóa sản phẩm, đảm bảo tất cả các trang đều có tính đối xứng cao, giao diện thoáng đãng, tập trung tối đa sự chú ý của người dùng vào các nút hành động chính của luồng nghiệp vụ.
+
+<!-- ### 4.2.2 Thiết kế lớp
 
 Thiết kế lớp tập trung vào việc giải thích chi tiết các thuộc tính và hàm xử lý bên trong các dịch vụ nghiệp vụ chính của Backend. Đây là những nơi xử lý toàn bộ nghiệp vụ quan trọng của hệ thống:
 
@@ -446,7 +550,7 @@ Dưới đây là sơ đồ lớp chi tiết (UML Class Diagram) biểu diễn m
 *Hình 4.5. Biểu đồ trình tự tạo và tham gia kèo đấu (UML Sequence Diagram)*
 
 ![Biểu đồ trình tự đối soát quyết toán tài chính](/images/uml_sequence_payout.png)
-*Hình 4.6. Biểu đồ trình tự đối soát quyết toán tài chính (UML Sequence Diagram)*
+*Hình 4.6. Biểu đồ trình tự đối soát quyết toán tài chính (UML Sequence Diagram)* -->
 
 ### 4.2.3 Thiết kế cơ sở dữ liệu
 ![Biểu đổ thực thể liên kết](/images/sports-booking.pdf)
