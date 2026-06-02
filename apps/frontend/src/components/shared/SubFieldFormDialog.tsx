@@ -25,6 +25,7 @@ import { Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { ImageUploadField } from "./ImageUploadField";
 
 interface SubFieldFormData {
   subfield_name: string;
@@ -44,7 +45,6 @@ export function SubFieldFormDialog({
   const [open, setOpen] = useState(false);
   const [sportType, setSportType] = useState<SportType | "">("");
   const [subfieldImage, setSubfieldImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -54,22 +54,7 @@ export function SubFieldFormDialog({
     reset,
   } = useForm<SubFieldFormData>();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSubfieldImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  const removeImage = () => {
-    setSubfieldImage(null);
-    setImagePreview(null);
-  };
 
   const onSubmit = async (data: SubFieldFormData) => {
     setError(null);
@@ -97,7 +82,6 @@ export function SubFieldFormDialog({
       reset();
       setSportType("");
       setSubfieldImage(null);
-      setImagePreview(null);
       setError(null);
       setOpen(false);
       toast.success("Sân con đã được tạo thành công.");
@@ -192,48 +176,13 @@ export function SubFieldFormDialog({
               </Select>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="subfield_image">
-                Hình ảnh sân <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex flex-col gap-2">
-                {imagePreview ? (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={removeImage}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <label
-                    htmlFor="subfield_image"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Nhấp để tải lên hình ảnh
-                    </span>
-                  </label>
-                )}
-                <Input
-                  id="subfield_image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </div>
-            </div>
+            <ImageUploadField
+              id="subfield_image"
+              label="Hình ảnh sân"
+              required
+              value={subfieldImage}
+              onChange={setSubfieldImage}
+            />
           </div>
 
           <DialogFooter>

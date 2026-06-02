@@ -1,8 +1,7 @@
-import { SportImage } from "@/components/shared/SportImage";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RecommendationCard } from "@/components/player/RecommendationCard";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { cn } from "@/lib/utils";
 import type { RecommendationItem } from "@/types";
@@ -107,132 +106,7 @@ export function RecommendedCourts() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Recommendation Card                                                         */
-/* -------------------------------------------------------------------------- */
 
-interface RecommendationCardProps {
-  item: RecommendationItem;
-  rank: number;
-}
-
-function RecommendationCard({ item, rank }: RecommendationCardProps) {
-  const navigate = useNavigate();
-  const sf = item.sub_field;
-
-  if (!sf) return null;
-
-  return (
-    <Card
-      className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-0",
-        "shadow-card transition-all duration-300",
-        "hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover",
-      )}
-    >
-      {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <SportImage
-          src={sf.sub_field_image}
-          sportType={sf.sport_type}
-          title={sf.sub_field_name}
-          className="transition-transform duration-500 group-hover:scale-[1.05]"
-        />
-
-        <div
-          className="pointer-events-none absolute inset-0 bg-linear-to-t from-slate-950/55 via-transparent to-transparent"
-          aria-hidden="true"
-        />
-
-        {/* Badges */}
-        <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
-          <Badge className="rounded-full border-none bg-white/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-900 shadow-sm">
-            {getSportTypeLabel(sf.sport_type)}
-          </Badge>
-
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-950/55 px-2 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
-            #{rank}
-          </span>
-        </div>
-
-        {/* Rating overlay */}
-        {sf.avg_rating !== null && sf.avg_rating !== undefined && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-slate-950/60 px-2 py-1 backdrop-blur-sm">
-            <Star className="size-3 fill-amber-400 text-amber-400" />
-            <span className="text-[11px] font-semibold text-white">
-              {Number(sf.avg_rating).toFixed(1)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="space-y-1">
-          <h3
-            className="line-clamp-1 font-display text-[15px] font-bold leading-tight transition-colors group-hover:text-primary"
-            title={sf.sub_field_name}
-          >
-            {sf.sub_field_name}
-          </h3>
-          <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-            <MapPin className="mt-0.5 size-3 shrink-0" />
-            <span className="line-clamp-1" title={sf.complex?.complex_name}>
-              {sf.complex?.complex_name || "Khu thể thao"}
-            </span>
-          </div>
-        </div>
-
-        {/* AI reason */}
-        {item.reason && (
-          <p className="line-clamp-2 border-t border-dashed border-border/80 pt-2.5 text-[11px] leading-relaxed text-muted-foreground italic">
-            <Sparkles className="mr-1 inline size-3 text-primary/85" />
-            {item.reason}
-          </p>
-        )}
-
-        {/* Price & Actions */}
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/50 pt-3">
-          <div className="flex flex-col">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none mb-1">
-              Giá từ
-            </span>
-            {sf.price_min && Number(sf.price_min) > 0 ? (
-              <span className="font-display text-sm font-bold text-primary leading-none">
-                {formatPrice(Number(sf.price_min))}
-                <span className="text-[10px] font-medium text-muted-foreground">
-                  /h
-                </span>
-              </span>
-            ) : (
-              <span className="text-xs italic text-muted-foreground leading-none">
-                Đang cập nhật
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 rounded-full px-2.5 text-[11px] font-medium"
-              onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
-            >
-              Chi tiết
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 rounded-full bg-primary px-3 text-[11px] font-semibold text-primary-foreground hover:bg-primary/95"
-              onClick={() => navigate(`/booking/${item.sub_field_id}`)}
-            >
-              Đặt ngay
-              <ArrowRight className="ml-1 size-3" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 /* -------------------------------------------------------------------------- */
 /* Skeleton loading                                                            */

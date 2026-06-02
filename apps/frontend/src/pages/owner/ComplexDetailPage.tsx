@@ -7,6 +7,7 @@ import { SubFieldFormDialog } from "@/components/shared/SubFieldFormDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useComplexStore } from "@/store/owner/useComplexStore";
 import { useSubfieldStore } from "@/store/owner/useSubfieldStore";
 import type { ComplexDetail } from "@/types";
@@ -62,12 +63,10 @@ export function ComplexDetailPage() {
   }, [id]);
 
   // Debounce search input
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSubfieldSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm, setSubfieldSearch]);
+    setSubfieldSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm, setSubfieldSearch]);
 
   // Init params from URL
   useEffect(() => {

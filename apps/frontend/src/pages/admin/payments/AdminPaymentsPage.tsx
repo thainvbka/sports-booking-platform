@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/utils/formatPrice";
+import { useDebounce } from "@/hooks/useDebounce";
 
 
 
@@ -68,15 +69,13 @@ export default function AdminPaymentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (filters.search || "")) {
-        setFilters({ search: searchValue });
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+    if (debouncedSearchValue !== (filters.search || "")) {
+      setFilters({ search: debouncedSearchValue });
+    }
+  }, [debouncedSearchValue, filters.search, setFilters]);
 
 
   const handleRowClick = (payment: any) => {

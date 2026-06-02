@@ -53,6 +53,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatPrice } from "@/utils/formatPrice";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function AdminComplexesPage() {
   const {
@@ -78,14 +79,13 @@ export default function AdminComplexesPage() {
     fetchComplexes();
   }, [fetchComplexes]);
 
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (filters.search || "")) {
-        setFilters({ search: searchValue });
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchValue, filters.search, setFilters]);
+    if (debouncedSearchValue !== (filters.search || "")) {
+      setFilters({ search: debouncedSearchValue });
+    }
+  }, [debouncedSearchValue, filters.search, setFilters]);
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
