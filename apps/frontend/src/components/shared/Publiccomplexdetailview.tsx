@@ -34,16 +34,14 @@ import type {
 import { formatPrice, getSportTypeLabel } from "@/utils";
 import {
   LayoutGrid,
-  MapPin,
   Navigation,
   Search,
-  Tag,
-  Trophy,
-  Users,
   X,
 } from "lucide-react";
-import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { ComplexHeader } from "./complex/ComplexHeader";
+import { ComplexFacilities } from "./complex/ComplexFacilities";
+import { ComplexLocationMap } from "./complex/ComplexLocationMap";
 
 interface PublicComplexDetailViewProps {
   complex: ComplexDetail | null;
@@ -98,7 +96,6 @@ export function PublicComplexDetailView({
                   window.location.href = "/search";
                 }
           }
-          icon={<MapPin className="h-8 w-8 text-muted-foreground/60" />}
           className="py-16"
         />
       </section>
@@ -131,7 +128,7 @@ export function PublicComplexDetailView({
 
       <section
         id="subfields"
-        className="relative mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
+        className="relative mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-12"
       >
         <SubfieldBrowser
           complex={complex}
@@ -143,6 +140,10 @@ export function PublicComplexDetailView({
           onSearchChange={onSearchChange}
           onPageChange={onPageChange}
         />
+
+        <div className="border-t border-border pt-8">
+          <ComplexLocationMap complexAddress={complex.complex_address} />
+        </div>
       </section>
     </div>
   );
@@ -243,76 +244,28 @@ function ComplexHero({
         </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport opacity-70" />
-                <span className="relative inline-flex size-2 rounded-full bg-accent-sport" />
-              </span>
-              <span>Khu phức hợp thể thao</span>
-              <span className="h-px w-6 bg-white/20" />
-              {sportTypes.slice(0, 2).map((sport) => (
-                <Badge
-                  key={sport}
-                  variant="secondary"
-                  className="rounded-full border-0 bg-white/10 px-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm"
-                >
-                  {getSportTypeLabel(sport)}
-                </Badge>
-              ))}
-              {sportTypes.length > 2 ? (
-                <Badge
-                  variant="secondary"
-                  className="rounded-full border-0 bg-white/10 px-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm"
-                >
-                  +{sportTypes.length - 2}
-                </Badge>
-              ) : null}
-            </div>
+          <div className="flex flex-col gap-5 text-left">
+            <ComplexHeader
+              complexName={complex.complex_name}
+              complexAddress={complex.complex_address}
+              sportTypes={sportTypes}
+              avgRating={complex.avg_rating}
+            />
 
-            <h1 className="leading-[1.05] tracking-tight italic sm:text-4xl lg:text-5xl text-title">
-              {complex.complex_name}
-            </h1>
-
-            <div className="flex items-start gap-2 text-white/80">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent-sport" />
-              <p className="text-sm leading-relaxed">
-                <span className="text-white/85">{complex.complex_address}</span>
-              </p>
-            </div>
-
-            <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              <StatChip
-                label="Sân con"
-                value={String(totalSubfields)}
-                sub="trong khu"
-                icon={<LayoutGrid className="h-3.5 w-3.5 text-accent-sport" />}
-                highlight
-              />
-              <StatChip
-                label="Môn"
-                value={sportSummary}
-                sub={sportSub}
-                icon={<Trophy className="h-3.5 w-3.5 text-white/70" />}
-              />
-              <StatChip
-                label="Giá thuê"
-                value={minPrice ? `${formatPrice(minPrice)}` : "Liên hệ"}
-                sub={minPrice ? "từ /giờ" : undefined}
-                icon={<Tag className="h-3.5 w-3.5 text-white/70" />}
-              />
-              <StatChip
-                label="Sức chứa"
-                value={maxCapacity ? `${maxCapacity}` : "—"}
-                sub={maxCapacity ? "người / sân" : undefined}
-                icon={<Users className="h-3.5 w-3.5 text-white/70" />}
-              />
-            </dl>
+            <ComplexFacilities
+              totalSubfields={totalSubfields}
+              sportSummary={sportSummary}
+              sportSub={sportSub}
+              priceMinLabel={minPrice ? `${formatPrice(minPrice)}` : "Liên hệ"}
+              priceMinSub={minPrice ? "từ /giờ" : undefined}
+              maxCapacityLabel={maxCapacity ? `${maxCapacity}` : "—"}
+              maxCapacitySub={maxCapacity ? "người / sân" : undefined}
+            />
 
             <div className="flex flex-wrap gap-2 pt-1">
               <Button asChild size="sm" className="rounded-full">
                 <a href="#subfields">
-                  <LayoutGrid />
+                  <LayoutGrid className="size-4 mr-2" />
                   Xem {totalSubfields} sân
                 </a>
               </Button>
@@ -323,7 +276,7 @@ function ComplexHero({
                 className="rounded-full border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
               >
                 <a href={mapsHref} target="_blank" rel="noopener noreferrer">
-                  <Navigation />
+                  <Navigation className="size-4 mr-2" />
                   Chỉ đường
                 </a>
               </Button>
@@ -343,38 +296,6 @@ function ComplexHero({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-b from-transparent to-background"
       />
     </section>
-  );
-}
-
-interface StatChipProps {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  highlight?: boolean;
-}
-
-function StatChip({ icon, label, value, sub, highlight }: StatChipProps) {
-  return (
-    <div
-      className={cn(
-        "group relative overflow-hidden rounded-xl border px-3 py-2.5 backdrop-blur-sm transition-colors",
-        highlight
-          ? "border-accent-sport/30 bg-accent-sport/10"
-          : "border-white/10 bg-white/[0.05] hover:border-white/20",
-      )}
-    >
-      <div className="flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">
-        <span className="truncate">{label}</span>
-        {icon}
-      </div>
-      <div className="mt-1 truncate font-display text-lg leading-none font-black text-white">
-        {value}
-      </div>
-      {sub ? (
-        <div className="mt-0.5 truncate text-[11px] text-white/60">{sub}</div>
-      ) : null}
-    </div>
   );
 }
 
@@ -460,7 +381,7 @@ function SubfieldBrowser({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0 space-y-1.5">
+        <div className="min-w-0 space-y-1.5 text-left">
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             <span className="h-px w-6 bg-border" />
             Đặt sân
@@ -547,7 +468,6 @@ function SubfieldBrowser({
             }
             actionLabel={searchTerm ? "Xoá tìm kiếm" : undefined}
             onAction={searchTerm ? () => onSearchChange("") : undefined}
-            icon={<Search className="h-8 w-8 text-muted-foreground/60" />}
             className="border-0 bg-transparent py-12"
           />
         </Card>
@@ -571,7 +491,7 @@ function SubfieldGridSkeleton() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pagination (mirrors SearchPage)                                             */
+/* Pagination                                                                  */
 /* -------------------------------------------------------------------------- */
 
 interface PaginationBarProps {

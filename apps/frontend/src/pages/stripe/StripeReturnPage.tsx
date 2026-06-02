@@ -1,7 +1,7 @@
-// src/pages/owner/stripe/StripeReturnPage.tsx
+import { LoadingState } from "@/components/shared/LoadingState";
 import { Button } from "@/components/ui/button";
 import { ownerService } from "@/services/owner.service";
-import { CheckCircle, Loader2, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -46,12 +46,7 @@ export function StripeReturnPage() {
   };
 
   if (status === "loading") {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-        <p className="mt-4 text-lg">Đang kiểm tra hồ sơ...</p>
-      </div>
-    );
+    return <LoadingState variant="fullscreen" text="Đang kiểm tra hồ sơ..." />;
   }
 
   if (status === "success") {

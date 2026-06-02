@@ -251,7 +251,6 @@ export function ComplexDetailPage() {
   return (
     <>
       <ComplexDetailView
-        mode="owner"
         complex={complex}
         subfields={complex?.sub_fields || subfields || []}
         pagination={selectedComplexPagination || subfieldPagination}
