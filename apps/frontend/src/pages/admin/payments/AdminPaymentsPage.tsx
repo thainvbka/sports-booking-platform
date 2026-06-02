@@ -42,6 +42,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { formatPrice } from "@/utils/formatPrice";
 
 
 
@@ -77,11 +78,6 @@ export default function AdminPaymentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
 
   const handleRowClick = (payment: any) => {
     setSelectedPayment(payment);

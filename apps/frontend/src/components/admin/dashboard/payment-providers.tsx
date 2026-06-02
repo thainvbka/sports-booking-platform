@@ -6,8 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { PaymentProviderPoint } from "@/types/admin.types";
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
+import { fmtVND } from "@/lib/format";
 
 interface PaymentProvidersProps {
   data: PaymentProviderPoint[];

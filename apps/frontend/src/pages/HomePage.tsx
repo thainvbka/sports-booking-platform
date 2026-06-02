@@ -1,7 +1,7 @@
 import { heroBg } from "@/assets";
 import { RecommendedCourts } from "@/components/player/RecommendedCourts";
 import { ComplexCard } from "@/components/shared/ComplexCard";
-import { CourtCard } from "@/components/shared/CourtCard";
+import { SubFieldCard } from "@/components/shared/SubFieldCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SearchBar } from "@/components/shared/SearchBar";
@@ -586,7 +586,7 @@ function LiveCourtsSection({
         ) : courts.length > 0 ? (
           <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 motion-safe-stagger">
             {courts.map((court) => (
-              <CourtCard key={court.id} court={court} />
+              <SubFieldCard key={court.id} subField={court} showComplexInfo />
             ))}
           </div>
         ) : (

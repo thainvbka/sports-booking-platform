@@ -51,6 +51,7 @@ import {
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/formatPrice";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -265,11 +266,6 @@ export function OwnerBookingsPage() {
     }
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
 
   const canConfirmBooking = (booking: OwnerBookingResponse): boolean =>
     booking.status === "COMPLETED";

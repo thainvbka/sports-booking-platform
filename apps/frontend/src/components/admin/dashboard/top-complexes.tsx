@@ -8,8 +8,7 @@ import {
 } from "@/components/ui/card";
 import type { TopComplexPoint } from "@/types/admin.types";
 import { Medal, Trophy } from "lucide-react";
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
+import { fmtVND } from "@/lib/format";
 
 interface TopComplexesProps {
   data: TopComplexPoint[];

@@ -602,7 +602,7 @@ export function WalletPage() {
                                           )}
                                         </div>
 
-                                        {(batch.transaction_ref || batch.note || batch.receipt_image) && (
+                                        {(batch.transaction_ref || batch.note) && (
                                           <div className="space-y-2">
                                             <h4 className="text-xs font-semibold text-foreground/90">Chứng từ Quyết toán từ Admin</h4>
                                             <div className="rounded-xl border border-border bg-background p-3.5 space-y-2 text-xs">
@@ -618,26 +618,6 @@ export function WalletPage() {
                                                   <p className="bg-muted/35 p-2.5 rounded-lg text-[11px] text-muted-foreground italic leading-normal border border-border/40">
                                                     {batch.note}
                                                   </p>
-                                                </div>
-                                              )}
-                                              {batch.receipt_image && (
-                                                <div className="flex flex-col gap-1.5 pt-1.5">
-                                                  <span className="text-muted-foreground">Ảnh biên lai giao dịch (UNC):</span>
-                                                  <a
-                                                    href={batch.receipt_image}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="relative block rounded-lg overflow-hidden border border-border/80 group hover:border-primary/50 transition-colors"
-                                                  >
-                                                    <img
-                                                      src={batch.receipt_image}
-                                                      alt="Biên lai UNC"
-                                                      className="w-full h-32 object-cover"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                      <span className="text-[10px] text-white font-bold uppercase tracking-wider">Xem ảnh gốc</span>
-                                                    </div>
-                                                  </a>
                                                 </div>
                                               )}
                                             </div>

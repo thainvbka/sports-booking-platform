@@ -182,48 +182,52 @@ function RecommendationCard({ item, rank }: RecommendationCardProps) {
           </div>
         </div>
 
-        {/* Price */}
-        <div className="rounded-lg bg-secondary/70 px-3 py-2">
-          {sf.price_min && Number(sf.price_min) > 0 ? (
-            <span className="font-display text-sm font-bold text-primary">
-              {formatPrice(Number(sf.price_min))}
-              <span className="ml-0.5 text-[11px] font-medium text-muted-foreground">
-                /h
-              </span>
-            </span>
-          ) : (
-            <span className="text-xs italic text-muted-foreground">
-              Đang cập nhật
-            </span>
-          )}
-        </div>
-
         {/* AI reason */}
         {item.reason && (
-          <p className="line-clamp-2 text-[12px] leading-relaxed text-muted-foreground italic">
-            <Sparkles className="mr-1 inline size-3 text-primary" />
+          <p className="line-clamp-2 border-t border-dashed border-border/80 pt-2.5 text-[11px] leading-relaxed text-muted-foreground italic">
+            <Sparkles className="mr-1 inline size-3 text-primary/85" />
             {item.reason}
           </p>
         )}
 
-        {/* Actions */}
-        <div className="mt-auto flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
-          >
-            Chi tiết
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1"
-            onClick={() => navigate(`/booking/${item.sub_field_id}`)}
-          >
-            Đặt ngay
-            <ArrowRight data-icon="inline-end" />
-          </Button>
+        {/* Price & Actions */}
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/50 pt-3">
+          <div className="flex flex-col">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none mb-1">
+              Giá từ
+            </span>
+            {sf.price_min && Number(sf.price_min) > 0 ? (
+              <span className="font-display text-sm font-bold text-primary leading-none">
+                {formatPrice(Number(sf.price_min))}
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  /h
+                </span>
+              </span>
+            ) : (
+              <span className="text-xs italic text-muted-foreground leading-none">
+                Đang cập nhật
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 rounded-full px-2.5 text-[11px] font-medium"
+              onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
+            >
+              Chi tiết
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 rounded-full bg-primary px-3 text-[11px] font-semibold text-primary-foreground hover:bg-primary/95"
+              onClick={() => navigate(`/booking/${item.sub_field_id}`)}
+            >
+              Đặt ngay
+              <ArrowRight className="ml-1 size-3" />
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

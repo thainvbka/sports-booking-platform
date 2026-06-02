@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { bookingService } from "@/services/booking.service";
 import { Loader2, CheckCircle2, XCircle, Calendar, ArrowRight, ShieldCheck, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/formatPrice";
 
 export function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -175,7 +176,7 @@ export function PaymentSuccessPage() {
                   Tổng thanh toán
                 </span>
                 <span className="font-bold text-foreground text-base">
-                  {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount)}
+                  {formatPrice(amount)}
                 </span>
               </div>
             )}

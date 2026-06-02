@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function AdminComplexesPage() {
   const {
@@ -101,11 +102,6 @@ export default function AdminComplexesPage() {
     }
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
 
   const getSportLabel = (sportType: unknown) => {
     const key = String(sportType) as keyof typeof SPORT_TYPE_LABELS;

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import type { SportRevenuePoint } from "@/types/admin.types";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { fmtVND, fmtM } from "@/lib/format";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -16,15 +17,6 @@ const COLORS = [
   "#8b5cf6",
   "#ec4899",
 ];
-
-const fmtM = (n: number) =>
-  n >= 1_000_000
-    ? `${(n / 1_000_000).toFixed(1)}M`
-    : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K`
-      : String(n);
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
 
 interface SportRevenueMixProps {
   data: SportRevenuePoint[];
