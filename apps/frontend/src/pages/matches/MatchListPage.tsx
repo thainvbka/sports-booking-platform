@@ -116,7 +116,7 @@ function ScoreboardChip({
       </div>
       <p
         className={cn(
-          "font-display text-3xl font-black italic leading-none tabular-nums",
+          "italic leading-none tabular-nums text-title",
           accentValue[accent],
         )}
       >

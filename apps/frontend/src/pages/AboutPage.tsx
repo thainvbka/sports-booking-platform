@@ -332,7 +332,7 @@ export function AboutPage() {
                 Chương 01 · Khởi nguyên
               </span>
 
-              <h2 className="font-display text-3xl font-black leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              <h2 className="leading-[1.1] tracking-tight text-foreground sm:text-4xl lg:text-5xl text-title">
                 Câu chuyện bắt đầu bằng{" "}
                 <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
                   một cú điện thoại thứ mười
@@ -400,7 +400,7 @@ export function AboutPage() {
               <Trophy className="size-3 text-primary" />
               Ba quy tắc định hình mọi quyết định
             </span>
-            <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h2 className="leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl text-title">
               Luật chơi nội bộ,{" "}
               <span className="italic text-primary">dán trên tường đội</span>.
             </h2>
@@ -426,7 +426,7 @@ export function AboutPage() {
               <CalendarCheck className="size-3 text-primary" />
               Dòng thời gian
             </span>
-            <h2 className="mt-4 font-display text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
+            <h2 className="mt-4 leading-tight tracking-tight text-foreground sm:text-4xl text-title">
               Đường chạy{" "}
               <span className="italic text-primary">từ ý tưởng tới sân đấu</span>.
             </h2>
@@ -487,7 +487,7 @@ export function AboutPage() {
                 <ShieldCheck className="size-3 text-primary" />
                 Lưu ý quan trọng
               </span>
-              <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
+              <h2 className="leading-tight tracking-tight text-foreground sm:text-4xl text-title">
                 Trước khi vào sân,{" "}
                 <span className="italic text-primary">đọc kỹ luật</span>.
               </h2>
@@ -549,7 +549,7 @@ export function AboutPage() {
                 </span>
                 Kickoff
               </span>
-              <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+              <h2 className="leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.75rem] text-title">
                 Sẵn sàng bước vào{" "}
                 <span className="italic text-accent-sport">trận đầu tiên</span>{" "}
                 với T-Sport?

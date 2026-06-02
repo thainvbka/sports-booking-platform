@@ -69,7 +69,7 @@ export function RecommendedCourts() {
               </span>
             </div>
 
-            <h2 className="mt-3 font-display text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl">
+            <h2 className="mt-3 leading-tight tracking-tight text-foreground sm:text-4xl text-title">
               {isPersonalized ? (
                 <>
                   Sân phù hợp với{" "}

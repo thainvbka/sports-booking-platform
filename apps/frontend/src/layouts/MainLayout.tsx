@@ -375,7 +375,7 @@ export function MainLayout() {
                   <Button
                     size="sm"
                     asChild
-                    className="group/cta h-9 gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/92 hover:shadow-primary/40"
+                    className="group/cta h-9 gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/92 hover:shadow-primary/40 sports-glow-primary"
                   >
                     <Link to="/auth/register">
                       Đăng ký

@@ -270,7 +270,7 @@ function ComplexHero({
               ) : null}
             </div>
 
-            <h1 className="font-display text-3xl leading-[1.05] font-black tracking-tight italic sm:text-4xl lg:text-5xl">
+            <h1 className="leading-[1.05] tracking-tight italic sm:text-4xl lg:text-5xl text-title">
               {complex.complex_name}
             </h1>
 

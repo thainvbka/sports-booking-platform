@@ -40,7 +40,7 @@ export function JoinMatchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md shadow-modal">
         <DialogHeader>
           <div className="mb-1 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent-sport/30 bg-accent-sport/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-sport">
             <Sparkles className="size-3" />

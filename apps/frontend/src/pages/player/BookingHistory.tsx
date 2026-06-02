@@ -481,7 +481,7 @@ function EmptyLedger() {
         <Ticket className="size-6" />
       </div>
       <div className="flex flex-col gap-1">
-        <h3 className="font-display text-xl font-bold italic tracking-tight">
+        <h3 className="italic tracking-tight text-heading">
           Chưa có vé nào trong sổ
         </h3>
         <p className="max-w-md text-sm text-muted-foreground">

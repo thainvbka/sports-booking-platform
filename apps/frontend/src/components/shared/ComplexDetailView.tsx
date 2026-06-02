@@ -183,7 +183,7 @@ export function ComplexDetailView({
 
       {/* Temporary notice for testers (owner mode only)
       {mode === "owner" ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert className="status-surface-warning">
           <TriangleAlert className="h-4 w-4 text-amber-700" />
           <AlertDescription className="text-sm">
             Khu phức hợp sẽ được <b>active</b> ngay khi tạo mới để tiện test các

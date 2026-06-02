@@ -763,10 +763,10 @@ function MatchInfoCard({
                 className={cn(
                   "text-[11px]",
                   countdown.expired
-                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    ? "status-surface-error"
                     : countdown.urgent
-                      ? "border-amber-200 bg-amber-50 text-amber-700"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                      ? "status-surface-warning"
+                      : "status-surface-success",
                 )}
               >
                 <Timer data-icon="inline-start" />

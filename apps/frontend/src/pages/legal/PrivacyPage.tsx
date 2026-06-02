@@ -285,7 +285,7 @@ export const PrivacyPage = () => {
                       >
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge variant="secondary">Mục {index + 1}</Badge>
-                          <h2 className="font-display text-xl font-bold tracking-tight text-foreground">
+                          <h2 className="tracking-tight text-foreground text-heading">
                             {section.title}
                           </h2>
                         </div>

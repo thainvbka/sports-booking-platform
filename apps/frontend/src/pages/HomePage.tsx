@@ -27,6 +27,29 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+function MarqueeBanner() {
+  const announcements = [
+    "🔥 Sân Pickleball Hàng Đẫy giảm giá 20% khung giờ sáng!",
+    "⚽ Giải vô địch các Câu lạc bộ Bóng đá phủi Hà Nội sắp khai mạc!",
+    "🏸 Đã có hơn 1.200 lượt đặt sân thành công trong 24 giờ qua!",
+    "🏓 Đăng ký ngay để tham gia kèo đấu Pickleball giao lưu hấp dẫn tối nay!",
+    "🏆 T-Sport - Chốt sân nhanh gọn, Ra trận an tâm!"
+  ];
+
+  return (
+    <div className="relative w-full overflow-hidden bg-primary/10 border-b border-primary/20 py-2.5 text-xs text-primary font-medium tracking-wide">
+      <div className="flex w-max animate-marquee gap-8 whitespace-nowrap">
+        {[...announcements, ...announcements].map((text, idx) => (
+          <span key={idx} className="flex items-center gap-2">
+            <span className="inline-block size-1.5 rounded-full bg-accent-sport animate-pulse" />
+            {text}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface HomeSportCategory {
   name: string;
   emoji: string;
@@ -155,6 +178,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <MarqueeBanner />
       <HeroSection />
       <RecommendedCourts />
       <SportCategoriesSection />
@@ -206,7 +230,7 @@ function HeroSection() {
           <div className="motion-safe-fade-up">
            
 
-            <h1 className="mt-6 font-display text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[5.25rem]">
+            <h1 className="mt-6 leading-[0.95] text-white sm:text-6xl lg:text-[5.25rem] text-display">
               Chốt sân.
               <br />
               <span className="italic text-accent-sport">Ra trận</span>{" "}
@@ -263,7 +287,7 @@ function HeroSection() {
                     index % 2 === 1 && "lg:translate-y-6",
                   )}
                 >
-                  <div className="font-display text-3xl font-black text-white sm:text-4xl">
+                  <div className="text-white sm:text-4xl text-title">
                     {stat.value}
                   </div>
                   <div className="mt-1 text-xs font-medium uppercase tracking-wider text-white/60">
@@ -368,7 +392,7 @@ function SectionHeader({
         </div>
         <h2
           className={cn(
-            "mt-3 font-display text-3xl font-black leading-tight tracking-tight sm:text-4xl",
+            "mt-3 leading-tight tracking-tight sm:text-4xl text-title",
             isDark ? "text-white" : "text-foreground",
           )}
         >
@@ -785,7 +809,7 @@ function CtaSection() {
             <Button
               asChild
               size="lg"
-              className="rounded-full bg-white px-6 text-primary shadow-cta hover:bg-white/90"
+              className="rounded-full bg-white px-6 text-primary shadow-cta hover:bg-white/90 sports-glow-primary"
             >
               <Link to="/search">
                 Đặt sân ngay

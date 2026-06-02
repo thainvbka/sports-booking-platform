@@ -183,7 +183,7 @@ function VenueBriefCard({
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
         <Card className="rounded-3xl border-border/70 bg-card shadow-sm">
           <CardContent className="flex flex-col gap-4 p-6">
-            <h2 className="font-display text-3xl leading-tight font-black tracking-tight italic md:text-4xl">
+            <h2 className="leading-tight tracking-tight italic md:text-4xl text-title">
               Sân sẵn sàng <span className="text-primary">vào trận</span>.
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">

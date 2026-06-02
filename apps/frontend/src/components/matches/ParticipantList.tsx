@@ -124,7 +124,7 @@ export function ParticipantList({
                           {participant.player.skill_level ? (
                             <Badge
                               variant="outline"
-                              className="border-emerald-200 bg-emerald-50 text-[10.5px] text-emerald-700"
+                              className="text-[10.5px] status-surface-success"
                             >
                               {
                                 MATCH_SKILL_LABELS[

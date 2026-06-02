@@ -148,13 +148,13 @@ export function TimeSlotsGrid({
         <Badge className="bg-primary text-primary-foreground">Đang chọn</Badge>
         <Badge
           variant="outline"
-          className="border-amber-200 bg-amber-50 text-amber-700"
+          className="status-surface-warning"
         >
           Chờ thanh toán
         </Badge>
         <Badge
           variant="outline"
-          className="border-red-200 bg-red-50 text-red-600"
+          className="status-surface-error"
         >
           Đã đặt
         </Badge>
@@ -177,7 +177,7 @@ export function TimeSlotsGrid({
                   status === "PENDING" &&
                     "bg-yellow-50 border-yellow-200 text-yellow-700",
                   status === "BOOKED" &&
-                    "bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-90",
+                    "cursor-not-allowed opacity-90 status-surface-error",
                 )}
                 style={
                   status === "BOOKED"

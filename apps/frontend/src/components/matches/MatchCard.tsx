@@ -115,8 +115,8 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
   return (
     <Card
       className={cn(
-        "group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border-border/80 p-0",
-        "transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg",
+        "group relative flex h-full flex-col gap-0 overflow-hidden rounded-2xl border-border/80 p-0 shadow-card",
+        "transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-hover",
       )}
     >
       {/* Status accent bar */}
