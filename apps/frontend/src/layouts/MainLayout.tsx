@@ -2,6 +2,7 @@ import { Logo } from "@/components/admin/Logo";
 import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
 import { Footer } from "@/components/shared/Footer";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -218,6 +219,7 @@ export function MainLayout() {
 
             {/* RIGHT · Auth actions */}
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               {user ? (
                 <>
                   {isPlayer ? <NotificationBell targetRole="PLAYER" /> : null}
