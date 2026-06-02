@@ -7,17 +7,19 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    BOOKING_STATUS_COLORS,
-    BOOKING_STATUS_LABELS,
     RECURRENCE_TYPE_LABELS,
-    RECURRING_STATUS_COLORS,
-    RECURRING_STATUS_LABELS,
-    SPORT_TYPE_LABELS,
 } from "@/lib/constants";
-import { type BookingResponse, BookingStatus, type SportType } from "@/types";
-import { formatPrice } from "@/utils";
+import { type BookingResponse, BookingStatus } from "@/types";
+import {
+  formatPrice,
+  formatDateVn,
+  getBookingStatusColor,
+  getBookingStatusLabel,
+  getRecurringStatusColor,
+  getRecurringStatusLabel,
+  getSportTypeLabel,
+} from "@/utils";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { Clock, MapPin, Sparkles, Star } from "lucide-react";
 
 interface BookingDetailDialogProps {
@@ -29,25 +31,8 @@ interface BookingDetailDialogProps {
   canUpdateReview?: boolean;
 }
 
-const getStatusColor = (status: BookingStatus) => {
-  return BOOKING_STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
-};
 
-const getStatusLabel = (status: BookingStatus) => {
-  return BOOKING_STATUS_LABELS[status] || status;
-};
 
-const getRecurringStatusColor = (status: string) => {
-  return RECURRING_STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
-};
-
-const getRecurringStatusLabel = (status: string) => {
-  return RECURRING_STATUS_LABELS[status] || status;
-};
-
-const getSportTypeLabel = (sportType: string) => {
-  return SPORT_TYPE_LABELS[sportType as SportType] || sportType;
-};
 
 export function BookingDetailDialog({
   open,
@@ -77,13 +62,13 @@ export function BookingDetailDialog({
               <Badge
                 className={
                   booking.type === "SINGLE"
-                    ? getStatusColor(booking.status)
-                    : getRecurringStatusColor(booking.status)
+                    ? getBookingStatusColor(booking.status, "bg-gray-100 text-gray-800")
+                    : getRecurringStatusColor(booking.status, "bg-gray-100 text-gray-800")
                 }
               >
                 {booking.type === "SINGLE"
-                  ? getStatusLabel(booking.status)
-                  : getRecurringStatusLabel(booking.status)}
+                  ? getBookingStatusLabel(booking.status, booking.status)
+                  : getRecurringStatusLabel(booking.status, booking.status)}
               </Badge>
             </div>
             <div className="text-sm space-y-1">
@@ -104,8 +89,8 @@ export function BookingDetailDialog({
                   </span>
                   <span>•</span>
                   <span>
-                    {format(new Date(booking.start_date), "dd/MM/yyyy")} -{" "}
-                    {format(new Date(booking.end_date), "dd/MM/yyyy")}
+                    {formatDateVn(booking.start_date)} -{" "}
+                    {formatDateVn(booking.end_date)}
                   </span>
                 </div>
               )}
@@ -120,9 +105,7 @@ export function BookingDetailDialog({
                     Thời gian đặt sân
                   </p>
                   <div className="font-semibold text-base">
-                    {format(new Date(booking.start_time), "EEEE, dd/MM/yyyy", {
-                      locale: vi,
-                    })}
+                    {formatDateVn(booking.start_time, "EEEE, dd/MM/yyyy")}
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="w-4 h-4" />
@@ -176,9 +159,7 @@ export function BookingDetailDialog({
                     </div>
                     <div>
                       <div className="font-medium">
-                        {format(new Date(slot.start_time), "EEEE, dd/MM/yyyy", {
-                          locale: vi,
-                        })}
+                        {formatDateVn(slot.start_time, "EEEE, dd/MM/yyyy")}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {format(new Date(slot.start_time), "HH:mm")} -{" "}

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 
 const VN_TIMEZONE = "Asia/Ho_Chi_Minh";
@@ -88,5 +89,19 @@ export const formatTime = (time: string | Date | unknown): string => {
   }
 
   return "--:--";
+};
+
+/**
+ * Format a date/timestamp to Vietnamese locale string.
+ * Defaults format pattern to "dd/MM/yyyy".
+ */
+export const formatDateVn = (
+  date: Date | string | number | null | undefined,
+  formatPattern = "dd/MM/yyyy",
+): string => {
+  if (!date) return "";
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return "";
+  return format(d, formatPattern, { locale: vi });
 };
 

@@ -30,18 +30,21 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import {
-  BOOKING_STATUS_COLORS,
   BOOKING_STATUS_LABELS,
   RECURRENCE_TYPE_LABELS,
   RECURRING_STATUS_COLORS,
   RECURRING_STATUS_LABELS,
-  SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { fmtVND } from "@/lib/format";
 import { useAdminBookingStore } from "@/store/admin/useAdminBookingStore";
 import { useAdminRecurringBookingStore } from "@/store/admin/useAdminRecurringBookingStore";
+import {
+  formatDateVn,
+  getBookingStatusColor,
+  getBookingStatusLabel,
+  getSportTypeLabel,
+} from "@/utils";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   Calendar,
   CalendarRange,
@@ -179,16 +182,15 @@ export default function AdminBookingsPage() {
   }, [recurringSearch]);
 
   const bookingStatusColor = (status: string) =>
-    BOOKING_STATUS_COLORS[status as keyof typeof BOOKING_STATUS_COLORS] ||
-    "bg-muted text-muted-foreground";
+    getBookingStatusColor(status, "bg-muted text-muted-foreground");
 
   const bookingStatusLabel = (status: string) =>
-    BOOKING_STATUS_LABELS[status as keyof typeof BOOKING_STATUS_LABELS] ||
-    "Không xác định";
+    getBookingStatusLabel(status, "Không xác định");
 
-  const sportLabel = (sportType: string) =>
-    SPORT_TYPE_LABELS[sportType as keyof typeof SPORT_TYPE_LABELS] ||
-    "Không xác định";
+  const sportLabel = (sportType: string) => {
+    const label = getSportTypeLabel(sportType);
+    return label === sportType ? "Không xác định" : label;
+  };
 
   const singleStatItems = [
     {
@@ -294,7 +296,7 @@ export default function AdminBookingsPage() {
           <div className="flex items-center gap-1.5">
             <Calendar className="size-3 text-muted-foreground" />
             <span>
-              {format(new Date(b.start_time), "dd/MM/yyyy", { locale: vi })}
+              {formatDateVn(b.start_time)}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -416,8 +418,8 @@ export default function AdminBookingsPage() {
             {RECURRENCE_TYPE_LABELS[rb.recurrence_type] ?? rb.recurrence_type}
           </Badge>
           <span className="text-[10px] text-muted-foreground">
-            {format(new Date(rb.start_date), "dd/MM/yy")} →{" "}
-            {format(new Date(rb.end_date), "dd/MM/yy")}
+            {formatDateVn(rb.start_date, "dd/MM/yy")} →{" "}
+            {formatDateVn(rb.end_date, "dd/MM/yy")}
           </span>
         </div>
       ),
@@ -706,19 +708,17 @@ export default function AdminBookingsPage() {
               />
               <DetailInfoCard
                 label="Thời gian"
-                value={format(
-                  new Date(selectedBooking.start_time),
+                value={formatDateVn(
+                  selectedBooking.start_time,
                   "HH:mm – dd/MM/yyyy",
-                  { locale: vi },
                 )}
                 helper={`Kết thúc: ${format(new Date(selectedBooking.end_time), "HH:mm")}`}
               />
               <DetailInfoCard
                 label="Ghi nhận hệ thống"
-                value={format(
-                  new Date(selectedBooking.created_at),
+                value={formatDateVn(
+                  selectedBooking.created_at,
                   "HH:mm dd/MM/yyyy",
-                  { locale: vi },
                 )}
               />
             </div>
@@ -787,7 +787,7 @@ export default function AdminBookingsPage() {
               />
               <DetailInfoCard
                 label="Thời gian nhóm"
-                value={`${format(new Date(selectedRecurring.start_date), "dd/MM/yyyy")} → ${format(new Date(selectedRecurring.end_date), "dd/MM/yyyy")}`}
+                value={`${formatDateVn(selectedRecurring.start_date)} → ${formatDateVn(selectedRecurring.end_date)}`}
               />
               <DetailInfoCard
                 label="Tổng số buổi"
@@ -812,9 +812,7 @@ export default function AdminBookingsPage() {
                         </span>
                         <div className="flex min-w-0 flex-col">
                           <span className="text-[11px] font-semibold text-foreground">
-                            {format(new Date(b.start_time), "EEEE dd/MM/yyyy", {
-                              locale: vi,
-                            })}
+                            {formatDateVn(b.start_time, "EEEE dd/MM/yyyy")}
                           </span>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <Clock className="size-2.5" />
