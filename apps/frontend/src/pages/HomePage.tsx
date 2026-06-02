@@ -1,10 +1,10 @@
 import { heroBg } from "@/assets";
+import { RecommendedCourts } from "@/components/player/RecommendedCourts";
 import { ComplexCard } from "@/components/shared/ComplexCard";
 import { CourtCard } from "@/components/shared/CourtCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SearchBar } from "@/components/shared/SearchBar";
-import { RecommendedCourts } from "@/components/player/RecommendedCourts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
@@ -34,7 +34,7 @@ function MarqueeBanner() {
     "🏸 Đã có hơn 1.200 lượt đặt sân thành công trong 24 giờ qua!",
     "🏓 Đăng ký ngay để tham gia kèo đấu Pickleball giao lưu hấp dẫn tối nay!",
     "🏆 T-Sport - Chốt sân nhanh gọn, Ra trận an tâm!"
-  ];
+  ]; 
 
   return (
     <div className="relative w-full overflow-hidden bg-primary/10 border-b border-primary/20 py-2.5 text-xs text-primary font-medium tracking-wide">
