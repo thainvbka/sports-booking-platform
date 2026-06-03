@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { bookingService } from "@/services/booking.service";
 import { Loader2, CheckCircle2, XCircle, Calendar, ArrowRight, ShieldCheck, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { formatPrice } from "@/utils/formatPrice";
+import { formatPrice } from "@/utils";
 
 export function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();

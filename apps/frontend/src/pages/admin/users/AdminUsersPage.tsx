@@ -28,8 +28,7 @@ import {
 } from "@/lib/constants";
 import { useAdminUserStore } from "@/store/admin/useAdminUserStore";
 import type { AdminUser } from "@/types/admin.types";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatDateVn } from "@/utils";
 import {
   Ban,
   Calendar,
@@ -192,7 +191,7 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Calendar className="size-3.5" />
           <span>
-            {format(new Date(user.created_at), "dd/MM/yyyy", { locale: vi })}
+            {formatDateVn(user.created_at, "dd/MM/yyyy")}
           </span>
         </div>
       ),

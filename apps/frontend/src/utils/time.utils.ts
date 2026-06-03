@@ -102,6 +102,7 @@ export const formatDateVn = (
   if (!date) return "";
   const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return "";
-  return format(d, formatPattern, { locale: vi });
+  const zonedDate = toZonedTime(d, VN_TIMEZONE);
+  return format(zonedDate, formatPattern, { locale: vi });
 };
 

@@ -33,8 +33,7 @@ import {
 import { extractLegalDocumentUrls } from "@/lib/legal-docs";
 import { useAdminComplexStore } from "@/store/admin/useAdminComplexStore";
 import type { AdminComplex } from "@/types/admin.types";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, formatDateVn } from "@/utils";
 import {
   AlertTriangle,
   CheckCircle,
@@ -52,7 +51,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { formatPrice } from "@/utils/formatPrice";
+
 import { useDebounce } from "@/hooks/useDebounce";
 
 export default function AdminComplexesPage() {
@@ -434,10 +433,9 @@ export default function AdminComplexesPage() {
               />
               <DetailInfoCard
                 label="Ngày đăng ký"
-                value={format(
-                  new Date(selectedComplex.created_at),
+                value={formatDateVn(
+                  selectedComplex.created_at,
                   "dd/MM/yyyy HH:mm",
-                  { locale: vi },
                 )}
               />
               <DetailInfoCard

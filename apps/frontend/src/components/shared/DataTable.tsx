@@ -1,14 +1,5 @@
 import { Button } from "@/components/ui/button";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
     Table,
     TableBody,
     TableCell,
@@ -16,10 +7,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { MouseEvent, ReactNode } from "react";
-import { buildPageList } from "@/utils";
+import type { ReactNode } from "react";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 
 export interface Column<T> {
   header: string;
@@ -30,7 +20,7 @@ export interface Column<T> {
 
 interface DataTableProps<T> {
   data: T[];
-  columns: Column<T>[];
+  columns: ColumnsType<T>;
   isLoading?: boolean;
   pagination?: {
     page: number;
@@ -41,6 +31,8 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
 }
+
+type ColumnsType<T> = Column<T>[];
 
 export function DataTable<T>({
   data,
@@ -113,11 +105,11 @@ export function DataTable<T>({
       {pagination &&
         pagination.totalPages > 1 &&
         (paginationStyle === "search" ? (
-          <SearchStylePagination
+          <PaginationBar
             page={pagination.page}
             totalPages={pagination.totalPages}
-            isLoading={isLoading}
             onPageChange={pagination.onPageChange}
+            disabled={isLoading}
           />
         ) : (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
@@ -152,71 +144,5 @@ export function DataTable<T>({
   );
 }
 
-interface SearchStylePaginationProps {
-  page: number;
-  totalPages: number;
-  isLoading?: boolean;
-  onPageChange: (page: number) => void;
-}
-
-function SearchStylePagination({
-  page,
-  totalPages,
-  isLoading,
-  onPageChange,
-}: SearchStylePaginationProps) {
-  const pageItems = buildPageList(page, totalPages);
-
-  const go = (event: MouseEvent, target: number) => {
-    event.preventDefault();
-    if (isLoading) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="mt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || isLoading}
-            className={cn((page === 1 || isLoading) && "pointer-events-none opacity-50")}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-
-        {pageItems.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages || isLoading}
-            className={cn(
-              (page === totalPages || isLoading) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
 
 

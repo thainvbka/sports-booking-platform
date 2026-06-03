@@ -51,7 +51,7 @@ import {
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { formatPrice } from "@/utils/formatPrice";
+import { formatPrice } from "@/utils";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 

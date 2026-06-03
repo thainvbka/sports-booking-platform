@@ -45,7 +45,7 @@ import {
   getBookingStatusLabel,
   getSportTypeLabel,
 } from "@/utils";
-import { format } from "date-fns";
+
 import {
   Calendar,
   CalendarRange,
@@ -303,8 +303,8 @@ export default function AdminBookingsPage() {
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Clock className="size-3" />
             <span>
-              {format(new Date(b.start_time), "HH:mm")} –{" "}
-              {format(new Date(b.end_time), "HH:mm")}
+              {formatDateVn(b.start_time, "HH:mm")} –{" "}
+              {formatDateVn(b.end_time, "HH:mm")}
             </span>
           </div>
         </div>
@@ -713,7 +713,7 @@ export default function AdminBookingsPage() {
                   selectedBooking.start_time,
                   "HH:mm – dd/MM/yyyy",
                 )}
-                helper={`Kết thúc: ${format(new Date(selectedBooking.end_time), "HH:mm")}`}
+                helper={`Kết thúc: ${formatDateVn(selectedBooking.end_time, "HH:mm")}`}
               />
               <DetailInfoCard
                 label="Ghi nhận hệ thống"
@@ -817,8 +817,8 @@ export default function AdminBookingsPage() {
                           </span>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <Clock className="size-2.5" />
-                            {format(new Date(b.start_time), "HH:mm")} –{" "}
-                            {format(new Date(b.end_time), "HH:mm")}
+                            {formatDateVn(b.start_time, "HH:mm")} –{" "}
+                            {formatDateVn(b.end_time, "HH:mm")}
                           </div>
                         </div>
                       </div>

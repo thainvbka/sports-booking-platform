@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { adminService } from "@/services/admin.service";
 import { useAdminStore } from "@/store/admin/useAdminStore";
 import { useEffect, useMemo, useState } from "react";
+import { formatDateVn } from "@/utils";
 
 interface SectionHeadingProps {
   index: number;
@@ -103,13 +104,7 @@ export default function Dashboard() {
 
   if (!analytics) return null;
 
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const formattedDate = formatDateVn(new Date(), "EEEE, 'ngày' d 'tháng' M 'năm' yyyy");
 
   return (
     <div className="space-y-5 pb-8">
