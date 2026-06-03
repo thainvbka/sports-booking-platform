@@ -5,4 +5,6 @@ export * from "./formatPrice";
 export * from "./price";
 export * from "./booking";
 export * from "./time.utils";
+export * from "./pagination";
+
 
