@@ -12,15 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import {
   Select,
   SelectContent,
@@ -43,7 +35,7 @@ import {
 } from "@/types/match.type";
 import { getNameInitials } from "@/utils/review.utils";
 import { getPlayerProfileId } from "@/utils/userProfile";
-import { buildPageList } from "@/utils";
+
 import {
   ArrowUpRight,
   CircleAlert,
@@ -433,7 +425,6 @@ export function MyMatchesPage() {
           <PaginationBar
             page={pagination.page}
             totalPages={totalPages}
-            hasNext={pagination.has_next}
             onPageChange={setPage}
             disabled={isLoading}
           />
@@ -444,74 +435,6 @@ export function MyMatchesPage() {
   );
 }
 
-// ═════════════════════════════════════════════════════════════════════════
-// Pagination bar (shared style with list/detail pages)
-// ═════════════════════════════════════════════════════════════════════════
-function PaginationBar({
-  page,
-  totalPages,
-  hasNext,
-  onPageChange,
-  disabled,
-}: {
-  page: number;
-  totalPages: number;
-  hasNext: boolean;
-  onPageChange: (page: number) => void;
-  disabled?: boolean;
-}) {
-  const items = buildPageList(page, totalPages);
 
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (disabled) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="pt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || disabled}
-            className={cn(
-              (page === 1 || disabled) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-        {items.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={!hasNext || disabled}
-            className={cn(
-              (!hasNext || disabled) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
 
 

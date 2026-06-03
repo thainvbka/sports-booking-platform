@@ -3,15 +3,7 @@ import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useComplexStore } from "@/store/owner/useComplexStore";
@@ -27,7 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { buildPageList } from "@/utils";
+
 
 type StatusFilter = "ALL" | ComplexStatus;
 
@@ -95,7 +87,6 @@ export function ComplexesPage() {
 
   const totalPages = pagination?.totalPages ?? 1;
   const currentPage = pagination?.page ?? 1;
-  const pageList = buildPageList(currentPage, totalPages);
 
   const goTo = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
@@ -230,62 +221,11 @@ export function ComplexesPage() {
 
           {/* Pagination */}
           {pagination && totalPages > 1 ? (
-            <div className="mt-2">
-              <Pagination className="mt-2">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        goTo(currentPage - 1);
-                      }}
-                      className={cn(
-                        currentPage <= 1 &&
-                          "pointer-events-none opacity-40",
-                      )}
-                      aria-disabled={currentPage <= 1}
-                    />
-                  </PaginationItem>
-
-                  {pageList.map((page, index) =>
-                    page === "ellipsis" ? (
-                      <PaginationItem key={`ellipsis-${index}`}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    ) : (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          isActive={page === currentPage}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            goTo(page);
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        goTo(currentPage + 1);
-                      }}
-                      className={cn(
-                        currentPage >= totalPages &&
-                          "pointer-events-none opacity-40",
-                      )}
-                      aria-disabled={currentPage >= totalPages}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+            <PaginationBar
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={goTo}
+            />
           ) : null}
         </>
       ) : (

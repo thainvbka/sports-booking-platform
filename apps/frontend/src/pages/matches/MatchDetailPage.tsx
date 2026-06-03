@@ -24,15 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Separator } from "@/components/ui/separator";
 import { SPORT_TYPE_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -62,7 +54,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { buildPageList } from "@/utils";
+
 
 const PARTICIPANTS_PAGE_SIZE = 10;
 
@@ -1108,74 +1100,5 @@ function ActionPanel({
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Pagination bar (shared style with SearchPage / ReviewsList)
-// ═══════════════════════════════════════════════════════════════════════════
-function PaginationBar({
-  page,
-  totalPages,
-  onPageChange,
-  disabled,
-}: {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  disabled?: boolean;
-}) {
-  if (totalPages <= 1) return null;
 
-  const items = buildPageList(page, totalPages);
-
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (disabled) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="pt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || disabled}
-            className={cn(
-              (page === 1 || disabled) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-        {items.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages || disabled}
-            className={cn(
-              (page === totalPages || disabled) &&
-                "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
 
