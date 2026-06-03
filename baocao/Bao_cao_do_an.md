@@ -418,19 +418,19 @@ Việc phân tách cấu trúc này giúp mã nguồn đạt tính mô-đun hóa
 
 ### 4.2.1 Thiết kế giao diện
 
-Giao diện ứng dụng được thiết kế để phục vụ ba nhóm người dùng gồm người chơi, chủ sân và quản trị viên. Phần này đặc tả các thông số thiết kế màn hình mục tiêu, quy chuẩn về phối màu, kiểu chữ, nút bấm, biểu mẫu nhập liệu và vị trí hiển thị thông báo phản hồi của hệ thống.
+Giao diện hệ thống được thiết kế phục vụ ba nhóm người dùng chính gồm người chơi, chủ sân và quản trị viên. Nội dung phần này mô tả các tiêu chuẩn thiết kế giao diện bao gồm bố cục màn hình, hệ thống màu sắc, kiểu chữ, thành phần điều khiển và cơ chế hiển thị thông báo hệ thống.
 
-Giao diện của hệ thống được thiết kế theo hướng đáp ứng (Responsive Web Design) để hiển thị phù hợp trên cả máy tính và thiết bị di động. Trên máy tính cá nhân, giao diện hiển thị tối ưu ở độ phân giải 1920x1080 pixel và tự co giãn theo các kích thước màn hình phổ biến từ 13 inch đến 27 inch. Trên điện thoại di động, giao diện được căn chỉnh cho màn hình có chiều rộng tối thiểu 375 pixel, phù hợp với các dòng điện thoại thông minh thông dụng. Cơ chế bố cục lưới của CSS được sử dụng để tự động sắp xếp các thành phần giao diện khi thay đổi kích thước trình duyệt hoặc thiết bị hiển thị.
+Hệ thống được xây dựng theo hướng responsive design, đảm bảo khả năng hiển thị tương thích trên nhiều thiết bị. Trên máy tính, giao diện tối ưu ở độ phân giải 1920x1080 và tự động co giãn linh hoạt trên các màn hình từ 13 đến 27 inch. Trên thiết bị di động, giao diện được tối ưu cho chiều rộng tối thiểu 375px, phù hợp với các thiết bị smartphone phổ biến.
 
-Hệ thống hỗ trợ cả chế độ sáng (Light Mode) và chế độ tối (Dark Mode), trong đó chế độ tối được sử dụng làm giao diện mặc định nhằm giảm độ chói màn hình khi sử dụng trong thời gian dài. Tông màu nền chính là màu xám tối và đen, kết hợp với màu xanh dương chủ đạo đại diện cho thương hiệu để tô điểm cho thanh điều hướng và các nút bấm quan trọng. Màu xanh lục được dùng làm điểm nhấn cho các biểu tượng thể thao và hiển thị trạng thái đặt sân thành công, còn màu đỏ được dành riêng cho các cảnh báo lỗi hoặc hủy giao dịch.
+Hệ thống hỗ trợ cả light mode và dark mode, trong đó dark mode được đặt làm chế độ mặc định. Màu nền chủ đạo là các tông xám đậm và đen, kết hợp với màu xanh dương cho các thành phần quan trọng như thanh điều hướng và nút hành động chính. Màu xanh lá được sử dụng để biểu thị trạng thái thành công, trong khi màu đỏ được sử dụng cho các cảnh báo lỗi hoặc hành động nguy hiểm.
 
-Phông chữ được sử dụng thống nhất trên toàn bộ ứng dụng là phông không chân `Inter` và `Plus Jakarta Sans` để người dùng dễ đọc trên các kích thước màn hình khác nhau. Kích thước chữ được phân cấp rõ ràng giữa tiêu đề trang in đậm cỡ lớn, tiêu đề phân khu chức năng cỡ vừa, và phần nội dung văn bản chính có kích thước nhỏ gọn nhưng rõ nét.
+Hệ thống sử dụng thống nhất hai phông chữ không chân là Inter và Plus Jakarta Sans, đảm bảo tính dễ đọc trên nhiều thiết bị. Hệ thống phân cấp chữ rõ ràng với tiêu đề lớn cho trang chính, tiêu đề trung bình cho các khu vực chức năng và nội dung chính với kích thước tiêu chuẩn dễ đọc.
 
-Các nút bấm trong hệ thống được thiết kế đồng bộ với các góc bo tròn nhẹ. Hệ thống quy định rõ ba kiểu nút cơ bản bao gồm nút bấm chính (như Đặt sân, Thanh toán) sử dụng màu xanh dương nổi bật, nút phụ (như Quay lại, Hủy) sử dụng màu nền xám tối hoặc chỉ hiển thị viền ngoài, và nút nguy hiểm (như Xóa lịch, Hủy đơn) sử dụng màu nền đỏ để người dùng dễ dàng nhận biết.
+Các thành phần nút bấm được thiết kế đồng nhất với bo góc nhẹ nhằm tăng tính thân thiện. Hệ thống phân loại ba nhóm nút chính: nút chính sử dụng màu xanh dương cho các hành động quan trọng như đặt sân hoặc thanh toán; nút phụ sử dụng nền xám hoặc viền; và nút nguy hiểm sử dụng màu đỏ cho các thao tác như xóa hoặc hủy.
 
-Các biểu mẫu nhập liệu như biểu mẫu đăng ký, đặt sân hay điền thông tin cá nhân đều có các ô nhập liệu được thiết kế đồng nhất về chiều cao, viền mỏng màu xám và bo góc nhẹ. Khi phát hiện thông tin nhập vào không đúng định dạng, hệ thống sẽ hiển thị một dòng thông báo lỗi ngắn màu đỏ ngay phía dưới ô nhập tương ứng để người dùng kịp thời điều chỉnh.
+Các biểu mẫu nhập liệu có chiều cao đồng nhất, viền mỏng màu xám và bo góc nhẹ. Khi dữ liệu nhập không hợp lệ, hệ thống hiển thị thông báo lỗi ngay bên dưới trường nhập tương ứng bằng màu đỏ nhằm giúp người dùng dễ dàng nhận biết và chỉnh sửa.
 
-Các thông điệp phản hồi nhanh của hệ thống như thông báo đặt sân thành công được quy định hiển thị ở góc trên bên phải màn hình đối với máy tính, và ở chính giữa phía trên đối với điện thoại. Các thông báo này tự động ẩn đi sau 3 giây để tránh gây cản trở tầm nhìn của người dùng.
+Các thông báo phản hồi được hiển thị ở góc trên bên phải màn hình đối với giao diện desktop và ở phía trên trung tâm đối với thiết bị di động. Các thông báo này tự động biến mất sau khoảng 3 giây để không gây gián đoạn trải nghiệm người dùng.
 
 #### c. Bản vẽ thiết kế bố cục giao diện (UI Layout Wireframes)
 
