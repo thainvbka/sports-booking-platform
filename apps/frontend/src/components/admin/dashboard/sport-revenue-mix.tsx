@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/card";
 import type { SportRevenuePoint } from "@/types/admin.types";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { fmtM } from "@/lib/format";
+import { formatPrice } from "@/utils";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -16,15 +18,6 @@ const COLORS = [
   "#8b5cf6",
   "#ec4899",
 ];
-
-const fmtM = (n: number) =>
-  n >= 1_000_000
-    ? `${(n / 1_000_000).toFixed(1)}M`
-    : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K`
-      : String(n);
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
 
 interface SportRevenueMixProps {
   data: SportRevenuePoint[];
@@ -72,7 +65,7 @@ export function SportRevenueMix({ data }: SportRevenueMixProps) {
                   boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
                 }}
                 itemStyle={{ color: "#fff" }}
-                formatter={(val: number) => [fmtVND(val), "Doanh thu"]}
+                formatter={(val: number) => [formatPrice(val), "Doanh thu"]}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -128,7 +121,7 @@ export function SportRevenueMix({ data }: SportRevenueMixProps) {
                 </span>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="font-black text-foreground">
-                    {fmtVND(s.revenue)}
+                    {formatPrice(s.revenue)}
                   </span>
                   <span className="text-muted-foreground/50">·</span>
                   <span className="text-muted-foreground font-semibold">

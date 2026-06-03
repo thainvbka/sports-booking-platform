@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PaymentMethodSelector } from "@/components/shared/PaymentMethodSelector";
 
 export default function BookingReviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -203,41 +204,11 @@ export default function BookingReviewPage() {
             </>
           ) : null}
 
-          {/* Chọn phương thức thanh toán */}
-          <div className="space-y-3 rounded-lg border p-4 bg-card shadow-xs">
-            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-primary" />
-              Chọn phương thức thanh toán
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("STRIPE")}
-                className={cn(
-                  "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all gap-1 text-xs font-semibold cursor-pointer text-center",
-                  paymentMethod === "STRIPE"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border hover:bg-muted/50 text-muted-foreground"
-                )}
-              >
-                <span className="font-bold">Thẻ Quốc Tế (Stripe)</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Visa, Mastercard, JCB...</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("VNPAY")}
-                className={cn(
-                  "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all gap-1 text-xs font-semibold cursor-pointer text-center",
-                  paymentMethod === "VNPAY"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border hover:bg-muted/50 text-muted-foreground"
-                )}
-              >
-                <span className="font-bold">Cổng VNPAY (ATM / QR)</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Quét mã QR, Thẻ nội địa...</span>
-              </button>
-            </div>
-          </div>
+          <PaymentMethodSelector
+            value={paymentMethod}
+            onChange={setPaymentMethod}
+            disabled={isPaying}
+          />
 
           <div className="space-y-2 rounded-lg border bg-muted/30 p-4">
             <div className="flex items-center justify-between text-sm text-muted-foreground">

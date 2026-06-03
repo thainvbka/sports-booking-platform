@@ -22,15 +22,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
-import {
-  MapPin,
-  Search,
-} from "lucide-react";
+import { MapPin, Search } from "lucide-react";
 import React, { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { buildPageList } from "@/utils";
 
 interface ComplexDetailViewProps {
-  mode: "owner" | "public";
   // Data
   complex: ComplexDetail | null;
   subfields: SubField[];
@@ -50,7 +47,7 @@ interface ComplexDetailViewProps {
   // Navigation
   backLink?: string;
   onBack?: () => void;
-  backLabel: string;
+  backLabel?: string;
   /**
    * Short label used for the breadcrumb parent node.
    * Defaults to `backLabel` when not provided.
@@ -58,23 +55,8 @@ interface ComplexDetailViewProps {
   parentLabel?: string;
 }
 
-function buildPageList(
-  current: number,
-  total: number,
-): (number | "ellipsis")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const items: (number | "ellipsis")[] = [1];
-  if (current > 3) items.push("ellipsis");
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  for (let i = from; i <= to; i++) items.push(i);
-  if (current < total - 2) items.push("ellipsis");
-  items.push(total);
-  return items;
-}
 
 export function ComplexDetailView({
-  mode,
   complex,
   subfields,
   pagination,
@@ -90,7 +72,7 @@ export function ComplexDetailView({
   emptyStateButton,
   backLink,
   onBack,
-  backLabel,
+  backLabel = "Quay lại",
   parentLabel,
 }: ComplexDetailViewProps) {
   const [, setSearchParams] = useSearchParams();
@@ -181,17 +163,6 @@ export function ComplexDetailView({
         </Breadcrumb>
       ) : null}
 
-      {/* Temporary notice for testers (owner mode only)
-      {mode === "owner" ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
-          <TriangleAlert className="h-4 w-4 text-amber-700" />
-          <AlertDescription className="text-sm">
-            Khu phức hợp sẽ được <b>active</b> ngay khi tạo mới để tiện test các
-            chức năng khác (chưa có chức năng duyệt của admin).
-          </AlertDescription>
-        </Alert>
-      ) : null} */}
-
       {/* Hero Image Section */}
       {complex.complex_image && (
         <div className="relative h-87.5 md:h-112.5 lg:h-137.5 -mx-4 md:-mx-8 lg:mx-0 rounded-none lg:rounded-2xl overflow-hidden shadow-xl">
@@ -257,12 +228,10 @@ export function ComplexDetailView({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {mode === "owner" ? "Danh Sách Sân Con" : "Các Sân Có Sẵn"}
+              Danh Sách Sân Con
             </h2>
             <p className="text-muted-foreground text-sm">
-              {mode === "owner"
-                ? "Quản lý các sân và giá thuê trong khu phức hợp"
-                : "Chọn sân phù hợp để đặt lịch"}
+              Quản lý các sân và giá thuê trong khu phức hợp
             </p>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -331,7 +300,7 @@ export function ComplexDetailView({
                 <SubFieldCard
                   key={subField.id}
                   subField={subField}
-                  mode={mode === "owner" ? "owner" : "player"}
+                  mode="owner"
                   showComplexInfo={false}
                 />
               ))}
@@ -403,23 +372,15 @@ export function ComplexDetailView({
         ) : (
           <div className="space-y-4">
             <EmptyState
-              title={
-                mode === "owner"
-                  ? "Chưa có sân con nào"
-                  : "Không có sân nào khả dụng"
-              }
+              title="Chưa có sân con nào"
               description={
-                mode === "owner"
-                  ? "Khu phức hợp này chưa có sân con nào. Hãy thêm sân con để bắt đầu nhận lịch đặt."
-                  : searchTerm
-                    ? "Không tìm thấy sân nào phù hợp. Thử tìm kiếm với từ khóa khác."
-                    : "Khu phức hợp này hiện chưa có sân nào để đặt."
+                searchTerm
+                  ? "Không tìm thấy sân nào phù hợp. Thử tìm kiếm với từ khóa khác."
+                  : "Khu phức hợp này chưa có sân con nào. Hãy thêm sân con để bắt đầu nhận lịch đặt."
               }
-              actionLabel={
-                mode === "public" && searchTerm ? "Xóa từ khóa" : undefined
-              }
+              actionLabel={searchTerm ? "Xóa từ khóa" : undefined}
               onAction={
-                mode === "public" && searchTerm
+                searchTerm
                   ? () => {
                       onSearchChange("");
                     }

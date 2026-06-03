@@ -65,28 +65,28 @@ const TONE: Record<
   { chip: string; value: string; bar: string; bg: string; ring: string }
 > = {
   slate: {
-    chip: "border-slate-300/60 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200",
+    chip: "dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 status-surface-neutral",
     value: "text-slate-900 dark:text-slate-100",
     bar: "bg-slate-400",
     bg: "from-slate-500/8 via-transparent to-transparent",
     ring: "ring-slate-500/10",
   },
   emerald: {
-    chip: "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+    chip: "dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 status-surface-success",
     value: "text-emerald-700 dark:text-emerald-300",
     bar: "bg-emerald-500",
     bg: "from-emerald-500/10 via-transparent to-transparent",
     ring: "ring-emerald-500/15",
   },
   amber: {
-    chip: "border-amber-300/60 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+    chip: "dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 status-surface-warning",
     value: "text-amber-700 dark:text-amber-300",
     bar: "bg-amber-500",
     bg: "from-amber-500/10 via-transparent to-transparent",
     ring: "ring-amber-500/15",
   },
   rose: {
-    chip: "border-rose-300/60 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
+    chip: "dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 status-surface-error",
     value: "text-rose-700 dark:text-rose-300",
     bar: "bg-rose-500",
     bg: "from-rose-500/10 via-transparent to-transparent",
@@ -384,14 +384,14 @@ export function ProductManagementPage() {
             {empty ? (
               <Badge
                 variant="outline"
-                className="h-4 rounded-full border-rose-300/60 bg-rose-50 px-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+                className="h-4 rounded-full px-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 status-surface-error"
               >
                 Hết
               </Badge>
             ) : lowStock ? (
               <Badge
                 variant="outline"
-                className="h-4 rounded-full border-amber-300/60 bg-amber-50 px-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                className="h-4 rounded-full px-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 status-surface-warning"
               >
                 Sắp hết
               </Badge>

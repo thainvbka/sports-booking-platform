@@ -32,8 +32,8 @@ interface SearchBarProps {
 }
 
 const SEARCH_BAR_VARIANT_CLASS: Record<SearchBarVariant, string> = {
-  default: "rounded-xl border border-border bg-white p-3 shadow-sm",
-  hero: "rounded-2xl border border-white/40 bg-white/95 p-3 shadow-2xl backdrop-blur-sm",
+  default: "rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-sm",
+  hero: "rounded-2xl border border-white/40 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 p-3 shadow-2xl backdrop-blur-sm",
 };
 
 export function SearchBar({
@@ -64,14 +64,14 @@ export function SearchBar({
             value={keyword}
             onChange={(event) => onKeywordChange(event.target.value)}
             placeholder={placeholder}
-            className="h-11 border-border bg-background pl-9"
+            className="h-11 border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 pl-9 text-slate-900 dark:text-white"
             disabled={disabled}
           />
         </div>
 
         <Select value={sportValue} onValueChange={onSportChange} disabled={disabled}>
-          <SelectTrigger className="h-11 w-full border-border bg-background md:w-56">
-            <div className="flex items-center gap-2 text-slate-700">
+          <SelectTrigger className="h-11 w-full border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 md:w-56 text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
               <Trophy className="h-4 w-4 text-muted-foreground" />
               <SelectValue placeholder={allSportsLabel} />
             </div>

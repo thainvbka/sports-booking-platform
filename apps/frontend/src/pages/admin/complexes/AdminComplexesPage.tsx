@@ -33,8 +33,7 @@ import {
 import { extractLegalDocumentUrls } from "@/lib/legal-docs";
 import { useAdminComplexStore } from "@/store/admin/useAdminComplexStore";
 import type { AdminComplex } from "@/types/admin.types";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, formatDateVn } from "@/utils";
 import {
   AlertTriangle,
   CheckCircle,
@@ -52,6 +51,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function AdminComplexesPage() {
   const {
@@ -77,14 +78,13 @@ export default function AdminComplexesPage() {
     fetchComplexes();
   }, [fetchComplexes]);
 
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (filters.search || "")) {
-        setFilters({ search: searchValue });
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchValue, filters.search, setFilters]);
+    if (debouncedSearchValue !== (filters.search || "")) {
+      setFilters({ search: debouncedSearchValue });
+    }
+  }, [debouncedSearchValue, filters.search, setFilters]);
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
@@ -101,11 +101,6 @@ export default function AdminComplexesPage() {
     }
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
 
   const getSportLabel = (sportType: unknown) => {
     const key = String(sportType) as keyof typeof SPORT_TYPE_LABELS;
@@ -438,10 +433,9 @@ export default function AdminComplexesPage() {
               />
               <DetailInfoCard
                 label="Ngày đăng ký"
-                value={format(
-                  new Date(selectedComplex.created_at),
+                value={formatDateVn(
+                  selectedComplex.created_at,
                   "dd/MM/yyyy HH:mm",
-                  { locale: vi },
                 )}
               />
               <DetailInfoCard

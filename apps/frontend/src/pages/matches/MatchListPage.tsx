@@ -16,15 +16,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -47,6 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+
 
 const PAGE_SIZE = 8;
 interface MatchFilterValues {
@@ -116,7 +109,7 @@ function ScoreboardChip({
       </div>
       <p
         className={cn(
-          "font-display text-3xl font-black italic leading-none tabular-nums",
+          "italic leading-none tabular-nums text-title",
           accentValue[accent],
         )}
       >
@@ -340,93 +333,8 @@ function SkeletonGrid() {
   );
 }
 
-// ── Pagination (shadcn, consistent with SearchPage) ───────────────────────
-interface PaginationBarProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  disabled?: boolean;
-}
 
-function PaginationBar({
-  page,
-  totalPages,
-  onPageChange,
-  disabled,
-}: PaginationBarProps) {
-  if (totalPages <= 1) return null;
 
-  const items = buildPageList(page, totalPages);
-
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (disabled) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="pt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || disabled}
-            className={cn(
-              (page === 1 || disabled) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-        {items.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages || disabled}
-            className={cn(
-              (page === totalPages || disabled) &&
-                "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
-
-function buildPageList(
-  current: number,
-  total: number,
-): (number | "ellipsis")[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-  const items: (number | "ellipsis")[] = [1];
-  if (current > 3) items.push("ellipsis");
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  for (let i = from; i <= to; i++) items.push(i);
-  if (current < total - 2) items.push("ellipsis");
-  items.push(total);
-  return items;
-}
 
 // ── Main page ─────────────────────────────────────────────────────────────
 export function MatchListPage() {

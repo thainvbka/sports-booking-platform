@@ -10,15 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBookings } from "@/hooks/useBookings";
@@ -46,6 +38,7 @@ import {
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
 
 import { BookingCard, type SingleBooking } from "@/components/player/BookingCard";
 import { CreateMatchDialog } from "@/components/matches/CreateMatchDialog";
@@ -481,7 +474,7 @@ function EmptyLedger() {
         <Ticket className="size-6" />
       </div>
       <div className="flex flex-col gap-1">
-        <h3 className="font-display text-xl font-bold italic tracking-tight">
+        <h3 className="italic tracking-tight text-heading">
           Chưa có vé nào trong sổ
         </h3>
         <p className="max-w-md text-sm text-muted-foreground">
@@ -493,88 +486,9 @@ function EmptyLedger() {
   );
 }
 
-// ─── Pagination bar ───────────────────────────────────────────────────────
-function PaginationBar({
-  page,
-  totalPages,
-  onPageChange,
-  disabled,
-}: {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  disabled?: boolean;
-}) {
-  const items = buildPageList(page, totalPages);
 
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (disabled) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
 
-  return (
-    <Pagination className="pt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || disabled}
-            className={cn((page === 1 || disabled) && "pointer-events-none opacity-50")}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-        {items.map((item, index) => {
-          if (item === "ellipsis") {
-            return (
-              <PaginationItem key={`ellipsis-${index}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            );
-          }
-          return (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={page === item}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          );
-        })}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages || disabled}
-            className={cn(
-              (page === totalPages || disabled) &&
-                "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
 
-function buildPageList(
-  current: number,
-  total: number,
-): (number | "ellipsis")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const items: (number | "ellipsis")[] = [1];
-  if (current > 3) items.push("ellipsis");
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  for (let i = from; i <= to; i++) items.push(i);
-  if (current < total - 2) items.push("ellipsis");
-  items.push(total);
-  return items;
-}
 
 // ─── Payment method dialog component ───────────────────────────────────────
 interface PaymentMethodDialogProps {

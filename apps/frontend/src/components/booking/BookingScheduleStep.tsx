@@ -273,7 +273,7 @@ export function BookingScheduleStep({
         </div>
 
         {!isCustomTimeValid && customStartTime && customEndTime ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p className="rounded-lg px-3 py-2 text-sm status-surface-error">
             Thời lượng phải lớn hơn 0 và là bội của 30 phút.
           </p>
         ) : null}

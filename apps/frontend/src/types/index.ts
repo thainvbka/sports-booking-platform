@@ -65,6 +65,7 @@ export interface ComplexBase {
   complex_image?: string;
   verification_docs?: unknown;
   status: ComplexStatus;
+  avg_rating?: number | null;
   _count?: {
     sub_fields: number;
   };

@@ -28,8 +28,7 @@ import {
 } from "@/lib/constants";
 import { useAdminUserStore } from "@/store/admin/useAdminUserStore";
 import type { AdminUser } from "@/types/admin.types";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatDateVn } from "@/utils";
 import {
   Ban,
   Calendar,
@@ -47,6 +46,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function AdminUsersPage() {
   const {
@@ -68,17 +68,13 @@ export default function AdminUsersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Debounced, controlled search — replaces the broken defaultValue + per-keystroke
-  // setTimeout. This is a UX fix only; the store call shape is unchanged.
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (filters.search || "")) {
-        setFilters({ search: searchValue });
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+    if (debouncedSearchValue !== (filters.search || "")) {
+      setFilters({ search: debouncedSearchValue });
+    }
+  }, [debouncedSearchValue, filters.search, setFilters]);
 
   const handleStatusUpdate = async (
     id: string,
@@ -195,7 +191,7 @@ export default function AdminUsersPage() {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Calendar className="size-3.5" />
           <span>
-            {format(new Date(user.created_at), "dd/MM/yyyy", { locale: vi })}
+            {formatDateVn(user.created_at, "dd/MM/yyyy")}
           </span>
         </div>
       ),

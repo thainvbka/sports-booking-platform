@@ -6,8 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { PaymentProviderPoint } from "@/types/admin.types";
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
+import { formatPrice } from "@/utils";
 
 interface PaymentProvidersProps {
   data: PaymentProviderPoint[];
@@ -18,19 +17,19 @@ const PROVIDER_COLORS = [
     bar: "from-blue-500 to-indigo-500",
     dot: "bg-blue-500",
     badge:
-      "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+      "dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800 status-surface-info",
   },
   {
     bar: "from-amber-500 to-orange-500",
     dot: "bg-amber-500",
     badge:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+      "dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800 status-surface-warning",
   },
   {
     bar: "from-emerald-500 to-teal-500",
     dot: "bg-emerald-500",
     badge:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+      "dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800 status-surface-success",
   },
   {
     bar: "from-violet-500 to-purple-500",
@@ -92,10 +91,10 @@ export function PaymentProviders({ data }: PaymentProvidersProps) {
                 </span>
                 <div className="text-right">
                   <span className="font-semibold text-foreground">
-                    {fmtVND(p.revenue)}
+                    {formatPrice(p.revenue)}
                   </span>
                   <span className="text-muted-foreground ml-1.5">
-                    · avg {fmtVND(p.avgTransaction)}
+                    · avg {formatPrice(p.avgTransaction)}
                   </span>
                 </div>
               </div>

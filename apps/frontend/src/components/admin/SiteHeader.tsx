@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { NotificationBell } from "@/components/shared/NotificationBell";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Clock3 } from "lucide-react";
@@ -144,6 +145,7 @@ export function SiteHeader() {
             </span>
           </div>
 
+          <ThemeToggle />
           <NotificationBell targetRole="ADMIN" />
         </div>
       </div>

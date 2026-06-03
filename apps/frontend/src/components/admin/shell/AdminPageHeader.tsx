@@ -42,7 +42,7 @@ export function AdminPageHeader({
           {String(index).padStart(2, "0")}
         </span>
         <div className="min-w-0">
-          <h1 className="font-display text-xl font-bold italic tracking-tight text-foreground md:text-[1.6rem] md:leading-tight">
+          <h1 className="italic tracking-tight text-foreground md:text-[1.6rem] md:leading-tight text-heading">
             {title}
             {titleAccent && (
               <span className="ml-1.5 text-primary">{titleAccent}</span>

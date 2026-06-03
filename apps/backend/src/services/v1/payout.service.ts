@@ -330,7 +330,6 @@ export const adminApprovePayoutBatch = async (
   batchId: string,
   data: {
     transaction_ref: string;
-    receipt_image?: string;
     note?: string;
   },
 ) => {

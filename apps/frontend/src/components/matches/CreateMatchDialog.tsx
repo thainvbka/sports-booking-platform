@@ -107,7 +107,7 @@ export function CreateMatchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-full p-6 rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl">
+      <DialogContent className="max-w-md w-full p-6 rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-modal">
         <DialogHeader className="space-y-2 text-left">
           <DialogTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
             <Trophy className="size-5 text-amber-500 animate-pulse" />

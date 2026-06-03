@@ -3,15 +3,7 @@ import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
 import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useComplexStore } from "@/store/owner/useComplexStore";
@@ -28,22 +20,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+
 type StatusFilter = "ALL" | ComplexStatus;
 
-function buildPageList(
-  current: number,
-  total: number,
-): (number | "ellipsis")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const items: (number | "ellipsis")[] = [1];
-  if (current > 3) items.push("ellipsis");
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  for (let i = from; i <= to; i++) items.push(i);
-  if (current < total - 2) items.push("ellipsis");
-  items.push(total);
-  return items;
-}
 
 export function ComplexesPage() {
   const {
@@ -108,7 +87,6 @@ export function ComplexesPage() {
 
   const totalPages = pagination?.totalPages ?? 1;
   const currentPage = pagination?.page ?? 1;
-  const pageList = buildPageList(currentPage, totalPages);
 
   const goTo = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
@@ -243,62 +221,11 @@ export function ComplexesPage() {
 
           {/* Pagination */}
           {pagination && totalPages > 1 ? (
-            <div className="mt-2">
-              <Pagination className="mt-2">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        goTo(currentPage - 1);
-                      }}
-                      className={cn(
-                        currentPage <= 1 &&
-                          "pointer-events-none opacity-40",
-                      )}
-                      aria-disabled={currentPage <= 1}
-                    />
-                  </PaginationItem>
-
-                  {pageList.map((page, index) =>
-                    page === "ellipsis" ? (
-                      <PaginationItem key={`ellipsis-${index}`}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    ) : (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          isActive={page === currentPage}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            goTo(page);
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        goTo(currentPage + 1);
-                      }}
-                      className={cn(
-                        currentPage >= totalPages &&
-                          "pointer-events-none opacity-40",
-                      )}
-                      aria-disabled={currentPage >= totalPages}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+            <PaginationBar
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={goTo}
+            />
           ) : null}
         </>
       ) : (
@@ -322,28 +249,28 @@ const STAT_TONE: Record<
   { chip: string; value: string; bar: string; bg: string; ring: string }
 > = {
   slate: {
-    chip: "border-slate-300/60 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200",
+    chip: "dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 status-surface-neutral",
     value: "text-slate-900 dark:text-slate-100",
     bar: "bg-slate-400",
     bg: "from-slate-500/8 via-transparent to-transparent",
     ring: "ring-slate-500/10",
   },
   emerald: {
-    chip: "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+    chip: "dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 status-surface-success",
     value: "text-emerald-700 dark:text-emerald-300",
     bar: "bg-emerald-500",
     bg: "from-emerald-500/10 via-transparent to-transparent",
     ring: "ring-emerald-500/15",
   },
   amber: {
-    chip: "border-amber-300/60 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+    chip: "dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 status-surface-warning",
     value: "text-amber-700 dark:text-amber-300",
     bar: "bg-amber-500",
     bg: "from-amber-500/10 via-transparent to-transparent",
     ring: "ring-amber-500/15",
   },
   rose: {
-    chip: "border-rose-300/60 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
+    chip: "dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 status-surface-error",
     value: "text-rose-700 dark:text-rose-300",
     bar: "bg-rose-500",
     bg: "from-rose-500/10 via-transparent to-transparent",

@@ -8,8 +8,7 @@ import {
 } from "@/components/ui/card";
 import type { TopComplexPoint } from "@/types/admin.types";
 import { Medal, Trophy } from "lucide-react";
-
-const fmtVND = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} ₫`;
+import { formatPrice } from "@/utils";
 
 interface TopComplexesProps {
   data: TopComplexPoint[];
@@ -112,7 +111,7 @@ export function TopComplexes({ data }: TopComplexesProps) {
 
                   <div className="text-right shrink-0">
                     <p className="text-sm font-black text-foreground tracking-tight">
-                      {fmtVND(c.revenue)}
+                      {formatPrice(c.revenue)}
                     </p>
                     <Badge
                       variant="secondary"

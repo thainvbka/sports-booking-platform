@@ -2,7 +2,7 @@ import { TrendBadge } from "@/components/admin/dashboard/shared";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { fmtVND } from "@/lib/format";
+import { formatPrice } from "@/utils";
 import type { AdminKpis } from "@/types/admin.types";
 import type { LucideIcon } from "lucide-react";
 import { Calendar, DollarSign, Star, Users } from "lucide-react";
@@ -150,9 +150,9 @@ export function KpiCards({ kpis }: KpiCardsProps) {
         accent="emerald"
         label="Doanh thu tháng này"
         Icon={DollarSign}
-        value={fmtVND(kpis.revenue.thisMonth)}
+        value={formatPrice(kpis.revenue.thisMonth)}
         footerLeft={<TrendBadge growth={kpis.revenue.growth} />}
-        footerRight={<>Tích lũy {fmtVND(kpis.revenue.total || 0)}</>}
+        footerRight={<>Tích lũy {formatPrice(kpis.revenue.total || 0)}</>}
       />
 
       {/* Bookings */}

@@ -71,9 +71,9 @@ export const MATCH_SORT_LABELS: Record<MatchSortOption, string> = {
 };
 
 export const MATCH_SKILL_BADGE_STYLES: Record<SkillLevel, string> = {
-  BEGINNER: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  BEGINNER: "status-surface-success",
   INTERMEDIATE: "border-teal-200 bg-teal-50 text-teal-700",
-  ADVANCED: "border-rose-200 bg-rose-50 text-rose-700",
+  ADVANCED: "status-surface-error",
 };
 
 export const MATCH_STATUS_BADGE_CONFIG: Record<
@@ -96,7 +96,7 @@ export const MATCH_STATUS_BADGE_CONFIG: Record<
   },
   CLOSED: {
     label: "Đã đóng",
-    container: "bg-slate-100 text-slate-600 border-slate-200",
+    container: "status-surface-neutral",
     dot: "bg-slate-500",
   },
   EXPIRED: {
@@ -146,11 +146,11 @@ export const PARTICIPANT_STATUS_BADGE_CONFIG: Record<
   },
   WITHDRAWN: {
     label: "Đã rút",
-    className: "border-slate-200 bg-slate-100 text-slate-600",
+    className: "status-surface-neutral",
   },
   REMOVED: {
     label: "Đã loại",
-    className: "border-slate-200 bg-slate-100 text-slate-600",
+    className: "status-surface-neutral",
   },
 };
 

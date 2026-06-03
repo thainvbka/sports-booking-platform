@@ -16,6 +16,7 @@ import { Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { ImageUploadField } from "./ImageUploadField";
 
 interface ComplexFormData {
   complex_name: string;
@@ -27,7 +28,6 @@ export function ComplexFormDialog() {
   const [open, setOpen] = useState(false);
   const [complexImage, setComplexImage] = useState<File | null>(null);
   const [verificationDocs, setVerificationDocs] = useState<File[]>([]);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -37,18 +37,6 @@ export function ComplexFormDialog() {
     reset,
   } = useForm<ComplexFormData>();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setComplexImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleDocsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setVerificationDocs((prev) => [...prev, ...files].slice(0, 10));
@@ -56,11 +44,6 @@ export function ComplexFormDialog() {
 
   const removeDoc = (index: number) => {
     setVerificationDocs((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const removeImage = () => {
-    setComplexImage(null);
-    setImagePreview(null);
   };
 
   const onSubmit = async (data: ComplexFormData) => {
@@ -90,7 +73,6 @@ export function ComplexFormDialog() {
       // Reset form
       reset();
       setComplexImage(null);
-      setImagePreview(null);
       setVerificationDocs([]);
       setError(null);
       setOpen(false);
@@ -162,49 +144,13 @@ export function ComplexFormDialog() {
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="complex_image">
-                Hình ảnh khu phức hợp{" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              <div className="flex flex-col gap-2">
-                {imagePreview ? (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={removeImage}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <label
-                    htmlFor="complex_image"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                  >
-                    <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Nhấp để tải lên hình ảnh
-                    </span>
-                  </label>
-                )}
-                <Input
-                  id="complex_image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </div>
-            </div>
+            <ImageUploadField
+              id="complex_image"
+              label="Hình ảnh khu phức hợp"
+              required
+              value={complexImage}
+              onChange={setComplexImage}
+            />
 
             <div className="grid gap-2">
               <Label htmlFor="verification_docs">

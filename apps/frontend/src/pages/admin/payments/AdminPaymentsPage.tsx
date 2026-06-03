@@ -27,8 +27,6 @@ import {
 } from "@/components/ui/select";
 import { useAdminPaymentStore } from "@/store/admin/useAdminPaymentStore";
 import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/lib/constants";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   AlertCircle,
   ArrowRightLeft,
@@ -42,6 +40,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { formatPrice, formatDateVn } from "@/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 
 
@@ -67,21 +67,14 @@ export default function AdminPaymentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (filters.search || "")) {
-        setFilters({ search: searchValue });
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+  const debouncedSearchValue = useDebounce(searchValue, 500);
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
+  useEffect(() => {
+    if (debouncedSearchValue !== (filters.search || "")) {
+      setFilters({ search: debouncedSearchValue });
+    }
+  }, [debouncedSearchValue, filters.search, setFilters]);
+
 
   const handleRowClick = (payment: any) => {
     setSelectedPayment(payment);
@@ -128,9 +121,7 @@ export default function AdminPaymentsPage() {
             <span className="truncate">{payment.transaction_code}</span>
           </div>
           <span className="ml-5 text-[10px] italic text-muted-foreground">
-            {format(new Date(payment.created_at), "HH:mm · dd/MM", {
-              locale: vi,
-            })}
+            {formatDateVn(payment.created_at, "HH:mm · dd/MM")}
           </span>
         </div>
       ),
@@ -341,10 +332,9 @@ export default function AdminPaymentsPage() {
               />
               <DetailInfoCard
                 label="Thời gian giao dịch"
-                value={format(
-                  new Date(selectedPayment.created_at),
+                value={formatDateVn(
+                  selectedPayment.created_at,
                   "HH:mm · dd/MM/yyyy",
-                  { locale: vi },
                 )}
               />
               <DetailInfoCard
@@ -377,10 +367,7 @@ export default function AdminPaymentsPage() {
                             {booking.sub_field?.sub_field_name ||
                               "Unknown Field"}{" "}
                             ·{" "}
-                            {format(
-                              new Date(booking.start_time),
-                              "dd/MM HH:mm",
-                            )}
+                            {formatDateVn(booking.start_time, "dd/MM HH:mm")}
                           </p>
                         </div>
                       </div>

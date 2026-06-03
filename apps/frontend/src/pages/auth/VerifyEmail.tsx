@@ -1,8 +1,7 @@
-// src/pages/auth/VerifyEmailPage.tsx
-
+import { LoadingState } from "@/components/shared/LoadingState";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -41,15 +40,13 @@ export function VerifyEmailPage() {
     return <div className="text-center text-red-500">Token không hợp lệ.</div>;
   }
 
+  if (isLoading) {
+    return <LoadingState variant="fullscreen" text="Đang xác thực tài khoản..." />;
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 animate-in fade-in">
-      {isLoading ? (
-        <>
-          <Loader2 className="w-16 h-16 text-primary animate-spin" />
-          <h2 className="text-2xl font-semibold">Đang xác thực tài khoản...</h2>
-          <p className="text-muted-foreground">Vui lòng chờ trong giây lát.</p>
-        </>
-      ) : error ? (
+      {error ? (
         <>
           <XCircle className="w-16 h-16 text-destructive" />
           <h2 className="text-2xl font-semibold text-destructive">

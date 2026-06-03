@@ -24,15 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Separator } from "@/components/ui/separator";
 import { SPORT_TYPE_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -62,6 +54,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+
 
 const PARTICIPANTS_PAGE_SIZE = 10;
 
@@ -763,10 +756,10 @@ function MatchInfoCard({
                 className={cn(
                   "text-[11px]",
                   countdown.expired
-                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    ? "status-surface-error"
                     : countdown.urgent
-                      ? "border-amber-200 bg-amber-50 text-amber-700"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                      ? "status-surface-warning"
+                      : "status-surface-success",
                 )}
               >
                 <Timer data-icon="inline-start" />
@@ -1107,90 +1100,5 @@ function ActionPanel({
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Pagination bar (shared style with SearchPage / ReviewsList)
-// ═══════════════════════════════════════════════════════════════════════════
-function PaginationBar({
-  page,
-  totalPages,
-  onPageChange,
-  disabled,
-}: {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  disabled?: boolean;
-}) {
-  if (totalPages <= 1) return null;
 
-  const items = buildPageList(page, totalPages);
 
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (disabled) return;
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="pt-2">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1 || disabled}
-            className={cn(
-              (page === 1 || disabled) && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-        {items.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages || disabled}
-            className={cn(
-              (page === totalPages || disabled) &&
-                "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-}
-
-function buildPageList(
-  current: number,
-  total: number,
-): (number | "ellipsis")[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-  const items: (number | "ellipsis")[] = [1];
-  if (current > 3) items.push("ellipsis");
-  const from = Math.max(2, current - 1);
-  const to = Math.min(total - 1, current + 1);
-  for (let i = from; i <= to; i++) items.push(i);
-  if (current < total - 2) items.push("ellipsis");
-  items.push(total);
-  return items;
-}

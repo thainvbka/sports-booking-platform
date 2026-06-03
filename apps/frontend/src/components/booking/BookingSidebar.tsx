@@ -123,7 +123,7 @@ export function BookingSidebar({
               </span>
               <Sparkles className="size-3.5 text-primary/70" />
             </div>
-            <p className="mt-1 font-display text-3xl font-black italic tabular-nums tracking-tight text-primary">
+            <p className="mt-1 italic tabular-nums tracking-tight text-primary text-title">
               {formatPrice(totalPrice)}
             </p>
             <p className="text-[11px] text-muted-foreground">

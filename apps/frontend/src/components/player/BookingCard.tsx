@@ -44,11 +44,11 @@ export const STATUS_VISUAL: Record<
 > = {
   [BookingStatus.PENDING]: {
     icon: CreditCard,
-    className: "border-amber-200 bg-amber-50 text-amber-700",
+    className: "status-surface-warning",
   },
   [BookingStatus.CONFIRMED]: {
     icon: BadgeCheck,
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    className: "status-surface-success",
   },
   [BookingStatus.COMPLETED]: {
     icon: Clock,
@@ -56,7 +56,7 @@ export const STATUS_VISUAL: Record<
   },
   [BookingStatus.CANCELED]: {
     icon: XCircle,
-    className: "border-rose-200 bg-rose-50 text-rose-700",
+    className: "status-surface-error",
   },
 };
 
@@ -553,7 +553,7 @@ function ReviewSectionInline({
 
 function ExpiresChip({ expiresAt }: { expiresAt: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-amber-800 animate-pulse">
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.18em] animate-pulse status-surface-warning">
       <AlarmClock className="size-3" />
       Hết hạn {format(new Date(expiresAt), "HH:mm dd/MM")}
     </span>

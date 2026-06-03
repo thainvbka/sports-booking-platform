@@ -4,6 +4,7 @@ import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function PublicComplexDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,14 +28,13 @@ export function PublicComplexDetailPage() {
     window.scrollTo(0, 0);
   }, [id]);
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
   // Debounce search input
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setCurrentPage(1); // Reset to page 1 when search changes
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+    setDebouncedSearch(debouncedSearchTerm);
+    setCurrentPage(1); // Reset to page 1 when search changes
+  }, [debouncedSearchTerm]);
 
   // Fetch data when id, page, or debounced search changes
   useEffect(() => {

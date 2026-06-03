@@ -11,7 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { fmtM, fmtPct, fmtVND } from "@/lib/format";
+import { fmtM, fmtPct } from "@/lib/format";
+import { formatPrice } from "@/utils";
 import type { RevenueTrendPoint } from "@/types/admin.types";
 import { useMemo } from "react";
 import {
@@ -142,7 +143,7 @@ export function RevenueQualityChart({ data }: RevenueQualityChartProps) {
                 content={
                   <DarkTip
                     formatValue={(name, val) =>
-                      name === "Tỷ lệ hủy" ? fmtPct(val) : fmtVND(val)
+                      name === "Tỷ lệ hủy" ? fmtPct(val) : formatPrice(val)
                     }
                   />
                 }

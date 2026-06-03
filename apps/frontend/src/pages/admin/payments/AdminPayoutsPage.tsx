@@ -35,9 +35,7 @@ import {
   type AdminOwnerWalletRecord,
   type PayoutStatus,
 } from "@/services/payout.service";
-import { formatPrice, getBankDisplayName } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, getBankDisplayName, formatDateVn } from "@/utils";
 import {
   CheckCircle2,
   ExternalLink,
@@ -210,7 +208,7 @@ export default function AdminPayoutsPage() {
             {batch.payout_period}
           </span>
           <span className="text-[10px] text-muted-foreground">
-            {format(new Date(batch.created_at), "HH:mm · dd/MM/yyyy", { locale: vi })}
+            {formatDateVn(batch.created_at, "HH:mm · dd/MM/yyyy")}
           </span>
         </div>
       ),
@@ -599,7 +597,7 @@ export default function AdminPayoutsPage() {
                     label="Thời gian hoàn thành chi"
                     value={
                       selectedBatch.paid_at
-                        ? new Date(selectedBatch.paid_at).toLocaleString("vi-VN")
+                        ? formatDateVn(selectedBatch.paid_at, "HH:mm · dd/MM/yyyy")
                         : "N/A"
                     }
                   />

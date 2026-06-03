@@ -25,6 +25,7 @@ import type { ReviewRatingFilter, ReviewSortBy } from "@/hooks/useSubfieldReview
 import { cn } from "@/lib/utils";
 import type { GetSubfieldReviewsResponse, PublicSubfieldReview } from "@/types";
 import { getReviewerDisplayName } from "@/utils/review.utils";
+import { buildPageList } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ImageIcon, RotateCcw } from "lucide-react";
@@ -67,24 +68,6 @@ const RATING_OPTIONS: Array<{ value: ReviewRatingFilter; label: string }> = [
   { value: "1", label: "1 sao" },
 ];
 
-function buildPageList(current: number, total: number): Array<number | "ellipsis"> {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  const pages: Array<number | "ellipsis"> = [1];
-
-  if (current > 3) pages.push("ellipsis");
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  for (let page = start; page <= end; page += 1) pages.push(page);
-
-  if (current < total - 2) pages.push("ellipsis");
-  pages.push(total);
-
-  return pages;
-}
 
 export function SubfieldReviewsList({
   reviews,

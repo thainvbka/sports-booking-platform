@@ -366,7 +366,7 @@ export default function BookingPage() {
             </span>
 
             <div className="flex flex-col gap-1">
-              <h1 className="font-display text-3xl font-black leading-[1.05] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              <h1 className="leading-[1.05] tracking-tight text-foreground sm:text-4xl lg:text-5xl text-title">
                 Đặt sân{" "}
                 <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
                   {subfield.sub_field_name}
@@ -452,7 +452,7 @@ export default function BookingPage() {
               {displayStep === stepperSteps.length ? (
                 <Badge
                   variant="outline"
-                  className="gap-1.5 rounded-full border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-emerald-700"
+                  className="gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.18em] status-surface-success"
                 >
                   <CheckCircle2 data-icon="inline-start" />
                   Sẵn sàng
