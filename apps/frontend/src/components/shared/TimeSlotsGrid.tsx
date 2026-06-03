@@ -171,11 +171,11 @@ export function TimeSlotsGrid({
                   "relative flex flex-col items-center justify-center rounded-md border p-2 text-xs font-medium transition-all",
                   "h-10",
                   status === "AVAILABLE" &&
-                    "bg-white hover:border-primary/50 hover:bg-slate-50 text-slate-700 shadow-sm",
+                    "bg-card hover:border-primary/50 hover:bg-muted text-foreground shadow-sm",
                   status === "SELECTED" &&
                     "bg-primary border-primary text-primary-foreground shadow-md scale-105 z-10",
                   status === "PENDING" &&
-                    "bg-yellow-50 border-yellow-200 text-yellow-700",
+                    "status-surface-warning",
                   status === "BOOKED" &&
                     "cursor-not-allowed opacity-90 status-surface-error",
                 )}

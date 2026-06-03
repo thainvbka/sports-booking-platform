@@ -56,7 +56,7 @@ export function BookingDetailDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="bg-blue-50 rounded-lg p-4 space-y-2">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-lg">{booking.complex_name}</h3>
               <Badge
@@ -98,7 +98,7 @@ export function BookingDetailDialog({
           </div>
 
           {booking.type === "SINGLE" && (
-            <div className="border rounded-lg p-4 bg-white space-y-3">
+            <div className="border rounded-lg p-4 bg-muted/30 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground font-medium">
@@ -119,7 +119,7 @@ export function BookingDetailDialog({
                   <p className="text-sm text-muted-foreground font-medium mb-1">
                     Tổng tiền
                   </p>
-                  <div className="text-xl font-bold text-green-700">
+                  <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                     {formatPrice(booking.total_price)}
                   </div>
                 </div>
@@ -128,14 +128,14 @@ export function BookingDetailDialog({
           )}
 
           {booking.type === "RECURRING" && (
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded">
               <div>
                 <p className="text-sm text-muted-foreground">Tổng số buổi</p>
                 <p className="text-lg font-bold">{booking.total_slots} buổi</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tổng tiền</p>
-                <p className="text-lg font-bold text-green-700">
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   {formatPrice(booking.total_price)}
                 </p>
               </div>
@@ -151,10 +151,10 @@ export function BookingDetailDialog({
               {booking.bookings.map((slot, idx) => (
                 <div
                   key={slot.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/40"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                       {idx + 1}
                     </div>
                     <div>
@@ -168,7 +168,7 @@ export function BookingDetailDialog({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-green-700 mt-1">
+                    <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
                       {formatPrice(slot.total_price)}
                     </div>
                   </div>

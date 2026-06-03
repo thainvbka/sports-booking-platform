@@ -56,12 +56,12 @@ const STATUS_PROGRESS: Record<MatchStatus, string> = {
 };
 
 const SPORT_TINT: Record<SportType, string> = {
-  FOOTBALL: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  BASKETBALL: "bg-orange-100 text-orange-700 border-orange-200",
-  TENNIS: "bg-lime-100 text-lime-700 border-lime-200",
-  BADMINTON: "bg-sky-100 text-sky-700 border-sky-200",
-  VOLLEYBALL: "bg-amber-100 text-amber-700 border-amber-200",
-  PICKLEBALL: "bg-teal-100 text-teal-700 border-teal-200",
+  FOOTBALL: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700/50",
+  BASKETBALL: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-700/50",
+  TENNIS: "bg-lime-100 text-lime-700 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300 dark:border-lime-700/50",
+  BADMINTON: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-700/50",
+  VOLLEYBALL: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700/50",
+  PICKLEBALL: "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-700/50",
 };
 
 const formatShortTime = (value: string | null): string => {
@@ -103,9 +103,9 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
   );
   const countdown = getCountdown(match.join_deadline);
   const countdownTone = countdown.expired
-    ? "text-rose-600"
+    ? "text-rose-600 dark:text-rose-400"
     : countdown.urgent
-      ? "text-amber-600"
+      ? "text-amber-600 dark:text-amber-400"
       : "text-accent-sport";
 
   const participation = match.my_participation_status;

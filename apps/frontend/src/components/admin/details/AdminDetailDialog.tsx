@@ -72,7 +72,7 @@ export function DetailSummaryRow({
   rightValue,
 }: DetailSummaryRowProps) {
   return (
-    <div className="flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col items-start gap-4 rounded-xl border border-border bg-muted/40 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <p className="text-[10px] font-bold text-muted-foreground uppercase">
           {leftLabel}
@@ -97,11 +97,11 @@ type DetailInfoCardProps = {
 
 export function DetailInfoCard({ label, value, helper }: DetailInfoCardProps) {
   return (
-    <div className="min-w-0 rounded-lg border border-slate-200 px-3 py-2">
+    <div className="min-w-0 rounded-lg border border-border px-3 py-2 bg-muted/20">
       <p className="text-[10px] font-bold text-muted-foreground uppercase">
         {label}
       </p>
-      <div className="mt-1 text-sm font-semibold text-slate-800 wrap-break-word">
+      <div className="mt-1 text-sm font-semibold text-foreground wrap-break-word">
         {value}
       </div>
       {helper ? (

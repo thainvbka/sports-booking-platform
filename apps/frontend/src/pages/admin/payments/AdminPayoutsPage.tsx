@@ -31,11 +31,11 @@ import { PAYOUT_STATUS_COLORS, PAYOUT_STATUS_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   payoutService,
-  type AdminPayoutBatchRecord,
   type AdminOwnerWalletRecord,
+  type AdminPayoutBatchRecord,
   type PayoutStatus,
 } from "@/services/payout.service";
-import { formatPrice, getBankDisplayName, formatDateVn } from "@/utils";
+import { formatDateVn, formatPrice, getBankDisplayName } from "@/utils";
 import {
   CheckCircle2,
   ExternalLink,
@@ -376,8 +376,8 @@ export default function AdminPayoutsPage() {
       <AdminPageHeader
         index={5}
         title="Quản lý"
-        titleAccent="chi trả (payout)"
-        description="Duyệt yêu cầu rút tiền từ VNPAY của các chủ sân, gom giao dịch và ghi nhận đối soát chứng từ."
+        titleAccent="công nợ"
+        description="Duyệt, quyết toán yêu cầu rút tiền từ VNPAY của các chủ sân."
       />
 
       {/* Tab Switcher */}
@@ -509,7 +509,7 @@ export default function AdminPayoutsPage() {
               leftLabel="Chủ sân (Owner)"
               leftValue={
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                  <span className="text-sm font-bold text-foreground">
                     {selectedBatch.owner?.company_name || "N/A"}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -527,7 +527,7 @@ export default function AdminPayoutsPage() {
 
             {/* Bank Account Info Card */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Thông tin Tài khoản Thụ hưởng
               </h4>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -563,7 +563,7 @@ export default function AdminPayoutsPage() {
                   <ExternalLink className="size-4" />
                   Quét mã chuyển khoản VietQR tự động
                 </span>
-                <div className="bg-white p-2.5 rounded-lg shadow-sm border border-border">
+                <div className="bg-white dark:bg-white p-2.5 rounded-lg shadow-sm border border-border">
                   <img
                     src={`https://img.vietqr.io/image/${selectedBatch.owner.bank_name}-${selectedBatch.owner.bank_account_number}-compact.png?amount=${selectedBatch.total_payout}&addInfo=${encodeURIComponent(
                       selectedBatch.payout_period
@@ -581,7 +581,7 @@ export default function AdminPayoutsPage() {
             {/* Payout batch logs */}
             {selectedBatch.status === "PAID" && (
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Chứng từ thanh toán
                 </h4>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -616,7 +616,7 @@ export default function AdminPayoutsPage() {
             )}
 
             {/* Action Box based on Status */}
-            <div className="flex flex-wrap gap-2 pt-2 justify-end border-t border-slate-100 mt-4">
+            <div className="flex flex-wrap gap-2 pt-2 justify-end border-t border-border mt-4">
               {selectedBatch.status === "REQUESTED" && (
                 <Button
                   onClick={() => handleProcessBatch(selectedBatch.id)}
@@ -640,7 +640,7 @@ export default function AdminPayoutsPage() {
                   <Button
                     variant="ghost"
                     onClick={() => setCancelOpen(true)}
-                    className="h-8 rounded-full text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-xs font-semibold px-3 transition-colors"
+                    className="h-8 rounded-full text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-xs font-semibold px-3 transition-colors dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                   >
                     <XCircle className="size-3 mr-1" />
                     Từ chối chi trả

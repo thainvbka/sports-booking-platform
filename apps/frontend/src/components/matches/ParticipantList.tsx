@@ -97,7 +97,7 @@ export function ParticipantList({
                   key={participant.id}
                   className={cn(
                     "transition-colors",
-                    canHandle && "bg-amber-50/30 hover:bg-amber-50/50",
+                    canHandle && "bg-amber-50/30 hover:bg-amber-50/50 dark:bg-amber-950/20 dark:hover:bg-amber-950/30",
                   )}
                 >
                   <TableCell className="min-w-60 align-top">
@@ -176,7 +176,7 @@ export function ParticipantList({
                           variant="outline"
                           onClick={() => onReject?.(participant.id)}
                           disabled={!canHandle}
-                          className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                          className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-700/50 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                           <X data-icon="inline-start" />
                           Từ chối

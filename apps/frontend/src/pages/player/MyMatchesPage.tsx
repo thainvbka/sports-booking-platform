@@ -403,7 +403,7 @@ export function MyMatchesPage() {
                           size="sm"
                           onClick={() => void handleLeave(match.id)}
                           disabled={isLoading}
-                          className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                          className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                           <LogOut data-icon="inline-start" />
                           Rời kèo

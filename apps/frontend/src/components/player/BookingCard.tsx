@@ -52,7 +52,7 @@ export const STATUS_VISUAL: Record<
   },
   [BookingStatus.COMPLETED]: {
     icon: Clock,
-    className: "border-sky-200 bg-sky-50 text-sky-700",
+    className: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-700/50 dark:bg-sky-950/40 dark:text-sky-300",
   },
   [BookingStatus.CANCELED]: {
     icon: XCircle,
@@ -145,7 +145,7 @@ export function BookingCard({
     <article
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card hover:border-primary/40",
-        isPending && "ring-1 ring-amber-200/50",
+        isPending && "ring-1 ring-amber-300/50 dark:ring-amber-700/40",
       )}
     >
       {/* ── Main Content ──────────────────────────────────────────── */}
@@ -282,7 +282,7 @@ export function BookingCard({
                 size="sm"
                 onClick={handleCreateMatchClick}
                 disabled={loading || paying}
-                className="flex-1 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 flex items-center justify-center gap-1.5 font-medium"
+                className="flex-1 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 flex items-center justify-center gap-1.5 font-medium dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
               >
                 <Trophy className="size-4 text-amber-500" />
                 Tạo kèo ghép
@@ -308,7 +308,7 @@ export function BookingCard({
               size="sm"
               onClick={onRequestCancel}
               disabled={loading || paying}
-              className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 flex items-center justify-center gap-1.5 font-medium"
+              className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 flex items-center justify-center gap-1.5 font-medium dark:border-rose-700/50 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
             >
               <XCircle className="size-4" />
               Hủy đặt sân
@@ -446,7 +446,7 @@ function SessionsListDialog({
                       variant="outline"
                       size="sm"
                       onClick={() => onCreateMatchClick(mockSingle)}
-                      className="h-8 px-3 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 text-xs font-semibold gap-1.5 rounded-lg"
+                      className="h-8 px-3 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 text-xs font-semibold gap-1.5 rounded-lg dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
                     >
                       <Trophy className="size-3.5 text-amber-500" />
                       Tạo kèo ghép
@@ -470,7 +470,7 @@ function SessionsListDialog({
                       variant="outline"
                       size="sm"
                       onClick={() => onReviewClick(mockSingle)}
-                      className="h-8 px-3 border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100/50 text-xs font-bold gap-1.5 rounded-lg"
+                      className="h-8 px-3 border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100/50 text-xs font-bold gap-1.5 rounded-lg dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/50"
                     >
                       <Star className="size-3.5 fill-amber-400 text-amber-400" />
                       <span>{slot.review.rating}/5 sao</span>
@@ -504,14 +504,14 @@ function ReviewSectionInline({
   if (hasExisting && booking.review) {
     return (
       <div
-        className="rounded-lg bg-amber-50 border border-amber-200 p-3 transition-all cursor-pointer group animate-fade-in"
+        className="rounded-lg bg-amber-50 border border-amber-200 p-3 transition-all cursor-pointer group animate-fade-in dark:bg-amber-950/30 dark:border-amber-700/50"
         onMouseEnter={() => setShowDetails(true)}
         onMouseLeave={() => setShowDetails(false)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Star className="size-4 fill-amber-400 text-amber-400 animate-pulse" />
-            <span className="font-semibold text-amber-900">
+            <span className="font-semibold text-amber-800 dark:text-amber-300">
               {booking.review.rating}/5 sao
             </span>
           </div>
@@ -528,7 +528,7 @@ function ReviewSectionInline({
           </Button>
         </div>
         {showDetails && booking.review.comment && (
-          <p className="text-xs text-amber-800 italic mt-2 animate-fade-in">"{booking.review.comment}"</p>
+          <p className="text-xs text-amber-700 dark:text-amber-400 italic mt-2 animate-fade-in">"{booking.review.comment}"</p>
         )}
       </div>
     );

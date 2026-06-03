@@ -59,7 +59,7 @@ export function StripeReturnPage() {
         <p className="text-muted-foreground">
           Tài khoản của bạn đã sẵn sàng nhận tiền.
         </p>
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           Đang chuyển hướng về Dashboard...
         </p>
       </div>
@@ -70,7 +70,7 @@ export function StripeReturnPage() {
   return (
     <div className="h-screen flex flex-col items-center justify-center text-center p-4 animate-in fade-in">
       <XCircle className="w-16 h-16 text-yellow-500 mb-4" />
-      <h1 className="text-2xl font-bold text-gray-800">Chưa hoàn tất hồ sơ</h1>
+      <h1 className="text-2xl font-bold text-foreground">Chưa hoàn tất hồ sơ</h1>
       <p className="text-muted-foreground max-w-md mb-6">
         Bạn chưa cung cấp đầy đủ thông tin ngân hàng hoặc đã hủy quá trình đăng
         ký.

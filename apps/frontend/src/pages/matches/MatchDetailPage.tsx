@@ -964,13 +964,13 @@ function RosterStat({
   accent: "success" | "warning" | "muted";
 }) {
   const accentBg: Record<"success" | "warning" | "muted", string> = {
-    success: "bg-emerald-50/70 border-emerald-200",
-    warning: "bg-amber-50/70 border-amber-200",
+    success: "bg-emerald-50/70 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-700/50",
+    warning: "bg-amber-50/70 border-amber-200 dark:bg-amber-950/40 dark:border-amber-700/50",
     muted: "bg-muted/50 border-border",
   };
   const accentText: Record<"success" | "warning" | "muted", string> = {
-    success: "text-emerald-700",
-    warning: "text-amber-700",
+    success: "text-emerald-700 dark:text-emerald-300",
+    warning: "text-amber-700 dark:text-amber-300",
     muted: "text-foreground",
   };
 
@@ -1074,7 +1074,7 @@ function ActionPanel({
             size="lg"
             onClick={onLeave}
             disabled={isLoading}
-            className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+            className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
           >
             <LogOut data-icon="inline-start" />
             Rời kèo
