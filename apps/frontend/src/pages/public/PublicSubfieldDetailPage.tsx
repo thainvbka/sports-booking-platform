@@ -1,4 +1,5 @@
 import { LoadingState } from "@/components/shared/LoadingState";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { SubfieldHeroInfo } from "@/components/subfield-detail/SubfieldHeroInfo";
 import { SubfieldReviewsList } from "@/components/subfield-detail/SubfieldReviewsList";
 import { SubfieldStickySidebar } from "@/components/subfield-detail/SubfieldStickySidebar";
@@ -10,7 +11,6 @@ import { useSubfieldReviews } from "@/hooks/useSubfieldReviews";
 import { getSportTypeLabel } from "@/utils";
 import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
 import {
-  ArrowLeft,
   CalendarCheck2,
   Clock3,
   MapPin,
@@ -91,18 +91,12 @@ export function PublicSubfieldDetailPage() {
   if (!subfield) {
     return (
       <div className="page-shell py-16">
-        <Card className="rounded-3xl border-dashed">
-          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-            <p className="font-display text-2xl font-bold">Không tìm thấy sân</p>
-            <p className="text-sm text-muted-foreground">
-              Sân bạn đang tìm có thể đã bị gỡ hoặc đường dẫn không đúng.
-            </p>
-            <Button className="mt-2" onClick={() => navigate(-1)}>
-              <ArrowLeft data-icon="inline-start" />
-              Quay lại
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title="Không tìm thấy sân"
+          description="Sân bạn đang tìm có thể đã bị gỡ hoặc đường dẫn không đúng."
+          actionLabel="Quay lại"
+          onAction={() => navigate(-1)}
+        />
       </div>
     );
   }
