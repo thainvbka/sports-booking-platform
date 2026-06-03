@@ -35,11 +35,12 @@ import {
   RECURRING_STATUS_COLORS,
   RECURRING_STATUS_LABELS,
 } from "@/lib/constants";
-import { fmtVND } from "@/lib/format";
+
 import { useAdminBookingStore } from "@/store/admin/useAdminBookingStore";
 import { useAdminRecurringBookingStore } from "@/store/admin/useAdminRecurringBookingStore";
 import {
   formatDateVn,
+  formatPrice,
   getBookingStatusColor,
   getBookingStatusLabel,
   getSportTypeLabel,
@@ -314,7 +315,7 @@ export default function AdminBookingsPage() {
       className: "w-28",
       cell: (b) => (
         <span className="font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
-          {fmtVND(Number(b.total_price))}
+          {formatPrice(Number(b.total_price))}
         </span>
       ),
     },
@@ -441,7 +442,7 @@ export default function AdminBookingsPage() {
       className: "w-28",
       cell: (rb) => (
         <span className="font-display text-sm font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
-          {fmtVND(rb.total_value)}
+          {formatPrice(rb.total_value)}
         </span>
       ),
     },
@@ -681,7 +682,7 @@ export default function AdminBookingsPage() {
               leftLabel="Tổng chi phí"
               leftValue={
                 <p className="font-display text-2xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
-                  {fmtVND(Number(selectedBooking.total_price))}
+                  {formatPrice(Number(selectedBooking.total_price))}
                 </p>
               }
               rightLabel="Mã đặt sân"
@@ -752,7 +753,7 @@ export default function AdminBookingsPage() {
               leftLabel="Tổng chi phí nhóm"
               leftValue={
                 <p className="font-display text-2xl font-black italic tracking-tight text-emerald-600 dark:text-emerald-400">
-                  {fmtVND(selectedRecurring.total_value)}
+                  {formatPrice(selectedRecurring.total_value)}
                 </p>
               }
               rightLabel="Mã nhóm"
@@ -828,7 +829,7 @@ export default function AdminBookingsPage() {
                           {bookingStatusLabel(b.status)}
                         </Badge>
                         <span className="text-[11px] font-bold tabular-nums text-foreground">
-                          {fmtVND(Number(b.total_price))}
+                          {formatPrice(Number(b.total_price))}
                         </span>
                       </div>
                     </div>

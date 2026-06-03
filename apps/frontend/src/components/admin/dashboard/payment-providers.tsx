@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { PaymentProviderPoint } from "@/types/admin.types";
-import { fmtVND } from "@/lib/format";
+import { formatPrice } from "@/utils";
 
 interface PaymentProvidersProps {
   data: PaymentProviderPoint[];
@@ -91,10 +91,10 @@ export function PaymentProviders({ data }: PaymentProvidersProps) {
                 </span>
                 <div className="text-right">
                   <span className="font-semibold text-foreground">
-                    {fmtVND(p.revenue)}
+                    {formatPrice(p.revenue)}
                   </span>
                   <span className="text-muted-foreground ml-1.5">
-                    · avg {fmtVND(p.avgTransaction)}
+                    · avg {formatPrice(p.avgTransaction)}
                   </span>
                 </div>
               </div>

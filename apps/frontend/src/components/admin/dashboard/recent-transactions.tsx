@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { fmtVND } from "@/lib/format";
+import { formatPrice } from "@/utils";
 import {
   CheckCircle2,
   Clock,
@@ -146,7 +146,7 @@ export function RecentTransactions({ payments = [] }: RecentTransactionsProps) {
                       {playerName}
                     </p>
                     <p className="text-sm font-black text-foreground shrink-0 tabular-nums">
-                      {fmtVND(payment.amount)}
+                      {formatPrice(payment.amount)}
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-0.5">
