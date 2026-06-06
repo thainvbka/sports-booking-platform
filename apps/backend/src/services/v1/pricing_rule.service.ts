@@ -1,20 +1,20 @@
 import { formatTimeForDisplay, parseTime } from "../../helpers";
 import {
-    buildPricingRulesCacheKey,
-    CACHE_KEYS,
-    CACHE_TTL,
-    cacheHelper,
-    updateComplexCache,
+  buildPricingRulesCacheKey,
+  CACHE_KEYS,
+  CACHE_TTL,
+  cacheHelper,
+  updateComplexCache,
 } from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
 import {
-    BadRequestError,
-    ForbiddenError,
-    NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
 } from "../../utils/error.response";
 import {
-    CreatePricingRuleInput,
-    UpdatePricingRuleInput,
+  CreatePricingRuleInput,
+  UpdatePricingRuleInput,
 } from "../../validations";
 import { recomputeSubfieldEmbedding } from "./recommendation.service";
 
@@ -64,9 +64,12 @@ export const createPricingRule = async (
   //danh sách rule hợp lệ
   const rulesToCreate = [];
 
-  //duyet tung ngay duoc chon
+  // Lấy trước toàn bộ pricing rules của subfield để check trùng lặp
+  const existingRules = await prisma.pricingRule.findMany({
+    where: { sub_field_id: data.sub_field_id },
+  });
+
   for (const day of data.day_of_week) {
-    //duyet tung khung gio duoc chon
     for (const slot of data.time_slots) {
       const startTime = parseTime(slot.start_time);
       const endTime = parseTime(slot.end_time);
@@ -75,21 +78,13 @@ export const createPricingRule = async (
         throw new BadRequestError("Start time must be before end time");
       }
 
-      // Kiểm tra trùng lặp với các luật giá hiện có
-      const overlappingRule = await prisma.pricingRule.findFirst({
-        where: {
-          sub_field_id: data.sub_field_id,
-          day_of_week: day,
-          AND: [
-            {
-              start_time: { lt: endTime },
-            },
-            {
-              end_time: { gt: startTime },
-            },
-          ],
-        },
-      });
+      // Kiểm tra trùng lặp
+      const overlappingRule = existingRules.find(
+        (rule) =>
+          rule.day_of_week === day &&
+          rule.start_time < endTime &&
+          rule.end_time > startTime
+      );
 
       if (overlappingRule) {
         const dayNames = [

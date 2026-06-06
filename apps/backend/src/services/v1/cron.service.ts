@@ -172,30 +172,7 @@ export const expiredRecurringBookings = async () => {
             });
           }
 
-          // Bổ sung lớp an toàn cho các booking pending vừa mới phát sinh trong transaction.
-          const remainPendingIds = (
-            await tx.booking.findMany({
-              where: {
-                recurring_booking_id: recurringId,
-                status: "PENDING",
-                expires_at: {
-                  lt: now,
-                },
-              },
-              select: { id: true },
-            })
-          ).map((booking) => booking.id);
 
-          if (remainPendingIds.length > 0) {
-            await restoreAddonStockForBookingIds(tx, remainPendingIds);
-            await tx.booking.updateMany({
-              where: {
-                id: { in: remainPendingIds },
-                status: "PENDING",
-              },
-              data: { status: "CANCELED" },
-            });
-          }
 
           return true;
         });

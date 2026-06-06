@@ -416,7 +416,7 @@ export const getCurrentUser = async (accountId: string) => {
   };
 };
 
-const getJwtPayloadAndRoles = async (accountId: string) => {
+export const getJwtPayloadAndRoles = async (accountId: string) => {
   const { roles, profiles } = await getUserRolesAndProfiles(accountId);
   const jwtPayload: JwtPayload = {
     accountId,

@@ -351,18 +351,15 @@ export const cancelRecurringBookingService = async (
 
     const pendingBookingIds = pendingBookings.map((booking) => booking.id);
 
-    for (const bookingId of pendingBookingIds) {
-      const canceled = await tx.booking.updateMany({
+    if (pendingBookingIds.length > 0) {
+      await restoreAddonStockForBookingIds(tx, pendingBookingIds);
+      await tx.booking.updateMany({
         where: {
-          id: bookingId,
+          id: { in: pendingBookingIds },
           status: "PENDING",
         },
         data: { status: "CANCELED" },
       });
-
-      if (canceled.count > 0) {
-        await restoreAddonStockForBookingIds(tx, [bookingId]);
-      }
     }
 
     return tx.recurringBooking.update({
@@ -402,18 +399,15 @@ export const reviewRecurringBookingService = async (
       .map((booking) => booking.id);
 
     await prisma.$transaction(async (tx) => {
-      for (const bookingId of pendingBookingIds) {
-        const canceled = await tx.booking.updateMany({
+      if (pendingBookingIds.length > 0) {
+        await restoreAddonStockForBookingIds(tx, pendingBookingIds);
+        await tx.booking.updateMany({
           where: {
-            id: bookingId,
+            id: { in: pendingBookingIds },
             status: "PENDING",
           },
           data: { status: "CANCELED" },
         });
-
-        if (canceled.count > 0) {
-          await restoreAddonStockForBookingIds(tx, [bookingId]);
-        }
       }
 
       await tx.recurringBooking.update({

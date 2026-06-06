@@ -429,7 +429,10 @@ export const adminCancelPayoutBatch = async (batchId: string, note?: string) => 
 
     // Trả các OwnerPayout về PENDING và tháo batch_id
     await tx.ownerPayout.updateMany({
-      where: { batch_id: batchId, status: PayoutStatus.REQUESTED },
+      where: {
+        batch_id: batchId,
+        status: { in: [PayoutStatus.REQUESTED, PayoutStatus.PROCESSING] },
+      },
       data: {
         status: PayoutStatus.PENDING,
         batch_id: null,

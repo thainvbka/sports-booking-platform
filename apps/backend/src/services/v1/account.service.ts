@@ -6,13 +6,13 @@ import {
 
 import { addRoleInput } from "../../validations";
 
-import { getRefreshExpiryDate, getUserRolesAndProfiles } from "../../helpers";
+import { getRefreshExpiryDate } from "../../helpers";
 import {
   generateAccessToken,
   generateRefreshToken,
   JwtPayload,
 } from "../../libs/jwt";
-import { roleCreationStrategy } from "./auth.service";
+import { roleCreationStrategy, getJwtPayloadAndRoles } from "./auth.service";
 export const addRoleToAccount = async (
   accountId: string,
   roleData: addRoleInput,
@@ -49,19 +49,8 @@ export const addRoleToAccount = async (
 
   await createRole(prisma, accountId, roleData);
 
-  // Lấy roles và profiles mới sau khi thêm role
-  const { roles, profiles } = await getUserRolesAndProfiles(accountId);
-
-  // Tạo JWT payload mới với roles mới
-  const jwtPayload: JwtPayload = {
-    accountId,
-    roles: roles as ("PLAYER" | "OWNER" | "ADMIN")[],
-    profiles: {
-      playerId: profiles.player?.id,
-      ownerId: profiles.owner?.id,
-      adminId: profiles.admin?.id,
-    },
-  };
+  // Lấy roles, profiles và tạo JWT payload mới sau khi thêm role
+  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(accountId);
 
   // Tạo access token và refresh token mới
   const accessToken = generateAccessToken(jwtPayload);
