@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import config from "../../configs/dotenv";
 import { CACHE_KEYS, cacheHelper } from "../../helpers/cache";
 import {
@@ -10,6 +11,7 @@ import {
   UserProfileSummary,
 } from "../../helpers/recommendation";
 import { prisma } from "../../libs/prisma";
+import { acquireLock, releaseLock } from "../../libs/redis";
 import { ForbiddenError } from "../../utils/error.response";
 
 interface RecommendationItem {
@@ -103,12 +105,14 @@ export const getRecommendationsForPlayer = async (
 
   // 2. Single-flight lock
   const lockKey = CACHE_KEYS.RECOMMENDATION_LOCK(playerId);
+  const lockValue = crypto.randomUUID();
   let locked = false;
   let retries = 0;
 
   while (!locked && retries < 3) {
-    locked = await cacheHelper.acquireLock(
+    locked = await acquireLock(
       lockKey,
+      lockValue,
       config.RECOMMENDATION_LOCK_TTL,
     );
     if (!locked) {
@@ -255,7 +259,7 @@ export const getRecommendationsForPlayer = async (
     return response;
   } finally {
     if (locked) {
-      await cacheHelper.del(lockKey);
+      await releaseLock(lockKey, lockValue);
     }
   }
 };

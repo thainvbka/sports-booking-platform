@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { config } from "../../configs";
+import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../utils/cookie";
 import {
   forgotPassword,
   getCurrentUser,
@@ -36,11 +36,7 @@ export const verifyEmailController = async (req: Request, res: Response) => {
   const { token } = req.params as { token: string };
   const data = await verifyEmail(token);
 
-  res.cookie("refreshToken", data.refreshToken, {
-    httpOnly: true,
-    secure: config.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  setRefreshTokenCookie(res, data.refreshToken);
 
   return new SuccessResponse({
     message: "Email verified successfully",
@@ -54,11 +50,7 @@ export const verifyEmailController = async (req: Request, res: Response) => {
 export const loginController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const data = await logIn(email, password);
-  res.cookie("refreshToken", data.refreshToken, {
-    httpOnly: true,
-    secure: config.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  setRefreshTokenCookie(res, data.refreshToken);
   return new SuccessResponse({
     message: "User logged in successfully",
     data: {
@@ -71,11 +63,7 @@ export const loginController = async (req: Request, res: Response) => {
 export const logoutController = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken as string;
   await logOut(refreshToken);
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: config.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  clearRefreshTokenCookie(res);
   return new SuccessResponse({
     message: "User logged out successfully",
   }).send(res);
@@ -84,11 +72,7 @@ export const logoutController = async (req: Request, res: Response) => {
 export const refreshTokenController = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken as string;
   const data = await handlerRefreshToken(refreshToken);
-  res.cookie("refreshToken", data.refreshToken, {
-    httpOnly: true,
-    secure: config.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  setRefreshTokenCookie(res, data.refreshToken);
   return new SuccessResponse({
     message: "Token refreshed successfully",
     data: {

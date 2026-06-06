@@ -159,20 +159,17 @@ export const expiredRecurringBookings = async () => {
             (booking) => booking.id,
           );
 
-          for (const bookingId of pendingBookingIds) {
-            const canceledBooking = await tx.booking.updateMany({
+          if (pendingBookingIds.length > 0) {
+            await restoreAddonStockForBookingIds(tx, pendingBookingIds);
+            await tx.booking.updateMany({
               where: {
-                id: bookingId,
+                id: { in: pendingBookingIds },
                 status: "PENDING",
               },
               data: {
                 status: "CANCELED",
               },
             });
-
-            if (canceledBooking.count > 0) {
-              await restoreAddonStockForBooking(tx, bookingId);
-            }
           }
 
           // Bổ sung lớp an toàn cho các booking pending vừa mới phát sinh trong transaction.

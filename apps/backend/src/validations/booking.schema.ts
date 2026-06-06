@@ -1,9 +1,5 @@
 import { z } from "zod";
-import { getVietnamMinutes } from "../helpers/time.helper";
-
-const isHalfHourAlignedInVietnam = (date: Date): boolean => {
-  return getVietnamMinutes(date) % 30 === 0;
-};
+import { isHalfHourAlignedInVietnam, validateDuration30MinMultiple } from "./shared";
 
 const bookingAddonItemSchema = z.object({
   product_id: z.string().uuid("ID sản phẩm không hợp lệ"),
@@ -47,13 +43,7 @@ export const createBookingSchema = z
     path: ["body", "end_time"],
   })
   .refine(
-    (data) => {
-      // Validate thời lượng phải là bội của 30 phút
-      const durationMs =
-        data.body.end_time.getTime() - data.body.start_time.getTime();
-      const durationMinutes = durationMs / (1000 * 60);
-      return durationMinutes > 0 && durationMinutes % 30 === 0;
-    },
+    (data) => validateDuration30MinMultiple(data.body.start_time, data.body.end_time),
     {
       message:
         "Thời lượng đặt sân phải là bội của 30 phút (0.5 giờ, 1 giờ, 1.5 giờ, ...)",

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { addRoleToAccount } from "../../services/v1/account.service";
 import { SuccessResponse } from "../../utils/success.response";
-import { config } from "../../configs";
+import { setRefreshTokenCookie } from "../../utils/cookie";
 
 export const addRoleController = async (req: Request, res: Response) => {
   // Lấy accountId từ middleware authenticate
@@ -11,11 +11,7 @@ export const addRoleController = async (req: Request, res: Response) => {
   const result = await addRoleToAccount(accountId!, roleData);
 
   // Set refresh token in cookie like auth endpoints
-  res.cookie("refreshToken", result.refreshToken, {
-    httpOnly: true,
-    secure: config.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  setRefreshTokenCookie(res, result.refreshToken);
 
   return new SuccessResponse({
     message: result.message,

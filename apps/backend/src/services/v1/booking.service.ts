@@ -1,4 +1,4 @@
-import { BookingStatus } from "@prisma/client";
+import { BookingStatus, Prisma } from "@prisma/client";
 import crypto from "crypto";
 import { BOOKING_TIMEOUT } from "../../configs";
 import { fetchAndCalculatePrice } from "../../helpers/pricing.helper";
@@ -446,6 +446,43 @@ export const updateBooking = async (
   }
 };
 
+const executeCancelBookingTx = async (
+  tx: Prisma.TransactionClient,
+  booking_id: string,
+  currentStatus: string,
+) => {
+  if (currentStatus === "PENDING") {
+    const canceled = await tx.booking.updateMany({
+      where: { id: booking_id, status: "PENDING" },
+      data: { status: "CANCELED" },
+    });
+
+    if (canceled.count === 0) {
+      throw new BadRequestError("Booking status has changed, please refresh");
+    }
+
+    await restoreAddonStockForBooking(tx, booking_id);
+  } else {
+    await tx.booking.updateMany({
+      where: {
+        id: booking_id,
+        status: { in: ["COMPLETED", "CONFIRMED"] },
+      },
+      data: { status: "CANCELED" },
+    });
+  }
+
+  const canceled = await tx.booking.findUnique({
+    where: { id: booking_id },
+  });
+
+  if (!canceled) {
+    throw new NotFoundError("Booking not found after cancel");
+  }
+
+  return canceled;
+};
+
 export const cancelBooking = async (booking_id: string, player_id: string) => {
   const booking = await prisma.booking.findFirst({
     where: {
@@ -486,36 +523,7 @@ export const cancelBooking = async (booking_id: string, player_id: string) => {
   }
 
   const canceledBooking = await prisma.$transaction(async (tx) => {
-    if (booking.status === "PENDING") {
-      const canceled = await tx.booking.updateMany({
-        where: { id: booking_id, status: "PENDING" },
-        data: { status: "CANCELED" },
-      });
-
-      if (canceled.count === 0) {
-        throw new BadRequestError("Booking status has changed, please refresh");
-      }
-
-      await restoreAddonStockForBooking(tx, booking_id);
-    } else {
-      await tx.booking.updateMany({
-        where: {
-          id: booking_id,
-          status: { in: ["COMPLETED", "CONFIRMED"] },
-        },
-        data: { status: "CANCELED" },
-      });
-    }
-
-    const canceled = await tx.booking.findUnique({
-      where: { id: booking_id },
-    });
-
-    if (!canceled) {
-      throw new NotFoundError("Booking not found after cancel");
-    }
-
-    return canceled;
+    return await executeCancelBookingTx(tx, booking_id, booking.status);
   });
 
   if (booking.status !== "PENDING") {
@@ -578,36 +586,7 @@ export const ownerCancelBooking = async (
   }
 
   const canceledBooking = await prisma.$transaction(async (tx) => {
-    if (booking.status === "PENDING") {
-      const canceled = await tx.booking.updateMany({
-        where: { id: booking_id, status: "PENDING" },
-        data: { status: "CANCELED" },
-      });
-
-      if (canceled.count === 0) {
-        throw new BadRequestError("Booking status has changed, please refresh");
-      }
-
-      await restoreAddonStockForBooking(tx, booking_id);
-    } else {
-      await tx.booking.updateMany({
-        where: {
-          id: booking_id,
-          status: { in: ["COMPLETED", "CONFIRMED"] },
-        },
-        data: { status: "CANCELED" },
-      });
-    }
-
-    const canceledBooking = await tx.booking.findUnique({
-      where: { id: booking_id },
-    });
-
-    if (!canceledBooking) {
-      throw new NotFoundError("Booking not found after cancel");
-    }
-
-    return canceledBooking;
+    return await executeCancelBookingTx(tx, booking_id, booking.status);
   });
 
   await sendNotificationIfNotExists(booking.player.account_id, {

@@ -175,19 +175,8 @@ export const verifyEmail = async (token: string) => {
     },
   });
 
-  //fetch roles và profiles
-  const { roles, profiles } = await getUserRolesAndProfiles(updatedAccount.id);
-
-  // tạo payload cho jwt
-  const jwtPayload: JwtPayload = {
-    accountId: updatedAccount.id,
-    roles: roles as any,
-    profiles: {
-      playerId: profiles.player?.id,
-      ownerId: profiles.owner?.id,
-      adminId: profiles.admin?.id,
-    },
-  };
+  //fetch roles và profiles & tạo payload cho jwt
+  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(updatedAccount.id);
 
   const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(updatedAccount.id);
@@ -232,18 +221,8 @@ export const logIn = async (email: string, password: string) => {
     );
   }
 
-  //fetch roles và profiles
-  const { roles, profiles } = await getUserRolesAndProfiles(user.id);
-  //tạo payload cho jwt
-  const jwtPayload: JwtPayload = {
-    accountId: user.id,
-    roles: roles as any,
-    profiles: {
-      playerId: profiles.player?.id,
-      ownerId: profiles.owner?.id,
-      adminId: profiles.admin?.id,
-    },
-  };
+  //fetch roles và profiles & tạo payload cho jwt
+  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(user.id);
 
   const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(user.id);
@@ -306,21 +285,8 @@ export const handlerRefreshToken = async (refreshToken: string) => {
     throw new UnauthorizedError("Refresh token đã bị thu hồi");
   }
 
-  //fetch roles và profiles
-  const { roles, profiles } = await getUserRolesAndProfiles(
-    storedToken.account_id,
-  );
-
-  //tạo payload cho jwt
-  const jwtPayload: JwtPayload = {
-    accountId: storedToken.account_id,
-    roles: roles as any,
-    profiles: {
-      playerId: profiles.player?.id,
-      ownerId: profiles.owner?.id,
-      adminId: profiles.admin?.id,
-    },
-  };
+  //fetch roles và profiles & tạo payload cho jwt
+  const { jwtPayload } = await getJwtPayloadAndRoles(storedToken.account_id);
 
   const accessToken = generateAccessToken(jwtPayload);
   const newRefreshToken = generateRefreshToken(storedToken.account_id);
@@ -448,4 +414,18 @@ export const getCurrentUser = async (accountId: string) => {
     roles,
     profiles,
   };
+};
+
+const getJwtPayloadAndRoles = async (accountId: string) => {
+  const { roles, profiles } = await getUserRolesAndProfiles(accountId);
+  const jwtPayload: JwtPayload = {
+    accountId,
+    roles: roles as any,
+    profiles: {
+      playerId: profiles.player?.id,
+      ownerId: profiles.owner?.id,
+      adminId: profiles.admin?.id,
+    },
+  };
+  return { jwtPayload, roles, profiles };
 };

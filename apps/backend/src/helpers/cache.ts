@@ -290,26 +290,6 @@ export const cacheHelper = {
       console.error("Redis DelByPattern Error:", error);
     }
   },
-
-  /**
-   * Acquire a single-flight lock
-   */
-  acquireLock: async (
-    key: string,
-    expiration: number = 30,
-  ): Promise<boolean> => {
-    try {
-      const redis = getRedis();
-      const result = await redis.set(key, "1", {
-        NX: true,
-        EX: expiration,
-      });
-      return result === "OK";
-    } catch (error) {
-      console.error("Redis AcquireLock Error:", error);
-      return false; // Fail open or closed depending on preference, here failing closed to trigger degraded mode
-    }
-  },
 };
 
 /**

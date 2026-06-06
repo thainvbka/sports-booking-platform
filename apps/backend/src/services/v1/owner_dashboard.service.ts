@@ -60,9 +60,9 @@ export interface StatsMetrics {
   hourlyDistribution: HourlyDistributionResponse;
 }
 
-//tong doanh thu
-export const getTotalRevenue = async (ownerId: string): Promise<number> => {
-  //check owner exists
+// Hàm kiểm tra owner tồn tại
+const checkOwnerExists = async (ownerId: string, bypassOwnerCheck: boolean) => {
+  if (bypassOwnerCheck) return;
   const owner = await prisma.owner.findUnique({
     where: { id: ownerId },
   });
@@ -70,6 +70,14 @@ export const getTotalRevenue = async (ownerId: string): Promise<number> => {
   if (!owner) {
     throw new NotFoundError("Owner not found");
   }
+};
+
+//tong doanh thu
+export const getTotalRevenue = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   //tinh tong doanh thu
   const totalRevenueResult = await prisma.booking.aggregate({
@@ -94,15 +102,9 @@ export const getTotalRevenue = async (ownerId: string): Promise<number> => {
 //doanh thu thang nay
 export const getTotalRevenueThisMonth = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const totalRevenueResult = await prisma.booking.aggregate({
     where: {
@@ -129,15 +131,9 @@ export const getTotalRevenueThisMonth = async (
 //doanh thu thang truoc
 export const getTotalRevenueLastMonth = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const now = new Date();
   const previousMonth = subMonths(now, 1);
@@ -168,9 +164,12 @@ export const getTotalRevenueLastMonth = async (
 };
 
 //ty le tang truong doanh thu
-export const getRevenueGrowth = async (ownerId: string): Promise<number> => {
-  const thisMonthRevenue = await getTotalRevenueThisMonth(ownerId);
-  const lastMonthRevenue = await getTotalRevenueLastMonth(ownerId);
+export const getRevenueGrowth = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  const thisMonthRevenue = await getTotalRevenueThisMonth(ownerId, bypassOwnerCheck);
+  const lastMonthRevenue = await getTotalRevenueLastMonth(ownerId, bypassOwnerCheck);
 
   if (lastMonthRevenue === 0) {
     return thisMonthRevenue === 0 ? 0 : 100;
@@ -183,15 +182,11 @@ export const getRevenueGrowth = async (ownerId: string): Promise<number> => {
 };
 
 //tong booking
-export const getTotalBookings = async (ownerId: string): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+export const getTotalBookings = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   //tinh tong so booking don le (khong thuoc recurring)
   const singleBookings = await prisma.booking.count({
@@ -218,18 +213,13 @@ export const getTotalBookings = async (ownerId: string): Promise<number> => {
 
   return singleBookings + recurringBookings;
 };
+
 //booking moi trong tuan
 export const getNewBookingsThisWeek = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 (Chủ nhật) đến 6 (Thứ bảy)
@@ -275,15 +265,11 @@ export const getNewBookingsThisWeek = async (
 };
 
 //tong complex
-export const getTotalComplexes = async (ownerId: string): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+export const getTotalComplexes = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   //tinh tong so complex
   const totalComplexes = await prisma.complex.count({
@@ -296,15 +282,11 @@ export const getTotalComplexes = async (ownerId: string): Promise<number> => {
 };
 
 //so san dang hoat dong
-export const getActiveSubFields = async (ownerId: string): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+export const getActiveSubFields = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   //tinh tong so san dang hoat dong
   const activeSubFields = await prisma.subField.count({
@@ -321,15 +303,11 @@ export const getActiveSubFields = async (ownerId: string): Promise<number> => {
 };
 
 //tong khach hang
-export const getTotalCustomers = async (ownerId: string): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+export const getTotalCustomers = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   //tinh tong so khach hang
   const totalCustomers = await prisma.booking
@@ -352,15 +330,11 @@ export const getTotalCustomers = async (ownerId: string): Promise<number> => {
 };
 
 //so khach hang moi thang nay
-export const getNewCustomers = async (ownerId: string): Promise<number> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+export const getNewCustomers = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<number> => {
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const now = new Date();
   const startDate = startOfMonth(now);
@@ -413,7 +387,10 @@ export const getNewCustomers = async (ownerId: string): Promise<number> => {
   return newCustomers;
 };
 
-export const getStatsMetrics = async (ownerId: string): Promise<OverView> => {
+export const getStatsMetrics = async (
+  ownerId: string,
+  bypassOwnerCheck = false,
+): Promise<OverView> => {
   const [
     totalRevenue,
     revenueGrowth,
@@ -424,14 +401,14 @@ export const getStatsMetrics = async (ownerId: string): Promise<OverView> => {
     totalCustomers,
     newCustomers,
   ] = await Promise.all([
-    getTotalRevenue(ownerId),
-    getRevenueGrowth(ownerId),
-    getTotalBookings(ownerId),
-    getNewBookingsThisWeek(ownerId),
-    getTotalComplexes(ownerId),
-    getActiveSubFields(ownerId),
-    getTotalCustomers(ownerId),
-    getNewCustomers(ownerId),
+    getTotalRevenue(ownerId, bypassOwnerCheck),
+    getRevenueGrowth(ownerId, bypassOwnerCheck),
+    getTotalBookings(ownerId, bypassOwnerCheck),
+    getNewBookingsThisWeek(ownerId, bypassOwnerCheck),
+    getTotalComplexes(ownerId, bypassOwnerCheck),
+    getActiveSubFields(ownerId, bypassOwnerCheck),
+    getTotalCustomers(ownerId, bypassOwnerCheck),
+    getNewCustomers(ownerId, bypassOwnerCheck),
   ]);
 
   return {
@@ -449,15 +426,9 @@ export const getStatsMetrics = async (ownerId: string): Promise<OverView> => {
 //phan bo booking theo trang thai
 export const getBookingStatusDistribution = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<BookingStatusDistribution> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   // Đếm các booking đơn lẻ (không thuộc recurring)
   const singleBookings = await prisma.booking.groupBy({
@@ -539,15 +510,9 @@ export const getBookingStatusDistribution = async (
 //top san duoc dat nhieu
 export const getTopSubFields = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<TopSubFieldsResponse> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const topSubFields = await prisma.booking.groupBy({
     by: ["sub_field_id"],
@@ -600,15 +565,9 @@ export const getTopSubFields = async (
 //doanh thu theo complex
 export const getRevenueByComplex = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<RevenueByComplexResponse> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const complexes = await prisma.complex.findMany({
     where: {
@@ -648,15 +607,9 @@ export const getRevenueByComplex = async (
 //phan bo theo khung gio
 export const getHourlyDistribution = async (
   ownerId: string,
+  bypassOwnerCheck = false,
 ): Promise<HourlyDistributionResponse> => {
-  //check owner exists
-  const owner = await prisma.owner.findUnique({
-    where: { id: ownerId },
-  });
-
-  if (!owner) {
-    throw new NotFoundError("Owner not found");
-  }
+  await checkOwnerExists(ownerId, bypassOwnerCheck);
 
   const bookings = await prisma.booking.findMany({
     where: {
@@ -673,9 +626,7 @@ export const getHourlyDistribution = async (
     },
   });
 
-  const distributionMap: {
-    [key: number]: { bookingCount: number; revenue: number };
-  } = {};
+  const distributionMap: Record<number, { bookingCount: number; revenue: number }> = {};
 
   // Khởi tạo các khung giờ
   for (let hour = 0; hour < 24; hour++) {
@@ -705,6 +656,9 @@ export const getHourlyDistribution = async (
 export const getOwnerDashboardStatsMetrics = async (
   ownerId: string,
 ): Promise<StatsMetrics> => {
+  // Check owner exists once at the entry point of getOwnerDashboardStatsMetrics
+  await checkOwnerExists(ownerId, false);
+
   const [
     overview,
     bookingStatusDistribution,
@@ -712,11 +666,11 @@ export const getOwnerDashboardStatsMetrics = async (
     revenueByComplex,
     hourlyDistribution,
   ] = await Promise.all([
-    getStatsMetrics(ownerId),
-    getBookingStatusDistribution(ownerId),
-    getTopSubFields(ownerId),
-    getRevenueByComplex(ownerId),
-    getHourlyDistribution(ownerId),
+    getStatsMetrics(ownerId, true),
+    getBookingStatusDistribution(ownerId, true),
+    getTopSubFields(ownerId, true),
+    getRevenueByComplex(ownerId, true),
+    getHourlyDistribution(ownerId, true),
   ]);
 
   return {

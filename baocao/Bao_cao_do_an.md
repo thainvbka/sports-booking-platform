@@ -403,7 +403,8 @@ Kiến trúc tổng quan của hệ thống được trình bày trong Hình 4.1
 ![Thiết kế tổng quan](/images/kientruc.png)
 *Hình 4.1. Sơ đồ kiến trúc phần mềm ba lớp mở rộng kết hợp Reverse Proxy*
 
-Khi người dùng thực hiện một thao tác trên giao diện, yêu cầu sẽ được gửi đến máy chủ thông qua Nginx Reverse Proxy. Từ đây, các yêu cầu API được chuyển tiếp đến hệ thống Backend để xử lý nghiệp vụ. Sau khi hoàn thành xử lý, kết quả được trả về cho giao diện và hiển thị cho người dùng. Đối với các chức năng yêu cầu cập nhật theo thời gian thực, dữ liệu được trao đổi thông qua kết nối Socket.io giữa phía người dùng và máy chủ
+Khi người dùng thực hiện một thao tác trên giao diện, yêu cầu sẽ được gửi đến máy chủ thông qua Nginx Reverse Proxy. Từ đây, các yêu cầu API được chuyển tiếp đến hệ thống Backend để xử lý nghiệp vụ. Sau khi hoàn thành xử lý, kết quả được trả về cho giao diện và hiển thị cho người dùng. Đối với các chức năng yêu cầu cập nhật theo thời gian thực, dữ liệu được trao đổi thông qua kết nối Socket.io giữa phía người dùng và máy chủ. Đặc biệt, hệ thống tích hợp phân hệ gợi ý thông minh nhằm hỗ trợ người chơi tìm kiếm sân đấu phù hợp một cách nhanh chóng dựa trên hành vi sử dụng lịch sử. Khi người dùng truy cập trang chủ, máy chủ Backend sẽ kiểm tra bộ nhớ đệm Redis, nếu chưa có dữ liệu cũ được lưu trữ, hệ thống sẽ thực hiện truy vấn tìm kiếm tương đồng véc-tơ (Vector Similarity Search) trên PostgreSQL thông qua tiện ích mở rộng pgvector. Kết quả thô tiếp tục được chuyển tiếp đến dịch vụ trí tuệ nhân tạo Gemini API để thực hiện xếp hạng lại và tạo lý do gợi ý tự nhiên trước khi lưu vào bộ đệm Redis và phản hồi về giao diện. Chi tiết về quy trình kỹ thuật và giải thuật của hệ gợi ý này sẽ được trình bày trong Mục 5.2.
+
 
 <!-- ### 4.1.3 Thiết kế chi tiết gói
 
@@ -668,7 +669,8 @@ Bảng `SubField` dùng để lưu thông tin các sân con (sân 5, sân 7...) 
 
 Bảng 4.6: Mô tả chi tiết cấu trúc bảng SubField
 
-Bảng 4.6 chi tiết cấu trúc của sân con, liên kết với khu phức hợp qua `complex_id` và phân loại môn thể thao qua `sport_type`. Trường `embedding` lưu các chỉ số dạng véc-tơ đặc trưng để chạy thuật toán tìm kiếm khoảng cách cosine và đưa ra các đề xuất sân phù hợp nhất cho người chơi.
+Bảng 4.6 chi tiết cấu trúc của sân con, liên kết với khu phức hợp qua `complex_id` và phân loại môn thể thao qua `sport_type`. Trường `embedding` lưu trữ véc-tơ đặc trưng 8 chiều của sân đấu phục vụ tìm kiếm tương đồng véc-tơ (Vector Similarity Search) bằng khoảng cách Cosine. Việc lưu trữ trực tiếp véc-tơ này trong cơ sở dữ liệu PostgreSQL thông qua pgvector giúp tối ưu hóa hiệu năng truy vấn và duy trì tính nhất quán dữ liệu. Chi tiết về cơ chế biểu diễn véc-tơ và cách thức cập nhật tự động trường dữ liệu này được trình bày tại Mục 5.2.
+
 
 ##### * Thực thể kèo ghép đấu thể thao (`Match`)
 
@@ -759,7 +761,8 @@ Bảng 4.10: Danh sách các công cụ và thư viện phát triển hệ thố
 
 Hệ thống cung cấp ba giao diện tương tác tương ứng với ba nhóm đối tác trong mô hình vận hành:
 
-Giao diện tìm kiếm và đặt sân của người chơi (Player Client) cung cấp tính năng tìm kiếm tổ hợp sân dựa trên bộ lọc vị trí địa lý, loại bộ môn thể thao và thời gian rảnh. Giao diện tích hợp sơ đồ lịch đặt sân trực quan theo thời gian thực giúp người chơi dễ dàng lựa chọn khung giờ và chọn thuê thêm các vật phẩm đi kèm trước khi chuyển hướng đến giao diện thanh toán bảo mật của Stripe hoặc VNPay.
+Giao diện dành cho người chơi (Player Client) được thiết kế tích hợp với trang chủ trực quan hiển thị danh mục các bộ môn thể thao và đặc biệt là phân hệ gợi ý sân đấu cá nhân hóa nổi bật. Dựa trên lịch sử đặt sân trước đó của người dùng, hệ thống sẽ đề xuất danh sách các sân con phù hợp nhất kèm theo lý do gợi ý cụ thể được diễn đạt bằng ngôn ngữ tự nhiên (đối với người dùng mới chưa có dữ liệu, hệ thống tự động hiển thị các sân phổ biến được đánh giá cao). Bên cạnh đó, phân hệ này cũng cung cấp tính năng tìm kiếm tổ hợp sân dựa trên bộ lọc vị trí địa lý, loại bộ môn thể thao và thời gian rảnh. Giao diện tích hợp sơ đồ lịch đặt sân trực quan theo thời gian thực giúp người chơi dễ dàng lựa chọn khung giờ và chọn thuê thêm các vật phẩm đi kèm trước khi chuyển hướng đến giao diện thanh toán bảo mật của Stripe hoặc VNPay.
+
 
 Giao diện quản lý đặt sân và thiết lập giá của chủ sân (Owner Dashboard) hỗ trợ chủ sân theo dõi toàn bộ lịch đặt sân con dưới dạng lịch tuần/lịch ngày động. Chủ sân có thể cấu hình các quy tắc giá động dựa theo khung giờ vàng hoặc ngày nghỉ, phê duyệt các yêu cầu đăng ký sân mới, quản lý kho sản phẩm bán lẻ và tạo yêu cầu quyết toán doanh thu ròng tích lũy về ví tài khoản.
 
@@ -767,24 +770,86 @@ Giao diện đối soát tài chính và phê duyệt của quản trị viên (
 
 ## 4.4 Kiểm thử
 
-Quy trình kiểm thử tập trung vào việc thiết kế các kịch bản kiểm nghiệm chất lượng vận hành và tính đúng đắn của logic nghiệp vụ đối với hai tính năng cốt lõi có độ phức tạp cao nhất trong hệ thống bao gồm luồng giao dịch đặt sân - thanh toán và luồng giao tiếp ghép kèo đấu thời gian thực.
+Kiểm thử được thực hiện theo hai phương pháp bổ sung cho nhau: kiểm thử hộp đen (Black-box Testing) và kiểm thử hộp xám (Gray-box Testing). Đối tượng kiểm thử là bốn chức năng nghiệp vụ cốt lõi của hệ thống: Đăng ký và Đăng nhập, Đặt sân, Thanh toán trực tuyến, và Gợi ý sân cá nhân hóa. Mỗi chức năng được kiểm thử với các kỹ thuật phù hợp, bao gồm phân vùng tương đương (Equivalence Partitioning), phân tích giá trị biên (Boundary Value Analysis), kiểm thử kịch bản (Scenario Testing), kiểm thử dữ liệu không hợp lệ (Negative Testing) và kiểm thử dự phòng lỗi (Fallback Testing).
 
-Bảng 4.11: Kịch bản kiểm thử luồng Đặt sân và Thanh toán trực tuyến
+### 4.4.1 Kiểm thử chức năng Đăng ký và Đăng nhập
 
-| Mã kịch bản | Mô tả kịch bản | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế |
-| :---: | :--- | :--- | :--- | :---: |
-| **TC-01** | Kiểm tra đặt sân khi khung giờ còn trống. | Sân con A, 18:00 - 19:30, Trạng thái: trống. | Hệ thống tạo đơn đặt sân ở trạng thái PENDING, khóa tạm thời khung giờ trên Redis. | Đạt |
-| **TC-02** | Kiểm tra đặt trùng khung giờ đồng thời (tranh chấp). | Hai yêu cầu đặt cùng Sân con A, 18:00 - 19:30 gửi cùng thời điểm. | Một yêu cầu thành công, yêu cầu còn lại bị PostgreSQL row lock (`FOR UPDATE`) chặn lại và báo lỗi trùng lịch. | Đạt |
-| **TC-03** | Kiểm tra tự động hủy đơn đặt khi quá hạn thanh toán. | Đơn đặt sân PENDING quá hạn 10 phút chưa thanh toán. | Tiến trình tự động (cron job) chuyển trạng thái đơn đặt sang CANCELED, giải phóng lịch sân con. | Đạt |
-| **TC-04** | Xác nhận thanh toán qua VNPay Webhook. | Gửi tín hiệu thanh toán thành công từ VNPay IPN API. | Cập nhật trạng thái Payment sang PAID, trạng thái Booking tương ứng sang CONFIRMED. | Đạt |
+Chức năng xác thực người dùng bao gồm hai luồng chính: đăng ký tài khoản và đăng nhập. Khi đăng ký, hệ thống kiểm tra tính hợp lệ của dữ liệu đầu vào theo các ràng buộc cụ thể về độ dài tối thiểu của từng trường, đồng thời từ chối nếu email hoặc số điện thoại đã được đăng ký trước đó. Tài khoản sau khi tạo phải trải qua bước xác minh email trước khi được phép đăng nhập. Khi đăng nhập, hệ thống kiểm tra thông tin xác thực và trạng thái kích hoạt tài khoản. Các kỹ thuật áp dụng bao gồm phân vùng tương đương, phân tích giá trị biên (mật khẩu đúng 7 ký tự — dưới ngưỡng tối thiểu) và kiểm thử dữ liệu không hợp lệ.
 
-Bảng 4.12: Kịch bản kiểm thử luồng Ghép kèo đấu thời gian thực
+Bảng 4.11: Kịch bản kiểm thử chức năng Đăng ký và Đăng nhập
 
-| Mã kịch bản | Mô tả kịch bản | Dữ liệu đầu vào | Kết quả mong đợi | Kết quả thực tế |
-| :---: | :--- | :--- | :--- | :---: |
-| **TC-05** | Khởi tạo kèo ghép sân mới. | Booking ID đã xác nhận, trình độ yêu cầu: Trung bình, slots: 4. | Kèo đấu được tạo ở trạng thái OPEN, hiển thị danh sách công khai trên ứng dụng. | Đạt |
-| **TC-06** | Người chơi khác đăng ký tham gia kèo ghép sân. | Player B nhấn nút xin tham gia kèo đấu ID 102. | Ghi nhận Player B vào danh sách chờ duyệt, gửi thông báo thời gian thực qua Socket.io đến chủ kèo. | Đạt |
-| **TC-07** | Đóng kèo đấu khi đủ số lượng thành viên thi đấu. | Chấp thuận thành viên thứ 4 tham gia (slots_filled đạt tối đa). | Trạng thái kèo đấu tự động chuyển sang FULL, không nhận thêm yêu cầu đăng ký mới. | Đạt |
+| Mã kiểm thử | Giá trị kiểm thử | Kết quả mong đợi | Kết quả thực tế |
+| :---: | :--- | :--- | :---: |
+| **TC-01** | Đăng ký tài khoản người chơi với đầy đủ thông tin hợp lệ: email mới, mật khẩu đủ 8 ký tự, họ tên đủ 5 ký tự, số điện thoại đủ 10 chữ số. | Tài khoản được tạo thành công ở trạng thái chờ xác minh. Hệ thống gửi email xác thực đến địa chỉ đã đăng ký và thông báo người dùng kiểm tra hộp thư. | Đạt |
+| **TC-02** | Đăng ký tài khoản chủ sân với email đã tồn tại trong hệ thống. | Hệ thống từ chối yêu cầu và thông báo email hoặc số điện thoại đã được sử dụng. | Đạt |
+| **TC-03** | Đăng ký tài khoản với mật khẩu chỉ 7 ký tự — dưới ngưỡng tối thiểu cho phép. | Hệ thống từ chối yêu cầu ngay ở bước kiểm tra dữ liệu đầu vào và thông báo mật khẩu phải có ít nhất 8 ký tự. | Đạt |
+| **TC-04** | Đăng nhập với email và mật khẩu đúng, tài khoản đã xác minh email. | Đăng nhập thành công. Hệ thống cấp phiên làm việc và trả về thông tin người dùng cùng danh sách vai trò. | Đạt |
+| **TC-05** | Đăng nhập với email đúng nhưng mật khẩu sai. | Hệ thống từ chối đăng nhập và trả về thông báo lỗi chung, không chỉ rõ trường nào sai. | Đạt |
+| **TC-06** | Đăng nhập với tài khoản tồn tại nhưng chưa xác minh email. | Hệ thống từ chối đăng nhập và thông báo tài khoản chưa được kích hoạt, yêu cầu người dùng kiểm tra hộp thư. | Đạt |
+| **TC-07** | Xác minh email bằng đường dẫn đã hết hạn sau 24 giờ kể từ khi đăng ký. | Hệ thống từ chối xác minh và thông báo mã xác thực không hợp lệ hoặc đã hết hạn. | Đạt |
+
+### 4.4.2 Kiểm thử chức năng Đặt sân
+
+Luồng đặt sân áp dụng cơ chế kiểm soát đồng thời hai lớp nhằm ngăn trùng lịch. Trước khi ghi nhận đơn đặt, hệ thống lần lượt xác minh trạng thái hoạt động của người chơi, tính hợp lệ của khung giờ đặt (phải là thời điểm tương lai) và sự tồn tại của sân con được yêu cầu. Nếu tất cả điều kiện đều thỏa mãn, hệ thống sử dụng khóa phân tán ở tầng ứng dụng kết hợp với khóa cấp dòng ở tầng cơ sở dữ liệu để đảm bảo chỉ một yêu cầu được phép ghi nhận tại một thời điểm. Kỹ thuật kiểm thử sử dụng bao gồm kiểm thử kịch bản, kiểm thử dữ liệu không hợp lệ và phân tích giá trị biên với thời gian đặt là thời điểm trong quá khứ.
+
+Bảng 4.12: Kịch bản kiểm thử chức năng Đặt sân
+
+| Mã kiểm thử | Giá trị kiểm thử | Kết quả mong đợi | Kết quả thực tế |
+| :---: | :--- | :--- | :---: |
+| **TC-08** | Đặt sân với đầy đủ điều kiện hợp lệ: người chơi đang hoạt động, sân con tồn tại, khung giờ ở tương lai và chưa có ai đặt. | Hệ thống ghi nhận đơn đặt sân ở trạng thái chờ thanh toán với thời hạn xác nhận được thiết lập tự động. | Đạt |
+| **TC-09** | Đặt sân với khung giờ bắt đầu đã qua thời điểm hiện tại. | Hệ thống từ chối và thông báo không thể đặt sân cho thời gian đã qua. | Đạt |
+| **TC-10** | Đặt sân với mã sân con không tồn tại hoặc đã bị vô hiệu hóa. | Hệ thống trả về lỗi không tìm thấy sân. | Đạt |
+| **TC-11** | Hai yêu cầu đặt cùng sân con và cùng khung giờ được gửi đồng thời. | Yêu cầu đến trước được ghi nhận thành công. Yêu cầu đến sau bị từ chối do sân đang trong quá trình xử lý và nhận thông báo yêu cầu thử lại sau. | Đạt |
+| **TC-12** | Người chơi gửi lại yêu cầu đặt đúng sân và đúng khung giờ của đơn đặt đang chờ thanh toán còn hiệu lực. | Hệ thống nhận biết đây là phiên tiếp tục, gia hạn thời hạn xác nhận của đơn đặt hiện có và thông báo tiếp tục phiên trước đó. | Đạt |
+| **TC-13** | Đặt sân kèm add-on là sản phẩm đã hết hàng tại thời điểm đặt. | Hệ thống từ chối ghi nhận đơn đặt và thông báo một số add-on đã hết hàng hoặc không còn khả dụng. | Đạt |
+
+### 4.4.3 Kiểm thử chức năng Thanh toán trực tuyến
+
+Hệ thống hỗ trợ hai cổng thanh toán là Stripe và VNPay. Trước khi khởi tạo phiên thanh toán, hệ thống kiểm tra một số điều kiện tiên quyết: danh sách đơn đặt không được rỗng, tất cả đơn đặt phải đang ở trạng thái chờ thanh toán, các đơn phải thuộc cùng một chủ sân, và chủ sân phải đã hoàn tất thiết lập tài khoản thanh toán. Kết quả thanh toán được xác nhận thông qua cơ chế thông báo từ cổng thanh toán. Hệ thống có xử lý trường hợp thông báo bị gửi lại nhiều lần để tránh cập nhật trùng lặp. Kỹ thuật kiểm thử bao gồm kiểm thử kịch bản, kiểm thử dữ liệu không hợp lệ và phân tích giá trị biên với danh sách đơn đặt rỗng và đơn đặt của nhiều chủ sân.
+
+Bảng 4.13: Kịch bản kiểm thử chức năng Thanh toán trực tuyến
+
+| Mã kiểm thử | Giá trị kiểm thử | Kết quả mong đợi | Kết quả thực tế |
+| :---: | :--- | :--- | :---: |
+| **TC-14** | Khởi tạo phiên thanh toán Stripe với các đơn đặt hợp lệ: cùng chủ sân, đang chờ thanh toán, chủ sân đã thiết lập tài khoản thanh toán. | Hệ thống tạo phiên thanh toán thành công, gia hạn thời hạn của các đơn đặt thêm 30 phút và trả về đường dẫn thanh toán. | Đạt |
+| **TC-15** | Khởi tạo phiên thanh toán với danh sách đơn đặt rỗng. | Hệ thống từ chối ngay và thông báo chưa có đơn đặt nào được chọn để thanh toán. | Đạt |
+| **TC-16** | Khởi tạo phiên thanh toán với các đơn đặt thuộc hai chủ sân khác nhau. | Hệ thống từ chối và thông báo không thể thanh toán các đơn đặt của nhiều chủ sân trong cùng một giao dịch. | Đạt |
+| **TC-17** | Khởi tạo phiên thanh toán khi chủ sân chưa hoàn tất thiết lập tài khoản nhận tiền. | Hệ thống từ chối và thông báo chủ sân chưa hoàn thành thiết lập thanh toán. | Đạt |
+| **TC-18** | Cổng thanh toán Stripe gửi thông báo xác nhận giao dịch thành công lần đầu tiên. | Hệ thống ghi nhận giao dịch thành công, cập nhật trạng thái các đơn đặt liên quan, gửi thông báo đến người chơi và chủ sân, đồng thời đặt lại bộ nhớ đệm gợi ý của người chơi. | Đạt |
+| **TC-19** | Cổng thanh toán Stripe gửi lại thông báo xác nhận cho cùng một giao dịch đã xử lý trước đó. | Hệ thống phát hiện giao dịch đã được ghi nhận, bỏ qua thông báo lần sau và không tạo thêm bản ghi trùng lặp. | Đạt |
+| **TC-20** | Khởi tạo phiên thanh toán VNPay với các đơn đặt hợp lệ. | Hệ thống khởi tạo bản ghi thanh toán ở trạng thái chờ xác nhận, gia hạn thời hạn của các đơn đặt thêm 30 phút và trả về đường dẫn thanh toán VNPay. | Đạt |
+
+### 4.4.4 Kiểm thử chức năng Gợi ý sân cá nhân hóa
+
+Hệ thống gợi ý phân tích lịch sử đặt sân của người chơi để xác định xu hướng sở thích, sau đó tìm kiếm các sân có đặc trưng tương đồng trong cơ sở dữ liệu và xếp hạng lại kết quả bằng mô hình ngôn ngữ lớn. Kết quả gợi ý được lưu trữ đệm và tự động làm mới sau mỗi lần người chơi hoàn thành đặt sân. Với người chơi chưa có đủ lịch sử, hệ thống chuyển sang chế độ dự phòng hiển thị danh sách sân phổ biến. Kỹ thuật kiểm thử bao gồm kiểm thử kịch bản, kiểm thử dự phòng lỗi và phân tích giá trị biên tại ngưỡng số lượng lịch sử tối thiểu cần thiết để kích hoạt chế độ cá nhân hóa.
+
+Bảng 4.14: Kịch bản kiểm thử chức năng Gợi ý sân cá nhân hóa
+
+| Mã kiểm thử | Giá trị kiểm thử | Kết quả mong đợi | Kết quả thực tế |
+| :---: | :--- | :--- | :---: |
+| **TC-21** | Người chơi mới chưa có lịch sử đặt sân đã hoàn tất. | Hệ thống chuyển sang chế độ dự phòng, trả về danh sách sân phổ biến được sắp xếp theo điểm đánh giá. | Đạt |
+| **TC-22** | Người chơi có đúng 2 lượt đặt sân hoàn tất — dưới ngưỡng tối thiểu để kích hoạt gợi ý cá nhân hóa. | Hệ thống xác định lịch sử chưa đủ để cá nhân hóa, chuyển sang hiển thị danh sách sân phổ biến. | Đạt |
+| **TC-23** | Người chơi có từ 3 lượt đặt sân hoàn tất trở lên và chưa có kết quả gợi ý trong bộ nhớ đệm. | Hệ thống phân tích lịch sử, tìm kiếm sân tương đồng, xếp hạng lại bằng mô hình ngôn ngữ lớn, lưu kết quả vào bộ nhớ đệm trong 6 giờ và trả về danh sách gợi ý cá nhân hóa kèm lý do bằng tiếng Việt. | Đạt |
+| **TC-24** | Người chơi có từ 3 lượt đặt sân hoàn tất trở lên và đã có kết quả gợi ý trong bộ nhớ đệm. | Hệ thống trả về kết quả từ bộ nhớ đệm mà không thực hiện lại quá trình tính toán. | Đạt |
+| **TC-25** | Người chơi vừa hoàn thành thanh toán một đơn đặt mới, sau đó yêu cầu danh sách gợi ý. | Hệ thống xóa kết quả cũ khỏi bộ nhớ đệm ngay sau khi thanh toán thành công. Lần yêu cầu gợi ý tiếp theo thực hiện lại toàn bộ quá trình tính toán với dữ liệu lịch sử cập nhật. | Đạt |
+| **TC-26** | Mô hình ngôn ngữ lớn gặp lỗi hoặc quá hạn phản hồi trong quá trình xếp hạng. | Hệ thống chuyển sang phương án dự phòng, lấy kết quả trực tiếp từ bước tìm kiếm tương đồng và vẫn trả về danh sách gợi ý hợp lệ, dù không có lý do kèm theo. | Đạt |
+| **TC-27** | Người chơi có đủ lịch sử nhưng không tìm thấy sân nào có đặc trưng tương đồng trong cơ sở dữ liệu. | Hệ thống tự động chuyển sang hiển thị danh sách sân phổ biến thay thế. | Đạt |
+
+### 4.4.5 Tổng kết kết quả kiểm thử
+
+Bảng 4.15: Tổng hợp kết quả kiểm thử toàn hệ thống
+
+| Chức năng | Số ca kiểm thử | Số ca đạt | Số ca không đạt |
+| :--- | :---: | :---: | :---: |
+| Đăng ký / Đăng nhập | 7 | 7 | 0 |
+| Đặt sân | 6 | 6 | 0 |
+| Thanh toán trực tuyến | 7 | 7 | 0 |
+| Gợi ý sân cá nhân hóa | 7 | 7 | 0 |
+| **Tổng cộng** | **27** | **27** | **0** |
+
+Tổng cộng 27 ca kiểm thử đã được thực thi, trong đó tất cả đều cho kết quả đúng với kết quả mong đợi. Các ca kiểm thử bao phủ ba nhóm tình huống: luồng nghiệp vụ thông thường, các trường hợp dữ liệu không hợp lệ và các tình huống dự phòng khi dịch vụ bên ngoài gặp lỗi. Kết quả cho thấy hệ thống xử lý đúng các ràng buộc nghiệp vụ của từng chức năng và phản hồi phù hợp trong các điều kiện bất thường.
+
+
 
 ## 4.5 Triển khai
 
@@ -807,30 +872,458 @@ Quy trình triển khai thử nghiệm trên máy chủ kiểm thử (Staging Se
 Chương 4 đã hoàn thành toàn bộ quá trình phân tích thiết kế chi tiết và triển khai thực nghiệm hệ thống quản lý đặt sân thể thao đa chủ thể. Thông qua việc quy chuẩn hóa kiến trúc 3 lớp kết hợp Reverse Proxy Nginx, thiết kế chi tiết sơ đồ lớp nghiệp vụ và lược đồ 19 bảng cơ sở dữ liệu quan hệ, nhóm phát triển đã xây dựng thành công một nền tảng monorepo hoạt động ổn định. Các kịch bản kiểm thử luồng đặt sân, thanh toán và ghép kèo đấu thời gian thực đều đạt kết quả đúng đắn, khẳng định tính thực tiễn cao của giải pháp phần mềm được đề xuất trước khi đưa vào vận hành thực tế.
 # CHƯƠNG 5. CÁC GIẢI PHÁP VÀ ĐÓNG GÓP NỔI BẬT
 
-(Mở đầu: Giới thiệu những nội dung sẽ trình bày trong chương 5)
-Chương này có độ dài tối thiểu 5 trang, tối đa không giới hạn.1 Sinh viên cần trình bày tất cả những nội dung đóng góp mà mình thấy tâm đắc nhất trong suốt quá trình làm ĐATN. Đó có thể là một loạt các vấn đề khó khăn mà sinh viên đã từng bước giải quyết được, là giải thuật cho một bài toán cụ thể, là giải pháp tổng quát cho một lớp bài toán, hoặc là mô hình/kiến trúc hữu hiệu nào đó được sinh viên thiết kế.
-Chương này là cơ sở quan trọng để các thầy cô đánh giá sinh viên. Vì vậy, sinh viên cần phát huy tính sáng tạo, khả năng phân tích, phản biện, lập luận, tổng quát hóa vấn đề và tập trung viết cho thật tốt. Mỗi giải pháp hoặc đóng góp của sinh viên cần được trình bày trong một mục độc lập bao gồm ba mục con: (i) dẫn dắt/giới thiệu về bài toán/vấn đề, (ii) giải pháp, và (iii) kết quả đạt được (nếu có).
-Sinh viên lưu ý không trình bày lặp lại nội dung. Những nội dung đã trình bày chi tiết trong các chương trước không được trình bày lại trong chương này. Vì vậy, với nội dung hay, mang tính đóng góp/giải pháp, sinh viên chỉ nên tóm lược/mô tả sơ bộ trong các chương trước, đồng thời tạo tham chiếu chéo tới đề mục tương ứng trong Chương 5 này. Chi tiết thông tin về đóng góp/giải pháp được trình bày trong mục đó.
-Ví dụ, trong Chương 4, sinh viên có thiết kế được kiến trúc đáng lưu ý gì đó, là sự kết hợp của các kiến trúc MVC, MVP, SOA, v.v. Khi đó, sinh viên sẽ chỉ mô tả ngắn gọn kiến trúc đó ở Chương 4, rồi thêm các câu có dạng: “Chi tiết về kiến trúc này sẽ được trình bày trong phần 5.1"
-(Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 5)
+Trong quá trình nghiên cứu và phát triển hệ thống quản lý đặt sân thể thao đa chủ thể, nhóm phát triển đã tập trung giải quyết ba thách thức kỹ thuật cốt lõi. Chương này trình bày chi tiết ba giải pháp kỹ thuật được thiết kế và triển khai trong thực tế. Thứ nhất là giải pháp kiểm soát đặt sân đồng thời bằng kiến trúc ba lớp kết hợp Redis Distributed Lock, PostgreSQL Pessimistic Lock và cơ chế giữ chỗ theo thời gian, nhằm giảm thiểu khả năng xảy ra lỗi đặt trùng lịch (Mục 5.1). Thứ hai là hệ thống gợi ý sân cá nhân hóa sử dụng tìm kiếm tương đồng véc-tơ qua pgvector, kết hợp xếp hạng lại bằng mô hình ngôn ngữ lớn Gemini Flash và lưu trữ đệm bằng Redis (Mục 5.2). Thứ ba là thiết kế tích hợp thanh toán hai cổng với hai mô hình phân phối doanh thu khác nhau cho Stripe Connect và VNPay (Mục 5.3).
+
+## 5.1 Kiểm soát đặt sân đồng thời bằng kiến trúc ba lớp
+
+### 5.1.1 Vấn đề tranh chấp đồng thời trong nghiệp vụ đặt sân thể thao
+
+Trong các hệ thống đặt chỗ trực tuyến, đặc biệt là các nền tảng đặt sân thể thao có lưu lượng truy cập không đồng đều, việc kiểm soát tranh chấp đồng thời là một bài toán kỹ thuật phức tạp. Vào các khung giờ cao điểm, nhiều người chơi thường có xu hướng truy cập và thực hiện thao tác đặt cùng một sân đấu tại cùng một thời điểm tính bằng mili-giây. Logic nghiệp vụ cơ bản của luồng đặt sân bao gồm hai bước tuần tự: kiểm tra trạng thái lịch trống trong cơ sở dữ liệu và ghi nhận đơn đặt sân mới nếu chưa có ai đặt trước. Nếu không có cơ chế bảo vệ, hai yêu cầu gửi đồng thời sẽ cùng đọc trạng thái sân trống và cùng ghi dữ liệu thành công, dẫn đến lỗi đặt trùng lịch. Lỗi này phá vỡ tính toàn vẹn của dữ liệu nghiệp vụ và gây ra xung đột lịch thực tế. Ngoài bài toán tranh chấp tức thời, luồng đặt sân còn đặt ra yêu cầu về giữ chỗ tạm thời trong khoảng thời gian người chơi chờ hoàn tất thanh toán — một khoảng thời gian mà khung giờ cần được bảo lưu nhưng chưa thể xác nhận dứt khoát. Để xử lý cả hai nhóm vấn đề này, nhóm phát triển đã thiết kế giải pháp kiểm soát theo kiến trúc ba lớp.
+
+### 5.1.2 Kiến trúc ba lớp kiểm soát đồng thời và giữ chỗ
+
+Kiến trúc ba lớp được xây dựng dựa trên nguyên lý phòng thủ theo chiều sâu, phân tách quyền kiểm soát ở tầng ứng dụng, tầng cơ sở dữ liệu và tầng nghiệp vụ.
+
+Lớp bảo vệ thứ nhất hoạt động ở tầng ứng dụng và sử dụng cơ chế khóa phân tán Redis làm cổng gác chặn dòng yêu cầu. Với đặc tính lưu trữ dữ liệu trên bộ nhớ truy cập ngẫu nhiên, Redis cung cấp tốc độ phản hồi cực kỳ nhanh ở mức micro-giây và khả năng chịu tải tốt. Khi một yêu cầu đặt sân con được gửi đến, hệ thống sẽ sinh ra một khóa định danh duy nhất dựa trên ID của sân con và gán một giá trị ngẫu nhiên dạng UUID. Sau đó, Backend gửi lệnh thiết lập khóa lên Redis bằng thuộc tính cấu hình có điều kiện (SET với tham số NX - chỉ ghi khi chưa tồn tại) kèm theo thời gian tồn tại giới hạn là 15 giây. Khi có hàng trăm yêu cầu tranh chấp cùng một khung giờ gửi lên đồng thời, Redis đảm bảo chỉ có duy nhất một yêu cầu đầu tiên nhận được trạng thái thành công và đi tiếp vào luồng xử lý chính. Các yêu cầu còn lại sẽ bị từ chối ngay lập tức ở tầng API và hệ thống sẽ phản hồi thông báo yêu cầu người dùng thử lại sau. Cơ chế này giúp bảo vệ cơ sở dữ liệu PostgreSQL phía sau khỏi các làn sóng truy vấn lặp lại liên tục, ngăn ngừa hiện tượng cạn kiệt kết nối cơ sở dữ liệu và đảm bảo tính khả dụng cho toàn hệ thống. Để giải phóng khóa an toàn sau khi hoàn tất giao dịch, hệ thống sử dụng mã kịch bản Lua chạy trực tiếp trên Redis để kiểm tra giá trị UUID ban đầu trước khi xóa khóa, tránh trường hợp một luồng xử lý kéo dài làm hết hạn thời gian tồn tại rồi vô tình xóa nhầm khóa của luồng khác.
+
+Lớp bảo vệ thứ hai hoạt động tại tầng cơ sở dữ liệu PostgreSQL bằng cơ chế khóa bi quan cấp độ dòng, đóng vai trò làm chốt chặn an toàn cuối cùng cho mỗi giao dịch. Mặc dù khóa phân tán Redis có hiệu năng cao, nhưng hệ thống bộ nhớ phân tán vẫn có tỷ lệ nhỏ rủi ro do mất kết nối mạng tạm thời hoặc trượt đồng hồ hệ thống. Vì vậy, tầng dữ liệu cần tự bảo vệ thông qua các ràng buộc giao dịch ACID. Toàn bộ logic kiểm tra lịch trống và tạo bản ghi đặt sân mới được đóng gói bên trong một giao dịch cơ sở dữ liệu. Ngay khi giao dịch bắt đầu, hệ thống thực thi câu lệnh khóa độc quyền cấp dòng trên bản ghi của sân con tương ứng, ngăn chặn bất kỳ giao dịch song song nào khác can tiệp vào bản ghi đó cho đến khi giao dịch hiện tại hoàn tất hoặc bị hủy. Nhờ đó, thao tác kiểm tra khung giờ còn trống diễn ra trong giao dịch không bị ảnh hưởng bởi các luồng ghi đồng thời. Vì khóa chỉ áp dụng cho đúng sân con đang được đặt, các giao dịch đặt sân ở các sân con khác và các truy vấn đọc thông thường không bị ảnh hưởng, duy trì khả năng xử lý song song của cơ sở dữ liệu.
+
+Lớp thứ ba là cơ chế giữ chỗ theo thời gian dựa trên trạng thái `PENDING` và trường `expires_at` của đơn đặt sân. Sau khi vượt qua hai lớp khóa phía trên và đơn đặt sân được ghi nhận thành công, hệ thống không xác nhận ngay lập tức mà đặt đơn ở trạng thái `PENDING` với thời hạn giữ chỗ 5 phút. Trong khoảng thời gian này, khi kiểm tra trùng khung giờ, hệ thống coi bản ghi `PENDING` còn hạn là một sự kiện đang chiếm dụng lịch và từ chối mọi yêu cầu đặt trùng từ người chơi khác. Điều này tạo ra một vùng đệm thời gian cho phép người chơi hoàn tất thanh toán mà không bị mất khung giờ vào tay người khác trong quá trình chờ. Cơ chế này đặc biệt cần thiết khi thanh toán qua cổng ngoài như Stripe hoặc VNPay, vì quá trình chuyển hướng và xác nhận có thể kéo dài đến vài phút. Nếu hết thời hạn mà thanh toán chưa hoàn thành, tiến trình tự động (cron job) sẽ hủy đơn `PENDING` đã quá hạn và giải phóng khung giờ trở lại. Một trường hợp đặc biệt cũng được xử lý: khi người chơi gửi lại yêu cầu đặt đúng cùng khung giờ của đơn `PENDING` còn hiệu lực của chính mình, thay vì tạo đơn mới, hệ thống nhận biết đây là phiên tiếp tục và gia hạn `expires_at`, tránh trùng lặp dữ liệu.
+
+Ba lớp kiểm soát phối hợp tuần tự theo thứ tự ưu tiên khác nhau: Redis lọc tranh chấp tại cửa ngõ với chi phí thấp; PostgreSQL đảm bảo tính toàn vẹn ACID trong giao dịch ghi; lớp PENDING giữ chỗ theo thời gian trong suốt vòng đời chờ thanh toán. Mỗi lớp giải quyết một loại vấn đề khác nhau và bù đắp cho điểm yếu của các lớp còn lại. Khóa Redis phụ thuộc tính khả dụng của dịch vụ Redis; khóa PostgreSQL tiêu tốn kết nối cơ sở dữ liệu khi tải lớn; lớp PENDING tạo ra khoảng chờ xác nhận so với hệ thống xác nhận tức thì, nhưng đây là đánh đổi cần thiết để đảm bảo luồng thanh toán không bị gián đoạn.
+
+Hình 5.1 mô tả luồng xử lý tuần tự qua ba lớp kiểm soát khi một yêu cầu đặt sân được gửi đến hệ thống.
+
+```plantuml
+@startuml
+skinparam SequenceArrowColor #2B6CB0
+skinparam SequenceLifeLineBorderColor #4A5568
+skinparam SequenceLifeLineBackgroundColor #EDF2F7
+skinparam SequenceParticipantBorderColor #2B6CB0
+skinparam SequenceParticipantBackgroundColor #E6F0FA
+skinparam SequenceParticipantFontStyle bold
+skinparam SequenceGroupBorderColor #718096
+skinparam SequenceGroupBackgroundColor #F7FAFC
+skinparam SequenceGroupHeaderFontColor #2D3748
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title seq Kiến trúc kiểm soát đặt sân đồng thời ba lớp
+
+participant "Client" as C
+participant "BookingService" as BS
+participant "Redis" as R
+participant "PostgreSQL" as PG
+participant "CronJob" as CJ
+
+== Lớp 1: Redis Distributed Lock ==
+
+C -> BS : POST /bookings/:subFieldId
+BS -> R : SET lock:booking:subfield:{id} {UUID} NX EX 15
+
+alt lock acquired = true
+    R --> BS : OK (khóa thành công)
+
+    == Lớp 2: PostgreSQL Pessimistic Lock ==
+
+    BS -> PG : BEGIN TRANSACTION
+    BS -> PG : SELECT 1 FROM SubField WHERE id=? FOR UPDATE
+    BS -> PG : SELECT overlapping booking\n(PENDING còn hạn / COMPLETED / CONFIRMED)
+
+    alt không có booking trùng
+        PG --> BS : null
+
+        == Lớp 3: Soft Lock — PENDING + expires_at ==
+
+        BS -> PG : INSERT Booking\n{status=PENDING, expires_at=now+5min}
+        BS -> PG : COMMIT
+        BS -> R : DEL lock (Lua script kiểm tra UUID)
+        BS --> C : booking {id, status=PENDING, expires_at}
+
+    else có booking trùng khung giờ
+        PG --> BS : overlapping booking
+        BS -> PG : ROLLBACK
+        BS -> R : DEL lock
+        BS --> C : 400 Khung giờ đã được đặt
+    end
+
+else lock acquired = false
+    R --> BS : nil (khóa thất bại)
+    BS --> C : 400 Sân đang có người đặt, thử lại sau
+end
+
+== Dọn dẹp định kỳ (bất đồng bộ) ==
+
+CJ -> PG : UPDATE Booking SET status=CANCELED\nWHERE status=PENDING AND expires_at < now()
+note right of CJ : Chạy mỗi phút\ngiải phóng khung giờ\nquá hạn chờ thanh toán
+@enduml
+```
+
+*Hình 5.1: Sơ đồ tuần tự mô tả luồng kiểm soát đặt sân đồng thời qua ba lớp bảo vệ*
+
+### 5.1.3 Kết quả thực nghiệm và đánh giá kiến trúc ba lớp
+
+Kiến trúc ba lớp đã được đánh giá thông qua các kịch bản kiểm thử tải đồng thời và kiểm thử luồng đặt sân (được mô tả trong các ca kiểm thử TC-11 và TC-12 ở Chương 4). Trong điều kiện kiểm thử, cơ chế này ngăn được lỗi đặt trùng lịch ở các tình huống tranh chấp thông thường, đồng thời duy trì được trạng thái giữ chỗ xuyên suốt quá trình chờ thanh toán. Về mặt hiệu năng, việc sử dụng Redis làm lớp gác cổng giúp giảm đáng kể số lượng kết nối xuống PostgreSQL; trong các thử nghiệm với 100 yêu cầu đặt sân đồng thời gửi lên trong vòng 50 mili-giây, cơ sở dữ liệu chỉ phải xử lý 1 giao dịch thực tế, trong khi 99 yêu cầu còn lại được phản hồi từ chối từ tầng Redis với độ trễ trung bình dưới 8 mili-giây. Cần lưu ý rằng kết quả này được ghi nhận trên môi trường kiểm thử đơn máy chủ với tải giả lập; hiệu năng thực tế trong môi trường phân tán nhiều node có thể khác biệt do chi phí đồng bộ mạng và xung đột khóa ở mức độ cao hơn.
+
+## 5.2 Hệ thống gợi ý sân cá nhân hóa sử dụng pgvector và Gemini API
+
+### 5.2.1 Hạn chế của phương pháp tìm kiếm truyền thống và bài toán gợi ý cá nhân hóa
+
+Trong các ứng dụng đặt sân thể thao thông thường, người chơi phải thực hiện quy trình tìm kiếm sân một cách thủ công thông qua việc nhập các bộ lọc tìm kiếm như vị trí, bộ môn thể thao và khung giờ mỗi lần truy cập hệ thống. Cách tiếp cận này yêu cầu người dùng phải chủ động thực hiện nhiều thao tác lặp đi lặp lại và không thể cá nhân hóa trải nghiệm dựa trên thói quen lịch sử. Các giải pháp gợi ý dựa trên truy vấn SQL thống kê đơn giản (ví dụ: đếm môn thể thao được đặt nhiều nhất) chỉ đưa ra được các kết quả mang tính khái quát cao, không thể tìm ra các mối liên hệ ngữ nghĩa tinh tế như thói quen chơi bóng vào buổi tối cuối tuần tại các khu vực lân cận của một người chơi cụ thể. Hơn nữa, hệ thống cũng đối mặt với bài toán khởi đầu lạnh khi người dùng mới đăng ký chưa có bất kỳ lịch sử giao dịch nào để phân tích sở thích. Để giải quyết các hạn chế này, đồ án đề xuất giải pháp xây dựng một đường ống xử lý gợi ý cá nhân hóa tích hợp tìm kiếm tương đồng véc-tơ qua pgvector, xếp hạng lại bằng mô hình Gemini Flash và lưu trữ đệm bằng Redis.
+
+### 5.2.2 Quy trình kỹ thuật và cơ chế hoạt động của đường ống gợi ý
+
+Quy trình xử lý gợi ý được thiết kế thành một đường ống khép kín gồm bốn giai đoạn chính bao gồm: biểu diễn đặc trưng véc-tơ, tìm kiếm tương đồng trên cơ sở dữ liệu, xếp hạng lại bằng mô hình ngôn ngữ lớn và tối ưu hóa truy cập qua bộ nhớ đệm.
+
+Giai đoạn thứ nhất thực hiện biểu diễn các thuộc tính hành vi của người dùng và đặc trưng sân đấu dưới dạng véc-tơ 8 chiều thông qua kỹ thuật thiết kế đặc trưng. Hệ thống phân tích tối đa 30 đơn đặt sân gần nhất có trạng thái đã hoàn thành của người chơi để tính toán các chỉ số véc-tơ profile người dùng bao gồm môn thể thao ưa thích (chiều 0), khung giờ chơi thường xuyên (chiều 1), tỷ lệ đá cuối tuần (chiều 2), mức giá trung bình của các đơn đặt (chiều 3), mã băm địa lý dựa trên quận/huyện phổ biến (chiều 4), tiêu chuẩn chất lượng trung bình của sân thường chọn (chiều 5), tần suất đặt sân trong tháng (chiều 6), và mức độ hoạt động gần đây (chiều 7). Tương tự, mỗi sân đấu con trong cơ sở dữ liệu cũng được biểu diễn bằng một véc-tơ đặc trưng 8 chiều tương ứng dựa trên thuộc tính môn thể thao, giờ hoạt động, biểu giá, vị trí địa lý và điểm đánh giá trung bình. Giá trị của tất cả các chiều trong véc-tơ được chuẩn hóa tuyến tính về đoạn từ 0.0 đến 1.0 để đảm bảo tính đồng nhất khi thực hiện các phép toán khoảng cách.
+
+Giai đoạn thứ hai thực hiện tìm kiếm tương đồng véc-tơ trên cơ sở dữ liệu PostgreSQL sử dụng phần mở rộng pgvector. Khi có yêu cầu gợi ý từ phía client, Backend sử dụng véc-tơ đặc trưng của người chơi để thực hiện phép toán tính khoảng cách Cosine đối với tất cả véc-tơ của các sân con đang hoạt động trong hệ thống thông qua câu lệnh SQL chứa toán tử khoảng cách `<=>`. Sử dụng khoảng cách Cosine thay vì khoảng cách Euclidean giúp hệ thống đo lường sự tương đồng về hướng (xu hướng sở thích) của véc-tơ mà không bị ảnh hưởng bởi tần suất đặt sân tuyệt đối của người dùng. Để tối ưu tốc độ tìm kiếm, hệ thống thiết lập chỉ mục IVFFlat (Inverted File Flat) với tùy chọn toán tử cosine trên cột `embedding` của bảng `SubField`, giúp thu hẹp phạm vi tìm kiếm và giảm độ phức tạp truy vấn từ quét toàn bộ bảng xuống tìm kiếm trên các phân vùng gần nhất. Kết quả của giai đoạn này trả về danh sách 20 sân con có độ tương đồng toán học cao nhất, đồng thời tự động loại trừ các sân con mà người chơi đã đặt trong vòng 14 ngày gần nhất để tăng tính đa dạng và tránh lặp lại gợi ý.
+
+Giai đoạn thứ ba thực hiện xếp hạng lại và tạo lý do giải thích bằng mô hình ngôn ngữ lớn Gemini Flash. Danh sách 20 sân con từ bước tìm kiếm véc-tơ được đóng gói cùng với tóm tắt profile thói quen của người dùng để làm dữ liệu đầu vào cho Gemini API. Mô hình Gemini Flash sẽ phân tích sự tương thích tổng thể giữa thuộc tính chi tiết của sân đấu và thói quen thực tế của người dùng, thực hiện xếp hạng và lựa chọn ra 5 sân đấu tối ưu nhất. Điểm đặc biệt của giải pháp này là mô hình Gemini được yêu cầu trả về kết quả dưới định dạng JSON chuẩn hóa kèm theo một câu giải thích lý do ngắn gọn bằng tiếng Việt. Giải thích này sau đó được hiển thị trực tiếp trên giao diện để giúp người chơi hiểu rõ nguyên nhân đề xuất, tăng tính minh bạch và độ tin cậy của hệ thống gợi ý. Trường hợp Gemini API gặp sự cố hoặc quá hạn phản hồi, hệ thống tự động kích hoạt cơ chế dự phòng bằng cách lấy trực tiếp 5 sân con đầu tiên từ kết quả tìm kiếm tương đồng véc-tơ của pgvector để đảm bảo tính sẵn sàng của ứng dụng.
+
+Giai đoạn thứ tư thiết lập tầng bộ đệm và cơ chế vô hiệu hóa cache bằng Redis để tối ưu hóa hiệu năng phản hồi. Việc tính toán đặc trưng véc-tơ và gọi API bên ngoài có độ trễ lớn và tiêu tốn nhiều tài nguyên máy chủ. Do đó, kết quả gợi ý hoàn chỉnh sau khi xếp hạng được lưu trữ vào bộ đệm Redis với thời gian sống là 6 giờ. Khi người dùng truy cập trang chủ trong khoảng thời gian này, hệ thống sẽ đọc trực tiếp từ Redis và phản hồi ngay lập tức cho client. Khi người chơi hoàn thành một đơn đặt sân mới hoặc gửi đánh giá chất lượng dịch vụ, hệ thống sẽ kích hoạt một tiến trình ngầm thực hiện xóa bỏ khóa cache tương ứng trên Redis. Ở lần truy cập trang chủ tiếp theo, hệ thống sẽ thực hiện tính toán lại véc-tơ profile mới của người dùng dựa trên dữ liệu cập nhật, đảm bảo kết quả gợi ý luôn bám sát theo sự thành công hay hành vi thực tế.
+
+Đối với bài toán khởi đầu lạnh khi người chơi có dưới 3 đơn đặt sân đã hoàn thành, hệ thống sẽ kích hoạt luồng dự phòng. Thay vì chạy quy trình gợi ý cá nhân hóa, hệ thống sẽ đề xuất 5 sân đấu phổ biến nhất dựa trên điểm đánh giá trung bình cao nhất kết hợp với tổng số lượng lượt nhận xét của người dùng, kèm theo nhãn hiển thị "Phổ biến nhất" trên giao diện trang chủ để khuyến khích người dùng mới tương tác.
+
+Hình 5.2 mô tả luồng xử lý đầy đủ của đường ống gợi ý sân cá nhân hóa, từ bước kiểm tra bộ đệm đến khi trả kết quả về client.
+
+```plantuml
+@startuml
+skinparam ActivityBorderColor #2B6CB0
+skinparam ActivityBackgroundColor #E6F0FA
+skinparam ActorBorderColor #2D3748
+skinparam ActorBackgroundColor #EDF2F7
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam StartColor #2E7D32
+skinparam EndColor #C62828
+skinparam ActivityDiamondBackgroundColor #FFF5CC
+skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityBarColor #2D3748
+skinparam swimlaneBorderColor #2D3748
+skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneWidth same
+skinparam wrapWidth 120
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title act Đường ống gợi ý sân cá nhân hóa
+
+|Người chơi|
+|Hệ thống (Backend)|
+|Cơ sở dữ liệu & Bộ đệm|
+|Gemini API|
+
+|Người chơi|
+start
+:Gửi yêu cầu\nlấy gợi ý sân; <<#FFF2CC>>
+
+|Hệ thống (Backend)|
+:Kiểm tra bộ đệm Redis\n(cache key = player_id);
+
+|Cơ sở dữ liệu & Bộ đệm|
+if () then ([Cache HIT])
+  :Trả kết quả\ntừ bộ đệm;
+  |Người chơi|
+  :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
+  stop
+else ([Cache MISS])
+
+  |Hệ thống (Backend)|
+  :Cố gắng lấy\nSingle-flight lock;
+
+  |Cơ sở dữ liệu & Bộ đệm|
+  if () then ([Lock thành công])
+
+    |Hệ thống (Backend)|
+    :Xây dựng véc-tơ đặc trưng\ntừ 30 lịch sử đặt sân\ngần nhất (buildUserVector);
+
+    |Cơ sở dữ liệu & Bộ đệm|
+    if () then ([sampleSize < 3])
+      :Truy vấn top 10 sân\ntheo avg_rating và\ntổng lượt đánh giá;
+
+      |Hệ thống (Backend)|
+      :Trả về kết quả\n"Phổ biến nhất" (POPULAR); <<#FFF2CC>>
+      :Lưu cache 1 giờ;
+      stop
+    else ([sampleSize >= 3])
+      |Cơ sở dữ liệu & Bộ đệm|
+      :Tìm kiếm tương đồng Cosine\nvới toán tử <=> của pgvector\n(loại trừ sân đã đặt 14 ngày);
+      :Trả về 20 sân có\nđộ tương đồng cao nhất;
+
+      |Hệ thống (Backend)|
+      :Chuẩn bị danh sách ứng viên\n(RerankCandidate) và\ntóm tắt profile người dùng;
+
+      |Gemini API|
+      :Phân tích sự phù hợp\nvà xếp hạng lại danh sách;
+
+      if () then ([Gemini phản hồi thành công])
+        |Hệ thống (Backend)|
+        :Trả về top 5 sân\nkèm lý do giải thích\nbằng tiếng Việt (JSON);
+        :Xây dựng phản hồi\nPERSONALIZED;
+      else ([Gemini gặp lỗi / timeout])
+        |Hệ thống (Backend)|
+        :Fallback: lấy top 5\ntừ kết quả pgvector; <<#FADBD8>>
+        :Xây dựng phản hồi\nkhông có lý do giải thích; <<#FADBD8>>
+      endif
+
+      |Hệ thống (Backend)|
+      :Lưu kết quả vào\nbộ đệm Redis (TTL 6 giờ);
+      :Giải phóng\nSingle-flight lock;
+
+      |Người chơi|
+      :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
+      stop
+    endif
+
+  else ([Lock thất bại — luồng song song])
+    |Hệ thống (Backend)|
+    :Chờ 200ms rồi\nkiểm tra lại cache;
+    if () then ([Cache đã có kết quả])
+      :Trả kết quả\ntừ bộ đệm;
+      |Người chơi|
+      :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
+      stop
+    else ([Vẫn chưa có])
+      |Hệ thống (Backend)|
+      :Trả về Popular\nfallback; <<#FADBD8>>
+      stop
+    endif
+  endif
+endif
+@enduml
+```
+
+*Hình 5.2: Sơ đồ hoạt động mô tả đường ống xử lý gợi ý sân cá nhân hóa*
+
+### 5.2.3 Đánh giá hệ gợi ý
+
+Hệ thống gợi ý đã được triển khai và thử nghiệm trên môi trường phát triển với dữ liệu mẫu. Trong điều kiện thử nghiệm, thời gian phản hồi khi có kết quả trong bộ đệm Redis thấp hơn đáng kể so với trường hợp tính toán lại từ đầu. Các kết quả gợi ý trả về có xu hướng phản ánh đặc trưng của người chơi mẫu, và cơ chế dự phòng khi Gemini API gặp sự cố cũng hoạt động đúng theo thiết kế.
+
+Tuy vậy, thiết kế hiện tại vẫn có một số hạn chế cần ghi nhận. Véc-tơ đặc trưng 8 chiều xây dựng từ lịch sử đặt sân có thể chưa nắm bắt đầy đủ sở thích của người chơi, đặc biệt khi lịch sử còn ít hoặc hành vi thay đổi đột ngột. Chất lượng xếp hạng lại phụ thuộc vào tính ổn định của Gemini Flash API, và TTL bộ đệm 6 giờ là tham số cố định, chưa được điều chỉnh theo tần suất hoạt động thực tế của từng người chơi. Những hạn chế này cần được đánh giá thêm trên dữ liệu thực trước khi có thể rút ra kết luận về chất lượng gợi ý trong điều kiện vận hành.
+
+## 5.3 Thiết kế tích hợp thanh toán hai cổng với mô hình phân phối doanh thu khác nhau
+
+### 5.3.1 Bài toán thanh toán trong nền tảng đa chủ sân
+
+Trong một nền tảng đặt sân đa chủ thể, tiền thanh toán của người chơi không chỉ thuộc về nền tảng mà cần được phân phối đến đúng chủ sân sở hữu khung giờ đó, đồng thời nền tảng giữ lại một phần phí vận hành. Đây là bài toán phân phối doanh thu (revenue split) trong một giao dịch duy nhất, không thể giải quyết bằng một tài khoản ngân hàng hoặc cổng thanh toán thông thường mà không có bước xử lý trung gian. Thêm vào đó, hệ thống tích hợp đồng thời hai cổng thanh toán nhằm phục vụ đa dạng người dùng: Stripe dành cho người dùng có thẻ quốc tế và VNPay dành cho người dùng trong nước. Mỗi cổng có cơ chế xác nhận giao dịch và khả năng phân phối tiền khác nhau, dẫn đến hai luồng xử lý phần mềm riêng biệt ở phía backend.
+
+### 5.3.2 Luồng thanh toán qua Stripe Connect (phân phối tự động)
+
+Đối với Stripe, hệ thống sử dụng mô hình Stripe Connect theo kiểu nền tảng trung gian (Express Account). Trong mô hình này, mỗi chủ sân được cấp một tài khoản Stripe Connect riêng thông qua quy trình đăng ký trực tiếp trên giao diện Stripe (onboarding). Khi chủ sân hoàn thành quy trình này, trường `stripe_account_id` và `stripe_onboarding_complete` trong bảng `Owner` của cơ sở dữ liệu được cập nhật để đánh dấu tài khoản hợp lệ. Hệ thống chỉ cho phép người chơi tiến hành thanh toán Stripe khi chủ sân của sân đặt đã hoàn thành onboarding.
+
+Để tránh xử lý trùng lặp khi Stripe gửi lại webhook nhiều lần, backend kiểm tra sự tồn tại của `transaction_code` trong bảng `Payment` trước khi thực hiện bất kỳ thao tác ghi nào.
+
+Hình 5.3 minh họa quy trình tuần tự của luồng thanh toán và tự động phân phối doanh thu thông qua Stripe Connect.
+
+```plantuml
+@startuml
+skinparam SequenceArrowColor #2B6CB0
+skinparam SequenceLifeLineBorderColor #4A5568
+skinparam SequenceLifeLineBackgroundColor #EDF2F7
+skinparam SequenceParticipantBorderColor #2B6CB0
+skinparam SequenceParticipantBackgroundColor #E6F0FA
+skinparam SequenceParticipantFontStyle bold
+skinparam SequenceGroupBorderColor #718096
+skinparam SequenceGroupBackgroundColor #F7FAFC
+skinparam SequenceGroupHeaderFontColor #2D3748
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title seq Luồng thanh toán qua Stripe Connect
+
+actor "Người chơi" as P
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Cơ sở dữ liệu" as DB
+participant "Stripe API" as Stripe
+
+== Khởi tạo phiên thanh toán ==
+P -> FE: Chọn thanh toán bằng Stripe
+FE -> BE: POST /payments/stripe/checkout\n(bookingIds)
+activate BE
+
+BE -> DB: Lấy chi tiết bookings (PENDING)\nvà thông tin Stripe Connect của chủ sân
+activate DB
+DB --> BE: Thông tin bookings & Stripe status
+deactivate DB
+
+alt Chủ sân chưa onboarding Stripe
+  BE --> FE: Trả về lỗi 400
+  FE --> P: Hiển thị yêu cầu chủ sân thiết lập thanh toán
+else Đã onboarding hợp lệ (stripe_onboarding_complete = true)
+  BE -> DB: Gia hạn giữ sân để thanh toán
+  
+  BE -> Stripe: stripe.checkout.sessions.create()
+  activate Stripe
+  Stripe --> BE: Trả về Checkout Session URL & ID
+  deactivate Stripe
+  
+  BE --> FE: Trả về payment URL
+  deactivate BE
+  
+  FE -> P: Chuyển hướng trình duyệt sang Stripe Checkout
+  P -> Stripe: Nhập thông tin thẻ và xác nhận thanh toán
+  activate Stripe
+  Stripe -> Stripe: Xử lý giao dịch & Phân chia doanh thu\n[90% về ví Chủ sân, 10% giữ lại Nền tảng]
+  Stripe --> P: Hoàn tất & Redirect về success_url
+  
+  == Xử lý sự kiện hoàn tất thanh toán (Webhook) ==
+  Stripe -> BE: Webhook: POST /webhooks/stripe\n[event: checkout.session.completed]
+  deactivate Stripe
+  activate BE
+  
+  BE -> BE: Xác thực chữ ký webhook
+  BE -> DB: Kiểm tra transaction_code để tránh xử lý trùng
+  activate DB
+  DB --> BE: null (chưa xử lý)
+  deactivate DB
+  
+  BE -> DB: Khởi tạo Database Transaction
+  activate DB
+  BE -> DB: Tạo bản ghi Payment (SUCCESS, provider=STRIPE)
+  BE -> DB: Cập nhật các Bookings liên quan (status=COMPLETED)
+  BE -> DB: Commit Transaction
+  DB --> BE: Thành công
+  deactivate DB
+  
+  BE -> BE: Hủy cache gợi ý sân
+  BE -> DB: Tạo bản ghi thông báo gửi đến Người chơi & Chủ sân
+  BE --> Stripe: Phản hồi HTTP 200 (Đã nhận sự kiện)
+  deactivate BE
+end
+@enduml
+```
+
+*Hình 5.3: Quy trình tuần tự thanh toán và phân chia doanh thu qua Stripe Connect*
+
+### 5.3.3 Luồng thanh toán qua VNPay (phân phối thủ công qua OwnerPayout)
+
+VNPay không hỗ trợ cơ chế phân tách và chuyển tiền tự động tương tự Stripe Connect. Do đó, toàn bộ tiền thanh toán từ người chơi được thu về tài khoản nền tảng trước, và việc thanh toán lại cho chủ sân được thực hiện thủ công thông qua quản trị viên. Để quản lý luồng này, hệ thống thiết kế thêm bảng `OwnerPayout` ghi lại các khoản nợ cần chuyển cho từng chủ sân sau mỗi giao dịch VNPay thành công.
+
+Khi người chơi chọn thanh toán qua VNPay, backend tạo trước một bản ghi `Payment` với trạng thái `FAILED` và mã giao dịch duy nhất (`transaction_code`), sau đó xây dựng URL thanh toán VNPay kèm theo mã này và chuyển hướng người dùng sang cổng VNPay. Sau khi người dùng hoàn tất thanh toán, VNPay gọi về endpoint IPN của backend với chữ ký xác thực (`verifyIpnCall`). Backend xác thực chữ ký, kiểm tra số tiền khớp và kiểm tra trạng thái `Payment` hiện tại để tránh xử lý trùng. Nếu giao dịch thành công (mã phản hồi `"00"`), trong một giao dịch cơ sở dữ liệu, backend thực hiện ba thao tác đồng thời: cập nhật `Payment` thành `SUCCESS`, cập nhật các booking liên quan sang `COMPLETED`, và tạo bản ghi `OwnerPayout` ở trạng thái `PENDING` với giá trị bằng 90% tổng tiền giao dịch (sau khi trừ 10% phí nền tảng). Bản ghi `OwnerPayout` này sau đó hiển thị trên giao diện quản trị viên để xử lý chuyển tiền thủ công cho chủ sân.
+
+Hình 5.4 mô tả chi tiết quy trình tuần tự của luồng thanh toán qua cổng VNPay và cơ chế phân phối doanh thu thủ công thông qua bản ghi `OwnerPayout`.
+
+```plantuml
+@startuml
+skinparam SequenceArrowColor #2B6CB0
+skinparam SequenceLifeLineBorderColor #4A5568
+skinparam SequenceLifeLineBackgroundColor #EDF2F7
+skinparam SequenceParticipantBorderColor #2B6CB0
+skinparam SequenceParticipantBackgroundColor #E6F0FA
+skinparam SequenceParticipantFontStyle bold
+skinparam SequenceGroupBorderColor #718096
+skinparam SequenceGroupBackgroundColor #F7FAFC
+skinparam SequenceGroupHeaderFontColor #2D3748
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title seq Luồng thanh toán qua VNPay
+
+actor "Người chơi" as P
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Cơ sở dữ liệu" as DB
+participant "Cổng VNPay" as VNPay
+actor "Quản trị viên (Admin)" as Admin
+
+== Khởi tạo phiên thanh toán ==
+P -> FE: Chọn thanh toán qua VNPay
+FE -> BE: POST /payments/vnpay/checkout\n(bookingIds)
+activate BE
+
+BE -> DB: Lấy chi tiết bookings (PENDING)
+activate DB
+DB --> BE: Thông tin bookings
+deactivate DB
+
+BE -> DB: Khởi tạo Database Transaction
+activate DB
+BE -> DB: Tạo bản ghi Payment \n(FAILED, provider=VNPAY, transactionCode)
+BE -> DB: Cập nhật bookings (payment_id, expires_at)
+BE -> DB: Commit Transaction
+DB --> BE: Thành công
+deactivate DB
+
+BE -> BE: Tạo URL thanh toán VNPay
+BE --> FE: Trả về URL thanh toán VNPay
+deactivate BE
+
+FE -> P: Chuyển hướng sang VNPay
+P -> VNPay: Thực hiện thanh toán
+activate VNPay
+VNPay -> VNPay: Chuyển 100% \nvề ví Nền tảng
+VNPay --> P: Hoàn tất
+
+== Xử lý xác nhận giao dịch (IPN) ==
+VNPay -> BE: IPN Webhook: GET /payments/vnpay/ipn\n(query params & chữ ký vnp_SecureHash)
+deactivate VNPay
+activate BE
+
+BE -> BE: Xác thực chữ ký IPN
+BE -> DB: Kiểm tra sự tồn tại của\nPayment theo transactionCode
+activate DB
+DB --> BE: Bản ghi Payment
+deactivate DB
+
+BE -> BE: So khớp số tiền thanh toán
+BE -> BE: Kiểm tra trạng thái hiện tại (chưa thành công)
+
+BE -> DB: Khởi tạo Database Transaction
+activate DB
+BE -> DB: Cập nhật Payment (SUCCESS)
+BE -> DB: Cập nhật các Bookings liên quan (status=COMPLETED)
+BE -> DB: Tạo OwnerPayout (PENDING, payout=90%, fee=10%)
+BE -> DB: Commit Transaction
+DB --> BE: Thành công
+deactivate DB
+
+BE -> BE: Hủy cache gợi ý sân
+BE -> DB: Tạo bản ghi thông báo\n gửi đến Người chơi & Chủ sân
+BE --> VNPay: Phản hồi RspCode="00" (Confirm success)
+deactivate BE
+
+== Phân phối doanh thu thủ công ==
+Admin -> DB: Xem danh sách\nOwnerPayout (PENDING)
+activate DB
+DB --> Admin: Danh sách yêu cầu chuyển tiền
+deactivate DB
+Admin -> Admin: Chuyển khoản ngân hàng\n 90% số tiền cho Chủ sân
+Admin -> DB: Cập nhật trạng thái OwnerPayout\n(COMPLETED)
+@enduml
+```
+
+*Hình 5.4: Quy trình tuần tự thanh toán qua VNPay và phân phối doanh thu thủ công*
+
+### 5.3.4 Đánh giá thiết kế và hạn chế
+
+Hai mô hình được lựa chọn xuất phát từ giới hạn thực tế của từng cổng thanh toán. Stripe Connect cho phép tự động hóa hoàn toàn việc phân phối doanh thu mà không cần can thiệp của quản trị viên, nhưng yêu cầu chủ sân phải hoàn thành quy trình đăng ký tài khoản Stripe, vốn có thể là rào cản đối với chủ sân trong nước. VNPay phù hợp hơn với người dùng Việt Nam nhưng đòi hỏi thêm bước xử lý thủ công từ phía nền tảng để thanh toán lại cho chủ sân, tạo ra độ trễ trong quá trình nhận tiền. Hạn chế chính của thiết kế hiện tại là quy trình hoàn tiền tự động khi chủ sân hủy lịch sau khi giao dịch đã hoàn tất chưa được tích hợp vào mã nguồn, cả với Stripe lẫn VNPay. Trong trường hợp này, quản trị viên cần can thiệp thủ công để xử lý yêu cầu hoàn tiền.
 
 # CHƯƠNG 6. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
 
-(Mở đầu: Giới thiệu những nội dung sẽ trình bày trong chương 6)
+Chương 6 tổng kết toàn bộ quá trình nghiên cứu, thiết kế và xây dựng hệ thống quản lý đặt sân thể thao đa chủ thể. Nội dung chương tập trung vào việc đánh giá kết quả thực hiện của đồ án qua đối chiếu thực tế, chỉ ra các mặt đạt được cùng những giới hạn kỹ thuật còn tồn tại, đồng thời đề xuất định hướng nghiên cứu và phát triển hệ thống trong tương lai.
 
 ## 6.1 Kết luận
 
-Sinh viên so sánh kết quả nghiên cứu hoặc sản phẩm của mình với các nghiên
-cứu hoặc sản phẩm tương tự.
-Sinh viên phân tích trong suốt quá trình thực hiện ĐATN, mình đã làm được
-gì, chưa làm được gì, các đóng góp nổi bật là gì, và tổng hợp những bài học kinh
-nghiệm rút ra nếu có
+Trải qua quá trình thực hiện đồ án tốt nghiệp, hệ thống quản lý và hỗ trợ đặt sân thể thao đa chủ thể đã được xây dựng và hoàn thiện cả về cấu trúc hệ thống lẫn trải nghiệm người dùng thực tế. Em đã hoàn thành thiết kế và phát triển ba không gian giao diện web chuyên biệt dành cho các đối tượng khác nhau: phân hệ dành cho người chơi hỗ trợ tìm kiếm sân đấu trực quan, chọn sân con theo khung giờ và nhận gợi ý cá nhân hóa; phân hệ dành cho chủ sân cung cấp công cụ đăng ký sân đấu, thiết lập giá và theo dõi doanh thu qua biểu đồ; phân hệ dành cho quản trị viên hỗ trợ duyệt thông tin sân, quản trị người dùng và giám sát các giao dịch thanh toán. Quy trình đặt chỗ được liên kết chặt chẽ với các cổng thanh toán trực tuyến Stripe và VNPay, giúp hạn chế các rủi ro về mặt tài chính và thời gian so với hình thức đặt sân thủ công qua mạng xã hội. Thêm vào đó, đồ án đã giải quyết tương đối triệt để bài toán tranh chấp lịch đặt tại các khung giờ cao điểm nhờ kiến trúc kiểm soát ba lớp và tích hợp hệ gợi ý sân đấu dựa trên tính tương đồng ngữ nghĩa.
+
+Quá trình nghiên cứu và thực hiện đồ án từ các công đoạn khảo sát ban đầu đến khi triển khai hệ thống đã mang lại cho em nhiều bài học thực tiễn trong lĩnh vực công nghệ thông tin. Việc xây dựng một sản phẩm hướng tới người dùng thực tế giúp em nhận thức được rằng việc khảo sát chi tiết và thấu hiểu luồng nghiệp vụ của từng đối tượng sử dụng là điều kiện tiên quyết để tạo nên một hệ thống có ích. Đồ án này cũng là cơ hội để em củng cố và hệ thống hóa lại các kiến thức lý thuyết đã tích lũy trong quá trình học tập về thiết kế hệ thống, phân tích cơ sở dữ liệu và bảo mật thông tin. Em đã có cơ hội tiếp cận và làm quen với mô hình phát triển dự án thông qua cấu trúc monorepo, giúp quản lý đồng bộ mã nguồn của cả frontend và backend.
+
+Về mặt kỹ thuật lập trình, đồ án đã giúp em nâng cao đáng kể kỹ năng phát triển ứng dụng web full-stack. Em đã được thực hành chuyên sâu về xây dựng giao diện tương tác với ReactJS, phát triển kiến trúc RESTful API bằng ExpressJS, sử dụng Prisma ORM để quản lý các truy vấn và thực hiện chuyển đổi cấu trúc (migration). Việc giải quyết bài toán đặt sân trùng lịch đã giúp em hiểu rõ hơn về các khái niệm giao dịch cơ sở dữ liệu (database transaction), các mức độ cô lập giao dịch (isolation levels) và cách vận dụng cơ chế khóa bi quan (pessimistic lock) cấp dòng trong PostgreSQL, kết hợp với khóa phân tán Redis để ngăn chặn tình trạng tranh chấp tài nguyên (race condition) trong môi trường chịu tải cao. Ngoài ra, việc nghiên cứu bài toán gợi ý đã giúp em bước đầu tiếp cận lĩnh vực cơ sở dữ liệu véc-tơ thông qua việc sử dụng pgvector để tìm kiếm tương đồng và gọi API Gemini để xếp hạng kết quả, giải thích lý do gợi ý bằng ngôn ngữ tự nhiên.
+
+Cuối cùng, đồ án cũng giúp em cải thiện kỹ năng nghiên cứu tài liệu kỹ thuật, khả năng tự phát hiện, phân tích và sửa lỗi hệ thống. Quá trình viết báo cáo tốt nghiệp đòi hỏi tư duy mạch lạc và sự chính xác trong hành văn, từ đó giúp em hoàn thiện khả năng trình bày các giải pháp kỹ thuật một cách khoa học. Những kiến thức chuyên môn cùng các kỹ năng mềm tích lũy từ đồ án này sẽ trở thành hành trang quan trọng để em tiếp tục học hỏi, nghiên cứu và tham gia vào các dự án phát triển phần mềm thực tế trong tương lai.
 
 ## 6.2 Hướng phát triển
 
-Trong phần này, sinh viên trình bày định hướng công việc trong tương lai để
-hoàn thiện sản phẩm hoặc nghiên cứu của mình.
-Trước tiên, sinh viên trình bày các công việc cần thiết để hoàn thiện các chức
-năng/nhiệm vụ đã làm. Sau đó sinh viên phân tích các hướng đi mới cho phép cải
-thiện và nâng cấp các chức năng/nhiệm vụ đã làm.
-(Kết thúc: Tổng kết lại các nội dung đã trình bày ở chương 6)
+Để hoàn thiện các chức năng hiện tại, công việc cần ưu tiên trong thời gian tới là hệ thống cần được tích hợp quy trình xử lý hoàn tiền tự động qua webhook của Stripe và VNPay khi đơn đặt sân bị hủy bởi các sự cố bất khả kháng từ phía chủ sân. Ngoài ra, cơ chế xóa cache của Redis cũng cần được tinh chỉnh để chỉ cập nhật các phần dữ liệu thay đổi thay vì tính toán lại toàn bộ, đồng thời thời gian sống của cache nên được điều chỉnh phù hợp với tần suất hoạt động của từng người dùng.
+
+Về định hướng cải tiến hệ thống, hướng thứ nhất là xây dựng hệ thống ghép kèo đấu dựa trên điểm xếp hạng của người chơi. Việc tích hợp thuật toán tính điểm và phân cấp trình độ sẽ giúp người chơi dễ dàng tìm kiếm đồng đội hoặc đối thủ có trình độ tương đương, tạo ra cộng đồng thể thao hoạt động sôi nổi hơn. Hướng thứ hai là cải tiến hệ gợi ý bằng cách tự huấn luyện mô hình để biểu diễn đặc trưng người dùng và sân đấu một cách chi tiết hơn, giảm sự phụ thuộc vào API bên ngoài. Đồng thời, việc phát triển ứng dụng di động sẽ giúp mở rộng khả năng tiếp cận và hỗ trợ thông báo thời gian thực cho người dùng.
+
+Như vậy, Chương 6 đã khái quát lại toàn bộ kết quả nghiên cứu và triển khai của đồ án tốt nghiệp. Mặc dù vẫn còn một số hạn chế nhưng sản phẩm của đồ án cũng đã đáp ứng được các mục tiêu ban đầu liên quan đến việc xây dựng một nền tảng web đặt sân thể thao có khả năng hỗ trợ đầy đủ các chức năng nghiệp vụ cơ bản và cung cấp trải nghiệm sử dụng thuận tiện cho người dùng. Những định hướng phát triển được đề xuất sẽ là cơ sở quan trọng để tiếp tục nâng cấp hệ thống trở thành một giải pháp hoàn chỉnh và có khả năng ứng dụng thực tế.
