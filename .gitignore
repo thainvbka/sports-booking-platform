@@ -20,3 +20,7 @@ sports-booking-platform.md
 
 .agents/
 skills-lock.json
+.codegraph/
+.vscode/
+images/
+py/
