@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ComplexCard } from "@/components/shared/complex/ComplexCard";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/shared/LoadingState";
-import { ComplexCard } from "@/components/shared/ComplexCard";
-import { SectionHeader } from "./SectionHeader";
 import type { Complex } from "@/types";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { SectionHeader } from "./SectionHeader";
 
 interface FeaturedComplexesSectionProps {
   isLoading: boolean;

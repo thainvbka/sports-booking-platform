@@ -1,23 +1,23 @@
-import { ConversionFunnel } from "@/components/admin/dashboard/conversion-funnel";
-import { DemandHeatmap } from "@/components/admin/dashboard/demand-heatmap";
-import { KpiCards } from "@/components/admin/dashboard/kpi-cards";
-import { PaymentProviders } from "@/components/admin/dashboard/payment-providers";
-import { PlayerGrowthChart } from "@/components/admin/dashboard/player-growth-chart";
-import { QuickActions } from "@/components/admin/dashboard/quick-actions";
-import { RatingDistribution } from "@/components/admin/dashboard/rating-distribution";
+import { ConversionFunnel } from "@/components/admin/dashboard/ConversionFunnel";
+import { DemandHeatmap } from "@/components/admin/dashboard/DemandHeatmap";
+import { KpiCards } from "@/components/admin/dashboard/KpiCards";
+import { PaymentProviders } from "@/components/admin/dashboard/PaymentProviders";
+import { PlayerGrowthChart } from "@/components/admin/dashboard/PlayerGrowthChart";
+import { QuickActions } from "@/components/admin/dashboard/QuickActions";
+import { RatingDistribution } from "@/components/admin/dashboard/RatingDistribution";
 import {
   RecentTransactions,
   type RecentPayment,
-} from "@/components/admin/dashboard/recent-transactions";
-import { RevenueQualityChart } from "@/components/admin/dashboard/revenue-quality-chart";
-import { SportRevenueMix } from "@/components/admin/dashboard/sport-revenue-mix";
-import { TopComplexes } from "@/components/admin/dashboard/top-complexes";
+} from "@/components/admin/dashboard/RecentTransactions";
+import { RevenueQualityChart } from "@/components/admin/dashboard/RevenueQualityChart";
+import { SportRevenueMix } from "@/components/admin/dashboard/SportRevenueMix";
+import { TopComplexes } from "@/components/admin/dashboard/TopComplexes";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminService } from "@/services/admin.service";
 import { useAdminStore } from "@/store/admin/useAdminStore";
-import { useEffect, useMemo, useState } from "react";
 import { formatDateVn } from "@/utils";
+import { useEffect, useMemo, useState } from "react";
 
 interface SectionHeadingProps {
   index: number;

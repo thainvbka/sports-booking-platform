@@ -1,10 +1,10 @@
-import { PublicComplexDetailView } from "@/components/shared/Publiccomplexdetailview";
+import { PublicComplexDetailView } from "@/components/shared/complex/PublicComplexDetailView";
+import { useDebounce } from "@/hooks/useDebounce";
 import { publicService } from "@/services/public.service";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useDebounce } from "@/hooks/useDebounce";
 
 export function PublicComplexDetailPage() {
   const { id } = useParams<{ id: string }>();

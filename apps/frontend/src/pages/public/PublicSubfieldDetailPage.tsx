@@ -1,9 +1,8 @@
-import { LoadingState } from "@/components/shared/LoadingState";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { SubfieldHeroInfo } from "@/components/subfield-detail/SubfieldHeroInfo";
-import { SubfieldReviewsList } from "@/components/subfield-detail/SubfieldReviewsList";
-import { SubfieldStickySidebar } from "@/components/subfield-detail/SubfieldStickySidebar";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
+import { SubfieldHeroInfo } from "@/components/shared/subfield/SubFieldHeroInfo";
+import { SubfieldReviewsList } from "@/components/shared/subfield/SubFieldReviewsList";
+import { SubfieldStickySidebar } from "@/components/shared/subfield/SubFieldStickySidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useSubfieldData } from "@/hooks/useSubfieldData";

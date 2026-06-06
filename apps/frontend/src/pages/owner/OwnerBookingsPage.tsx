@@ -1,6 +1,6 @@
-import { BookingFilters } from "@/components/owner/BookingFilters";
+import { BookingFilters } from "@/components/owner/booking/BookingFilters";
 import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
-import { DataTable, type Column } from "@/components/shared/DataTable";
+import { DataTable, type Column } from "@/components/shared/ui-utility/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/store/owner/useBookingStore";
 import type { OwnerBookingResponse } from "@/types";
+import { formatPrice } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -51,7 +52,6 @@ import {
 import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { formatPrice } from "@/utils";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 

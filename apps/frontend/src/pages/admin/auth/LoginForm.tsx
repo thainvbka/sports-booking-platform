@@ -1,6 +1,7 @@
 "use client";
 
-import { Logo } from "@/components/admin/Logo";
+import { authBg } from "@/assets";
+import { Logo } from "@/components/admin/layout/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,6 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { authBg } from "@/assets";
 
 export function LoginForm({
   className,

@@ -7,7 +7,7 @@ import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
 import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
-import { DataTable, type Column } from "@/components/shared/DataTable";
+import { DataTable, type Column } from "@/components/shared/ui-utility/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ import {
 import { extractLegalDocumentUrls } from "@/lib/legal-docs";
 import { useAdminComplexStore } from "@/store/admin/useAdminComplexStore";
 import type { AdminComplex } from "@/types/admin.types";
-import { formatPrice, formatDateVn } from "@/utils";
+import { formatDateVn, formatPrice } from "@/utils";
 import {
   AlertTriangle,
   CheckCircle,

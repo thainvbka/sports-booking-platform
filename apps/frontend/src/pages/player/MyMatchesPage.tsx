@@ -1,9 +1,9 @@
 import { MatchCard } from "@/components/matches/MatchCard";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { LoadingState } from "@/components/shared/LoadingState";
+import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,7 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { PaginationBar } from "@/components/shared/PaginationBar";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,

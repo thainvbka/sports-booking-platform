@@ -1,4 +1,4 @@
-import { LoadingState } from "@/components/shared/LoadingState";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { CheckCircle2, XCircle } from "lucide-react";

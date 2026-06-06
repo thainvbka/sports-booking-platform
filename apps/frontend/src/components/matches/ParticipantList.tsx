@@ -1,6 +1,6 @@
 import { ParticipantStatusBadge } from "@/components/matches/ParticipantStatusBadge";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { LoadingState } from "@/components/shared/LoadingState";
+import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

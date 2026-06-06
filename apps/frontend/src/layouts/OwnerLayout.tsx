@@ -1,7 +1,7 @@
-import { Logo } from "@/components/admin/Logo";
-import { AddRoleDialog } from "@/components/shared/AddRoleDialog";
-import { NotificationBell } from "@/components/shared/NotificationBell";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { Logo } from "@/components/admin/layout/Logo";
+import { AddRoleDialog } from "@/components/shared/dialogs/AddRoleDialog";
+import { NotificationBell } from "@/components/shared/layout/NotificationBell";
+import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

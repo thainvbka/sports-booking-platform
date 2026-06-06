@@ -1,5 +1,6 @@
-import { DeleteBookingDialog } from "@/components/player/DeleteBookingDialog";
-import { ReviewDialog } from "@/components/player/ReviewDialog";
+import { DeleteBookingDialog } from "@/components/player/booking-history/DeleteBookingDialog";
+import { ReviewDialog } from "@/components/player/review/ReviewDialog";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBookings } from "@/hooks/useBookings";
@@ -40,8 +40,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 
-import { BookingCard, type SingleBooking } from "@/components/player/BookingCard";
 import { CreateMatchDialog } from "@/components/matches/CreateMatchDialog";
+import { BookingCard, type SingleBooking } from "@/components/player/booking-history/BookingCard";
 
 const PAGE_SIZE = 9;
 

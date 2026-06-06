@@ -1,9 +1,9 @@
-import { ComplexFilters } from "@/components/owner/ComplexFilters";
+import { ComplexFilters } from "@/components/owner/complex/ComplexFilters";
 import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
-import { ComplexFormDialog } from "@/components/shared/ComplexFormDialog";
-import { OwnerComplexCard } from "@/components/shared/OwnerComplexCard";
+import { ComplexFormDialog } from "@/components/shared/complex/ComplexFormDialog";
+import { OwnerComplexCard } from "@/components/shared/complex/OwnerComplexCard";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Button } from "@/components/ui/button";
-import { PaginationBar } from "@/components/shared/PaginationBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useComplexStore } from "@/store/owner/useComplexStore";

@@ -1,21 +1,21 @@
 "use client";
 
-import { Logo } from "@/components/admin/Logo";
+import { authBg } from "@/assets";
+import { Logo } from "@/components/admin/layout/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/store/useAuthStore";
 import { registerSchema, type registerInput } from "@/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, MailCheck } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { authBg } from "@/assets";
+import { toast } from "sonner";
 
 export function SignupForm({
   className,

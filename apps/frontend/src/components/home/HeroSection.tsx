@@ -1,10 +1,10 @@
+import { heroBg } from "@/assets";
+import { SearchBar } from "@/components/shared/ui-utility/SearchBar";
+import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { heroBg } from "@/assets";
-import { SearchBar } from "@/components/shared/SearchBar";
-import { SPORT_CATEGORIES, HERO_STATS, parseSportType } from "./constants";
+import { HERO_STATS, parseSportType, SPORT_CATEGORIES } from "./constants";
 
 export function HeroSection() {
   return (

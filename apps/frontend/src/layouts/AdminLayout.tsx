@@ -1,8 +1,8 @@
 "use client";
 
-import { AppSidebar } from "@/components/admin/Sidebar";
-import { SiteFooter } from "@/components/admin/SiteFooter";
-import { SiteHeader } from "@/components/admin/SiteHeader";
+import { AppSidebar } from "@/components/admin/layout/Sidebar";
+import { SiteFooter } from "@/components/admin/layout/SiteFooter";
+import { SiteHeader } from "@/components/admin/layout/SiteHeader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useSidebarConfig } from "@/hooks/use-sidebar-config";
 import { cn } from "@/lib/utils";

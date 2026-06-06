@@ -1,8 +1,8 @@
 import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
-import { ProductFilters } from "@/components/owner/ProductFilters";
-import { ProductFormDialog } from "@/components/owner/ProductFormDialog";
-import { UpdateProductStockDialog } from "@/components/owner/UpdateProductStockDialog";
-import { DataTable, type Column } from "@/components/shared/DataTable";
+import { ProductFilters } from "@/components/owner/product/ProductFilters";
+import { ProductFormDialog } from "@/components/owner/product/ProductFormDialog";
+import { UpdateProductStockDialog } from "@/components/owner/product/UpdateProductStockDialog";
+import { DataTable, type Column } from "@/components/shared/ui-utility/DataTable";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
