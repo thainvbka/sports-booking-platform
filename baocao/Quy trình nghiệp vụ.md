@@ -78,13 +78,16 @@ skinparam ActivityDiamondBackgroundColor #FFF5CC
 skinparam ActivityDiamondBorderColor #E6B800
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
-skinparam swimlaneBorderThickness 1.2
-skinparam swimlaneWidth same
+skinparam swimlaneBorderThickness 2.5
 skinparam nodeSep 15
 skinparam rankSep 15
-skinparam wrapWidth 120
+skinparam wrapWidth 250
 skinparam DiagramBorderColor #2D3748
-skinparam DiagramBorderThickness 1.2
+skinparam DiagramBorderThickness 2.5
+skinparam ArrowThickness 2
+skinparam DefaultFontSize 40
+skinparam TitleFontSize 40
+
 
 title act Quy trình đặt sân và thanh toán
 
@@ -95,57 +98,47 @@ title act Quy trình đặt sân và thanh toán
 
 |Người chơi|
 start
-:Tìm kiếm và lựa chọn sân; <<#FFF2CC>>
-:Gửi yêu cầu\nđặt sân;
+:Tìm kiếm sân; <<#FFF2CC>>
+:Gửi yêu cầu đặt sân;
 
 |Hệ thống|
-:Kiểm tra tính\nkhả dụng của sân;
+:Kiểm tra tính khả dụng của sân;
 if () then ([Còn trống])
-  :Tạo lịch đặt\nsân tạm thời;
+  :Tạo lịch đặt sân tạm thời;
   
   |Người chơi|
-  :Thực hiện thanh toán\ntrực tuyến; <<#FFF2CC>>
+  :Thực hiện thanh toán; <<#FFF2CC>>
   
   |Cổng thanh toán|
-  :Xử lý giao dịch\nthanh toán;
+  :Xử lý giao dịch thanh toán;
   if () then ([Thành công])
-    :Xác nhận giao dịch\nthành công;
+    :Xác nhận giao dịch thành công;
     
     |Hệ thống|
     :Ghi nhận thanh toán;
     fork
-      :Gửi thông báo\nđến Người chơi;
+      :Gửi thông báo đến Người chơi;
     fork again
-      :Gửi thông báo\nđến Chủ sân;
+      :Gửi thông báo đến Chủ sân;
     end fork
     
     |Chủ sân|
-    :Phê duyệt xác\nnhận lịch đặt; <<#FFF2CC>>
+    :Xác nhận lịch đặt; <<#FFF2CC>>
     
     |Hệ thống|
-    :Hoàn tất lịch\nđặt sân chính thức;
+    :Hoàn tất đặt sân;
     stop
   else ([Thất bại])
-    :Thông báo giao dịch\nthất bại; <<#FADBD8>>
+    :Thông báo giao dịch thất bại; <<#FADBD8>>
     
     |Hệ thống|
-    :Hủy lượt đặt\ntạm thời; <<#FADBD8>>
+    :Hủy lượt đặt tạm thời; <<#FADBD8>>
     stop
   endif
 
 else ([Trùng lịch])
-  :Thông báo lỗi\ntrùng lịch đặt; <<#FADBD8>>
+  :Thông báo lỗi trùng lịch đặt; <<#FADBD8>>
   stop
-endif
-
-|Hệ thống|
-start
-:Quét định kỳ các\nlịch đặt tạm thời;
-if () then ([Quá hạn])
-  :Tự động hủy\nlịch đặt sân; <<#FADBD8>>
-  stop
-else ([Chưa quá hạn])
-  end
 endif
 @enduml
 ```
@@ -176,13 +169,16 @@ skinparam ActivityDiamondBackgroundColor #FFF5CC
 skinparam ActivityDiamondBorderColor #E6B800
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
-skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneBorderThickness 2.5
 skinparam swimlaneWidth same
 skinparam nodeSep 15
 skinparam rankSep 15
-skinparam wrapWidth 120
+skinparam wrapWidth 250
 skinparam DiagramBorderColor #2D3748
-skinparam DiagramBorderThickness 1.2
+skinparam DiagramBorderThickness 2.5
+skinparam DefaultFontSize 30
+skinparam TitleFontSize 30
+skinparam ArrowThickness 2
 
 title act Quy trình tạo, tham gia kèo
 
@@ -192,33 +188,33 @@ title act Quy trình tạo, tham gia kèo
 
 |Người tạo kèo|
 start
-:Đặt sân và\nthanh toán thành công; <<#FFF2CC>>
-:Yêu cầu tạo kèo\ntrên lịch đặt; <<#FFF2CC>>
+:Đặt sân và thanh toán thành công; <<#FFF2CC>>
+:Yêu cầu tạo kèo trên lịch đặt; <<#FFF2CC>>
 
 |Hệ thống|
-:Tiếp nhận thông tin\ncủa kèo đấu;
-:Công khai kèo đấu\nlên bảng tin tìm kiếm; <<#FFF2CC>>
+:Lưu thông tin kèo đấu;
+:Hiển thị kèo lên trang tìm kiếm; <<#FFF2CC>>
 
 |Người tham gia|
-:Xem danh sách kèo\nvà gửi yêu cầu tham gia; <<#FFF2CC>>
+:Xem danh sách kèo và gửi yêu cầu tham gia; <<#FFF2CC>>
 
 |Hệ thống|
-:Gửi thông báo\nđến Người tạo kèo;
+:Gửi thông báo đến Người tạo kèo;
 
 |Người tạo kèo|
 :Xem ứng viên; <<#FFF2CC>>
 if () then ([Chấp nhận])
   |Hệ thống|
-  :Thêm thành viên và\ncập nhật số chỗ trống;
-  :Gửi thông báo chấp nhận\nđến Người tham gia;
+  :Thêm thành viên và cập nhật số chỗ trống;
+  :Gửi thông báo chấp nhận đến Người tham gia;
   if () then ([Đủ người])
-    :Cập nhật trạng thái kèo\nsang FULL (Đóng kèo);
+    :Cập nhật trạng thái kèo sang FULL và đóng kèo;
   else ([Chưa đủ])
-    :Kèo đấu tiếp tục\nhiển thị trên bảng tin;
+    :Kèo đấu tiếp tục hiển thị;
   endif
 else ([Từ chối])
   |Hệ thống|
-  :Gửi thông báo từ chối\nđến Người tham gia; <<#FADBD8>>
+  :Gửi thông báo từ chối đến Người tham gia; <<#FADBD8>>
 endif
 stop
 @enduml
@@ -250,13 +246,16 @@ skinparam ActivityDiamondBackgroundColor #FFF5CC
 skinparam ActivityDiamondBorderColor #E6B800
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
-skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneBorderThickness 2.5
 skinparam swimlaneWidth same
 skinparam nodeSep 15
 skinparam rankSep 15
-skinparam wrapWidth 120
+skinparam wrapWidth 250
 skinparam DiagramBorderColor #2D3748
-skinparam DiagramBorderThickness 1.2
+skinparam DiagramBorderThickness 2.5
+skinparam DefaultFontSize 30
+skinparam TitleFontSize 30
+skinparam ArrowThickness 2
 
 title act Quy trình đăng ký và kích hoạt cụm sân mới
 
@@ -266,25 +265,25 @@ title act Quy trình đăng ký và kích hoạt cụm sân mới
 
 |Chủ khu phức hợp|
 start
-:Đăng ký tài khoản chủ sân\nvà kết nối ví; <<#FFF2CC>>
-:Gửi đăng ký khu phức hợp\nkèm tài liệu pháp lý; <<#FFF2CC>>
+:Đăng ký tài khoản chủ sân và kết nối ví; <<#FFF2CC>>
+:Gửi đăng ký khu phức hợp kèm tài liệu pháp lý; <<#FFF2CC>>
 
 |Hệ thống|
-:Ghi nhận trạng thái cụm sân\nlà PENDING;
-:Chuyển hồ sơ đến trang\nquản lý của quản trị;
+:Ghi nhận trạng thái cụm sân là PENDING;
+:Chuyển hồ sơ đến trang quản lý của quản trị;
 
 |Quản trị hệ thống|
-: Xác thực tính hợp lệ\ncủa tài liệu pháp lý; <<#FFF2CC>>
+: Xác thực tính hợp lệ của tài liệu pháp lý; <<#FFF2CC>>
 if () then ([Hợp lệ])
   :Phê duyệt kích hoạt hồ sơ; <<#FFF2CC>>
   
   |Hệ thống|
   :Cập nhật trạng thái ACTIVE;
-  :Gửi thông báo thành công\nđến Chủ khu phức hợp;
+  :Gửi thông báo thành công đến Chủ khu phức hợp;
   
   |Chủ khu phức hợp|
   :Khai báo thông tin các sân con; <<#FFF2CC>>
-  :Thiết lập luật bảng giá\ntheo khung giờ và ngày; <<#FFF2CC>>
+  :Thiết lập luật bảng giá theo khung giờ và ngày; <<#FFF2CC>>
 else ([Không hợp lệ])
   |Quản trị hệ thống|
   :Từ chối phê duyệt hồ sơ; <<#FFF2CC>>
@@ -327,13 +326,16 @@ skinparam ActivityDiamondBackgroundColor #FFF5CC
 skinparam ActivityDiamondBorderColor #E6B800
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
-skinparam swimlaneBorderThickness 1.2
+skinparam swimlaneBorderThickness 2.5
 skinparam swimlaneWidth same
 skinparam nodeSep 15
 skinparam rankSep 15
-skinparam wrapWidth 120
+skinparam wrapWidth 300
 skinparam DiagramBorderColor #2D3748
-skinparam DiagramBorderThickness 1.2
+skinparam DiagramBorderThickness 1.5
+skinparam DefaultFontSize 30
+skinparam TitleFontSize 30
+skinparam ArrowThickness 2
 
 title act Quy trình đối soát quyết toán (Cổng VNPAY)
 
@@ -349,7 +351,7 @@ start
 |Hệ thống|
 :Khởi tạo yêu cầu quyết toán mới;
 fork
-  :Gửi thông báo đang chờ duyệtđến Chủ sân;
+  :Gửi thông báo đang chờ duyệt đến Chủ sân;
 fork again
   :Gửi thông báo có yêu cầu mới\nđến Quản trị;
 end fork

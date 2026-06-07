@@ -1005,98 +1005,238 @@ skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
 skinparam swimlaneBorderThickness 1.2
 skinparam swimlaneWidth same
-skinparam wrapWidth 120
+skinparam wrapWidth 150
 skinparam DiagramBorderColor #2D3748
 skinparam DiagramBorderThickness 1.2
 
-title act Đường ống gợi ý sân cá nhân hóa
+title act Quy trình gợi ý sân thể thao cá nhân hóa
 
 |Người chơi|
-|Hệ thống (Backend)|
-|Cơ sở dữ liệu & Bộ đệm|
-|Gemini API|
+|Hệ thống gợi ý|
 
 |Người chơi|
 start
-:Gửi yêu cầu\nlấy gợi ý sân; <<#FFF2CC>>
+:Gửi yêu cầu lấy gợi ý sân;
 
-|Hệ thống (Backend)|
-:Kiểm tra bộ đệm Redis\n(cache key = player_id);
+|Hệ thống gợi ý|
+:Kiểm tra danh sách gợi ý đã lưu;
 
-|Cơ sở dữ liệu & Bộ đệm|
-if () then ([Cache HIT])
-  :Trả kết quả\ntừ bộ đệm;
-  |Người chơi|
-  :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
-  stop
-else ([Cache MISS])
-
-  |Hệ thống (Backend)|
-  :Cố gắng lấy\nSingle-flight lock;
-
-  |Cơ sở dữ liệu & Bộ đệm|
-  if () then ([Lock thành công])
-
-    |Hệ thống (Backend)|
-    :Xây dựng véc-tơ đặc trưng\ntừ 30 lịch sử đặt sân\ngần nhất (buildUserVector);
-
-    |Cơ sở dữ liệu & Bộ đệm|
-    if () then ([sampleSize < 3])
-      :Truy vấn top 10 sân\ntheo avg_rating và\ntổng lượt đánh giá;
-
-      |Hệ thống (Backend)|
-      :Trả về kết quả\n"Phổ biến nhất" (POPULAR); <<#FFF2CC>>
-      :Lưu cache 1 giờ;
-      stop
-    else ([sampleSize >= 3])
-      |Cơ sở dữ liệu & Bộ đệm|
-      :Tìm kiếm tương đồng Cosine\nvới toán tử <=> của pgvector\n(loại trừ sân đã đặt 14 ngày);
-      :Trả về 20 sân có\nđộ tương đồng cao nhất;
-
-      |Hệ thống (Backend)|
-      :Chuẩn bị danh sách ứng viên\n(RerankCandidate) và\ntóm tắt profile người dùng;
-
-      |Gemini API|
-      :Phân tích sự phù hợp\nvà xếp hạng lại danh sách;
-
-      if () then ([Gemini phản hồi thành công])
-        |Hệ thống (Backend)|
-        :Trả về top 5 sân\nkèm lý do giải thích\nbằng tiếng Việt (JSON);
-        :Xây dựng phản hồi\nPERSONALIZED;
-      else ([Gemini gặp lỗi / timeout])
-        |Hệ thống (Backend)|
-        :Fallback: lấy top 5\ntừ kết quả pgvector; <<#FADBD8>>
-        :Xây dựng phản hồi\nkhông có lý do giải thích; <<#FADBD8>>
-      endif
-
-      |Hệ thống (Backend)|
-      :Lưu kết quả vào\nbộ đệm Redis (TTL 6 giờ);
-      :Giải phóng\nSingle-flight lock;
-
-      |Người chơi|
-      :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
-      stop
-    endif
-
-  else ([Lock thất bại — luồng song song])
-    |Hệ thống (Backend)|
-    :Chờ 200ms rồi\nkiểm tra lại cache;
-    if () then ([Cache đã có kết quả])
-      :Trả kết quả\ntừ bộ đệm;
-      |Người chơi|
-      :Nhận danh sách\ngợi ý sân; <<#FFF2CC>>
-      stop
-    else ([Vẫn chưa có])
-      |Hệ thống (Backend)|
-      :Trả về Popular\nfallback; <<#FADBD8>>
-      stop
+if (Đã có sẵn gợi ý?) then ([Có])
+  :Truy xuất danh sách gợi ý sẵn có;
+else ([Không])
+  :Đánh giá lịch sử đặt sân của người chơi;
+  if (Số lượt đặt sân hoàn tất?) then ([Dưới 3 lượt])
+    :Xác định gợi ý theo mức độ phổ biến;
+    :Lấy danh sách sân có đánh giá và tương tác cao nhất;
+  else ([Từ 3 lượt trở lên])
+    :Phân tích hành vi và tạo hồ sơ sở thích;
+    :Tìm kiếm danh sách sân có đặc tính tương đồng;
+    :Lọc bỏ các sân người chơi đã đặt gần đây;
+    :Cá nhân hóa và tối ưu hóa thứ tự xếp hạng;
+    if (Cá nhân hóa nâng cao thành công?) then ([Có])
+      :Tạo lý do giải thích bằng ngôn ngữ tự nhiên;
+    else ([Không])
+      :Sử dụng kết quả xếp hạng tương đồng gốc;
     endif
   endif
+  :Lưu trữ kết quả gợi ý mới tạo;
 endif
+
+:Phản hồi kết quả gợi ý;
+
+|Người chơi|
+:Hiển thị danh sách gợi ý kèm lý do (nếu có);
+stop
 @enduml
 ```
 
-*Hình 5.2: Sơ đồ hoạt động mô tả đường ống xử lý gợi ý sân cá nhân hóa*
+*Hình 5.2: Sơ đồ hoạt động mô tả quy trình gợi ý sân cá nhân hóa ở mức nghiệp vụ*
+
+Để làm rõ hơn cơ chế vận hành chi tiết và sự phân tách dữ liệu trong đường ống gợi ý, Hình 5.3 biểu diễn sơ đồ kiến trúc các thành phần và đường ống dữ liệu (Recommendation Pipeline Component Diagram). Sơ đồ này mô tả cách thức hệ thống chuyển đổi lịch sử đặt sân của người chơi và thuộc tính của sân đấu thành các đặc trưng véc-tơ 8 chiều, thực hiện truy vấn tương đồng Cosine trên PostgreSQL và tích hợp dịch vụ Gemini API để xếp hạng lại.
+
+```plantuml
+@startuml
+skinparam componentStyle uml2
+skinparam ComponentBorderColor #2B6CB0
+skinparam ComponentBackgroundColor #E6F0FA
+skinparam DatabaseBorderColor #4A5568
+skinparam DatabaseBackgroundColor #EDF2F7
+skinparam InterfaceColor #2B6CB0
+skinparam ArrowColor #2D3748
+
+title cmp Sơ đồ kiến trúc và đường ống dữ liệu gợi ý sân (Recommendation Pipeline)
+
+package "Tầng Xử lý & Đồng bộ" {
+  component [Bộ biểu diễn đặc trưng sân con\n(Subfield Vector Builder)] as SVB
+  component [Bộ biểu diễn đặc trưng người chơi\n(User Vector Builder)] as UVB
+  component [Bộ xếp hạng lại Gemini\n(Gemini Reranker)] as GR
+}
+
+database "PostgreSQL (pgvector)" as PG {
+  folder "Lịch sử giao dịch" {
+    [Lịch sử đặt sân (Booking)] as Bookings
+  }
+  folder "Dữ liệu sân bãi" {
+    [Sân con (SubField)] as Subfields
+  }
+}
+
+database "Redis Cache" as Redis {
+  [Bộ đệm gợi ý (rec:player:*)] as CacheStore
+}
+
+cloud "Gemini API" as Gemini
+
+Subfields ..> SVB : Đọc thông tin sân (giờ hoạt động, giá, rating...)
+SVB -> Subfields : Cập nhật vector(8) qua cột "embedding"\n(updateSubfieldEmbedding)
+
+Bookings ..> UVB : Lấy tối đa 30 đơn đặt sân gần nhất
+UVB -> PG : Truy xuất min/max price toàn hệ thống
+UVB ..> PG : Tạo véc-tơ người chơi (8 chiều chuẩn hóa)
+
+PG -> Subfields : Thực hiện phép tương đồng Cosine:\n1 - (embedding <=> userVector)
+Subfields ..> GR : Trả về top 20 ứng viên (RerankCandidate)
+
+UVB ..> GR : Truyền tóm tắt hồ sơ người dùng
+GR -> Gemini : Gửi Prompt chứa Hồ sơ + Danh sách ứng viên\n(Định dạng đầu ra JSON Schema)
+Gemini --> GR : Trả về top 5 sân tốt nhất kèm lý do tiếng Việt
+GR -> Redis : Lưu trữ kết quả gợi ý cá nhân hóa (TTL 6 giờ)
+GR --> CacheStore : Ghi đệm
+
+@enduml
+```
+
+*Hình 5.3: Sơ đồ đường ống dữ liệu và kiến trúc của hệ gợi ý (Recommendation Pipeline)*
+
+Bên cạnh đó, biểu đồ trình tự ở Hình 5.4 mô tả chi tiết quy trình xử lý của API phía Backend (Technical Sequence Diagram) từ thời điểm người chơi gửi yêu cầu lấy gợi ý đến khi nhận được kết quả. Sơ đồ này phản ánh chính xác các cơ chế kỹ thuật thực tế được triển khai trong mã nguồn, bao gồm: kiểm soát bất đồng bộ bằng Single-flight lock để tránh tranh chấp tài nguyên trong môi trường đồng thời, truy xuất bộ đệm hiệu năng cao trên Redis, thực thi truy vấn khoảng cách Cosine thông qua thư viện pgvector và cơ chế xử lý lỗi dự phòng (fallback) khi dịch vụ trí tuệ nhân tạo bên ngoài gặp sự cố hoặc quá hạn phản hồi.
+
+```plantuml
+@startuml
+skinparam SequenceArrowColor #2B6CB0
+skinparam SequenceLifeLineBorderColor #4A5568
+skinparam SequenceLifeLineBackgroundColor #EDF2F7
+skinparam SequenceParticipantBorderColor #2B6CB0
+skinparam SequenceParticipantBackgroundColor #E6F0FA
+skinparam SequenceParticipantFontStyle bold
+skinparam SequenceGroupBorderColor #718096
+skinparam SequenceGroupBackgroundColor #F7FAFC
+skinparam SequenceGroupHeaderFontColor #2D3748
+skinparam NoteBackgroundColor #FEFCBF
+skinparam NoteBorderColor #ECC94B
+skinparam DiagramBorderColor #2D3748
+skinparam DiagramBorderThickness 1.2
+
+title seq Trình tự kỹ thuật xử lý yêu cầu gợi ý sân cá nhân hóa
+
+actor "Người chơi" as User
+participant "Client (Frontend)" as Client
+participant "RecommendationService" as Service
+database "Redis (Cache & Lock)" as Redis
+database "PostgreSQL" as PG
+participant "Gemini API" as LLM
+
+User -> Client : Truy cập trang chủ / xem gợi ý
+Client -> Service : GET /v1/recommendations
+activate Service
+
+Service -> PG : SELECT status FROM Player WHERE id = playerId
+activate PG
+PG --> Service : status: ACTIVE
+deactivate PG
+
+== Bước 1: Kiểm tra bộ nhớ đệm (Cache HIT) ==
+Service -> Redis : GET rec:player:{playerId}
+activate Redis
+Redis --> Service : cachedResponse (JSON)
+deactivate Redis
+
+alt Cache HIT
+  Service --> Client : Trả về danh sách gợi ý lưu sẵn
+  Client --> User : Hiển thị gợi ý cá nhân hóa
+else Cache MISS
+  == Bước 2: Kiểm soát Concurrency (Single-flight lock) ==
+  loop Chờ và thử lại tối đa 3 lần (mỗi lần cách nhau 200ms)
+    Service -> Redis : SET lock:rec:{playerId} {UUID} NX EX 15
+    activate Redis
+    Redis --> Service : lockAcquired (true/false)
+    deactivate Redis
+    
+    alt Lock thành công
+      note over Service : Tiếp tục luồng tính toán gợi ý
+    else Lock thất bại
+      Service -> Redis : GET rec:player:{playerId} (kiểm tra lại cache)
+      activate Redis
+      Redis --> Service : concurrentCachedResponse
+      deactivate Redis
+      alt Đã có cache từ luồng song song
+        Service --> Client : Trả về danh sách gợi ý mới cập nhật
+        deactivate Service
+      end
+    end
+  end
+
+  == Bước 3: Đánh giá lịch sử và xử lý Khởi đầu lạnh (Cold Start) ==
+  Service -> PG : SELECT completed bookings (limit 30)
+  activate PG
+  PG --> Service : bookings list (sampleSize)
+  deactivate PG
+
+  alt sampleSize < 3 (Khởi đầu lạnh)
+    Service -> Service : getPopularFallback()
+    Service -> Redis : GET rec:popular
+    activate Redis
+    Redis --> Service : cachedPopular
+    deactivate Redis
+    alt Cache MISS (Popular)
+      Service -> PG : SELECT top 10 SubFields ORDER BY avg_rating, total_reviews
+      activate PG
+      PG --> Service : popularSubfields
+      deactivate PG
+      Service -> Redis : SET rec:popular cachedPopular EX 3600
+    end
+    Service -> Redis : SET rec:player:{playerId} popularResponse EX 3600
+    Service -> Redis : DEL lock:rec:{playerId} (Lua script)
+    Service --> Client : Trả về danh sách sân phổ biến
+  else sampleSize >= 3 (Tính toán gợi ý cá nhân hóa)
+    Service -> PG : SELECT bookings in last 14 days
+    activate PG
+    PG --> Service : recentBookings (excludeIds)
+    deactivate PG
+
+    == Bước 4: Tìm kiếm tương đồng véc-tơ (pgvector) ==
+    Service -> PG : SELECT sub_fields ORDER BY embedding <=> userVector LIMIT 20 (NOT IN excludeIds)
+    activate PG
+    PG --> Service : similarSubfields (20 candidates)
+    deactivate PG
+
+    Service -> PG : Hydrate candidates detail (complex, pricing_rules)
+    activate PG
+    PG --> Service : hydratedCandidates
+    deactivate PG
+
+    == Bước 5: Xếp hạng lại bằng Mô hình ngôn ngữ lớn (Reranking) ==
+    Service -> LLM : generateContent (prompt + candidates, responseSchema)
+    activate LLM
+    alt Gemini phản hồi thành công (dưới 8 giây)
+      LLM --> Service : JSON string (Top 5 sân kèm lý do tiếng Việt)
+    else Gemini gặp lỗi / Timeout
+      note over Service : Kích hoạt cơ chế dự phòng (Fallback)
+      Service -> Service : Sử dụng Top 10 kết quả từ pgvector
+    end
+    deactivate LLM
+
+    Service -> Service : Hydrate response (PERSONALIZED)
+    Service -> Redis : SET rec:player:{playerId} personalizedResponse EX 21600 (6 giờ)
+    Service -> Redis : DEL lock:rec:{playerId} (Lua script)
+    Service --> Client : Trả về danh sách gợi ý cá nhân hóa (Top 5)
+    Client --> User : Hiển thị danh sách gợi ý kèm lý do
+  end
+end
+@enduml
+```
+
+*Hình 5.4: Sơ đồ trình tự kỹ thuật xử lý dịch vụ gợi ý (Technical Sequence Diagram)*
+
 
 ### 5.2.3 Đánh giá hệ gợi ý
 
@@ -1116,7 +1256,7 @@ Trong một nền tảng đặt sân đa chủ thể, tiền thanh toán của n
 
 Để tránh xử lý trùng lặp khi Stripe gửi lại webhook nhiều lần, backend kiểm tra sự tồn tại của `transaction_code` trong bảng `Payment` trước khi thực hiện bất kỳ thao tác ghi nào.
 
-Hình 5.3 minh họa quy trình tuần tự của luồng thanh toán và tự động phân phối doanh thu thông qua Stripe Connect.
+Hình 5.5 minh họa quy trình tuần tự của luồng thanh toán và tự động phân phối doanh thu thông qua Stripe Connect.
 
 ```plantuml
 @startuml
@@ -1199,7 +1339,7 @@ end
 @enduml
 ```
 
-*Hình 5.3: Quy trình tuần tự thanh toán và phân chia doanh thu qua Stripe Connect*
+*Hình 5.5: Quy trình tuần tự thanh toán và phân chia doanh thu qua Stripe Connect*
 
 ### 5.3.3 Luồng thanh toán qua VNPay (phân phối thủ công qua OwnerPayout)
 
@@ -1207,7 +1347,7 @@ VNPay không hỗ trợ cơ chế phân tách và chuyển tiền tự động t
 
 Khi người chơi chọn thanh toán qua VNPay, backend tạo trước một bản ghi `Payment` với trạng thái `FAILED` và mã giao dịch duy nhất (`transaction_code`), sau đó xây dựng URL thanh toán VNPay kèm theo mã này và chuyển hướng người dùng sang cổng VNPay. Sau khi người dùng hoàn tất thanh toán, VNPay gọi về endpoint IPN của backend với chữ ký xác thực (`verifyIpnCall`). Backend xác thực chữ ký, kiểm tra số tiền khớp và kiểm tra trạng thái `Payment` hiện tại để tránh xử lý trùng. Nếu giao dịch thành công (mã phản hồi `"00"`), trong một giao dịch cơ sở dữ liệu, backend thực hiện ba thao tác đồng thời: cập nhật `Payment` thành `SUCCESS`, cập nhật các booking liên quan sang `COMPLETED`, và tạo bản ghi `OwnerPayout` ở trạng thái `PENDING` với giá trị bằng 90% tổng tiền giao dịch (sau khi trừ 10% phí nền tảng). Bản ghi `OwnerPayout` này sau đó hiển thị trên giao diện quản trị viên để xử lý chuyển tiền thủ công cho chủ sân.
 
-Hình 5.4 mô tả chi tiết quy trình tuần tự của luồng thanh toán qua cổng VNPay và cơ chế phân phối doanh thu thủ công thông qua bản ghi `OwnerPayout`.
+Hình 5.6 mô tả chi tiết quy trình tuần tự của luồng thanh toán qua cổng VNPay và cơ chế phân phối doanh thu thủ công thông qua bản ghi `OwnerPayout`.
 
 ```plantuml
 @startuml
@@ -1300,7 +1440,7 @@ Admin -> DB: Cập nhật trạng thái OwnerPayout\n(COMPLETED)
 @enduml
 ```
 
-*Hình 5.4: Quy trình tuần tự thanh toán qua VNPay và phân phối doanh thu thủ công*
+*Hình 5.6: Quy trình tuần tự thanh toán qua VNPay và phân phối doanh thu thủ công*
 
 ### 5.3.4 Đánh giá thiết kế và hạn chế
 

@@ -100,8 +100,8 @@ export const rerankWithGemini = async (
       throw new InternalServerError("Empty items returned from Gemini");
     }
 
-    // Make sure we only return top 5
-    return validated.items.slice(0, 5);
+    // Make sure we only return top 10
+    return validated.items.slice(0, 10);
   } catch (error) {
     console.error("Gemini reranking failed:", error);
     throw error;

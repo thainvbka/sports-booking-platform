@@ -78,7 +78,7 @@ export const getPopularFallback = async (): Promise<RecommendationResponse> => {
     })),
   };
 
-  // Cache 1 hour
+  // Lưu kết quả vào bộ đệm trong 1 giờ
   await cacheHelper.set(cacheKey, response, 3600);
   return response;
 };
@@ -97,13 +97,12 @@ export const getRecommendationsForPlayer = async (
 
   const cacheKey = CACHE_KEYS.RECOMMENDATION(playerId);
 
-  // 1. Check cache HIT
   const cached = await cacheHelper.get<RecommendationResponse>(cacheKey);
   if (cached) {
     return cached;
   }
 
-  // 2. Single-flight lock
+  // tạo lock tránh race condition
   const lockKey = CACHE_KEYS.RECOMMENDATION_LOCK(playerId);
   const lockValue = crypto.randomUUID();
   let locked = false;
@@ -117,7 +116,6 @@ export const getRecommendationsForPlayer = async (
     );
     if (!locked) {
       await new Promise((resolve) => setTimeout(resolve, 200));
-      // Recheck cache after waiting
       const concurrentCached = await cacheHelper.get<RecommendationResponse>(cacheKey);
       if (concurrentCached) return concurrentCached;
       retries++;
@@ -125,19 +123,19 @@ export const getRecommendationsForPlayer = async (
   }
 
   try {
-    // 3. Count bookings for cold start
+    // 3. Đếm số đơn đặt sân để kiểm tra điều kiện khởi đầu lạnh
     const { vector, sampleSize } = await buildUserVector(playerId);
 
     if (sampleSize < 3) {
       const response = await getPopularFallback();
       if (locked) {
-        // Cache popular result specific to this user, but shorter TTL (1h)
+        // Lưu kết quả phổ biến riêng cho người chơi này với thời gian sống ngắn (1 giờ)
         await cacheHelper.set(cacheKey, response, 3600);
       }
       return response;
     }
 
-    // 4. Get recent booking sub_field_ids to exclude (last 14 days)
+    // 4. Lấy danh sách ID sân con đã đặt trong vòng 14 ngày để loại trừ khỏi gợi ý
     const fourteenDaysAgo = new Date();
     fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
     const recentBookings = await prisma.booking.findMany({
@@ -149,14 +147,14 @@ export const getRecommendationsForPlayer = async (
     });
     const excludeIds = recentBookings.map((b) => b.sub_field_id);
 
-    // 5. Similarity search via pgvector
+    // 5. Tìm kiếm các sân tương đồng bằng pgvector
     const similarSubfields = await findSimilarSubfields(vector, 20, excludeIds);
 
     if (similarSubfields.length === 0) {
       return getPopularFallback();
     }
 
-    // Prepare candidates for Gemini
+    // Chuẩn bị danh sách sân ứng viên cho mô hình Gemini
     const sortedIds = similarSubfields.map((sf) => sf.id);
     const hydratedSubfields = await prisma.subField.findMany({
       where: { id: { in: sortedIds } },
@@ -172,7 +170,7 @@ export const getRecommendationsForPlayer = async (
       },
     });
 
-    // Map hydration back to vector order
+    // Ánh xạ thông tin chi tiết đã điền về lại theo đúng thứ tự tương đồng ban đầu
     const candidates: RerankCandidate[] = similarSubfields.map((simSf) => {
       const hydrated = hydratedSubfields.find((h) => h.id === simSf.id);
       return {
@@ -197,14 +195,14 @@ export const getRecommendationsForPlayer = async (
 
     let rerankedItems: { sub_field_id: string; score: number; reason: string | null }[] = [];
     try {
-      // 6. Rerank with Gemini
+      // 6. Gọi Gemini xếp hạng lại danh sách sân
       rerankedItems = await rerankWithGemini(userProfileSummary, candidates);
     } catch (error) {
       console.warn(
-        "Gemini rerank failed, falling back to top 10 vector results:",
+        "Gọi Gemini để xếp hạng lại thất bại, chuyển sang lấy top 10 kết quả tương đồng véc-tơ:",
         error,
       );
-      // Fallback: Top 10 from vector search
+      // Phương án dự phòng: Lấy top 10 từ kết quả tìm kiếm tương đồng véc-tơ
       rerankedItems = similarSubfields.slice(0, 10).map((sf) => ({
         sub_field_id: sf.id,
         score: sf.similarity_score,
@@ -212,7 +210,7 @@ export const getRecommendationsForPlayer = async (
       }));
     }
 
-    // 7. Hydrate final response
+    // 7. Chuẩn bị dữ liệu phản hồi cuối cùng
     const finalIds = rerankedItems.map((item) => item.sub_field_id);
     const finalHydrated = hydratedSubfields.filter((sf) =>
       finalIds.includes(sf.id),
@@ -247,7 +245,7 @@ export const getRecommendationsForPlayer = async (
       items,
     };
 
-    // 9. Cache set
+    // 9. Lưu kết quả gợi ý mới vào bộ nhớ đệm
     if (locked) {
       await cacheHelper.set(
         cacheKey,
