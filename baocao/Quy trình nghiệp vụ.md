@@ -169,11 +169,11 @@ skinparam ActivityDiamondBackgroundColor #FFF5CC
 skinparam ActivityDiamondBorderColor #E6B800
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
-skinparam swimlaneBorderThickness 2.5
-skinparam swimlaneWidth same
 skinparam nodeSep 15
 skinparam rankSep 15
 skinparam wrapWidth 250
+skinparam swimlaneBorderThickness 2.5
+skinparam swimlaneWidth same
 skinparam DiagramBorderColor #2D3748
 skinparam DiagramBorderThickness 2.5
 skinparam DefaultFontSize 30
