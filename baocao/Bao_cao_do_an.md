@@ -331,7 +331,7 @@ Bảng 3.6: So sánh giải pháp thiết kế giao diện Frontend
 
 Tailwind CSS giải quyết yêu cầu hiển thị tương thích đa màn hình di động và máy tính. Khả năng tùy biến linh hoạt của Tailwind CSS kết hợp cùng các thành phần giao diện giúp tạo dựng giao diện hiện đại cho tất cả các use case của đồ án. Hiệu năng đóng gói nhẹ của Tailwind CSS cũng hỗ trợ việc tối ưu hóa thời gian hiển thị ban đầu của ứng dụng Client trên các thiết bị.
 
-## 3.3. Tích hợp dịch vụ ngoài (External APIs)
+## 3.3. Tích hợp dịch vụ ngoài và triển khai
 
 ### 3.3.1. Stripe & VNPay
 Stripe cung cấp hạ tầng thanh toán trực tuyến toàn cầu, hỗ trợ xử lý giao dịch thẻ tín dụng và thẻ ghi nợ quốc tế. VNPay là cổng thanh toán điện tử tại Việt Nam, cung cấp giải pháp thanh toán nội địa tích hợp trực tiếp với các ngân hàng thương mại.
@@ -348,7 +348,7 @@ Bảng 3.7: So sánh giải pháp cổng thanh toán trực tuyến
 Giải pháp kết hợp Stripe và VNPay được lựa chọn để hỗ trợ nhiều phương thức thanh toán trên cùng một hệ thống. Stripe đáp ứng các giao dịch bằng thẻ quốc tế, trong khi VNPay hỗ trợ thanh toán qua hệ thống ngân hàng nội địa. Cách tiếp cận này phù hợp với yêu cầu nghiệp vụ của hệ thống, phạm vi người dùng của dự án và khả năng mở rộng sau này.
 
 ### 3.3.2. Cloudinary
-Cloudinary là giải pháp quản lý tài nguyên đa phương tiện dựa trên đám mây, cung cấp các API để tải lên, lưu trữ, tối ưu hóa và phân phối hình ảnh thông qua mạng lưới phân phối nội dung (CDN) toàn cầu `[14]`. Dịch vụ này hỗ trợ khả năng tự động nén dung lượng hình ảnh, thay đổi định dạng (ví dụ: chuyển sang WebP) và co giãn kích thước linh hoạt theo yêu cầu hiển thị của thiết bị đầu cuối.
+Cloudinary là giải pháp quản lý tài nguyên đa phương tiện dựa trên đám mây, cung cấp các API để tải lên, lưu trữ, tối ưu hóa và phân phối hình ảnh thông qua mạng lưới phân phối nội dung (CDN) toàn cầu. Dịch vụ này hỗ trợ khả năng tự động nén dung lượng hình ảnh, thay đổi định dạng (ví dụ: chuyển sang WebP) và co giãn kích thước linh hoạt theo yêu cầu hiển thị của thiết bị đầu cuối.
 
 Về liên kết yêu cầu ở Chương 2, Cloudinary giải quyết yêu cầu lưu trữ và hiển thị hình ảnh minh họa của use case quản lý sân và khu phức hợp (`YC-Khu phức hợp`) mà không gây ảnh hưởng đến hiệu năng tải trang chung của hệ thống.
 
@@ -363,15 +363,40 @@ Bảng 3.8: So sánh giải pháp lưu trữ hình ảnh đa phương tiện
 Việc lựa chọn Cloudinary giúp giảm tải băng thông và dung lượng lưu trữ cho máy chủ Backend chính của dự án. Khả năng tự động tối ưu hóa định dạng ảnh qua CDN của Cloudinary giúp đáp ứng yêu cầu phi chức năng về hiệu năng tải trang Client trên các thiết bị di động có kết nối mạng hạn chế.
 
 ### 3.3.3. Gemini API
-
-Gemini API là giao diện lập trình ứng dụng của Google cung cấp các mô hình ngôn ngữ lớn để xử lý ngôn ngữ tự nhiên, suy luận và tạo sinh nội dung có cấu trúc. Trong hệ thống, việc tích hợp này cho phép sử dụng khả năng suy luận ngữ nghĩa của mô hình để thực hiện reranking kết quả gợi ý dựa trên mô tả và sở thích của người dùng.
+Gemini API là giao diện lập trình ứng dụng của Google cung cấp các mô hình ngôn ngữ lớn để xử lý ngôn ngữ tự nhiên, suy luận và tạo sinh nội dung có cấu trúc. Trong hệ thống, việc tích hợp này cho phép sử dụng khả năng suy luận ngữ nghĩa của mô hình để thực hiện xếp hạng lại kết quả gợi ý dựa trên đặc trưng sân và lịch sử hoạt động của người chơi.
 
 Bảng 3.9: So sánh giải pháp triển khai gợi ý thông minh
 
 | Giải pháp | Ưu điểm | Nhược điểm |
 | :--- | :--- | :--- |
-| **Gemini API** | Khai thác khả năng suy luận ngữ nghĩa mạnh của mô hình lớn; tích hợp nhanh qua SDK chính thức; hỗ trợ response schema để tạo đầu ra JSON có cấu trúc. | Phụ thuộc vào kết nối Internet ổn định; chịu ảnh hưởng bởi rate limit và chi phí gọi API. |
+| **Gemini API** | Khai thác khả năng suy luận ngữ nghĩa mạnh của mô hình lớn; tích hợp nhanh qua SDK chính thức; hỗ trợ response schema để tạo đầu ra JSON có cấu trúc. | Phụ thuộc vào kết nối Internet ổn định; chịu ảnh hưởng bởi giới hạn tần suất gọi API (rate limit). |
 | **Xây dựng mô hình ML riêng** | Kiểm soát hoàn toàn thuật toán và dữ liệu; không phát sinh chi phí gọi API bên thứ ba sau khi triển khai. | Yêu cầu nguồn lực lớn về thời gian phát triển, hạ tầng tính toán và dữ liệu lịch sử để huấn luyện đạt độ chính xác chấp nhận được. |
+
+### 3.3.4. Docker & Docker Compose
+Docker là một nền tảng mã nguồn mở hỗ trợ phát triển, đóng gói và triển khai ứng dụng. Docker cho phép tách biệt ứng dụng khỏi cơ sở hạ tầng thực thi bằng cách sử dụng công nghệ container, giúp đảm bảo tính nhất quán giữa các môi trường phát triển, kiểm thử và triển khai. Nhờ đó, quá trình phân phối và vận hành phần mềm được thực hiện nhanh chóng và hiệu quả hơn. Docker Compose là công cụ hỗ trợ định nghĩa và quản lý các ứng dụng gồm nhiều container Docker. Compose cho phép mô tả các dịch vụ, mạng và vùng lưu trữ dữ liệu trong một tệp cấu hình YAML duy nhất, đồng thời cung cấp khả năng khởi động và quản lý toàn bộ ứng dụng chỉ với một lệnh. Công cụ này giúp đơn giản hóa quá trình phát triển, kiểm thử và triển khai các hệ thống gồm nhiều thành phần.
+
+Bảng 3.10: So sánh giải pháp ảo hóa và triển khai
+
+| Giải pháp | Ưu điểm | Nhược điểm |
+| :--- | :--- | :--- |
+| **Docker & Docker Compose** | Khởi động nhanh, tiêu tốn ít tài nguyên phần cứng, đảm bảo tính nhất quán môi trường chạy trên nhiều máy chủ khác nhau. | Đòi hỏi thời gian cấu hình ban đầu để tối ưu hóa kích thước của các ảnh container. |
+| **Máy ảo** | Cách ly hoàn toàn ở cấp độ phần cứng, tăng tính bảo mật giữa các hệ điều hành độc lập. | Tiêu tốn nhiều tài nguyên lưu trữ và bộ nhớ RAM, tốc độ khởi động và cấu hình chậm. |
+| **Triển khai thủ công** | Không tốn tài nguyên cho lớp ảo hóa trung gian, khai thác trực tiếp hiệu năng phần cứng máy chủ. | Dễ xảy ra xung đột phiên bản phần mềm giữa các môi trường, quy trình mở rộng và sao lưu hạ tầng phức tạp. |
+
+Việc áp dụng giải pháp đóng gói Docker và Docker Compose đảm bảo tính đồng nhất tuyệt đối về cấu hình hệ thống giữa môi trường phát triển của lập trình viên và môi trường vận hành thực tế trên máy chủ thử nghiệm. Giải pháp này giúp cô lập riêng biệt các thành phần ứng dụng Backend Express.js, hệ quản trị cơ sở dữ liệu PostgreSQL tích hợp tiện ích mở rộng pgvector, dịch vụ lưu trữ bộ đệm Redis và máy chủ Nginx thành các container độc lập, hạn chế tối đa các lỗi cấu hình hệ thống phát sinh trong quá trình vận hành và nâng cấp.
+
+### 3.3.5. Nginx
+Nginx là máy chủ Web và proxy ngược hiệu năng cao hoạt động theo kiến trúc hướng sự kiện bất đồng bộ. Thay vì khởi tạo một tiến trình mới cho mỗi kết nối như các mô hình máy chủ truyền thống, Nginx quản lý hàng nghìn kết nối đồng thời trong cùng một luồng duy nhất, giúp giảm thiểu đáng kể dung lượng bộ nhớ RAM tiêu thụ trong điều kiện tải cao.
+
+Bảng 3.11: So sánh giải pháp máy chủ Web và proxy ngược
+
+| Giải pháp | Ưu điểm | Nhược điểm |
+| :--- | :--- | :--- |
+| **Nginx** | Tốc độ phản hồi tệp tĩnh nhanh, khả năng chịu tải tốt đối với các kết nối đồng thời lớn, cấu hình proxy ngược và cân bằng tải linh hoạt. | Việc biên dịch và mở rộng các tính năng động đòi hỏi cấu hình phức tạp. |
+| **Apache HTTP Server** | Hệ thống mô-đun tích hợp phong phú, hỗ trợ phân quyền cấu hình linh hoạt thông qua tệp tin cấu hình cục bộ .htaccess. | Khả năng xử lý kết nối đồng thời kém hơn dưới tải trọng lớn do cơ chế phân bổ tiến trình cho mỗi yêu cầu. |
+| **Phục vụ trực tiếp qua Node/Express** | Cấu hình triển khai đơn giản, không yêu cầu cài đặt và quản lý thêm phần mềm trung gian. | Hiệu năng phục vụ tệp tĩnh thấp, dễ bị tấn công trực tiếp vào ứng dụng chính khi không có lớp bảo vệ trung gian. |
+
+Nginx đóng vai trò là điểm tiếp nhận yêu cầu đầu tiên từ người dùng để phân phối các tệp tĩnh của ứng dụng React Frontend, đồng thời làm cổng proxy ngược để điều phối các yêu cầu API đến dịch vụ Backend Express.js chạy ở cổng nội bộ. Sự phân chia nhiệm vụ này giúp giảm tải công việc xử lý tệp tĩnh cho máy chủ Backend, tăng cường tính bảo mật cho hệ thống nhờ che giấu cấu trúc cổng dịch vụ nội bộ và tối ưu hóa thời gian phản hồi cho các yêu cầu truy cập từ người dùng.
 
 Chương 3 đã làm rõ các nền tảng lý thuyết và công nghệ được áp dụng để xây dựng hệ thống. Thông qua việc phân tích từng giải pháp, đồ án đã xác định được một hệ thống giải pháp công nghệ có tính liên kết chặt chẽ với các yêu cầu đề ra ở Chương~2. Đây là nền tảng để phát triển tiến hành phân tích thiết kế chi tiết kiến trúc phần mềm, cấu trúc cơ sở dữ liệu và triển khai hệ thống trong Chương~4.
 
