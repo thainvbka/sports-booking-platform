@@ -252,6 +252,16 @@ export interface PaginatedResult<T> {
   pagination: Pagination;
 }
 
+export interface MyMatchesSummary {
+  created: number;
+  joined: number;
+  pending: number;
+}
+
+export interface MyMatchesPaginatedResult<T> extends PaginatedResult<T> {
+  summary: MyMatchesSummary;
+}
+
 export interface MatchParticipantsResult extends PaginatedResult<Participant> {
   match: MatchParticipantsSummary;
 }

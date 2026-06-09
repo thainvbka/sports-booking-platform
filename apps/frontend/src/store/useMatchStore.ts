@@ -23,6 +23,7 @@ import type {
   Match,
   MatchDetail,
   MatchParticipantsSummary,
+  MyMatchesSummary,
   Pagination,
   Participant,
 } from "@/types/match.type";
@@ -34,6 +35,7 @@ interface MatchStoreState {
   pagination: Pagination | null;
   isLoading: boolean;
   error: string | null;
+  myMatchesSummary: MyMatchesSummary | null;
 
   currentMatch: MatchDetail | null;
   isLoadingDetail: boolean;
@@ -70,6 +72,7 @@ const INITIAL_STATE = {
   pagination: null as Pagination | null,
   isLoading: false,
   error: null as string | null,
+  myMatchesSummary: null as MyMatchesSummary | null,
   currentMatch: null as MatchDetail | null,
   isLoadingDetail: false,
   participants: [] as Participant[],
@@ -215,6 +218,7 @@ export const useMatchStore = create<MatchStoreState>()(
         set((state) => {
           state.matches = result.items;
           state.pagination = result.pagination;
+          state.myMatchesSummary = result.summary;
           state.isLoading = false;
         });
       } catch (error) {
@@ -636,6 +640,7 @@ export const useMatchStore = create<MatchStoreState>()(
         state.pagination = null;
         state.isLoading = false;
         state.error = null;
+        state.myMatchesSummary = null;
         state.currentMatch = null;
         state.isLoadingDetail = false;
         state.participants = [];

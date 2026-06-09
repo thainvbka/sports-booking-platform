@@ -131,7 +131,7 @@ export function AboutPage() {
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
         />
 
-        <div className="page-shell relative z-10 flex min-h-[340px] flex-col py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:py-20">
+        <div className="page-shell relative z-10 flex min-h-[340px] flex-col pt-10 sm:pt-12 lg:pt-14 pb-12 sm:pb-16 lg:pb-20">
           <Breadcrumb>
             <BreadcrumbList className="text-white/70">
               <BreadcrumbItem>
@@ -146,7 +146,7 @@ export function AboutPage() {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="mt-8 grid items-center gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="mt-6 grid items-center gap-10 lg:mt-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <div className="flex flex-col gap-6">
               
 

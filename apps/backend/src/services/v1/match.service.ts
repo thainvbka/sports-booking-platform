@@ -851,6 +851,7 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
   const skip = (page - 1) * limit;
 
   const where: Prisma.MatchWhereInput = {};
+  const statusFilter = query.status ? { status: query.status as MatchStatus } : {};
 
   if (query.status) {
     where.status = query.status as MatchStatus;
@@ -878,8 +879,35 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
     };
   }
 
-  const [total, matches] = await prisma.$transaction([
-    prisma.match.count({ where }),
+  const createdWhere: Prisma.MatchWhereInput = {
+    ...statusFilter,
+    creator_id: playerId,
+  };
+
+  const joinedWhere: Prisma.MatchWhereInput = {
+    ...statusFilter,
+    participants: {
+      some: {
+        player_id: playerId,
+        status: ParticipantStatus.ACCEPTED,
+      },
+    },
+  };
+
+  const pendingWhere: Prisma.MatchWhereInput = {
+    ...statusFilter,
+    participants: {
+      some: {
+        player_id: playerId,
+        status: ParticipantStatus.PENDING,
+      },
+    },
+  };
+
+  const [createdCount, joinedCount, pendingCount, matches] = await prisma.$transaction([
+    prisma.match.count({ where: createdWhere }),
+    prisma.match.count({ where: joinedWhere }),
+    prisma.match.count({ where: pendingWhere }),
     prisma.match.findMany({
       where,
       orderBy: {
@@ -902,6 +930,13 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
     }),
   ]);
 
+  const total =
+    query.type === "created"
+      ? createdCount
+      : query.type === "joined"
+        ? joinedCount
+        : pendingCount;
+
   return {
     items: matches.map((match) => ({
       ...mapMatchListItem(match),
@@ -913,6 +948,11 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
       total_items: total,
       total_pages: Math.ceil(total / limit),
       has_next: page * limit < total,
+    },
+    summary: {
+      created: createdCount,
+      joined: joinedCount,
+      pending: pendingCount,
     },
   };
 };

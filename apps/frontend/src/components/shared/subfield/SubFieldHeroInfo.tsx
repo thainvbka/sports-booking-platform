@@ -89,7 +89,7 @@ export function SubfieldHeroInfo({
         className="absolute -right-20 bottom-0 size-56 rounded-full bg-accent-sport/25 blur-3xl"
       />
 
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-5 pb-8 sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 lg:gap-8 px-4 pt-10 sm:pt-12 lg:pt-14 pb-8 lg:pb-10">
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
             <BreadcrumbItem>

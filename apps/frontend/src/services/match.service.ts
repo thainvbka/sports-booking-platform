@@ -11,6 +11,7 @@ import type {
   MatchSortOption,
   MatchStatus,
   MyMatchType,
+  MyMatchesPaginatedResult,
   PaginatedResult,
   Pagination,
   Participant,
@@ -313,8 +314,8 @@ export const leaveMatch = async (id: string): Promise<Participant> => {
 
 export const getMyMatches = async (
   query: MyMatchesQuery = {},
-): Promise<PaginatedResult<Match>> => {
-  const response = await api.get<ApiResponse<PaginatedResult<Match>>>(
+): Promise<MyMatchesPaginatedResult<Match>> => {
+  const response = await api.get<ApiResponse<MyMatchesPaginatedResult<Match>>>(
     "/matches/me",
     {
       params: query,

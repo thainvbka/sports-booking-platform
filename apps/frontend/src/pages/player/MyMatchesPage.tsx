@@ -90,15 +90,19 @@ const TAB_META: Record<
 export function MyMatchesPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { matches, pagination, isLoading, error, fetchMyMatches, leaveMatch } =
-    useMatchStore();
+  const {
+    matches,
+    pagination,
+    isLoading,
+    error,
+    myMatchesSummary,
+    fetchMyMatches,
+    leaveMatch,
+  } = useMatchStore();
 
   const [type, setType] = useState<MyMatchType>("created");
   const [status, setStatus] = useState<MatchStatus | "ALL">("ALL");
   const [page, setPage] = useState(1);
-  const [typeCounts, setTypeCounts] = useState<
-    Partial<Record<MyMatchType, number>>
-  >({});
 
   useEffect(() => {
     void fetchMyMatches({
@@ -108,14 +112,6 @@ export function MyMatchesPage() {
       limit: PAGE_SIZE,
     });
   }, [type, status, page, fetchMyMatches]);
-
-  useEffect(() => {
-    if (!pagination) return;
-    setTypeCounts((previous) => ({
-      ...previous,
-      [type]: pagination.total_items,
-    }));
-  }, [pagination, type]);
 
   const playerId = getPlayerProfileId(user);
   const totalPages = pagination ? Math.max(pagination.total_pages, 1) : 1;
@@ -163,7 +159,7 @@ export function MyMatchesPage() {
           className="pointer-events-none absolute -right-24 top-12 size-80 rounded-full bg-primary/25 blur-3xl"
         />
 
-        <div className="page-shell relative flex min-h-[340px] flex-col gap-8 py-12 sm:min-h-[360px] sm:py-16 lg:min-h-[400px] lg:gap-10 lg:py-20">
+        <div className="page-shell relative flex min-h-[340px] flex-col gap-6 lg:gap-8 pt-10 sm:pt-12 lg:pt-14 pb-12 sm:pb-16 lg:pb-20">
           <Breadcrumb>
             <BreadcrumbList className="text-white/60">
               <BreadcrumbItem>
@@ -280,7 +276,7 @@ export function MyMatchesPage() {
             {MY_MATCH_TYPES.map((matchType) => {
               const meta = TAB_META[matchType];
               const Icon = meta.icon;
-              const count = typeCounts[matchType];
+              const count = myMatchesSummary?.[matchType] ?? 0;
               return (
                 <TabsTrigger
                   key={matchType}

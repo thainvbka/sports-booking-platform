@@ -29,7 +29,7 @@ export function HeroSection() {
         aria-hidden="true"
       />
 
-      <div className="page-shell relative z-10 pb-24 pt-20 lg:pt-28">
+      <div className="page-shell relative z-10 pb-24 pt-16 sm:pt-20 lg:pt-24">
         <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div>
             <h1 className="mt-6 leading-[0.95] text-white sm:text-6xl lg:text-[5.25rem] text-display">

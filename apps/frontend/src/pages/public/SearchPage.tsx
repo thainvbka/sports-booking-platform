@@ -404,7 +404,7 @@ function SearchHero({
         aria-hidden="true"
       />
 
-      <div className="page-shell relative z-10 flex flex-col gap-10 pb-14 pt-8 lg:pb-16 lg:pt-10">
+      <div className="page-shell relative z-10 flex flex-col gap-6 lg:gap-8 pb-14 pt-10 sm:pt-12 lg:pb-16 lg:pt-14">
         <Breadcrumb>
           <BreadcrumbList className="text-white/60">
             <BreadcrumbItem>

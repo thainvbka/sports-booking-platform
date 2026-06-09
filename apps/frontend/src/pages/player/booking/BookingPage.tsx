@@ -321,7 +321,7 @@ export default function BookingPage() {
         <div className="absolute -right-[8%] top-[4%] size-[360px] rounded-full bg-accent-sport/15 blur-3xl" />
       </div>
 
-      <div className="page-shell flex flex-col gap-6 py-8 motion-safe-fade-up">
+      <div className="page-shell flex flex-col gap-6 lg:gap-8 pt-10 sm:pt-12 lg:pt-14 pb-8 motion-safe-fade-up">
         {/* ── Breadcrumb ──────────────────────────────────────────── */}
         <Breadcrumb>
           <BreadcrumbList>
