@@ -117,7 +117,7 @@ export function PublicComplexDetailView({
   const totalResults = pagination?.total ?? subfields.length;
 
   return (
-    <div className="flex min-h-[60vh] flex-col bg-background">
+    <div className="flex min-h-[60vh] flex-col bg-background motion-safe-fade-up">
       <ComplexHero
         complex={complex}
         totalSubfields={totalSubfields}
@@ -435,7 +435,10 @@ function SubfieldBrowser({
         <SubfieldGridSkeleton />
       ) : hasResults ? (
         <>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            key={`complex-subfields-grid-${pagination?.page ?? 1}-${searchTerm}-${subfields.map((sf) => sf.id).join(",")}`}
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 motion-safe-stagger"
+          >
             {subfields.map((subField) => (
               <SubFieldCard
                 key={subField.id}

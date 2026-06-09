@@ -377,7 +377,10 @@ export function MyMatchesPage() {
 
         {/* ─── Grid ─────────────────────────────────────────────────── */}
         {matches.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div
+            key={`my-matches-grid-${type}-${status}-${page}-${matches.map((m) => m.id).join(",")}`}
+            className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 motion-safe-stagger"
+          >
             {matches.map((match) => {
               const isCreator = Boolean(
                 playerId && match.creator.player_id === playerId,

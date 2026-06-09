@@ -321,7 +321,7 @@ export default function BookingPage() {
         <div className="absolute -right-[8%] top-[4%] size-[360px] rounded-full bg-accent-sport/15 blur-3xl" />
       </div>
 
-      <div className="page-shell flex flex-col gap-6 py-8">
+      <div className="page-shell flex flex-col gap-6 py-8 motion-safe-fade-up">
         {/* ── Breadcrumb ──────────────────────────────────────────── */}
         <Breadcrumb>
           <BreadcrumbList>
@@ -462,48 +462,54 @@ export default function BookingPage() {
 
             <CardContent className="p-5">
               {currentStep === 1 && (
-                <BookingScheduleStep
-                  subfieldId={subfield.id}
-                  date={date}
-                  onDateChange={setDate}
-                  bookingType={bookingType}
-                  onBookingTypeChange={(type) => {
-                    setBookingType(type);
-                    setCurrentStep(1);
-                  }}
-                  endDate={endDate}
-                  onEndDateChange={setEndDate}
-                  recurringType={recurringType}
-                  onRecurringTypeChange={setRecurringType}
-                  availableRules={availableRules}
-                  customStartTime={customStartTime}
-                  customEndTime={customEndTime}
-                  timeOptions={timeOptions}
-                  onStartTimeChange={setCustomStartTime}
-                  onEndTimeChange={setCustomEndTime}
-                  isCustomTimeValid={validateCustomTime()}
-                />
+                <div className="motion-safe-fade-up">
+                  <BookingScheduleStep
+                    subfieldId={subfield.id}
+                    date={date}
+                    onDateChange={setDate}
+                    bookingType={bookingType}
+                    onBookingTypeChange={(type) => {
+                      setBookingType(type);
+                      setCurrentStep(1);
+                    }}
+                    endDate={endDate}
+                    onEndDateChange={setEndDate}
+                    recurringType={recurringType}
+                    onRecurringTypeChange={setRecurringType}
+                    availableRules={availableRules}
+                    customStartTime={customStartTime}
+                    customEndTime={customEndTime}
+                    timeOptions={timeOptions}
+                    onStartTimeChange={setCustomStartTime}
+                    onEndTimeChange={setCustomEndTime}
+                    isCustomTimeValid={validateCustomTime()}
+                  />
+                </div>
               )}
 
               {currentStep === 2 && (
-                <BookingAddonsStep
-                  hasUpsellStep={hasUpsellStep}
-                  products={products}
-                  addonQuantities={addonQuantities}
-                  onUpdateAddonQuantity={updateAddonQuantity}
-                />
+                <div className="motion-safe-fade-up">
+                  <BookingAddonsStep
+                    hasUpsellStep={hasUpsellStep}
+                    products={products}
+                    addonQuantities={addonQuantities}
+                    onUpdateAddonQuantity={updateAddonQuantity}
+                  />
+                </div>
               )}
 
               {currentStep === 3 && (
-                <BookingConfirmStep
-                  subfieldName={subfield.sub_field_name}
-                  bookingType={bookingType}
-                  date={date}
-                  endDate={endDate}
-                  customStartTime={customStartTime}
-                  customEndTime={customEndTime}
-                  selectedAddons={selectedAddons}
-                />
+                <div className="motion-safe-fade-up">
+                  <BookingConfirmStep
+                    subfieldName={subfield.sub_field_name}
+                    bookingType={bookingType}
+                    date={date}
+                    endDate={endDate}
+                    customStartTime={customStartTime}
+                    customEndTime={customEndTime}
+                    selectedAddons={selectedAddons}
+                  />
+                </div>
               )}
 
               {/* Navigation */}

@@ -9,6 +9,9 @@ import {
   rerankWithGemini,
   updateSubfieldEmbedding,
   UserProfileSummary,
+  SPORT_NAME_MAP,
+  translatePreferredTime,
+  translatePreferredDays,
 } from "../../helpers/recommendation";
 import { prisma } from "../../libs/prisma";
 import { acquireLock, releaseLock } from "../../libs/redis";
@@ -124,7 +127,7 @@ export const getRecommendationsForPlayer = async (
 
   try {
     // 3. Đếm số đơn đặt sân để kiểm tra điều kiện khởi đầu lạnh
-    const { vector, sampleSize } = await buildUserVector(playerId);
+    const { vector, sampleSize, rawPreferences } = await buildUserVector(playerId);
 
     if (sampleSize < 3) {
       const response = await getPopularFallback();
@@ -185,12 +188,66 @@ export const getRecommendationsForPlayer = async (
       };
     });
 
+    // Chuyển đổi hồ sơ người dùng thô sang dạng ngôn ngữ tự nhiên
+    const favoriteSport = rawPreferences
+      ? (SPORT_NAME_MAP[rawPreferences.favoriteSport] || rawPreferences.favoriteSport)
+      : "Không xác định";
+
+    const preferredTime = rawPreferences
+      ? translatePreferredTime(rawPreferences.avgHour)
+      : "Không xác định";
+
+    const preferredDays = rawPreferences
+      ? translatePreferredDays(rawPreferences.weekendRatio)
+      : "Không xác định";
+
+    const averagePrice = rawPreferences
+      ? `${Math.round(rawPreferences.avgPrice).toLocaleString("vi-VN")} đ/giờ`
+      : "Không xác định";
+
+    const preferredDistrict = rawPreferences
+      ? rawPreferences.preferredDistrict
+      : "Không xác định";
+
+    const averageRating = rawPreferences && rawPreferences.avgRating
+      ? `${Math.round(Number(rawPreferences.avgRating) * 10) / 10}`
+      : "Không xác định";
+
+    // Lấy context thời gian thực tại Việt Nam
+    const now = new Date();
+    const currentTimeStr = now.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+
+    const weekdaysVi = [
+      "Chủ Nhật",
+      "Thứ Hai",
+      "Thứ Ba",
+      "Thứ Tư",
+      "Thứ Năm",
+      "Thứ Sáu",
+      "Thứ Bảy",
+    ];
+    const currentDayOfWeek = weekdaysVi[now.getDay()];
+    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+
     const userProfileSummary: UserProfileSummary = {
       player_id: playerId,
       recent_bookings_count: sampleSize,
-      feature_vector: vector,
-      summary:
-        "Player's mathematical vector representing their preferred hours, pricing, sport, district and recency.",
+      favorite_sport: favoriteSport,
+      preferred_time: preferredTime,
+      preferred_days: preferredDays,
+      average_price: averagePrice,
+      preferred_district: preferredDistrict,
+      average_rating: averageRating,
+      current_context: {
+        time: currentTimeStr,
+        day_of_week: currentDayOfWeek,
+        is_weekend: isWeekend,
+      },
     };
 
     let rerankedItems: { sub_field_id: string; score: number; reason: string | null }[] = [];

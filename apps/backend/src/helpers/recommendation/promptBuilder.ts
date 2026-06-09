@@ -7,8 +7,17 @@ import { InternalServerError } from "../../utils/error.response";
 export interface UserProfileSummary {
   player_id: string;
   recent_bookings_count: number;
-  feature_vector: number[];
-  summary: string;
+  favorite_sport: string;
+  preferred_time: string;
+  preferred_days: string;
+  average_price: string;
+  preferred_district: string;
+  average_rating: string;
+  current_context: {
+    time: string;
+    day_of_week: string;
+    is_weekend: boolean;
+  };
 }
 
 export interface RerankCandidate {
@@ -42,7 +51,7 @@ const geminiJsonSchema: Schema = {
   properties: {
     items: {
       type: Type.ARRAY,
-      description: "Danh sách 5 sân được gợi ý phù hợp nhất",
+      description: "Danh sách 10 sân được gợi ý phù hợp nhất",
       items: {
         type: Type.OBJECT,
         properties: {
@@ -68,15 +77,34 @@ export const buildRerankPrompt = (
   userProfile: UserProfileSummary,
   candidates: RerankCandidate[],
 ): string => {
-  return `
-Bạn là một chuyên gia gợi ý sân thể thao thông minh. Nhiệm vụ của bạn là sắp xếp lại (rerank) danh sách các sân (candidates) dựa trên hồ sơ của người chơi, và chọn ra 5 sân phù hợp nhất. Trả về JSON đúng cấu trúc yêu cầu.
-Lý do (reason) phải cực kỳ ngắn gọn, tiếng Việt, tối đa 80 ký tự, giải thích chính xác tại sao chọn sân này (ví dụ: "Cùng môn yêu thích và phù hợp ngân sách của bạn", "Gần khu vực bạn hay đặt", "Sân có đánh giá rất tốt").
+  const cleanCandidates = candidates.map((c) => ({
+    sub_field_id: c.id,
+    sub_field_name: c.name,
+    complex_name: c.complex_name,
+    district: c.district,
+    sport_type: c.sport_type,
+    avg_rating: c.avg_rating ? Number(c.avg_rating) : null,
+    price_per_hour: `${Number(c.price_min).toLocaleString("vi-VN")} đ`,
+    similarity_score: Math.round(c.similarity_score * 100) / 100,
+  }));
 
-Hồ sơ người chơi:
+  return `
+Bạn là một chuyên gia gợi ý sân thể thao thông minh. Nhiệm vụ của bạn là sắp xếp lại (rerank) danh sách các sân (candidates) dựa trên hồ sơ thói quen của người chơi và ngữ cảnh tìm kiếm hiện tại, chọn ra top 10 sân phù hợp nhất theo thứ tự từ cao xuống thấp. Trả về JSON đúng cấu trúc yêu cầu.
+
+Hồ sơ người chơi & Ngữ cảnh hiện tại:
 ${JSON.stringify(userProfile, null, 2)}
 
-Danh sách ứng viên (đã được lọc ban đầu):
-${JSON.stringify(candidates, null, 2)}
+Danh sách sân ứng viên (đã được tìm kiếm tương đồng véc-tơ ban đầu):
+${JSON.stringify(cleanCandidates, null, 2)}
+
+Nguyên tắc sắp xếp lại (Reranking rules):
+1. Ưu tiên cao nhất cho sân có môn thể thao (sport_type) trùng với môn yêu thích (favorite_sport) của người chơi.
+2. Đánh giá sự tương thích về mặt địa lý (district vs preferred_district). Ưu tiên các sân cùng quận hoặc lân cận.
+3. So sánh mức giá (price_per_hour) với ngân sách trung bình (average_price) của người chơi. Ưu tiên sân có mức giá tương đương hoặc rẻ hơn.
+4. Đánh giá tính chất thời gian thực: Đối chiếu ngày hiện tại (day_of_week) và giờ hiện tại (time) với thói quen của người chơi (preferred_time, preferred_days) để đưa ra đề xuất phù hợp.
+5. Cân nhắc điểm số tương đồng gốc (similarity_score) và điểm đánh giá trung bình (avg_rating) của sân.
+
+Lý do gợi ý (reason): Phải viết cực kỳ tự nhiên, bằng tiếng Việt, tối đa 80 ký tự. Giải thích rõ tại sao sân này phù hợp với họ (ví dụ: "Phù hợp ngân sách và đúng môn Cầu lông yêu thích của bạn", "Nằm tại ${userProfile.preferred_district} gần khu vực bạn thường chơi", "Sân có đánh giá cao (${userProfile.average_rating} sao) thích hợp chơi cuối tuần"). KHÔNG được viết lý do chung chung theo kiểu khuôn mẫu AI.
 `;
 };
 

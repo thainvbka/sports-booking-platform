@@ -2,6 +2,12 @@ import { SportImage } from "@/components/shared/ui-utility/SportImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RecommendationItem } from "@/types";
 import { formatPrice, getSportTypeLabel } from "@/utils";
@@ -26,13 +32,13 @@ export function RecommendationCard({
 
   // Compact variant (SearchPage horizontal banner layout)
   if (variant === "compact") {
-    return (
+    const compactCard = (
       <Card
         className="group relative flex w-[220px] shrink-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card p-0 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
         onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
       >
         {/* Image */}
-        <div className="relative aspect-[16/9] overflow-hidden">
+        <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           <SportImage
             src={sf.sub_field_image}
             sportType={sf.sport_type}
@@ -50,8 +56,9 @@ export function RecommendationCard({
           </Badge>
 
           {/* Rank */}
-          <span className="absolute right-2 top-2 inline-flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
-            {rank}
+          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-primary px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
+            <Sparkles className="size-2.5 shrink-0 animate-pulse text-amber-300" />
+            #{rank} AI
           </span>
 
           {/* Rating */}
@@ -95,42 +102,58 @@ export function RecommendationCard({
 
             <Button
               size="sm"
-              variant="ghost"
-              className="h-6 rounded-full px-2 text-[11px]"
+              className="h-6 rounded-full px-3 text-[11px] font-semibold bg-primary text-primary-foreground hover:bg-primary/95"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/booking/${item.sub_field_id}`);
               }}
             >
-              Đặt
-              <ArrowRight data-icon="inline-end" />
+              Đặt ngay
+              <ArrowRight className="ml-1 size-3 shrink-0" />
             </Button>
           </div>
 
-          {/* AI reason */}
-          {item.reason && (
-            <p className="line-clamp-1 border-t border-dashed border-border pt-1.5 text-[10px] italic text-muted-foreground">
-              <Sparkles className="mr-0.5 inline size-2.5 text-primary/70" />
-              {item.reason}
-            </p>
-          )}
         </div>
       </Card>
     );
+
+    if (item.reason) {
+      return (
+        <TooltipProvider>
+          <Tooltip delayDuration={150}>
+            <TooltipTrigger asChild>
+              {compactCard}
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center" className="z-50 max-w-[240px] bg-slate-900/95 dark:bg-slate-950/95 text-white border border-slate-800 p-2.5 shadow-xl rounded-xl backdrop-blur-xs">
+              <div className="flex items-start gap-2">
+                <Sparkles className="size-4 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">Lý do đề xuất</p>
+                  <p className="mt-0.5 text-xs text-slate-200 leading-relaxed font-medium">{item.reason}</p>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return compactCard;
   }
 
   // Default variant (HomePage grid layout)
-  return (
+  const defaultCard = (
     <Card
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-0",
+        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-0 cursor-pointer",
         "shadow-card transition-all duration-300",
         "hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover",
         "@container"
       )}
+      onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         <SportImage
           src={sf.sub_field_image}
           sportType={sf.sport_type}
@@ -149,8 +172,9 @@ export function RecommendationCard({
             {getSportTypeLabel(sf.sport_type)}
           </Badge>
 
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-950/55 px-2 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
-            #{rank}
+          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-primary px-2.5 py-1 text-[10px] font-bold text-white shadow-md">
+            <Sparkles className="size-3 shrink-0 animate-pulse text-amber-300" />
+            #{rank} AI
           </span>
         </div>
 
@@ -182,18 +206,10 @@ export function RecommendationCard({
           </div>
         </div>
 
-        {/* AI reason */}
-        {item.reason && (
-          <p className="line-clamp-2 border-t border-dashed border-border/80 pt-2.5 text-[11px] leading-relaxed text-muted-foreground italic">
-            <Sparkles className="mr-1 inline size-3 text-primary/85" />
-            {item.reason}
-          </p>
-        )}
-
         {/* Price & Actions */}
-        <div className="mt-auto flex flex-col gap-2.5 border-t border-border/50 pt-3 @[260px]:flex-row @[260px]:items-center @[260px]:justify-between @[260px]:gap-2">
+        <div className="mt-auto flex items-end justify-between gap-3 border-t border-dashed border-border pt-3">
           <div className="flex flex-col">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none mb-1">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground leading-none mb-1">
               Giá từ
             </span>
             {sf.price_min && Number(sf.price_min) > 0 ? (
@@ -210,26 +226,43 @@ export function RecommendationCard({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 w-full @[260px]:w-auto @[260px]:justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 flex-1 @[260px]:flex-none rounded-full px-2.5 text-[11px] font-medium"
-              onClick={() => navigate(`/subfields/${item.sub_field_id}`)}
-            >
-              Chi tiết
-            </Button>
+          <div className="flex items-center gap-2">
             <Button
               size="sm"
-              className="h-7 flex-1 @[260px]:flex-none rounded-full bg-primary px-3 text-[11px] font-semibold text-primary-foreground hover:bg-primary/95"
-              onClick={() => navigate(`/booking/${item.sub_field_id}`)}
+              className="h-8 rounded-full font-semibold"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/booking/${item.sub_field_id}`);
+              }}
             >
               Đặt ngay
-              <ArrowRight className="ml-1 size-3" />
             </Button>
           </div>
         </div>
       </div>
     </Card>
   );
+
+  if (item.reason) {
+    return (
+      <TooltipProvider>
+        <Tooltip delayDuration={150}>
+          <TooltipTrigger asChild>
+            {defaultCard}
+          </TooltipTrigger>
+          <TooltipContent side="top" align="center" className="z-50 max-w-[280px] bg-slate-900/95 dark:bg-slate-950/95 text-white border border-slate-800 p-3 shadow-xl rounded-xl backdrop-blur-xs">
+            <div className="flex items-start gap-2">
+              <Sparkles className="size-4 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">Lý do gợi ý</p>
+                <p className="mt-0.5 text-xs text-slate-200 leading-relaxed font-medium">{item.reason}</p>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return defaultCard;
 }

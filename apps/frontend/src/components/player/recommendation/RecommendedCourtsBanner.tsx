@@ -125,8 +125,9 @@ export function RecommendedCourtsBanner() {
       ) : data && data.items.length > 0 ? (
         <div
           ref={scrollRef}
+          key={`banner-grid-${data.items.map((item) => item.sub_field_id).join(",")}`}
           onScroll={updateScrollButtons}
-          className="scroll-smooth-snap mt-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide"
+          className="scroll-smooth-snap mt-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide motion-safe-stagger"
         >
           {data.items.map((item, index) => (
             <RecommendationCard key={item.sub_field_id} item={item} rank={index + 1} variant="compact" />

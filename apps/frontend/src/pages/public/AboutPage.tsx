@@ -257,7 +257,7 @@ export function AboutPage() {
       {/* ── STATS RIBBON ─────────────────────────────────────────────── */}
       <section className="border-b border-border/60 bg-surface-2/60">
         <div className="page-shell py-8 md:py-10">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 lg:grid-cols-4 motion-safe-stagger">
             {STATS.map((stat, idx) => {
               const Icon = stat.icon;
               return (
@@ -296,7 +296,7 @@ export function AboutPage() {
           className="absolute -top-24 right-[10%] size-80 rounded-full bg-primary/10 blur-3xl"
         />
 
-        <div className="page-shell relative">
+        <div className="page-shell relative motion-safe-fade-up">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16">
             {/* Image with ticket-stub corners */}
             <div className="relative order-1 lg:order-2">
@@ -410,7 +410,7 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <div className="mt-12 grid gap-5 md:grid-cols-3 motion-safe-stagger">
             {VALUES.map((value) => (
               <ValueCard key={value.code} value={value} />
             ))}
@@ -437,7 +437,7 @@ export function AboutPage() {
               aria-hidden
               className="absolute left-[22px] top-2 bottom-2 w-px bg-gradient-to-b from-primary via-border to-transparent sm:left-1/2 sm:-translate-x-1/2"
             />
-            <ol className="flex flex-col gap-8">
+            <ol className="flex flex-col gap-8 motion-safe-stagger">
               {MILESTONES.map((m, idx) => (
                 <li
                   key={m.year}
@@ -497,7 +497,7 @@ export function AboutPage() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 motion-safe-stagger">
               {LEGAL_LINKS.map((link) => {
                 const Icon = link.icon;
                 return (

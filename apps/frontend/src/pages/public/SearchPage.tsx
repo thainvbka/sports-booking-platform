@@ -312,7 +312,10 @@ export function SearchPage() {
                 emptyActionLabel={hasActiveFilters ? "Xóa bộ lọc" : undefined}
                 onEmptyAction={hasActiveFilters ? clearAllFilters : undefined}
               >
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger">
+                <div
+                  key={`complexes-grid-${complexPagination.page}-${complexResults.map(c => c.id).join(",")}`}
+                  className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger"
+                >
                   {complexResults.map((complex) => (
                     <ComplexCard key={complex.id} complex={complex} />
                   ))}
@@ -335,7 +338,10 @@ export function SearchPage() {
                 emptyActionLabel={hasActiveFilters ? "Xóa bộ lọc" : undefined}
                 onEmptyAction={hasActiveFilters ? clearAllFilters : undefined}
               >
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger">
+                <div
+                  key={`subfields-grid-${subfieldPagination.page}-${subFieldResults.map(s => s.id).join(",")}`}
+                  className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 motion-safe-stagger"
+                >
                   {subFieldResults.map((subField) => (
                     <SubFieldCard
                       key={subField.id}
@@ -416,7 +422,7 @@ function SearchHero({
         </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-          <div className="motion-safe-fade-up">
+          <div>
            
 
             <h1 className="mt-4 font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
@@ -435,20 +441,17 @@ function SearchHero({
           </div>
         </div>
 
-        <div className="motion-safe-fade-up">
-          <SearchBar
-            keyword={keyword}
-            onKeywordChange={onKeywordChange}
-            sportValue={sportValue}
-            onSportChange={onSportChange}
-            onSubmit={onSubmit}
-            placeholder="Tìm sân theo tên, địa chỉ, khu vực..."
-            submitLabel="Tìm kiếm"
-            allSportsValue="ALL"
-            variant="hero"
-            disabled={isLoading}
-          />
-        </div>
+        <SearchBar
+          keyword={keyword}
+          onKeywordChange={onKeywordChange}
+          sportValue={sportValue}
+          onSportChange={onSportChange}
+          onSubmit={onSubmit}
+          placeholder="Tìm sân theo tên, địa chỉ, khu vực..."
+          submitLabel="Tìm kiếm"
+          allSportsValue="ALL"
+          variant="hero"
+        />
       </div>
 
       <div
@@ -481,13 +484,9 @@ function ResultTicker({ isLoading, totalResults }: ResultTickerProps) {
       </div>
 
       <div className="mt-3 flex items-end gap-2">
-        {isLoading ? (
-          <Skeleton className="h-11 w-28 bg-white/15" />
-        ) : (
-          <span className="font-display text-4xl font-black leading-none sm:text-5xl">
-            {totalResults.toLocaleString("vi-VN")}
-          </span>
-        )}
+        <span className={cn("font-display text-4xl font-black leading-none sm:text-5xl transition-opacity duration-200", isLoading && "opacity-60")}>
+          {totalResults.toLocaleString("vi-VN")}
+        </span>
         <span className="pb-1 text-xs uppercase tracking-wider text-white/55">
           kết quả phù hợp
         </span>

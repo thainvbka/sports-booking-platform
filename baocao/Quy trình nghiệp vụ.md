@@ -66,19 +66,19 @@ Dưới đây là kết quả rà soát toàn bộ dự án (cả frontend và b
 ##### a. Sơ đồ hoạt động PlantUML tổng quát
 ```plantuml
 @startuml
-skinparam ActivityBorderColor #2B6CB0
-skinparam ActivityBackgroundColor #E6F0FA
+!theme plain
 skinparam ActorBorderColor #2D3748
 skinparam ActorBackgroundColor #EDF2F7
 skinparam NoteBackgroundColor #FEFCBF
 skinparam NoteBorderColor #ECC94B
 skinparam StartColor #2E7D32
 skinparam EndColor #C62828
-skinparam ActivityDiamondBackgroundColor #FFF5CC
-skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityDiamondBackgroundColor #FFD54F
+skinparam ActivityDiamondBorderColor #F9A825
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
 skinparam swimlaneBorderThickness 2.5
+skinparam ActivityBorderThickness 3
 skinparam nodeSep 15
 skinparam rankSep 15
 skinparam wrapWidth 250
@@ -98,7 +98,7 @@ title act Quy trình đặt sân và thanh toán
 
 |Người chơi|
 start
-:Tìm kiếm sân; <<#FFF2CC>>
+:Tìm kiếm sân; 
 :Gửi yêu cầu đặt sân;
 
 |Hệ thống|
@@ -107,7 +107,7 @@ if () then ([Còn trống])
   :Tạo lịch đặt sân tạm thời;
   
   |Người chơi|
-  :Thực hiện thanh toán; <<#FFF2CC>>
+  :Thực hiện thanh toán;
   
   |Cổng thanh toán|
   :Xử lý giao dịch thanh toán;
@@ -123,21 +123,21 @@ if () then ([Còn trống])
     end fork
     
     |Chủ sân|
-    :Xác nhận lịch đặt; <<#FFF2CC>>
+    :Xác nhận lịch đặt;
     
     |Hệ thống|
     :Hoàn tất đặt sân;
     stop
   else ([Thất bại])
-    :Thông báo giao dịch thất bại; <<#FADBD8>>
+    :Thông báo giao dịch thất bại;
     
     |Hệ thống|
-    :Hủy lượt đặt tạm thời; <<#FADBD8>>
+    :Hủy lượt đặt tạm thời;
     stop
   endif
 
 else ([Trùng lịch])
-  :Thông báo lỗi trùng lịch đặt; <<#FADBD8>>
+  :Thông báo lỗi trùng lịch đặt;
   stop
 endif
 @enduml
@@ -157,18 +157,19 @@ endif
 ##### a. Sơ đồ hoạt động PlantUML tổng quát
 ```plantuml
 @startuml
-skinparam ActivityBorderColor #2B6CB0
-skinparam ActivityBackgroundColor #E6F0FA
+!theme plain
 skinparam ActorBorderColor #2D3748
 skinparam ActorBackgroundColor #EDF2F7
 skinparam NoteBackgroundColor #FEFCBF
 skinparam NoteBorderColor #ECC94B
 skinparam StartColor #2E7D32
 skinparam EndColor #C62828
-skinparam ActivityDiamondBackgroundColor #FFF5CC
-skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityDiamondBackgroundColor #FFD54F
+skinparam ActivityDiamondBorderColor #F9A825
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
+skinparam swimlaneBorderThickness 2.5
+skinparam ActivityBorderThickness 3
 skinparam nodeSep 15
 skinparam rankSep 15
 skinparam wrapWidth 250
@@ -188,21 +189,21 @@ title act Quy trình tạo, tham gia kèo
 
 |Người tạo kèo|
 start
-:Đặt sân và thanh toán thành công; <<#FFF2CC>>
-:Yêu cầu tạo kèo trên lịch đặt; <<#FFF2CC>>
+:Đặt sân và thanh toán thành công; 
+:Yêu cầu tạo kèo trên lịch đặt; 
 
 |Hệ thống|
 :Lưu thông tin kèo đấu;
-:Hiển thị kèo lên trang tìm kiếm; <<#FFF2CC>>
+:Hiển thị kèo lên trang tìm kiếm; 
 
 |Người tham gia|
-:Xem danh sách kèo và gửi yêu cầu tham gia; <<#FFF2CC>>
+:Xem danh sách kèo và gửi yêu cầu tham gia; 
 
 |Hệ thống|
 :Gửi thông báo đến Người tạo kèo;
 
 |Người tạo kèo|
-:Xem ứng viên; <<#FFF2CC>>
+:Xem ứng viên; 
 if () then ([Chấp nhận])
   |Hệ thống|
   :Thêm thành viên và cập nhật số chỗ trống;
@@ -214,7 +215,7 @@ if () then ([Chấp nhận])
   endif
 else ([Từ chối])
   |Hệ thống|
-  :Gửi thông báo từ chối đến Người tham gia; <<#FADBD8>>
+  :Gửi thông báo từ chối đến Người tham gia; 
 endif
 stop
 @enduml
@@ -234,19 +235,19 @@ stop
 ##### a. Sơ đồ hoạt động PlantUML tổng quát
 ```plantuml
 @startuml
-skinparam ActivityBorderColor #2B6CB0
-skinparam ActivityBackgroundColor #E6F0FA
+!theme plain
 skinparam ActorBorderColor #2D3748
 skinparam ActorBackgroundColor #EDF2F7
 skinparam NoteBackgroundColor #FEFCBF
 skinparam NoteBorderColor #ECC94B
 skinparam StartColor #2E7D32
 skinparam EndColor #C62828
-skinparam ActivityDiamondBackgroundColor #FFF5CC
-skinparam ActivityDiamondBorderColor #E6B800
+skinparam ActivityDiamondBackgroundColor #FFD54F
+skinparam ActivityDiamondBorderColor #F9A825
 skinparam ActivityBarColor #2D3748
 skinparam swimlaneBorderColor #2D3748
 skinparam swimlaneBorderThickness 2.5
+skinparam ActivityBorderThickness 3
 skinparam swimlaneWidth same
 skinparam nodeSep 15
 skinparam rankSep 15
@@ -265,32 +266,32 @@ title act Quy trình đăng ký và kích hoạt cụm sân mới
 
 |Chủ khu phức hợp|
 start
-:Đăng ký tài khoản chủ sân và kết nối ví; <<#FFF2CC>>
-:Gửi đăng ký khu phức hợp kèm tài liệu pháp lý; <<#FFF2CC>>
+:Đăng ký tài khoản chủ sân và kết nối ví; 
+:Gửi đăng ký khu phức hợp kèm tài liệu pháp lý; 
 
 |Hệ thống|
 :Ghi nhận trạng thái cụm sân là PENDING;
 :Chuyển hồ sơ đến trang quản lý của quản trị;
 
 |Quản trị hệ thống|
-: Xác thực tính hợp lệ của tài liệu pháp lý; <<#FFF2CC>>
+: Xác thực tính hợp lệ của tài liệu pháp lý; 
 if () then ([Hợp lệ])
-  :Phê duyệt kích hoạt hồ sơ; <<#FFF2CC>>
+  :Phê duyệt kích hoạt hồ sơ; 
   
   |Hệ thống|
   :Cập nhật trạng thái ACTIVE;
   :Gửi thông báo thành công đến Chủ khu phức hợp;
   
   |Chủ khu phức hợp|
-  :Khai báo thông tin các sân con; <<#FFF2CC>>
-  :Thiết lập luật bảng giá theo khung giờ và ngày; <<#FFF2CC>>
+  :Khai báo thông tin các sân con; 
+  :Thiết lập luật bảng giá theo khung giờ và ngày; 
 else ([Không hợp lệ])
   |Quản trị hệ thống|
-  :Từ chối phê duyệt hồ sơ; <<#FFF2CC>>
+  :Từ chối phê duyệt hồ sơ; 
   
   |Hệ thống|
   :Cập nhật trạng thái REJECTED;
-  :Gửi thông báo từ chối kèm lý do; <<#FADBD8>>
+  :Gửi thông báo từ chối kèm lý do; 
 endif
 stop
 @enduml

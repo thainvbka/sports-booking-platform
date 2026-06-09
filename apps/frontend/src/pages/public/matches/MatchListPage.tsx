@@ -264,24 +264,21 @@ function MatchesHero({
           </div>
         </div>
 
-        <div className="motion-safe-fade-up">
-          <SearchBar
-            keyword={keyword}
-            onKeywordChange={onKeywordChange}
-            sportValue={sportValue}
-            onSportChange={(value) =>
-              onSportChange(
-                value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
-              )
-            }
-            onSubmit={onSubmit}
-            placeholder="Tìm kèo theo tiêu đề, sân, khu phức hợp..."
-            submitLabel="Tìm kèo"
-            allSportsValue="ALL"
-            variant="hero"
-            disabled={isLoading}
-          />
-        </div>
+        <SearchBar
+          keyword={keyword}
+          onKeywordChange={onKeywordChange}
+          sportValue={sportValue}
+          onSportChange={(value) =>
+            onSportChange(
+              value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
+            )
+          }
+          onSubmit={onSubmit}
+          placeholder="Tìm kèo theo tiêu đề, sân, khu phức hợp..."
+          submitLabel="Tìm kèo"
+          allSportsValue="ALL"
+          variant="hero"
+        />
       </div>
 
       {/* Bottom fade into page */}
@@ -513,7 +510,10 @@ export function MatchListPage() {
           )}
 
           {hasData && (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div
+              key={`matches-grid-${currentPage}-${appliedFilters.q}-${appliedFilters.sport_type}-${appliedFilters.status}-${appliedFilters.sort}-${matches.map((m) => m.id).join(",")}`}
+              className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 motion-safe-stagger"
+            >
               {matches.map((match) => (
                 <MatchCard key={match.id} match={match} isPlayer={isPlayer} />
               ))}

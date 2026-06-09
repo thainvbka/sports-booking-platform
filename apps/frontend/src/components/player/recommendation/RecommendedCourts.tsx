@@ -88,7 +88,10 @@ export function RecommendedCourts() {
         ) : error ? (
           <RecommendationError onRetry={refetch} />
         ) : data && data.items.length > 0 ? (
-          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 motion-safe-stagger">
+          <div
+            key={`recommended-grid-${data.items.map(item => item.sub_field_id).join(",")}`}
+            className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 motion-safe-stagger"
+          >
             {data.items.map((item, index) => (
               <RecommendationCard key={item.sub_field_id} item={item} rank={index + 1} />
             ))}

@@ -103,7 +103,7 @@ export function PublicSubfieldDetailPage() {
   const sportLabel = getSportTypeLabel(subfield.sport_type);
 
   return (
-    <div className="bg-background">
+    <div className="bg-background motion-safe-fade-up">
       <SubfieldHeroInfo
         subfield={subfield}
         rating={summary.average}

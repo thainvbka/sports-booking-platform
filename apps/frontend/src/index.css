@@ -287,6 +287,38 @@
     .motion-safe-stagger > *:nth-child(4) {
       animation-delay: 230ms;
     }
+
+    .motion-safe-stagger > *:nth-child(5) {
+      animation-delay: 290ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(6) {
+      animation-delay: 350ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(7) {
+      animation-delay: 410ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(8) {
+      animation-delay: 470ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(9) {
+      animation-delay: 530ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(10) {
+      animation-delay: 590ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(11) {
+      animation-delay: 650ms;
+    }
+
+    .motion-safe-stagger > *:nth-child(12) {
+      animation-delay: 710ms;
+    }
   }
 
   .text-display {

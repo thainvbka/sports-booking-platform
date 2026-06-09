@@ -217,7 +217,7 @@ export function ContactPage() {
 
       <div className="page-shell py-10">
         {/* ── Main grid: channels + form ─────────────────────────── */}
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] motion-safe-stagger">
           {/* LEFT column: channels + hours + FAQ */}
           <div className="flex flex-col gap-5">
             {/* Channels */}
@@ -462,7 +462,7 @@ export function ContactPage() {
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 motion-safe-stagger">
               {LEGAL_LINKS.map((link) => {
                 const Icon = link.icon;
                 return (

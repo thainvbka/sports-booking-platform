@@ -240,7 +240,10 @@ export function SubfieldReviewsList({
           className="py-10"
         />
       ) : (
-        <ul className="flex flex-col gap-2.5">
+        <ul
+          key={`reviews-list-${pagination?.page ?? 1}-${ratingFilter}-${sortBy}-${hasImagesOnly}-${reviews.map((r) => r.id).join(",")}`}
+          className="flex flex-col gap-2.5 motion-safe-stagger"
+        >
           {reviews.map((review) => (
             <ReviewClip key={review.id} review={review} />
           ))}

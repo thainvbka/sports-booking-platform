@@ -14,9 +14,18 @@ import {
   extractLocationScope,
 } from "./normalizer";
 
+export interface RawUserPreferences {
+  favoriteSport: SportType;
+  avgHour: number;
+  weekendRatio: number;
+  avgPrice: number;
+  preferredDistrict: string;
+  avgRating: number | null;
+}
+
 export const buildUserVector = async (
   playerId: string,
-): Promise<{ vector: number[]; sampleSize: number }> => {
+): Promise<{ vector: number[]; sampleSize: number; rawPreferences?: RawUserPreferences }> => {
   const bookings = await prisma.booking.findMany({
     where: {
       player_id: playerId,
@@ -124,7 +133,18 @@ export const buildUserVector = async (
     normalizeRecency(daysSinceLastBooking),
   ];
 
-  return { vector, sampleSize };
+  return {
+    vector,
+    sampleSize,
+    rawPreferences: {
+      favoriteSport: mostFrequentSport,
+      avgHour,
+      weekendRatio,
+      avgPrice,
+      preferredDistrict: mostFrequentDistrictAddress,
+      avgRating,
+    },
+  };
 };
 
 export const buildSubfieldVector = async (
