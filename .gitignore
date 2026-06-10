@@ -19,8 +19,9 @@ docs/
 sports-booking-platform.md
 
 .agents/
+.vscode/
 skills-lock.json
 .codegraph/
 .vscode/
 images/
-py/
+baocao/
