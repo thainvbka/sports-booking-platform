@@ -6,11 +6,7 @@ dotenv.config({
   path: path.resolve(__dirname, ".env"),
 });
 
-const databaseUrl = process.env.DATABASE_URL ?? "";
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required in prisma.config.ts");
-}
+const databaseUrl = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
