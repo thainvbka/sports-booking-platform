@@ -9,6 +9,7 @@ import {
   handleStripeWebhook,
   createVnpayCheckoutSession,
   handleVnpayIpn,
+  handleStripeCheckoutCancel,
 } from "../../services/v1/payment.service";
 
 export const createConnectAccountController = async (
@@ -107,5 +108,17 @@ export const handleVnpayIpnController = async (
   const result = await handleVnpayIpn(req.query);
   // VNPay yêu cầu phản hồi dạng JSON với status 200 luôn
   return res.status(200).json(result);
+};
+
+export const handleStripeCheckoutCancelController = async (
+  req: Request,
+  res: Response,
+) => {
+  const playerId = req.user?.profiles.playerId as string;
+  const bookingIds: string[] = req.body.booking_ids;
+  await handleStripeCheckoutCancel(playerId, bookingIds);
+  return new SuccessResponse({
+    message: "Checkout cancelled, booking timeout has been reset",
+  }).send(res);
 };
 

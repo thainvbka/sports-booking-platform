@@ -1,10 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { bookingService } from "@/services/booking.service";
+import { useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { XCircle, ArrowRight, RefreshCw } from "lucide-react";
 
 export function PaymentFailedPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const hasCancelled = useRef(false);
+
+  // Khi user bị redirect từ Stripe checkout (cancel), thông báo backend reset booking timeout
+  useEffect(() => {
+    const bookingIdsParam = searchParams.get("booking_ids");
+    if (!bookingIdsParam || hasCancelled.current) return;
+    hasCancelled.current = true;
+
+    const bookingIds = bookingIdsParam.split(",").filter(Boolean);
+    if (bookingIds.length > 0) {
+      bookingService.cancelStripeCheckout(bookingIds).catch((err) => {
+        console.error("[PaymentFailed] Failed to reset booking timeout:", err);
+      });
+    }
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] text-center px-4 relative overflow-hidden bg-background">

@@ -9,6 +9,7 @@ import {
   createConnectAccountController,
   createVnpayCheckoutSessionController,
   handleVnpayIpnController,
+  handleStripeCheckoutCancelController,
 } from "../../controllers/v1/payment.controller";
 
 const router = Router();
@@ -44,6 +45,12 @@ router.post(
 router.get(
   "/vnpay/ipn", // Xử lý IPN từ VNPAY (Public endpoint)
   asyncHandler(handleVnpayIpnController),
+);
+router.post(
+  "/stripe/cancel-checkout", // User bấm quay lại từ trang thanh toán Stripe
+  authenticate,
+  authorize(["PLAYER"]),
+  asyncHandler(handleStripeCheckoutCancelController),
 );
 
 export default router;

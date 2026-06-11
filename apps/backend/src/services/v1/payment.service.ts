@@ -1,4 +1,4 @@
-import { config } from "../../configs";
+import { config, BOOKING_TIMEOUT } from "../../configs";
 import { sendNotificationIfNotExists } from "./notification.service";
 import { invalidatePlayerRecommendation } from "./recommendation.service";
 import {
@@ -20,6 +20,45 @@ import {
   IpnUnknownError,
 } from "vnpay";
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
+
+/**
+ * Reset booking expires_at sau khi thanh toán thất bại.
+ * Tính thời gian còn lại dựa trên created_at + INITIAL timeout.
+ * Đảm bảo luôn có ít nhất MIN_GRACE_PERIOD để user kịp thao tác.
+ */
+const resetBookingExpiryAfterPaymentFailure = async (
+  bookingIds: string[],
+  tx?: any,
+) => {
+  const db = tx || prisma;
+  const bookings = await db.booking.findMany({
+    where: {
+      id: { in: bookingIds },
+      status: BookingStatus.PENDING,
+    },
+    select: {
+      id: true,
+      created_at: true,
+    },
+  });
+
+  const now = Date.now();
+
+  for (const booking of bookings) {
+    const originalExpiry = new Date(booking.created_at).getTime() + BOOKING_TIMEOUT.INITIAL;
+    const remaining = originalExpiry - now;
+    const newExpiry = now + Math.max(remaining, BOOKING_TIMEOUT.MIN_GRACE_PERIOD);
+
+    await db.booking.update({
+      where: { id: booking.id },
+      data: {
+        expires_at: new Date(newExpiry),
+      },
+    });
+  }
+
+  console.log(`[Payment] Reset booking expiry for ${bookings.length} bookings after payment failure`);
+};
 
 // Tạo Stripe Connect Account cho Owner
 export const createConnectAccount = async (ownerId: string) => {
@@ -279,7 +318,7 @@ export const createCheckoutSession = async (
       status: "PENDING",
     },
     data: {
-      expires_at: new Date(Date.now() + 30 * 60 * 1000), // Reset về 30 phút
+      expires_at: new Date(Date.now() + BOOKING_TIMEOUT.PAYMENT),
     },
   });
 
@@ -302,8 +341,8 @@ export const createCheckoutSession = async (
       type: "BOOKING_CHECKOUT",
     },
     success_url: `${config.CLIENT_URL}/bookings/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.CLIENT_URL}/bookings/failed`,
-    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 phút
+    cancel_url: `${config.CLIENT_URL}/bookings/failed?booking_ids=${bookingIds.join(",")}`,
+    expires_at: Math.floor(Date.now() / 1000) + BOOKING_TIMEOUT.PAYMENT / 1000, // 30 phút
   });
 
   return { url: session.url! };
@@ -515,6 +554,18 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
       }
     }
   }
+
+  // Xử lý khi Stripe checkout session hết hạn (user không thanh toán trong 30 phút)
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as any;
+
+    if (session.metadata?.type === "BOOKING_CHECKOUT") {
+      const bookingIds: string[] = JSON.parse(session.metadata.bookingIds);
+      console.log(`[Stripe] Checkout session expired for bookings: ${bookingIds}`);
+
+      await resetBookingExpiryAfterPaymentFailure(bookingIds);
+    }
+  }
 };
 
 /**
@@ -615,7 +666,7 @@ export const createVnpayCheckoutSession = async (
       },
       data: {
         payment_id: newPayment.id,
-        expires_at: new Date(Date.now() + 30 * 60 * 1000), // Reset về 30 phút
+        expires_at: new Date(Date.now() + BOOKING_TIMEOUT.PAYMENT),
       },
     });
   });
@@ -808,7 +859,45 @@ export const handleVnpayIpn = async (query: any) => {
       data: { status: PaymentStatus.FAILED },
     });
 
+    // Reset booking expiry về thời gian còn lại ban đầu thay vì giữ 30 phút
+    const failedBookingIds = payment.bookings.map((b: any) => b.id);
+    await resetBookingExpiryAfterPaymentFailure(failedBookingIds);
+
     console.log(`::: VNPAY IPN: Transaction failed at gateway. ResponseCode=${responseCode}`);
     return IpnSuccess; // Vẫn trả về success cho VNPAY để xác nhận đã xử lý IPN thành công
   }
+};
+
+/**
+ * Xử lý khi user bấm quay lại (cancel) từ Stripe checkout page.
+ * Frontend gọi API này khi redirect đến cancel_url.
+ * Reset booking expiry về thời gian còn lại ban đầu.
+ */
+export const handleStripeCheckoutCancel = async (
+  playerId: string,
+  bookingIds: string[],
+) => {
+  if (!bookingIds || bookingIds.length === 0) {
+    throw new BadRequestError("No bookings provided");
+  }
+
+  // Verify bookings thuộc về player này và đang PENDING
+  const bookings = await prisma.booking.findMany({
+    where: {
+      id: { in: bookingIds },
+      player_id: playerId,
+      status: BookingStatus.PENDING,
+    },
+    select: { id: true },
+  });
+
+  if (bookings.length === 0) {
+    console.log(`[Stripe Cancel] No pending bookings found for player: ${playerId}`);
+    return;
+  }
+
+  const validBookingIds = bookings.map((b) => b.id);
+  await resetBookingExpiryAfterPaymentFailure(validBookingIds);
+
+  console.log(`[Stripe Cancel] Reset expiry for ${validBookingIds.length} bookings after user cancel`);
 };

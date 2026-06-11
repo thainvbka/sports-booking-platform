@@ -100,4 +100,14 @@ export const bookingService = {
     );
     return response.data;
   },
+
+  cancelStripeCheckout: async (bookingIds: string[]) => {
+    const response = await api.post<ApiResponse<null>>(
+      `/payments/stripe/cancel-checkout`,
+      {
+        booking_ids: bookingIds,
+      },
+    );
+    return response.data;
+  },
 };
