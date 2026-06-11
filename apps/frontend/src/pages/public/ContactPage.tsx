@@ -177,9 +177,9 @@ export function ContactPage() {
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div className="flex max-w-3xl flex-col gap-3">
                 <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-                  Cần một tay?{" "}
+                  Cần hỗ trợ?{" "}
                   <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
-                    Gọi chúng tôi vào sân.
+                    T-Sport sẵn sàng kiến tạo.
                   </span>
                 </h1>
                 <p className="max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">

@@ -190,14 +190,14 @@ function MatchesHero({
             <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
               Kèo đấu{" "}
               <span className="bg-gradient-to-r from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text text-transparent">
-                sôi động
+                bùng nổ
               </span>
               <br className="hidden sm:block" />
-              mỗi ngày, mỗi trận
+              chốt sổ ra sân
             </h1>
 
             <p className="max-w-xl text-base text-white/70 sm:text-lg">
-              Chọn kèo theo môn, trình độ và khung giờ. Danh sách cập nhật
+              Chọn kèo theo môn thể thao, trình độ và khung giờ. Danh sách cập nhật
               liên tục để bạn vào đội nhanh trước khi đội đối thủ kịp chào sân.
             </p>
 
@@ -252,7 +252,7 @@ function MatchesHero({
               value={almostFullCount}
               icon={<Flame className="size-3" />}
               accent="danger"
-              hint="Còn ít hơn 2 chỗ trống"
+              hint="Nhanh tay chốt ngay kẻo lỡ"
             />
             <ScoreboardChip
               label="Chỗ trống"

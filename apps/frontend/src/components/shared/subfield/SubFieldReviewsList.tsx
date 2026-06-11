@@ -103,10 +103,10 @@ export function SubfieldReviewsList({
     <section className={cn("flex flex-col gap-4", className)}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+          {/* <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             <span className="h-px w-6 bg-border-strong" />
             Match reports
-          </div>
+          </div> */}
           <h2 className="mt-1.5 font-display text-2xl leading-tight font-black tracking-tight italic md:text-3xl">
             Phản hồi từ người chơi
           </h2>

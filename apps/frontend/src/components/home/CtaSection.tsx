@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function CtaSection() {
   return (
@@ -23,10 +23,10 @@ export function CtaSection() {
               Bắt đầu ngay hôm nay
             </div>
             <h2 className="mt-4 font-display text-4xl font-black leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-              Sẵn sàng ra sân?
+              Kèo ngon chốt vội
               <br />
               <span className="italic text-accent-sport">
-                Đồng đội đang đợi.
+                Ra trận cùng đồng đội.
               </span>
             </h2>
             <p className="mt-5 max-w-xl text-base text-white/75">

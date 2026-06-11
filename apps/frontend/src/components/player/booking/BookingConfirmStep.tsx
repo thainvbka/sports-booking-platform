@@ -105,12 +105,10 @@ export function BookingConfirmStep({
       <Alert className="border-amber-200/80 bg-amber-50/70 text-amber-900">
         <Info className="size-4" />
         <AlertTitle className="font-display text-sm font-bold italic tracking-tight">
-          Sau khi xác nhận — bạn có 10 phút để thanh toán
+          Sau khi xác nhận — bạn có 5 phút để thanh toán
         </AlertTitle>
         <AlertDescription className="text-xs text-amber-800/90">
-          Sân <span className="font-semibold">{subfieldName}</span> sẽ được giữ
-          chỗ tạm thời. Nếu quá thời gian, đơn sẽ tự động hủy để nhường cho
-          người chơi khác.
+          Sân đang được tạm giữ. Đơn đặt sẽ tự động hủy nếu quá hạn thanh toán.
         </AlertDescription>
       </Alert>
     </div>

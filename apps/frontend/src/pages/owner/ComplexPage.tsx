@@ -113,8 +113,8 @@ export function ComplexesPage() {
           <div className="flex min-w-0 flex-col gap-1.5">
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
-              Danh mục khu phức hợp{" "}
-              <span className="italic text-primary">vận hành</span>
+              Quản lý {" "}
+              <span className="italic text-primary">khu phức hợp</span>
             </h1>
             <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
               Theo dõi trạng thái khai thác, tiến độ duyệt và khả năng phục vụ của

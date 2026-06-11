@@ -97,7 +97,7 @@ export default function BookingPage() {
   const stepperSteps = hasUpsellStep
     ? [
         { number: 1, label: "Chọn lịch" },
-        { number: 2, label: "Add-on" },
+        { number: 2, label: "Dịch vụ đi kèm" },
         { number: 3, label: "Xác nhận" },
       ]
     : [

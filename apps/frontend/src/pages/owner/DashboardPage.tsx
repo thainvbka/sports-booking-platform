@@ -431,7 +431,7 @@ export function OwnerDashboardPage() {
                   className="h-5 gap-1 rounded-full border-amber-500/40 bg-amber-500/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400"
                 >
                   <AlertCircle className="size-2.5" />
-                  Ví chưa kết nối
+                  Chưa kết nối Stripe
                 </Badge>
               )}
             </div>
@@ -467,7 +467,7 @@ export function OwnerDashboardPage() {
                 className="group/cta h-9 rounded-full bg-foreground px-4 text-xs font-semibold text-background shadow hover:bg-foreground/90"
               >
                 <Wallet data-icon="inline-start" />
-                Kết nối ví
+                Kết nối Stripe
                 <ArrowRight
                   data-icon="inline-end"
                   className="transition-transform group-hover/cta:translate-x-0.5"

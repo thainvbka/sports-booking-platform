@@ -1,8 +1,8 @@
-import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
-import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { SubfieldHeroInfo } from "@/components/shared/subfield/SubFieldHeroInfo";
 import { SubfieldReviewsList } from "@/components/shared/subfield/SubFieldReviewsList";
 import { SubfieldStickySidebar } from "@/components/shared/subfield/SubFieldStickySidebar";
+import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
+import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useSubfieldData } from "@/hooks/useSubfieldData";
@@ -168,16 +168,16 @@ function VenueBriefCard({
 }: VenueBriefCardProps) {
   return (
     <section className="flex flex-col gap-5">
-      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+      {/* <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
         <span className="h-px w-8 bg-border-strong" />
         Section · The venue
-      </div>
+      </div> */}
 
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
         <Card className="rounded-3xl border-border/70 bg-card shadow-sm">
           <CardContent className="flex flex-col gap-4 p-6">
             <h2 className="leading-tight tracking-tight italic md:text-4xl text-title">
-              Sân sẵn sàng <span className="text-primary">vào trận</span>.
+              Sẵn sàng <span className="text-primary">vào trận</span>.
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Một không gian chơi chuẩn chỉnh cho môn{" "}

@@ -169,12 +169,6 @@ export function MyMatchesPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="text-white/30" />
               <BreadcrumbItem>
-                <BreadcrumbLink asChild className="hover:text-white">
-                  <Link to="/matches">Kèo đấu</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="text-white/30" />
-              <BreadcrumbItem>
                 <BreadcrumbPage className="text-white">Kèo của tôi</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -184,10 +178,12 @@ export function MyMatchesPage() {
           <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex flex-col gap-3">
               <h1 className="font-display text-4xl font-black italic leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-              Kèo của{" "}
+              Kèo xịn trong{" "}
               <span className="bg-gradient-to-r from-primary via-blue-500 to-accent-sport bg-clip-text text-transparent">
-                tôi
+                tay
               </span>
+              <br className="hidden sm:block" />
+              ra sân cực cháy
             </h1>
 
               <p className="max-w-xl text-base text-white/70 sm:text-lg">

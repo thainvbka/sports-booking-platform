@@ -426,13 +426,13 @@ function SearchHero({
            
 
             <h1 className="mt-4 font-display text-4xl font-black leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[3.75rem]">
-              Tìm sân, đặt sân, chốt lịch,
+              Săn sân cực khét,
               <br className="hidden sm:block" />{" "}
-              <span className="italic text-accent-sport">ra sân ngay hôm nay.</span>
+              <span className="italic text-accent-sport">chốt kèo siêu nét.</span>
             </h1>
 
             <p className="mt-4 max-w-xl text-sm text-white/65 sm:text-base">
-              Lọc theo môn thể thao, khu vực, khung giá và sức chứa — Tìm sân phù hợp nhanh chóng.
+              Bộ lọc theo môn thể thao,tên sân, khu vực, khung giá và sức chứa — Tìm sân phù hợp nhanh chóng.
             </p>
           </div>
 

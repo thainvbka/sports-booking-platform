@@ -382,10 +382,10 @@ function SubfieldBrowser({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0 space-y-1.5 text-left">
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          {/* <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             <span className="h-px w-6 bg-border" />
             Đặt sân
-          </div>
+          </div> */}
           <h2 className="font-display text-2xl font-bold tracking-tight text-foreground italic sm:text-3xl">
             Các sân có sẵn
           </h2>

@@ -490,8 +490,8 @@ export function OwnerBookingsPage() {
           <div className="flex min-w-0 flex-col gap-1.5">
 
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
-              Sổ tay đặt sân của{" "}
-              <span className="italic text-primary">bạn</span>
+              Quản lý lịch sử{" "}
+              <span className="italic text-primary">đặt sân</span>
             </h1>
             <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
               Theo dõi, xác nhận và điều phối mọi lượt đặt — đơn lẻ lẫn định kỳ

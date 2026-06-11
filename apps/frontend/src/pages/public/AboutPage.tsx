@@ -150,13 +150,16 @@ export function AboutPage() {
             <div className="flex flex-col gap-6">
               
 
-              <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-                Sân thể thao,{" "}
-                <span className="bg-gradient-to-br from-accent-sport via-emerald-300 to-white bg-clip-text italic text-transparent">
-                  không drama.
+              <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
+                Chơi thể thao là quyền{" "}
+                <span className="bg-gradient-to-br from-primary via-blue-500 to-accent-sport bg-clip-text italic text-transparent">
+                  cơ bản.
                 </span>
                 <br />
-                Đặt sân, đá liền.
+                Tìm sân không phải là{" "}
+                <span className="bg-gradient-to-br from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text italic text-transparent">
+                  rào cản.
+                </span>
               </h1>
 
               <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">

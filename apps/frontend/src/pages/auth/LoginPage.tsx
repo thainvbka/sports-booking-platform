@@ -65,9 +65,9 @@ export function LoginPage() {
           T-Sport · Cổng đăng nhập
         </span>
         <h1 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-[2.75rem]">
-          Chào mừng trở lại,{" "}
+          Chào mừng trở lại với{" "}
           <span className="bg-gradient-to-br from-primary via-primary to-accent-sport bg-clip-text italic text-transparent">
-            huấn luyện viên.
+            T-Sport.
           </span>
         </h1>
         <p className="text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
