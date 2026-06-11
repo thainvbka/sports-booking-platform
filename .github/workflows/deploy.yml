@@ -133,7 +133,7 @@ jobs:
             done
             
             echo "::::: Running database migrations..."
-            docker compose -f docker-compose.prod.yml --env-file .env.production run --rm backend npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml --env-file .env.production run -T --rm backend npx prisma migrate deploy < /dev/null
             
             echo "::::: Starting all services (backend and frontend)..."
             docker compose -f docker-compose.prod.yml --env-file .env.production up -d --scale backend=2 --remove-orphans
