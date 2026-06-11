@@ -1,6 +1,6 @@
 # Sports Booking & Social Matchmaking Platform
 
-A high-performance, scalable monorepo platform designed to streamline sports venue bookings, manage complex schedules, and connect players via social matchmaking. The system features a real-time notification engine, automated booking timeouts with intelligent grace periods, and an AI-powered field recommendation engine utilizing `pgvector` and cosine similarity.
+A full-stack platform designed to streamline sports venue bookings, manage court schedules, and connect players through social matchmaking. The system features a real-time notification engine, automated booking timeouts with dynamic grace periods, and an AI-powered field recommendation engine utilizing `pgvector` and cosine similarity.
 
 ---
 
@@ -169,7 +169,7 @@ cp apps/frontend/.env.example apps/frontend/.env
 ```
 
 Key environment parameters to customize in `apps/backend/.env`:
-*   `DATABASE_URL`: Set to `postgresql://thainvbka:thainvbka@localhost:5432/sports_db?schema=public` (matches docker db credentials)
+*   `DATABASE_URL`: Set to `postgresql://postgres:postgres@localhost:5432/sports_db?schema=public` (matches docker db credentials)
 *   `REDIS_URL`: `redis://localhost:6379`
 *   `STRIPE_SECRET_KEY` & `STRIPE_WEBHOOK_SECRET`: Your Stripe API test keys
 *   `VNPAY_TMN_CODE` & `VNPAY_SECURE_SECRET`: Your VNPay sandbox credentials
