@@ -1,11 +1,13 @@
 import { Server as HttpServer } from "http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
 import { config } from "../configs";
 import { verifyAccessToken } from "./jwt";
 
 let io: Server | null = null;
 
-export const initSocket = (server: HttpServer): Server => {
+export const initSocket = async (server: HttpServer): Promise<Server> => {
   if (io) return io;
 
   const allowedOrigins = (config.CORS_ORIGIN || "http://localhost:5173")
@@ -19,6 +21,20 @@ export const initSocket = (server: HttpServer): Server => {
       credentials: true,
     },
   });
+
+  // Sử dụng Redis Adapter để đồng bộ Socket.IO events giữa nhiều backend instances
+  // Khi scale backend=2, mỗi instance có io riêng. Redis pub/sub đảm bảo event emit
+  // trên instance A cũng được broadcast sang instance B → client luôn nhận được notification.
+  try {
+    const pubClient = createClient({ url: config.REDIS_URL });
+    const subClient = pubClient.duplicate();
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log("::::: Socket.IO Redis Adapter initialized for multi-instance sync");
+  } catch (error) {
+    console.error("::::: Failed to setup Socket.IO Redis Adapter, falling back to in-memory:", error);
+    // Fallback: vẫn hoạt động nhưng không sync giữa các instances
+  }
 
   io.use((socket, next) => {
     const authToken = socket.handshake.auth.token as string | undefined;
@@ -63,4 +79,3 @@ export const getIO = (): Server => {
   }
   return io;
 };
-

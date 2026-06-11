@@ -79,7 +79,7 @@ const startServer = async () => {
   try {
     await initRedis();
     const httpServer = createServer(app);
-    initSocket(httpServer);
+    await initSocket(httpServer);
 
     httpServer.listen(Number(config.SERVER_PORT), '0.0.0.0', () => {
       console.log(`:::::Server is running on http://localhost:${config.SERVER_PORT}`);
@@ -92,10 +92,13 @@ const startServer = async () => {
   }
 };
 
-process.on('SIGINT', async () => {
-  console.log('\n::::: Shutting down gracefully...');
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\n::::: Received ${signal}, shutting down gracefully...`);
   await closeRedis();
   process.exit(0);
-});
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 startServer();

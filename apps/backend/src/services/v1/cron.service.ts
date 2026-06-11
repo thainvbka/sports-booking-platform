@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import cron from "node-cron";
 import { prisma } from "../../libs/prisma";
+import { acquireLock, releaseLock } from "../../libs/redis";
 import {
   restoreAddonStockForBooking,
   restoreAddonStockForBookingIds,
@@ -10,6 +12,25 @@ import {
   syncMatchStatusesByTime,
 } from "./match.service";
 import { sendNotificationIfNotExists } from "./notification.service";
+
+/**
+ * Helper: Chạy cron job với distributed lock để tránh chạy trùng khi scale nhiều backend instances.
+ * Chỉ 1 instance acquire được lock sẽ thực thi, các instance khác skip.
+ * @param lockKey - Redis key cho lock
+ * @param ttlSeconds - Thời gian lock giữ (nên < interval của cron)
+ * @param jobFn - Hàm cron job cần thực thi
+ */
+const runWithLock = async (lockKey: string, ttlSeconds: number, jobFn: () => Promise<void>) => {
+  const lockValue = crypto.randomUUID();
+  const acquired = await acquireLock(lockKey, lockValue, ttlSeconds);
+  if (!acquired) return; // Instance khác đã chạy job này
+
+  try {
+    await jobFn();
+  } finally {
+    await releaseLock(lockKey, lockValue);
+  }
+};
 
 export const cleanupExpiredBookings = async () => {
   try {
@@ -358,96 +379,112 @@ export const startCronJobs = () => {
   // Invalidate recommendation cache for players whose bookings just ended
   // Runs every hour — finds CONFIRMED bookings with end_time < now and invalidates cache
   cron.schedule("0 * * * *", async () => {
-    try {
-      console.log("[Cron] Running recommendation cache invalidation for ended bookings...");
-      const { invalidatePlayerRecommendation } = await import("./recommendation.service");
+    await runWithLock("cron:recommendation-invalidation", 3500, async () => {
+      try {
+        console.log("[Cron] Running recommendation cache invalidation for ended bookings...");
+        const { invalidatePlayerRecommendation } = await import("./recommendation.service");
 
-      const now = new Date();
-      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-      // Find bookings that ended within the last hour
-      const endedBookings = await prisma.booking.findMany({
-        where: {
-          status: "CONFIRMED",
-          end_time: {
-            gte: oneHourAgo,
-            lt: now,
+        // Find bookings that ended within the last hour
+        const endedBookings = await prisma.booking.findMany({
+          where: {
+            status: "CONFIRMED",
+            end_time: {
+              gte: oneHourAgo,
+              lt: now,
+            },
           },
-        },
-        select: { player_id: true },
-        distinct: ["player_id"],
-      });
+          select: { player_id: true },
+          distinct: ["player_id"],
+        });
 
-      for (const booking of endedBookings) {
-        await invalidatePlayerRecommendation(booking.player_id);
-      }
+        for (const booking of endedBookings) {
+          await invalidatePlayerRecommendation(booking.player_id);
+        }
 
-      if (endedBookings.length > 0) {
-        console.log(`[Cron] Invalidated recommendation cache for ${endedBookings.length} players`);
+        if (endedBookings.length > 0) {
+          console.log(`[Cron] Invalidated recommendation cache for ${endedBookings.length} players`);
+        }
+      } catch (e) {
+        console.error("[Cron] Error in recommendation cache invalidation:", e);
       }
-    } catch (e) {
-      console.error("[Cron] Error in recommendation cache invalidation:", e);
-    }
+    });
   });
 
   // Weekly rebuild of all subfield embeddings (Sunday 3:00 AM)
   // Prevents vector drift as prices, ratings, and booking patterns change over time
   cron.schedule("0 3 * * 0", async () => {
-    try {
-      console.log("[Cron] Starting weekly subfield embedding rebuild...");
-      const { recomputeSubfieldEmbedding } = await import("./recommendation.service");
+    await runWithLock("cron:weekly-embedding-rebuild", 3600, async () => {
+      try {
+        console.log("[Cron] Starting weekly subfield embedding rebuild...");
+        const { recomputeSubfieldEmbedding } = await import("./recommendation.service");
 
-      const subfields = await prisma.subField.findMany({
-        where: { isDelete: false },
-        select: { id: true },
-      });
+        const subfields = await prisma.subField.findMany({
+          where: { isDelete: false },
+          select: { id: true },
+        });
 
-      let successCount = 0;
-      for (const sf of subfields) {
-        try {
-          await recomputeSubfieldEmbedding(sf.id);
-          successCount++;
-        } catch (err) {
-          console.error(`[Cron] Failed to recompute embedding for subfield ${sf.id}:`, err);
+        let successCount = 0;
+        for (const sf of subfields) {
+          try {
+            await recomputeSubfieldEmbedding(sf.id);
+            successCount++;
+          } catch (err) {
+            console.error(`[Cron] Failed to recompute embedding for subfield ${sf.id}:`, err);
+          }
         }
-      }
 
-      console.log(`[Cron] Weekly embedding rebuild complete: ${successCount}/${subfields.length} succeeded`);
-    } catch (e) {
-      console.error("[Cron] Error in weekly embedding rebuild:", e);
-    }
+        console.log(`[Cron] Weekly embedding rebuild complete: ${successCount}/${subfields.length} succeeded`);
+      } catch (e) {
+        console.error("[Cron] Error in weekly embedding rebuild:", e);
+      }
+    });
   });
 
   // chay moi phut de huy cac booking le het han
-  cron.schedule("*/1 * * * *", () => {
-    console.log("Running cleanupExpiredBookings cron job...");
-    cleanupExpiredBookings();
+  cron.schedule("*/1 * * * *", async () => {
+    await runWithLock("cron:cleanup-expired-bookings", 55, async () => {
+      console.log("Running cleanupExpiredBookings cron job...");
+      await cleanupExpiredBookings();
+    });
   });
+
   //chay moi 5 phut để hủy recurring booking het han
-  cron.schedule("*/5 * * * *", () => {
-    expiredRecurringBookings();
+  cron.schedule("*/5 * * * *", async () => {
+    await runWithLock("cron:expired-recurring-bookings", 280, async () => {
+      await expiredRecurringBookings();
+    });
   });
 
   // chạy mỗi 5 phút để nhắc lịch đá trước 1 giờ
-  cron.schedule("*/5 * * * *", () => {
-    sendUpcomingBookingReminders();
+  cron.schedule("*/5 * * * *", async () => {
+    await runWithLock("cron:upcoming-booking-reminders", 280, async () => {
+      await sendUpcomingBookingReminders();
+    });
   });
 
   // chạy mỗi 5 phút để nhắc chủ sân xác nhận booking đã thanh toán
-  cron.schedule("*/5 * * * *", () => {
-    sendOwnerBookingConfirmationReminders();
+  cron.schedule("*/5 * * * *", async () => {
+    await runWithLock("cron:owner-confirmation-reminders", 280, async () => {
+      await sendOwnerBookingConfirmationReminders();
+    });
   });
 
   // chay moi phut de dong/huy/completed match theo booking va thoi gian
   cron.schedule("*/1 * * * *", async () => {
-    await cancelMatchesByCanceledBookings();
-    await syncMatchStatusesByTime();
+    await runWithLock("cron:sync-match-statuses", 55, async () => {
+      await cancelMatchesByCanceledBookings();
+      await syncMatchStatusesByTime();
+    });
   });
 
   // chạy mỗi phút để tự động hoàn trả đồ thuê khi booking đã kết thúc
-  cron.schedule("*/1 * * * *", () => {
-    console.log("Running autoReturnEndedRentalAddons cron job...");
-    autoReturnEndedRentalAddons();
+  cron.schedule("*/1 * * * *", async () => {
+    await runWithLock("cron:auto-return-rental-addons", 55, async () => {
+      console.log("Running autoReturnEndedRentalAddons cron job...");
+      await autoReturnEndedRentalAddons();
+    });
   });
 };
-
