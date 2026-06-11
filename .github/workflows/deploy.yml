@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "apps/**"
-      - "packages/**"
       - "docker-compose.prod.yml"
       - "nginx/**"
       - ".github/workflows/deploy.yml"
@@ -19,7 +18,7 @@ env:
 
 jobs:
   # ============================================
-  # JOB 1: BUILD trên máy GitHub
+  # JOB 1: Build & Push Images to Docker Hub
   # ============================================
   build:
     name: Build Docker Images
@@ -61,17 +60,18 @@ jobs:
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_SOCKET_URL=${{ secrets.VITE_SOCKET_URL }}
           cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache
           cache-to: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
 
       - name: Build completed
         run: |
-          echo "Images built and pushed to Docker Hub:"
+          echo "Images successfully built and pushed to Docker Hub:"
           echo "Backend: ${{ env.BACKEND_IMAGE }}:latest"
           echo "Frontend: ${{ env.FRONTEND_IMAGE }}:latest"
 
   # ============================================
-  # JOB 2: DEPLOY lên EC2
+  # JOB 2: Deploy to AWS EC2 Instance
   # ============================================
   deploy:
     name: Deploy to EC2
@@ -82,12 +82,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Deploy to EC2
+      - name: Copy Config Files to EC2 (No Git configuration needed on EC2)
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          # Ensure target directory exists on EC2
+          ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} "mkdir -p ~/sports-booking-platform"
+          
+          # Copy compose files and Nginx configs directly to the EC2 server
+          scp -o StrictHostKeyChecking=no docker-compose.prod.yml ubuntu@${EC2_HOST}:~/sports-booking-platform/
+          scp -o StrictHostKeyChecking=no -r nginx ubuntu@${EC2_HOST}:~/sports-booking-platform/
+
+      - name: Execute Deploy Commands on EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
@@ -97,38 +108,59 @@ jobs:
           ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} "IMAGE_TAG='${IMAGE_TAG}' BACKEND_IMAGE='${BACKEND_IMAGE}' FRONTEND_IMAGE='${FRONTEND_IMAGE}' bash -s" << 'EOF'
             cd ~/sports-booking-platform || exit 1
             
-            # Check if .env.production exists
+            # Check if .env.production exists on EC2 (required for production credentials)
             if [ ! -f .env.production ]; then
-              echo "ERROR: .env.production not found!"
-              echo "Please create .env.production file on EC2"
+              echo "ERROR: .env.production not found in ~/sports-booking-platform!"
+              echo "Please SSH to your EC2 instance and create ~/sports-booking-platform/.env.production"
               exit 1
             fi
 
-            # Export image tag for this release (pinned by commit SHA)
-            # Pull latest code
-            git pull origin main
-            
-            # Pull latest images từ Docker Hub (KHÔNG BUILD!)
+            echo "::::: Pulling latest images from Docker Hub..."
             docker compose -f docker-compose.prod.yml --env-file .env.production pull
             
-            # Start/replace containers with latest image tag
-            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans
+            echo "::::: Starting database and cache services..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d postgres-db redis
             
-            # Wait for services
-            sleep 15
+            echo "::::: Waiting for database to be healthy..."
+            for i in {1..30}; do
+              STATUS=$(docker inspect --format='{{json .State.Health.Status}}' sports-booking-db 2>/dev/null || echo "")
+              if [ "$STATUS" = "\"healthy\"" ]; then
+                echo "::::: Database is healthy!"
+                break
+              fi
+              echo "::::: Database health status: $STATUS, waiting... ($i/30)"
+              sleep 2
+            done
             
-            # Run migrations inside backend container
-            docker compose -f docker-compose.prod.yml --env-file .env.production exec -T backend sh -c "cd /app && npx prisma migrate deploy --schema=./apps/backend/prisma/schema.prisma"
-
-            # Quick health checks
+            echo "::::: Running database migrations..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production run --rm backend npx prisma migrate deploy
+            
+            echo "::::: Starting all services (backend and frontend)..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --scale backend=2 --remove-orphans
+            
+            echo "::::: Waiting for backend services to be healthy..."
+            for i in {1..30}; do
+              if curl -sf http://localhost/api/health >/dev/null; then
+                echo "::::: Backend is healthy and responding!"
+                break
+              fi
+              echo "::::: Backend not ready yet, waiting... ($i/30)"
+              sleep 2
+            done
+            
+            echo "::::: Running final health checks..."
             docker compose -f docker-compose.prod.yml --env-file .env.production ps
-            curl -f http://localhost/api/health >/dev/null
+            curl -sf http://localhost/api/health || { echo "Final backend health check failed!"; exit 1; }
+            curl -sf http://localhost/health || { echo "Final frontend health check failed!"; exit 1; }
             
-            # Clean up old images
+            echo "::::: Cleaning up old Docker images to save space..."
             docker image prune -af --filter "until=24h"
+            
+            echo "::::: Deployment completed successfully!"
           EOF
 
-      - name: Deployment completed
+      - name: Log Deployment Success
         run: |
           echo "Deployment to EC2 completed successfully!"
-          echo "Application URL: http://${{ secrets.EC2_HOST }}"
+          echo "Public Domain: https://thainvbka.id.vn"
+          echo "Application IP: http://${{ secrets.EC2_HOST }}"

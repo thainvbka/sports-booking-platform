@@ -4,25 +4,23 @@ services:
     image: pgvector/pgvector:pg16
     container_name: sports-booking-db
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     env_file:
       - ./.env
-    # restart: always
     networks:
       - my-network
 
-    # --- REDIS CACHE ---
+  # --- REDIS CACHE ---
   redis:
     image: redis:7-alpine
     container_name: sports-booking-redis
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
     command: redis-server --save 60 1 --loglevel warning
-    # restart: always
     networks:
       - my-network
 
@@ -33,18 +31,22 @@ services:
       dockerfile: Dockerfile.dev
     container_name: sports-booking-backend
     ports:
-      - "${SERVER_PORT}:3000"
-      - "${PRISMA_STUDIO_PORT}:5555"
+      - "${SERVER_PORT:-3000}:3000"
+      - "${PRISMA_STUDIO_PORT:-5555}:5555"
     volumes:
-      # Mount folder backend để hot-reload
+      # Bind mount host backend folder to enable hot-reloading
       - ./apps/backend:/app
       - /app/node_modules
     env_file:
       - ./apps/backend/.env
+    environment:
+      # Override DB and Redis hosts to use Docker container service names
+      DATABASE_URL: postgresql://${POSTGRES_USER:-thainvbka}:${POSTGRES_PASSWORD:-thainvbka}@postgres-db:5432/${POSTGRES_DB:-sports_db}?schema=public
+      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
     depends_on:
       - postgres-db
       - redis
-    # restart: always
     networks:
       - my-network
 
@@ -55,14 +57,13 @@ services:
       dockerfile: Dockerfile.dev
     container_name: sports-booking-frontend
     ports:
-      - "${CLIENT_PORT}:5173"
+      - "${CLIENT_PORT:-5173}:5173"
     volumes:
-      # Mount folder frontend để hot-reload
+      # Bind mount host frontend folder for hot-reloading
       - ./apps/frontend:/app
       - /app/node_modules
     env_file:
       - ./apps/frontend/.env
-    # restart: always
     networks:
       - my-network
 

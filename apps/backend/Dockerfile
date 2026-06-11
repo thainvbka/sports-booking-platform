@@ -1,103 +1,67 @@
 # ============================================
-# STAGE 1: Dependencies
-# ============================================
-FROM node:22-alpine AS deps
-
-# Cài đặt các dependencies cần thiết cho native modules
-RUN apk add --no-cache libc6-compat python3 make g++
-
-WORKDIR /app
-
-# Copy package files từ monorepo
-COPY package.json package-lock.json* ./
-COPY apps/backend/package.json ./apps/backend/
-COPY apps/frontend/package.json ./apps/frontend/
-COPY packages/db/package.json ./packages/db/
-COPY packages/validation/package.json ./packages/validation/
-
-# Cài đặt tất cả dependencies (bao gồm devDependencies để build)
-RUN npm ci
-
-# ============================================
-# STAGE 2: Builder
+# STAGE 1: Builder
 # ============================================
 FROM node:22-alpine AS builder
 
+# Install build dependencies for native modules (like bcrypt) and Prisma
+RUN apk add --no-cache libc6-compat python3 make g++ openssl
+
 WORKDIR /app
 
-# Copy node_modules từ root (hoisted dependencies)
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files
+COPY apps/backend/package*.json ./
 
-# Copy node_modules của backend (nested dependencies - nơi chứa stripe)
-# COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
+# Install dependencies (including devDependencies for TypeScript compilation)
+RUN npm ci
 
-# Copy packages source code
-COPY packages ./packages
+# Copy Prisma schema
+COPY apps/backend/prisma ./prisma
 
-# Copy backend source code (bao gồm prisma schema)
-COPY apps/backend ./apps/backend
-COPY package.json package-lock.json* ./
+# Generate Prisma Client (builds with local binary targets)
+RUN npx prisma generate
 
-# Generate Prisma Client (sẽ output vào packages/db/generated/prisma-client)
-WORKDIR /app
-RUN npx prisma generate --schema=./apps/backend/prisma/schema.prisma
+# Copy all source files
+COPY apps/backend/ ./
 
-# Build all packages (compile TypeScript to JavaScript)
-RUN for pkg in packages/*; do \
-      if [ -f "$pkg/package.json" ] && [ -f "$pkg/tsconfig.json" ]; then \
-        echo "Building $pkg..."; \
-        cd /app/$pkg && npm run build; \
-        cd /app; \
-      fi; \
-    done
-
-# Build backend TypeScript
-WORKDIR /app/apps/backend
+# Build TypeScript to Javascript
 RUN npm run build
 
+# Prune devDependencies to keep the runner image lightweight
+RUN npm prune --omit=dev
+
+# Re-generate Prisma Client to ensure it exists in pruned node_modules
+RUN npx prisma generate
+
 # ============================================
-# STAGE 3: Production Runner
+# STAGE 2: Runner
 # ============================================
 FROM node:22-alpine AS runner
 
-# Cài đặt dumb-init để xử lý signals đúng cách
-RUN apk add --no-cache dumb-init
+# Install runtime dependencies (openssl for Prisma, dumb-init for process control)
+RUN apk add --no-cache openssl dumb-init
 
 WORKDIR /app
 
-# Tạo user non-root để chạy app (security best practice)
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nodejs
+# Copy runtime dependencies and build artifacts from builder stage
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
-# Copy chỉ production dependencies (npm workspaces hoists to root)
-COPY --from=deps /app/node_modules ./node_modules
+# Set production environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy built code từ builder stage
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder /app/packages ./packages
-
-# Copy Prisma schema and migrations (needed for prisma migrate deploy)
-COPY apps/backend/prisma ./apps/backend/prisma
-
-# Copy package.json files (cần cho runtime)
-COPY apps/backend/package.json ./apps/backend/
-COPY package.json ./
-
-# Chuyển ownership cho nodejs user
-RUN chown -R nodejs:nodejs /app
-
-# Switch sang non-root user
-USER nodejs
-
-# Expose port
+# Expose backend service port
 EXPOSE 3000
 
-# Health check
+# Run as non-root user 'node' for security compliance
+RUN chown -R node:node /app
+USER node
+
+# Health check endpoint verification
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Sử dụng dumb-init để xử lý signals
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start application
-CMD ["node", "apps/backend/dist/server.js"]
+CMD ["node", "dist/server.js"]

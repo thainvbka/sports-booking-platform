@@ -1,64 +1,47 @@
 # ============================================
-# STAGE 1: Dependencies
-# ============================================
-FROM node:22-alpine AS deps
-
-RUN apk add --no-cache libc6-compat
-
-WORKDIR /app
-
-# Copy package files từ monorepo
-COPY package.json package-lock.json* ./
-COPY apps/backend/package.json ./apps/backend/
-COPY apps/frontend/package.json ./apps/frontend/
-
-# Cài đặt dependencies
-RUN npm ci
-
-# ============================================
-# STAGE 2: Builder
+# STAGE 1: Builder
 # ============================================
 FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy node_modules từ stage deps (npm workspaces hoists to root)
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files
+COPY apps/frontend/package*.json ./
 
-# Copy packages source code (frontend cần ../../validations)
-COPY packages ./packages
+# Install dependencies
+RUN npm ci
 
 # Copy frontend source code
-COPY apps/frontend ./apps/frontend
-COPY package.json package-lock.json* ./
+COPY apps/frontend ./
 
-# Build arguments cho environment variables
+# Build arguments passed by CI/CD
 ARG VITE_API_URL
+ARG VITE_SOCKET_URL
 
-# Set environment variables cho build
+# Set environment variables for build time compilation
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
 
-# Build frontend
-WORKDIR /app/apps/frontend
+# Compile frontend app
 RUN npm run build
 
 # ============================================
-# STAGE 3: Production Runner với Nginx
+# STAGE 2: Production Runner (Nginx)
 # ============================================
 FROM nginx:alpine AS runner
 
-# Copy default nginx config (có thể được override bởi docker-compose mount)
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+# Note: nginx.conf is NOT baked into the image.
+# In production, it is mounted as a volume via docker-compose.prod.yml
+# to allow hot-reload without rebuilding the image.
 
-# Copy built static files từ builder
-COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
+# Copy static compiled assets
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose port
+# Expose ports
 EXPOSE 80
 
-# Health check
+# Nginx status health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
