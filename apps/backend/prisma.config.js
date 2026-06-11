@@ -1,6 +1,5 @@
-import dotenv from "dotenv";
-import path from "node:path";
-import { defineConfig } from "prisma/config";
+const dotenv = require("dotenv");
+const path = require("node:path");
 
 dotenv.config({
   path: path.resolve(__dirname, ".env"),
@@ -8,7 +7,7 @@ dotenv.config({
 
 const databaseUrl = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
 
-export default defineConfig({
+module.exports = {
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
@@ -17,4 +16,4 @@ export default defineConfig({
   datasource: {
     url: databaseUrl,
   },
-});
+};
