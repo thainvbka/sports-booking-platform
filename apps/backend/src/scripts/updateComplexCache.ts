@@ -1,3 +1,4 @@
+import "../configs/dotenv";
 import { updateAllComplexCache } from "../helpers/cache";
 
 /**

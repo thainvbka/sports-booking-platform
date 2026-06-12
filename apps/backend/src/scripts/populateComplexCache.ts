@@ -1,3 +1,4 @@
+import "../configs/dotenv";
 import { updateComplexCache } from "../helpers/cache";
 import { prisma } from "../libs/prisma";
 

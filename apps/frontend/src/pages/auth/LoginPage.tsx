@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/store/useAuthStore";
 import { loginSchema, type loginInput } from "@/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import {
   AlertCircle,
   ArrowRight,
@@ -43,8 +44,12 @@ export function LoginPage() {
       const user = useAuthStore.getState().user;
 
       if (user?.roles.includes("ADMIN")) {
-        navigate("/admin");
-      } else if (user?.roles.includes("OWNER")) {
+        await useAuthStore.getState().logout();
+        toast.error("Tài khoản quản trị viên không được phép đăng nhập tại đây");
+        return;
+      }
+
+      if (user?.roles.includes("OWNER")) {
         navigate("/owner");
       } else {
         navigate("/");

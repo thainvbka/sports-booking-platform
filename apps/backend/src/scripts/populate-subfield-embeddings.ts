@@ -1,3 +1,4 @@
+import "../configs/dotenv";
 import { prisma } from "../libs/prisma";
 import { initRedis, closeRedis } from "../libs/redis";
 import { recomputeSubfieldEmbedding } from "../services/v1/recommendation.service";

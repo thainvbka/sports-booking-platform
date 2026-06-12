@@ -8,7 +8,12 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "populate:embeddings": "tsx src/scripts/populate-subfield-embeddings.ts"
+    "populate:embeddings": "tsx src/scripts/populate-subfield-embeddings.ts",
+    "populate:embeddings:prod": "node dist/scripts/populate-subfield-embeddings.js",
+    "cache:populate": "tsx src/scripts/populateComplexCache.ts",
+    "cache:populate:prod": "node dist/scripts/populateComplexCache.js",
+    "cache:update": "tsx src/scripts/updateComplexCache.ts",
+    "cache:update:prod": "node dist/scripts/updateComplexCache.js"
   },
   "keywords": [],
   "author": "",
