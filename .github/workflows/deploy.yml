@@ -135,23 +135,62 @@ jobs:
             echo "::::: Running database migrations..."
             docker compose -f docker-compose.prod.yml --env-file .env.production run -T --rm backend npx prisma migrate deploy < /dev/null
             
-            echo "::::: Starting all services (backend and frontend)..."
-            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --scale backend=2 --remove-orphans
+            echo "::::: Starting backend services (scale=2)..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --scale backend=2 --remove-orphans backend
             
-            echo "::::: Waiting for backend services to be healthy..."
-            for i in {1..30}; do
-              if curl -sf http://localhost/api/health >/dev/null; then
-                echo "::::: Backend is healthy and responding!"
+            echo "::::: Waiting for all backend replicas to be healthy..."
+            for i in {1..40}; do
+              ALL_HEALTHY=true
+              CONTAINERS=$(docker compose -f docker-compose.prod.yml --env-file .env.production ps backend -q)
+              
+              if [ -z "$CONTAINERS" ]; then
+                echo "::::: No backend containers found yet..."
+                ALL_HEALTHY=false
+              else
+                for CONTAINER in $CONTAINERS; do
+                  STATUS=$(docker inspect --format='{{json .State.Health.Status}}' "$CONTAINER" 2>/dev/null || echo "")
+                  STATE=$(docker inspect --format='{{json .State.Status}}' "$CONTAINER" 2>/dev/null || echo "")
+                  
+                  if [ "$STATE" = "\"exited\"" ]; then
+                    echo "ERROR: Backend container $CONTAINER has exited/crashed!"
+                    docker compose -f docker-compose.prod.yml --env-file .env.production logs backend
+                    exit 1
+                  fi
+                  
+                  if [ "$STATUS" != "\"healthy\"" ]; then
+                    ALL_HEALTHY=false
+                  fi
+                done
+              fi
+              
+              if [ "$ALL_HEALTHY" = true ] && [ -n "$CONTAINERS" ]; then
+                echo "::::: All backend replicas are healthy!"
                 break
               fi
-              echo "::::: Backend not ready yet, waiting... ($i/30)"
-              sleep 2
+              
+              echo "::::: Waiting for all backend replicas to be healthy ($i/40)..."
+              sleep 3
             done
+            
+            echo "::::: Starting and recreating frontend service (Nginx) to refresh load balancer upstreams..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --force-recreate frontend
             
             echo "::::: Running final health checks..."
             docker compose -f docker-compose.prod.yml --env-file .env.production ps
-            curl -sf http://localhost/api/health || { echo "Final backend health check failed!"; exit 1; }
-            curl -sf http://localhost/health || { echo "Final frontend health check failed!"; exit 1; }
+            
+            curl -sf http://localhost/api/health || {
+              echo "Final backend health check failed!"
+              echo "::::: Printing backend logs for debugging..."
+              docker compose -f docker-compose.prod.yml --env-file .env.production logs --tail=100 backend
+              exit 1
+            }
+            
+            curl -sf http://localhost/health || {
+              echo "Final frontend health check failed!"
+              echo "::::: Printing frontend logs for debugging..."
+              docker compose -f docker-compose.prod.yml --env-file .env.production logs --tail=100 frontend
+              exit 1
+            }
             
             echo "::::: Cleaning up old Docker images to save space..."
             docker image prune -af --filter "until=24h"
