@@ -119,6 +119,7 @@ export interface AdminUser {
   full_name: string;
   email: string;
   phone_number: string;
+  avatar?: string | null;
   created_at: string;
   player?: { status: string };
   owner?: { status: string };

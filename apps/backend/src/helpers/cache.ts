@@ -200,22 +200,7 @@ export const buildMatchDetailCacheKey = (matchId: string): string => {
   return `match:${matchId}`;
 };
 
-/**
- * Build cache key for match participants
- * Creator-only view, stable data (participants list doesn't change often)
- */
-export const buildMatchParticipantsCacheKey = (params: {
-  match_id: string;
-  page?: number;
-  limit?: number;
-  status?: string;
-}): string => {
-  const { match_id, page = 1, limit = 10, status = "ALL" } = params;
 
-  let key = `match:${match_id}:participants:${page}:${limit}:${status}`;
-
-  return key;
-};
 
 export const cacheHelper = {
   /**
@@ -376,12 +361,7 @@ export const updateComplexRatingCache = async (complexId: string) => {
   });
 };
 
-/**
- * Batch update cache for multiple complexes
- */
-export const batchUpdateComplexCache = async (complexIds: string[]) => {
-  await Promise.all(complexIds.map((id) => updateComplexCache(id)));
-};
+
 
 /**
  * Update cache for all complexes (useful for initial migration)

@@ -103,8 +103,7 @@ ${colorConfig
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
 function ChartTooltipContent<
-  TValue extends number | string | Array<number | string>,
-  TName extends number | string
+  TValue extends number | string | Array<number | string>
 >({
   active,
   payload,

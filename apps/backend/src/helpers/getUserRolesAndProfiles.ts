@@ -1,6 +1,5 @@
 import { prisma } from "../libs/prisma";
 import { NotFoundError } from "../utils/error.response";
-import stripe from "../libs/stripe";
 
 export const getUserRolesAndProfiles = async (accountId: string) => {
   const account = await prisma.account.findUnique({

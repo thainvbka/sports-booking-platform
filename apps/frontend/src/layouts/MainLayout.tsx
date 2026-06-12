@@ -1,5 +1,6 @@
 import { Logo } from "@/components/admin/layout/Logo";
 import { AddRoleDialog } from "@/components/shared/dialogs/AddRoleDialog";
+import { ProfileDialog } from "@/components/shared/dialogs/ProfileDialog";
 import { Footer } from "@/components/shared/layout/Footer";
 import { NotificationBell } from "@/components/shared/layout/NotificationBell";
 import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
@@ -88,6 +89,7 @@ export function MainLayout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [roleToAdd, setRoleToAdd] = useState<"PLAYER" | "OWNER">("OWNER");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -149,6 +151,10 @@ export function MainLayout() {
                       setMobileOpen(false);
                     }}
                     onClose={() => setMobileOpen(false)}
+                    onOpenProfile={() => {
+                      setProfileDialogOpen(true);
+                      setMobileOpen(false);
+                    }}
                   />
                 </SheetContent>
               </Sheet>
@@ -308,11 +314,12 @@ export function MainLayout() {
                           </Link>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem asChild className="cursor-pointer gap-2 rounded-md px-2 py-2">
-                        <Link to="">
+                      <DropdownMenuItem
+                        className="cursor-pointer gap-2 rounded-md px-2 py-2"
+                        onClick={() => setProfileDialogOpen(true)}
+                      >
                           <User className="size-4" />
                           <span className="text-sm">Hồ sơ cá nhân</span>
-                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         asChild
@@ -407,6 +414,11 @@ export function MainLayout() {
         onOpenChange={setAddRoleDialogOpen}
         roleToAdd={roleToAdd}
       />
+
+      <ProfileDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </div>
   );
 }
@@ -423,6 +435,7 @@ function MobileSheetBody({
   isAdmin,
   onRequestOwner,
   onClose,
+  onOpenProfile,
 }: {
   navItems: NavItem[];
   currentPath: string;
@@ -432,6 +445,7 @@ function MobileSheetBody({
   isAdmin: boolean;
   onRequestOwner: () => void;
   onClose: () => void;
+  onOpenProfile: () => void;
 }) {
   return (
     <>
@@ -547,14 +561,12 @@ function MobileSheetBody({
               )}
               <SheetClose asChild>
                 <Button
-                  asChild
                   variant="outline"
                   className="h-10 justify-start"
+                  onClick={onOpenProfile}
                 >
-                  <Link to="">
                     <UserRound data-icon="inline-start" />
                     Hồ sơ cá nhân
-                  </Link>
                 </Button>
               </SheetClose>
               {!isOwner && (

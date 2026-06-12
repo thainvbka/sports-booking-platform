@@ -501,7 +501,6 @@ export default function BookingPage() {
               {currentStep === 3 && (
                 <div className="motion-safe-fade-up">
                   <BookingConfirmStep
-                    subfieldName={subfield.sub_field_name}
                     bookingType={bookingType}
                     date={date}
                     endDate={endDate}

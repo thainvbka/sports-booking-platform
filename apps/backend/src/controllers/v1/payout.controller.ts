@@ -147,7 +147,7 @@ export const adminCancelPayoutBatchController = async (req: Request, res: Respon
 /**
  * Admin lấy danh sách ví và số dư của tất cả Owner trong hệ thống
  */
-export const adminGetOwnerWalletsController = async (req: Request, res: Response) => {
+export const adminGetOwnerWalletsController = async (_req: Request, res: Response) => {
   const result = await adminGetOwnerWallets();
 
   return new SuccessResponse({

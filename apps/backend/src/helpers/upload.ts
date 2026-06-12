@@ -97,3 +97,25 @@ export const uploadReviewImages = async (
   const imageBuffers = files.images.map((file) => file.buffer);
   return uploadImages(imageBuffers, `subfields/${subfield_id}/reviews`);
 };
+
+interface UploadAccountAvatarResult {
+  avatar?: string;
+}
+
+export const uploadAccountAvatar = async (
+  files: MulterFiles,
+  accountId: string
+): Promise<UploadAccountAvatarResult> => {
+  let avatar: string | undefined;
+
+  if (files.avatar && files.avatar[0]) {
+    avatar = await uploadImage(
+      files.avatar[0].buffer,
+      `accounts/${accountId}/avatar`
+    );
+  }
+
+  return {
+    avatar,
+  };
+};

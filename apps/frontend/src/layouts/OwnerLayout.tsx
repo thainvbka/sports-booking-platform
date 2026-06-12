@@ -1,5 +1,6 @@
 import { Logo } from "@/components/admin/layout/Logo";
 import { AddRoleDialog } from "@/components/shared/dialogs/AddRoleDialog";
+import { ProfileDialog } from "@/components/shared/dialogs/ProfileDialog";
 import { NotificationBell } from "@/components/shared/layout/NotificationBell";
 import { ThemeToggle } from "@/components/shared/layout/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -80,6 +81,7 @@ export function OwnerLayout() {
   const isAdmin = !!user?.roles.includes("ADMIN");
   const isPlayer = !!user?.roles.includes("PLAYER");
   const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [roleToAdd, setRoleToAdd] = useState<"PLAYER" | "OWNER">("PLAYER");
 
   const menuItems = isAdmin ? ADMIN_MENU_ITEMS : OWNER_MENU_ITEMS;
@@ -228,7 +230,7 @@ export function OwnerLayout() {
               >
                 <Avatar className="size-8 shrink-0 border border-sidebar-border">
                   <AvatarImage
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(
                       user?.full_name || "U",
                     )}&background=random`}
                   />
@@ -257,11 +259,12 @@ export function OwnerLayout() {
                 Tài khoản
               </DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild className="gap-2">
-                  <Link to="">
+                <DropdownMenuItem
+                  className="gap-2 cursor-pointer"
+                  onClick={() => setProfileDialogOpen(true)}
+                >
                     <Settings className="size-4" />
                     Cài đặt tài khoản
-                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
@@ -316,11 +319,15 @@ export function OwnerLayout() {
             </Badge>
 
             {user && (
-              <Button variant="ghost" size="sm" className="h-8 gap-2 px-2" asChild>
-                <Link to="">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 px-2"
+                onClick={() => setProfileDialogOpen(true)}
+              >
                   <Avatar className="size-6">
                     <AvatarImage
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(
                         user.full_name,
                       )}&background=random`}
                     />
@@ -331,7 +338,6 @@ export function OwnerLayout() {
                   <span className="hidden text-xs font-semibold md:inline">
                     {user.full_name?.split(" ").slice(-1).join(" ")}
                   </span>
-                </Link>
               </Button>
             )}
           </div>
@@ -354,6 +360,11 @@ export function OwnerLayout() {
         open={addRoleDialogOpen}
         onOpenChange={setAddRoleDialogOpen}
         roleToAdd={roleToAdd}
+      />
+
+      <ProfileDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
       />
     </SidebarProvider>
   );

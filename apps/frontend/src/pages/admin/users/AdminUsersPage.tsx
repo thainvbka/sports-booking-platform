@@ -3,6 +3,7 @@ import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
 import { DataTable, type Column } from "@/components/shared/ui-utility/DataTable";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +30,7 @@ import {
 } from "@/lib/constants";
 import { useAdminUserStore } from "@/store/admin/useAdminUserStore";
 import type { AdminUser } from "@/types/admin.types";
-import { formatDateVn } from "@/utils";
+import { formatDateVn, getNameInitials } from "@/utils";
 import {
   Ban,
   Calendar,
@@ -89,10 +90,12 @@ export default function AdminUsersPage() {
     }
   };
 
-  const getUserRole = (user: AdminUser) => {
-    if (user.admin) return "ADMIN";
-    if (user.owner) return "OWNER";
-    return "PLAYER";
+  const getUserRoles = (user: AdminUser) => {
+    const roles: string[] = [];
+    if (user.admin) roles.push("ADMIN");
+    if (user.owner) roles.push("OWNER");
+    if (user.player) roles.push("PLAYER");
+    return roles;
   };
 
   const getUserStatus = (user: AdminUser) => {
@@ -101,18 +104,12 @@ export default function AdminUsersPage() {
     return user.player?.status || "ACTIVE";
   };
 
-  const initials = (name?: string) =>
-    (name || "?")
-      .split(" ")
-      .filter(Boolean)
-      .slice(-2)
-      .map((p) => p[0]?.toUpperCase())
-      .join("") || "?";
+
 
   const roleBreakdown = useMemo(() => {
     const counts = { PLAYER: 0, OWNER: 0, ADMIN: 0 };
     for (const u of users) {
-      const r = getUserRole(u) as keyof typeof counts;
+      const r = (getUserRoles(u)[0] || "PLAYER") as keyof typeof counts;
       counts[r] = (counts[r] ?? 0) + 1;
     }
     return counts;
@@ -135,9 +132,17 @@ export default function AdminUsersPage() {
       className: "w-72",
       cell: (user) => (
         <div className="flex items-center gap-3 py-1">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-primary/5 font-display text-xs font-black italic text-primary">
-            {initials(user.full_name)}
-          </div>
+          <Avatar className="size-9 border border-border/60">
+            <AvatarImage
+              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.full_name || "U",
+              )}&background=random`}
+              alt={user.full_name}
+            />
+            <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+              {getNameInitials(user.full_name, "U")}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex min-w-0 flex-col gap-0.5">
             <div className="flex items-center gap-1.5 text-sm font-semibold">
               <User className="size-3.5 text-primary" />
@@ -157,16 +162,21 @@ export default function AdminUsersPage() {
     },
     {
       header: "Vai trò",
-      className: "w-32",
+      className: "w-44",
       cell: (user) => {
-        const role = getUserRole(user);
+        const roles = getUserRoles(user);
         return (
-          <Badge
-            variant="secondary"
-            className={`${ROLE_COLORS[role]} h-5 border-none py-0 text-[10px] shadow-none`}
-          >
-            {ROLE_LABELS[role]}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            {roles.map((role) => (
+              <Badge
+                key={role}
+                variant="secondary"
+                className={`${ROLE_COLORS[role as keyof typeof ROLE_COLORS]} h-5 border-none py-0 text-[10px] shadow-none`}
+              >
+                {ROLE_LABELS[role as keyof typeof ROLE_LABELS]}
+              </Badge>
+            ))}
+          </div>
         );
       },
     },
@@ -200,7 +210,7 @@ export default function AdminUsersPage() {
       header: "",
       className: "w-12 text-right",
       cell: (user) => {
-        const role = getUserRole(user);
+        const role = getUserRoles(user)[0] || "PLAYER";
         const status = getUserStatus(user);
 
         if (role === "ADMIN") {

@@ -251,6 +251,9 @@ export const logIn = async (email: string, password: string) => {
 };
 
 export const logOut = async (refreshToken: string) => {
+  if (!refreshToken) {
+    return;
+  }
   const storedToken = await prisma.refreshToken.findUnique({
     where: {
       token: refreshToken,
@@ -258,7 +261,7 @@ export const logOut = async (refreshToken: string) => {
   });
 
   if (!storedToken) {
-    throw new UnauthorizedError("Refresh token không hợp lệ");
+    return;
   }
   return await prisma.refreshToken.delete({
     where: {
@@ -268,6 +271,9 @@ export const logOut = async (refreshToken: string) => {
 };
 
 export const handlerRefreshToken = async (refreshToken: string) => {
+  if (!refreshToken) {
+    throw new UnauthorizedError("Refresh token không hợp lệ");
+  }
   const storedToken = await prisma.refreshToken.findUnique({
     where: {
       token: refreshToken,

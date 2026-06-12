@@ -142,9 +142,16 @@ export function RecentTransactions({ payments = [] }: RecentTransactionsProps) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold truncate">
-                      {playerName}
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate">
+                        {playerName}
+                      </p>
+                      {playerName !== "Khách lẻ" && (
+                        <p className="text-[10px] text-muted-foreground truncate -mt-0.5">
+                          {playerEmail}
+                        </p>
+                      )}
+                    </div>
                     <p className="text-sm font-black text-foreground shrink-0 tabular-nums">
                       {formatPrice(payment.amount)}
                     </p>

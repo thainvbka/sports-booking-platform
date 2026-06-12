@@ -14,7 +14,6 @@ interface SelectedAddonItem {
 }
 
 interface BookingConfirmStepProps {
-  subfieldName: string;
   bookingType: BookingType;
   date?: Date;
   endDate?: Date;
@@ -24,7 +23,6 @@ interface BookingConfirmStepProps {
 }
 
 export function BookingConfirmStep({
-  subfieldName,
   bookingType,
   date,
   endDate,

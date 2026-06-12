@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TimeInput } from "@/components/ui/time-input";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "@/utils";
+import { formatPrice, formatTime } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CalendarDays,
@@ -28,24 +28,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const formatTimeFromBackend = (time: string | Date): string => {
-  if (!time) return "";
 
-  if (typeof time === "string") {
-    if (/^\d{2}:\d{2}$/.test(time)) return time;
-    if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
-    if (time.includes("T") && time.includes("Z")) {
-      const timePart = time.split("T")[1].split("Z")[0];
-      return timePart.slice(0, 5);
-    }
-    return time.slice(0, 5);
-  }
-
-  const date = new Date(time);
-  const hours = String(date.getUTCHours()).padStart(2, "0");
-  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "T2", long: "Thứ 2" },
@@ -146,8 +129,8 @@ export function PricingRuleFormDialog({
             initialData.start_time && initialData.end_time
               ? [
                   {
-                    start_time: formatTimeFromBackend(initialData.start_time),
-                    end_time: formatTimeFromBackend(initialData.end_time),
+                    start_time: formatTime(initialData.start_time),
+                    end_time: formatTime(initialData.end_time),
                     base_price: initialData.base_price || 0,
                   },
                 ]

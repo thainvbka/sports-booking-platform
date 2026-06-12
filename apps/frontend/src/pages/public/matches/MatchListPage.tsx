@@ -134,8 +134,8 @@ interface MatchesHeroProps {
   onKeywordChange: (value: string) => void;
   onSportChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  isLoading: boolean;
 }
+
 
 function MatchesHero({
   total,
@@ -148,7 +148,6 @@ function MatchesHero({
   onKeywordChange,
   onSportChange,
   onSubmit,
-  isLoading,
 }: MatchesHeroProps) {
   return (
     <section className="relative overflow-hidden bg-slate-950 text-white">
@@ -475,7 +474,6 @@ export function MatchListPage() {
         onKeywordChange={setKeyword}
         onSportChange={setSportValue}
         onSubmit={handleSearchSubmit}
-        isLoading={isLoading}
       />
 
       <section className="page-shell py-10">

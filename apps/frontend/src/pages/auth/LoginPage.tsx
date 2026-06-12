@@ -221,7 +221,7 @@ export function LoginPage() {
           </span>
         </Link>
 
-        <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+        <p className="text-center text-[11px] leading-relaxed text-muted-foreground lg:hidden">
           Bằng việc đăng nhập, bạn đồng ý với{" "}
           <Link
             to="/terms"

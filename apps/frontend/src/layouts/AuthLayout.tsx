@@ -154,7 +154,7 @@ export function AuthLayout() {
       </aside>
 
       {/* ── RIGHT · Form canvas ─────────────────────────────────────── */}
-      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12 sm:px-6 lg:min-h-0">
+      <main className="relative flex min-h-screen flex-col overflow-hidden bg-background px-4 sm:px-6 lg:min-h-0 lg:h-full lg:px-10 xl:px-14">
         {/* subtle backdrop */}
         <div
           aria-hidden
@@ -170,20 +170,35 @@ export function AuthLayout() {
         />
 
         {/* Mobile brand */}
-        <Link
-          to="/"
-          className="absolute left-4 top-4 flex items-center gap-2 text-foreground/80 transition-colors hover:text-primary lg:hidden"
-        >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Sparkles className="size-4" />
-          </span>
-          <span className="font-display text-sm font-black italic tracking-tight">
-            T-Sport
-          </span>
-        </Link>
+        <div className="relative flex h-14 items-center justify-between lg:hidden shrink-0">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-foreground/80 transition-colors hover:text-primary"
+          >
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Sparkles className="size-4" />
+            </span>
+            <span className="font-display text-sm font-black italic tracking-tight">
+              T-Sport
+            </span>
+          </Link>
+        </div>
 
-        <div className="relative mx-auto w-full max-w-md">
-          <Outlet />
+        {/* Content area: Vertically centered form */}
+        <div className="relative z-10 flex flex-1 flex-col justify-center py-8 lg:py-12">
+          <div className="mx-auto w-full max-w-md">
+            <Outlet />
+          </div>
+        </div>
+
+        {/* Desktop Footer note & Copyright (Pinned to bottom) */}
+        <div className="hidden lg:flex flex-col items-center gap-1.5 py-6 shrink-0 text-[11px] text-muted-foreground/60 border-t border-border/40 w-full max-w-md mx-auto">
+          <div className="flex items-center gap-2 font-medium">
+            <Link to="/terms" className="hover:text-primary transition-colors">Điều khoản dịch vụ</Link>
+            <span className="text-muted-foreground/30">•</span>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Chính sách bảo mật</Link>
+          </div>
+          <p>© {new Date().getFullYear()} T-Sport · Nền tảng kết nối thể thao.</p>
         </div>
       </main>
     </div>

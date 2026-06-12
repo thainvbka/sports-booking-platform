@@ -4,7 +4,7 @@ import { ZodError, ZodTypeAny } from "zod";
 // Middleware này nhận một schema Zod làm đối số
 export const validate =
   (schema: ZodTypeAny) =>
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, _res: Response, next: NextFunction) => {
     try {
       console.log("=== VALIDATION DEBUG ===");
       console.log("req.body:", req.body);
