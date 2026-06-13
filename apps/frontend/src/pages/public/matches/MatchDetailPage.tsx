@@ -186,9 +186,9 @@ export function MatchDetailPage() {
   }, [id, detailScope, fetchMatchById]);
 
   const isCreator = useMemo(() => {
-    if (!currentMatch || !playerId) return false;
+    if (!currentMatch || !playerId || currentMatch.id !== id) return false;
     return currentMatch.creator.player_id === playerId;
-  }, [currentMatch, playerId]);
+  }, [currentMatch, playerId, id]);
 
   useEffect(() => {
     if (!id || !isCreator) return;
@@ -208,6 +208,21 @@ export function MatchDetailPage() {
       });
     }
   };
+
+  useEffect(() => {
+    const handleMatchNotification = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const notif = customEvent.detail;
+      if (notif.link_to === `/matches/${id}`) {
+        void refreshCurrentMatch();
+      }
+    };
+
+    window.addEventListener("match_status_changed", handleMatchNotification);
+    return () => {
+      window.removeEventListener("match_status_changed", handleMatchNotification);
+    };
+  }, [id, refreshCurrentMatch]);
 
   const handleJoin = async (introduction?: string) => {
     if (!id) return false;
@@ -259,6 +274,16 @@ export function MatchDetailPage() {
     await refreshCurrentMatch();
   };
 
+  const isDeadlinePassed = useMemo(() => {
+    if (!currentMatch?.join_deadline) return false;
+    return new Date(currentMatch.join_deadline).getTime() <= Date.now();
+  }, [currentMatch?.join_deadline]);
+
+  const isStarted = useMemo(() => {
+    if (!currentMatch?.booking?.start_time) return false;
+    return new Date(currentMatch.booking.start_time).getTime() <= Date.now();
+  }, [currentMatch?.booking?.start_time]);
+
   if (!id) {
     return (
       <div className="page-shell-compact py-16">
@@ -301,17 +326,24 @@ export function MatchDetailPage() {
     canUsePlayerScope &&
     !isCreator &&
     currentMatch.status === "OPEN" &&
-    !currentMatch.my_participation_status;
+    (!currentMatch.my_participation_status ||
+      ["WITHDRAWN", "REJECTED", "REMOVED"].includes(
+        currentMatch.my_participation_status,
+      )) &&
+    !isDeadlinePassed &&
+    !isStarted;
 
   const canLeave =
     canUsePlayerScope &&
     !isCreator &&
+    (currentMatch.status === "OPEN" || currentMatch.status === "FULL") &&
     Boolean(
       currentMatch.my_participation_status &&
         MATCH_LEAVABLE_PARTICIPATION_STATUSES.includes(
           currentMatch.my_participation_status,
         ),
-    );
+    ) &&
+    !isStarted;
 
   const creatorName = currentMatch.creator.full_name || "Creator";
   const sportLabel =
@@ -338,9 +370,13 @@ export function MatchDetailPage() {
         ? "Bạn là người tạo kèo. Dùng khối bên dưới để duyệt thành viên và đóng/mở kèo."
         : currentMatch.my_participation_status
           ? null
-          : currentMatch.status !== "OPEN"
-            ? "Kèo hiện không ở trạng thái mở, nên bạn chưa thể gửi yêu cầu tham gia."
-            : "Bạn có thể gửi yêu cầu tham gia ngay."
+          : isStarted
+            ? "Kèo đấu này đã bắt đầu, không thể tham gia nữa."
+            : isDeadlinePassed
+              ? "Thời hạn đăng ký tham gia kèo này đã trôi qua."
+              : currentMatch.status !== "OPEN"
+                ? "Kèo hiện không ở trạng thái mở, nên bạn chưa thể gửi yêu cầu tham gia."
+                : "Bạn có thể gửi yêu cầu tham gia ngay."
       : null;
 
   return (
@@ -368,13 +404,6 @@ export function MatchDetailPage() {
 
       {/* ─── Content ────────────────────────────────────────────────── */}
       <section className="page-shell py-10">
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <CircleAlert />
-            <AlertTitle>Có lỗi xảy ra</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
 
         {isCreator ? (
           // ── Creator view — dồn toàn bộ không gian vào moderation ──────

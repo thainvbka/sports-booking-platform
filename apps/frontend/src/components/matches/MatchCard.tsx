@@ -271,9 +271,25 @@ function DefaultMatchActions({
   match: Match;
   isPlayer: boolean;
 }) {
+  const isDeadlinePassed = match.join_deadline
+    ? new Date(match.join_deadline).getTime() <= Date.now()
+    : false;
+  const isStarted = new Date(match.booking.start_time).getTime() <= Date.now();
+
   const canJoin =
-    isPlayer && match.status === "OPEN" && !match.my_participation_status;
-  const alreadyInvolved = Boolean(match.my_participation_status);
+    isPlayer &&
+    match.status === "OPEN" &&
+    (!match.my_participation_status ||
+      ["WITHDRAWN", "REJECTED", "REMOVED"].includes(
+        match.my_participation_status as string,
+      )) &&
+    !isDeadlinePassed &&
+    !isStarted;
+  const alreadyInvolved =
+    Boolean(match.my_participation_status) &&
+    !["WITHDRAWN", "REJECTED", "REMOVED"].includes(
+      match.my_participation_status as string,
+    );
 
   return (
     <>

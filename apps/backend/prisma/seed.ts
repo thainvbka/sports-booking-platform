@@ -1401,6 +1401,8 @@ async function seedMatches(players: PlayerInfo[]) {
       accepted = slotsNeeded;
     } else if (status === MatchStatus.CLOSED) {
       accepted = randInt(0, slotsNeeded);
+    } else if (status === MatchStatus.EXPIRED) {
+      accepted = 0;
     } else {
       accepted = slotsNeeded > 1 ? randInt(0, slotsNeeded - 1) : 0;
     }
@@ -1434,12 +1436,16 @@ async function seedMatches(players: PlayerInfo[]) {
     }
     // Đảm bảo joinDeadline > created_at
     if (joinDeadline <= booking.created_at) {
-      joinDeadline = new Date(
-        Math.max(
-          booking.created_at.getTime() + 60_000,
-          booking.start_time.getTime() - 30 * 60_000,
-        ),
-      );
+      if (status === MatchStatus.EXPIRED) {
+        joinDeadline = new Date(booking.created_at.getTime() + 60_000);
+      } else {
+        joinDeadline = new Date(
+          Math.max(
+            booking.created_at.getTime() + 60_000,
+            booking.start_time.getTime() - 30 * 60_000,
+          ),
+        );
+      }
     }
 
     const skillLevel = weightedPick(

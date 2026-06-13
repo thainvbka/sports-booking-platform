@@ -382,6 +382,17 @@ export function MatchListPage() {
     void fetchPublicMatches({ ...appliedFilters, page, limit: PAGE_SIZE });
   }, [appliedFilters, page, fetchPublicMatches]);
 
+  useEffect(() => {
+    const handleMatchNotification = () => {
+      void fetchPublicMatches({ ...appliedFilters, page, limit: PAGE_SIZE });
+    };
+
+    window.addEventListener("match_status_changed", handleMatchNotification);
+    return () => {
+      window.removeEventListener("match_status_changed", handleMatchNotification);
+    };
+  }, [appliedFilters, page, fetchPublicMatches]);
+
   const hasData = matches.length > 0;
   const isPlayer = Boolean(user?.roles.includes("PLAYER"));
 

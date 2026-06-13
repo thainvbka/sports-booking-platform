@@ -113,6 +113,22 @@ export function MyMatchesPage() {
     });
   }, [type, status, page, fetchMyMatches]);
 
+  useEffect(() => {
+    const handleMatchNotification = () => {
+      void fetchMyMatches({
+        type,
+        status: status === "ALL" ? undefined : status,
+        page,
+        limit: PAGE_SIZE,
+      });
+    };
+
+    window.addEventListener("match_status_changed", handleMatchNotification);
+    return () => {
+      window.removeEventListener("match_status_changed", handleMatchNotification);
+    };
+  }, [type, status, page, fetchMyMatches]);
+
   const playerId = getPlayerProfileId(user);
   const totalPages = pagination ? Math.max(pagination.total_pages, 1) : 1;
 
@@ -377,8 +393,11 @@ export function MyMatchesPage() {
               const isCreator = Boolean(
                 playerId && match.creator.player_id === playerId,
               );
+              const isStarted = new Date(match.booking.start_time).getTime() <= Date.now();
               const canLeave =
                 !isCreator &&
+                (match.status === "OPEN" || match.status === "FULL") &&
+                !isStarted &&
                 Boolean(
                   match.my_participation_status &&
                     MATCH_LEAVABLE_PARTICIPATION_STATUSES.includes(

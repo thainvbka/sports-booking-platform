@@ -81,6 +81,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }));
 
       toast.info(notif.message);
+
+      if (notif.type === "MATCH") {
+        window.dispatchEvent(new CustomEvent("match_status_changed", { detail: notif }));
+      }
     });
 
     set({ socket, activeRole: targetRole });

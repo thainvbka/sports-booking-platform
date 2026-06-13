@@ -208,7 +208,7 @@ const mapParticipantItem = (participant: ParticipantResponseRecord) => {
     match_id: participant.match_id,
     player_id: participant.player_id,
     status: participant.status,
-    introduction: participant.introduction,
+    introduction: participant.introduction as string | null,
     requested_at: participant.created_at,
     created_at: participant.created_at,
     responded_at: participant.responded_at,
@@ -217,7 +217,7 @@ const mapParticipantItem = (participant: ParticipantResponseRecord) => {
       id: participant.player.id,
       full_name: participant.player.account.full_name,
       avatar: participant.player.account.avatar,
-      phone: participant.player.account.phone_number,
+      phone: participant.player.account.phone_number as string | null,
       skill_level: null,
     },
   };
@@ -784,7 +784,8 @@ export const leaveMatch = async (playerId: string, matchId: string) => {
         if (
           participant.match.status === MatchStatus.CANCELED ||
           participant.match.status === MatchStatus.COMPLETED ||
-          participant.match.status === MatchStatus.EXPIRED
+          participant.match.status === MatchStatus.EXPIRED ||
+          participant.match.status === MatchStatus.CLOSED
         ) {
           throw new BadRequestError(
             "MATCH_CLOSED: Cannot leave this match anymore",
@@ -958,14 +959,13 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
 };
 
 export const getMatchParticipants = async (
-  creatorId: string,
+  requesterPlayerId: string,
   matchId: string,
   query: MatchParticipantsQuery,
 ) => {
-  const match = await prisma.match.findFirst({
+  const match = await prisma.match.findUnique({
     where: {
       id: matchId,
-      creator_id: creatorId,
     },
     select: {
       id: true,
@@ -973,12 +973,15 @@ export const getMatchParticipants = async (
       status: true,
       slots_needed: true,
       slots_filled: true,
+      creator_id: true,
     },
   });
 
   if (!match) {
-    throw new NotFoundError("Match not found or you are not the creator");
+    throw new NotFoundError("Match not found");
   }
+
+  const isCreator = match.creator_id === requesterPlayerId;
 
   const page = query.page ?? 1;
   const limit = query.limit ?? 10;
@@ -988,8 +991,14 @@ export const getMatchParticipants = async (
     match_id: matchId,
   };
 
-  if (query.status) {
-    where.status = query.status as ParticipantStatus;
+  // If the requester is the creator, they can filter by any status they want.
+  // If not, they can ONLY view ACCEPTED participants.
+  if (isCreator) {
+    if (query.status) {
+      where.status = query.status as ParticipantStatus;
+    }
+  } else {
+    where.status = ParticipantStatus.ACCEPTED;
   }
 
   if (query.q) {
@@ -1016,9 +1025,29 @@ export const getMatchParticipants = async (
     }),
   ]);
 
+  const mappedParticipants = participants.map((p) => {
+    const item = mapParticipantItem(p);
+    if (!isCreator) {
+      // Hide phone and introduction if they are not the creator
+      if (item.player) {
+        item.player.phone = null;
+      }
+      item.introduction = null;
+    }
+    return item;
+  });
+
+  const matchSummary = {
+    id: match.id,
+    title: match.title,
+    status: match.status,
+    slots_needed: match.slots_needed,
+    slots_filled: match.slots_filled,
+  };
+
   return {
-    match,
-    participants: participants.map(mapParticipantItem),
+    match: matchSummary,
+    participants: mappedParticipants,
     pagination: {
       page,
       limit,
@@ -1535,6 +1564,7 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
 export const syncMatchStatusesByTime = async () => {
   const now = new Date();
 
+  // 1. Transition ended matches (FULL or CLOSED) to COMPLETED
   await prisma.match.updateMany({
     where: {
       status: {
@@ -1554,11 +1584,11 @@ export const syncMatchStatusesByTime = async () => {
     },
   });
 
+  // 2. Transition OPEN matches with NO accepted participants (slots_filled === 0) to EXPIRED
   await prisma.match.updateMany({
     where: {
-      status: {
-        in: [MatchStatus.OPEN, MatchStatus.CLOSED],
-      },
+      status: MatchStatus.OPEN,
+      slots_filled: 0,
       OR: [
         {
           join_deadline: {
@@ -1576,6 +1606,36 @@ export const syncMatchStatusesByTime = async () => {
     },
     data: {
       status: MatchStatus.EXPIRED,
+      version: {
+        increment: 1,
+      },
+    },
+  });
+
+  // 3. Transition OPEN matches WITH accepted participants (slots_filled > 0) to CLOSED
+  await prisma.match.updateMany({
+    where: {
+      status: MatchStatus.OPEN,
+      slots_filled: {
+        gt: 0,
+      },
+      OR: [
+        {
+          join_deadline: {
+            lt: now,
+          },
+        },
+        {
+          booking: {
+            start_time: {
+              lte: now,
+            },
+          },
+        },
+      ],
+    },
+    data: {
+      status: MatchStatus.CLOSED,
       version: {
         increment: 1,
       },
