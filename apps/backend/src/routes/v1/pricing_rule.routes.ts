@@ -7,6 +7,7 @@ import asyncHandler from "../../utils/asyncHandler";
 import {
   createPricingRuleSchema,
   updatePricingRuleSchema,
+  copyPricingRulesSchema,
 } from "../../validations";
 
 import {
@@ -58,6 +59,7 @@ router.post(
   "/copy",
   authenticate,
   authorize(["OWNER"]),
+  validate(copyPricingRulesSchema),
   asyncHandler(copyPricingRulesController),
 );
 

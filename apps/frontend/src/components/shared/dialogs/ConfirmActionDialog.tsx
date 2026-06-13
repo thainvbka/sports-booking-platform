@@ -1,5 +1,4 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +16,7 @@ interface ConfirmActionDialogProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
-  badgeText: string;
+  badgeText?: string;
   alertText: React.ReactNode;
   confirmText: string;
   confirmingText?: string;
@@ -76,13 +75,13 @@ export function ConfirmActionDialog({
                 <Icon className="size-5" />
               </span>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="h-5 w-fit gap-1 rounded-full border-destructive/30 bg-destructive/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-destructive"
                 >
                   <BadgeIcon className="size-2.5" />
                   {badgeText}
-                </Badge>
+                </Badge> */}
                 <DialogTitle className="font-display text-lg font-black italic tracking-tight">
                   {title}
                 </DialogTitle>

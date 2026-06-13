@@ -429,12 +429,19 @@ export const copyPricingRules = async (
     throw new BadRequestError("Invalid source day of week (0-6)");
   }
 
-  if (
-    !targetDaysOfWeek ||
-    targetDaysOfWeek.length === 0 ||
-    targetDaysOfWeek.some((day) => day < 0 || day > 6)
-  ) {
-    throw new BadRequestError("Invalid target days of week (0-6)");
+  if (!targetDaysOfWeek || targetDaysOfWeek.length === 0) {
+    throw new BadRequestError("Invalid target days of week");
+  }
+
+  // Lọc bỏ ngày nguồn và trùng lặp
+  const targetDays = Array.from(new Set(targetDaysOfWeek)).filter(
+    (day) => day !== sourceDayOfWeek && day >= 0 && day <= 6,
+  );
+
+  if (targetDays.length === 0) {
+    throw new BadRequestError(
+      "Target days must contain at least one day other than the source day (0-6)",
+    );
   }
 
   // Check ownership
@@ -478,12 +485,12 @@ export const copyPricingRules = async (
   await prisma.pricingRule.deleteMany({
     where: {
       sub_field_id: subFieldId,
-      day_of_week: { in: targetDaysOfWeek },
+      day_of_week: { in: targetDays },
     },
   });
 
   // Tạo rules mới cho target days
-  const newRules = targetDaysOfWeek.flatMap((targetDay) =>
+  const newRules = targetDays.flatMap((targetDay) =>
     sourceRules.map((rule) => ({
       sub_field_id: subFieldId,
       day_of_week: targetDay,
@@ -506,7 +513,7 @@ export const copyPricingRules = async (
   await updateComplexCache(complexId);
 
   // Invalidate pricing cache for affected days
-  for (const day of targetDaysOfWeek) {
+  for (const day of targetDays) {
     await cacheHelper.del(CACHE_KEYS.PRICING_RULES(subFieldId, day));
   }
   await invalidatePublicCachesAfterPricingChange(subFieldId, complexId);
@@ -518,7 +525,7 @@ export const copyPricingRules = async (
 
   return {
     copiedFrom: sourceDayOfWeek,
-    copiedTo: targetDaysOfWeek,
+    copiedTo: targetDays,
     rulesCreated: createdRules.length,
   };
 };

@@ -49,3 +49,15 @@ export type CreatePricingRuleInput = z.infer<
 export type UpdatePricingRuleInput = z.infer<
   typeof updatePricingRuleSchema
 >["body"];
+
+export const copyPricingRulesSchema = z.object({
+  body: z.object({
+    sub_field_id: z.string().uuid(),
+    source_day: z.number().min(0).max(6),
+    target_days: z.array(z.number().min(0).max(6)).min(1),
+  }),
+});
+
+export type CopyPricingRuleInput = z.infer<
+  typeof copyPricingRulesSchema
+>["body"];

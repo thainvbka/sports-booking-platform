@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
-import { formatTime, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes } from "@/utils/time.utils";
+import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -29,17 +29,7 @@ interface SubfieldPricingTabsProps {
   className?: string;
 }
 
-const formatRuleHourRange = (start: string | Date, end: string | Date) => {
-  const startMins = parseRuleTimeToMinutes(start);
-  const endMins = parseRuleTimeToMinutes(end);
-  if (startMins === null || endMins === null) return "--:-- - --:--";
-  
-  const startHour = Math.floor(startMins / 60).toString().padStart(2, "0");
-  const startMin = (startMins % 60).toString().padStart(2, "0");
-  const endHour = Math.floor(endMins / 60).toString().padStart(2, "0");
-  const endMin = (endMins % 60).toString().padStart(2, "0");
-  return `${startHour}:${startMin} - ${endHour}:${endMin}`;
-};
+
 
 export function SubfieldPricingTabs({
   subfieldId,
@@ -142,24 +132,6 @@ export function SubfieldPricingTabs({
     return prices.length > 0 ? Math.max(...prices) : 0;
   }, [pricingRules]);
 
-  const hasPriceDifference = minPrice < maxPrice;
-
-  const getRuleClassification = (rule: PricingRule) => {
-    const rulePrice = Number(rule.base_price);
-    const startMins = parseRuleTimeToMinutes(rule.start_time);
-    const startHour = startMins !== null ? Math.floor(startMins / 60) : 0;
-
-    const isPeakTime = startHour >= 17 && startHour < 22;
-
-    if (isPeakTime) {
-      return "PEAK";
-    }
-    if (hasPriceDifference && rulePrice === minPrice) {
-      return "BUDGET";
-    }
-    return "REGULAR";
-  };
-
   const getRuleSlotStatus = (rule: PricingRule) => {
     const ruleStartMin = parseRuleTimeToMinutes(rule.start_time);
     const ruleEndMin = parseRuleTimeToMinutes(rule.end_time);
@@ -247,8 +219,8 @@ export function SubfieldPricingTabs({
       {selectedDayRules.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {selectedDayRules.map((rule) => {
-            const rulePrice = Number(rule.base_price);
-            const classification = getRuleClassification(rule);
+             const rulePrice = Number(rule.base_price);
+            const classification = getRuleClassification(rule, selectedDayRules);
             const status = getRuleSlotStatus(rule);
 
             return (
@@ -263,24 +235,12 @@ export function SubfieldPricingTabs({
               >
                 <div className="flex flex-col items-center gap-1.5">
                   {/* Classification Badge */}
-                  {classification === "PEAK" && (
-                    <Badge variant="outline" className="rounded-full border-red-200 bg-red-50 text-red-700 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5">
-                      Giờ cao điểm
-                    </Badge>
-                  )}
-                  {classification === "BUDGET" && (
-                    <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5">
-                      Giá tiết kiệm
-                    </Badge>
-                  )}
-                  {classification === "REGULAR" && (
-                    <Badge variant="outline" className="rounded-full border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5">
-                      Khung giờ thường
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className={cn("rounded-full text-[10px] font-bold px-2 py-0.5", PRICING_TIER_CONFIGS[classification].badgeClass)}>
+                    {PRICING_TIER_CONFIGS[classification].label}
+                  </Badge>
 
                   <span className="text-xs font-semibold text-muted-foreground mt-0.5">
-                    {formatRuleHourRange(rule.start_time, rule.end_time)}
+                    {formatTime(rule.start_time)} - {formatTime(rule.end_time)}
                   </span>
                   
                   <span className="text-base font-black text-foreground">
@@ -290,7 +250,7 @@ export function SubfieldPricingTabs({
                   {/* Status Label */}
                   {status === "AVAILABLE" && (
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
-                      ✓ Available
+                      ✓ Còn trống
                     </span>
                   )}
                   {status === "PENDING" && (

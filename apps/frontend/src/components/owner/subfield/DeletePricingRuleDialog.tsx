@@ -20,7 +20,6 @@ export function DeletePricingRuleDialog({
       onOpenChange={onOpenChange}
       title="Xóa khung giờ này?"
       description="Hành động này không thể hoàn tác."
-      badgeText="Pricing · Xóa khung giờ"
       confirmText="Xóa khung giờ"
       confirmingText="Đang xóa…"
       onConfirm={onConfirm}

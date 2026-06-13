@@ -4,6 +4,6 @@ export const parseTime = (timeStr?: string): Date => {
   }
   const [hours, minutes] = timeStr.split(":").map(Number);
   const date = new Date(0); // 1970-01-01T00:00:00.000Z
-  date.setHours(hours, minutes, 0, 0);
+  date.setUTCHours(hours, minutes, 0, 0);
   return date;
 };

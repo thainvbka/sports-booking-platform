@@ -18,6 +18,12 @@ export const parseRuleTimeToMinutes = (time: string | Date): number | null => {
 
   const d = new Date(time);
   if (Number.isNaN(d.getTime())) return null;
+
+  const year = d.getUTCFullYear();
+  if (year === 1970 || year === 1969 || year === 2000) {
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  }
+
   const zonedDate = toZonedTime(d, VN_TIMEZONE);
   return zonedDate.getHours() * 60 + zonedDate.getMinutes();
 };
@@ -67,6 +73,12 @@ export const formatTime = (time: string | Date | unknown): string => {
     if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
     if (time.includes("T") && time.includes("Z")) {
       const date = new Date(time);
+      const year = date.getUTCFullYear();
+      if (year === 1970 || year === 1969 || year === 2000) {
+        const hours = String(date.getUTCHours()).padStart(2, "0");
+        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+        return `${hours}:${minutes}`;
+      }
       const zonedDate = toZonedTime(date, VN_TIMEZONE);
       const hours = String(zonedDate.getHours()).padStart(2, "0");
       const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
@@ -74,6 +86,12 @@ export const formatTime = (time: string | Date | unknown): string => {
     }
     if (time.includes("T") || time.includes("-")) {
       const date = new Date(time);
+      const year = date.getUTCFullYear();
+      if (year === 1970 || year === 1969 || year === 2000) {
+        const hours = String(date.getUTCHours()).padStart(2, "0");
+        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+        return `${hours}:${minutes}`;
+      }
       const zonedDate = toZonedTime(date, VN_TIMEZONE);
       const hours = String(zonedDate.getHours()).padStart(2, "0");
       const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
@@ -83,6 +101,12 @@ export const formatTime = (time: string | Date | unknown): string => {
   }
 
   if (time instanceof Date) {
+    const year = time.getUTCFullYear();
+    if (year === 1970 || year === 1969 || year === 2000) {
+      const hours = String(time.getUTCHours()).padStart(2, "0");
+      const minutes = String(time.getUTCMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
+    }
     const zonedDate = toZonedTime(time, VN_TIMEZONE);
     const hours = String(zonedDate.getHours()).padStart(2, "0");
     const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
@@ -111,4 +135,28 @@ export const formatDateVn = (
   const zonedDate = toZonedTime(d, VN_TIMEZONE);
   return format(zonedDate, formatPattern, { locale: vi });
 };
+
+/**
+ * Calculates minutes between two time strings in "HH:MM" format.
+ */
+export function minutesBetween(start: string, end: string): number {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const a = sh * 60 + sm;
+  let b = eh * 60 + em;
+  if (b <= a) b += 24 * 60;
+  return b - a;
+}
+
+/**
+ * Formats a duration in minutes to a short human-readable string (e.g. 1h30, 45m, 2h).
+ */
+export function formatDuration(minutes: number): string {
+  if (minutes <= 0) return "0h";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (m === 0) return `${h}h`;
+  if (h === 0) return `${m}m`;
+  return `${h}h${String(m).padStart(2, "0")}`;
+}
 

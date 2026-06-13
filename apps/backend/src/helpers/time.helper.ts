@@ -23,18 +23,28 @@ export const getVietnamDayOfWeek = (date: Date): number => {
 };
 
 /**
- * Lấy số phút thô từ Date object theo giờ Việt Nam.
+ * Lấy số phút thô từ Date object.
  * - Dùng cho: PricingRule (@db.Time).
  */
 export const getRawMinutes = (date: Date): number => {
+  const year = date.getUTCFullYear();
+  if (year === 1970 || year === 1969 || year === 2000) {
+    return date.getUTCHours() * 60 + date.getUTCMinutes();
+  }
   const vnDate = toZonedTime(date, TIME_ZONE);
   return vnDate.getHours() * 60 + vnDate.getMinutes();
 };
 
 /**
- * Format HH:MM theo giờ Việt Nam — dùng cho error messages.
+ * Format HH:MM — dùng cho error messages.
  */
 export const formatVietnamTime = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  if (year === 1970 || year === 1969 || year === 2000) {
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
   const vnDate = toZonedTime(date, TIME_ZONE);
   const hours = String(vnDate.getHours()).padStart(2, "0");
   const minutes = String(vnDate.getMinutes()).padStart(2, "0");
@@ -42,9 +52,15 @@ export const formatVietnamTime = (date: Date): string => {
 };
 
 /**
- * Format HH:MM theo giờ Việt Nam — dùng cho PricingRule.
+ * Format HH:MM — dùng cho PricingRule.
  */
 export const formatTimeForDisplay = (date: Date): string => {
+  const year = date.getUTCFullYear();
+  if (year === 1970 || year === 1969 || year === 2000) {
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
   const vnDate = toZonedTime(date, TIME_ZONE);
   const hours = String(vnDate.getHours()).padStart(2, "0");
   const minutes = String(vnDate.getMinutes()).padStart(2, "0");
