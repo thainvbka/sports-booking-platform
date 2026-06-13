@@ -61,6 +61,19 @@ export const formatMinutesToTime = (minutes: number): string => {
   return `${h}:${m}`;
 };
 
+const formatDateObjToHhmm = (d: Date): string => {
+  const year = d.getUTCFullYear();
+  if (year === 1970 || year === 1969 || year === 2000) {
+    const hours = String(d.getUTCHours()).padStart(2, "0");
+    const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+  const zonedDate = toZonedTime(d, VN_TIMEZONE);
+  const hours = String(zonedDate.getHours()).padStart(2, "0");
+  const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
 /**
  * Format time from backend (handles both string and Date)
  * Always returns 24-hour format HH:MM
@@ -71,46 +84,16 @@ export const formatTime = (time: string | Date | unknown): string => {
   if (typeof time === "string") {
     if (/^\d{2}:\d{2}$/.test(time)) return time;
     if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
-    if (time.includes("T") && time.includes("Z")) {
-      const date = new Date(time);
-      const year = date.getUTCFullYear();
-      if (year === 1970 || year === 1969 || year === 2000) {
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        return `${hours}:${minutes}`;
-      }
-      const zonedDate = toZonedTime(date, VN_TIMEZONE);
-      const hours = String(zonedDate.getHours()).padStart(2, "0");
-      const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
-    }
     if (time.includes("T") || time.includes("-")) {
       const date = new Date(time);
-      const year = date.getUTCFullYear();
-      if (year === 1970 || year === 1969 || year === 2000) {
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        return `${hours}:${minutes}`;
-      }
-      const zonedDate = toZonedTime(date, VN_TIMEZONE);
-      const hours = String(zonedDate.getHours()).padStart(2, "0");
-      const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
+      if (Number.isNaN(date.getTime())) return "--:--";
+      return formatDateObjToHhmm(date);
     }
     return time.slice(0, 5);
   }
 
   if (time instanceof Date) {
-    const year = time.getUTCFullYear();
-    if (year === 1970 || year === 1969 || year === 2000) {
-      const hours = String(time.getUTCHours()).padStart(2, "0");
-      const minutes = String(time.getUTCMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
-    }
-    const zonedDate = toZonedTime(time, VN_TIMEZONE);
-    const hours = String(zonedDate.getHours()).padStart(2, "0");
-    const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
+    return formatDateObjToHhmm(time);
   }
 
   const str = String(time);

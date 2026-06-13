@@ -14,15 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type {
@@ -31,7 +22,8 @@ import type {
   SportType,
   SubField,
 } from "@/types";
-import { buildPageList, formatPrice, getSportTypeLabel } from "@/utils";
+import { formatPrice, getSportTypeLabel } from "@/utils";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import {
   LayoutGrid,
   Navigation,
@@ -490,72 +482,6 @@ function SubfieldGridSkeleton() {
         </div>
       ))}
     </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Pagination                                                                  */
-/* -------------------------------------------------------------------------- */
-
-interface PaginationBarProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-function PaginationBar({ page, totalPages, onPageChange }: PaginationBarProps) {
-  if (totalPages <= 1) return null;
-
-  const pageItems = buildPageList(page, totalPages);
-
-  const go = (event: React.MouseEvent, target: number) => {
-    event.preventDefault();
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="mt-6">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1}
-            className={cn(page === 1 && "pointer-events-none opacity-50")}
-            onClick={(event) => go(event, page - 1)}
-          />
-        </PaginationItem>
-
-        {pageItems.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages}
-            className={cn(
-              page === totalPages && "pointer-events-none opacity-50",
-            )}
-            onClick={(event) => go(event, page + 1)}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
   );
 }
 

@@ -48,6 +48,29 @@ export const getBookingAddonSubtotal = async (
   return calculateAddonSubtotal(addons);
 };
 
+const incrementProductStock = async (
+  tx: Prisma.TransactionClient,
+  items: Array<{ product_id: string; quantity: number }>,
+) => {
+  const quantityByProduct = new Map<string, number>();
+
+  for (const item of items) {
+    const current = quantityByProduct.get(item.product_id) ?? 0;
+    quantityByProduct.set(item.product_id, current + item.quantity);
+  }
+
+  await Promise.all(
+    Array.from(quantityByProduct.entries()).map(([product_id, quantity]) =>
+      tx.product.update({
+        where: { id: product_id },
+        data: {
+          stock: { increment: quantity },
+        },
+      }),
+    ),
+  );
+};
+
 export const restoreAddonStockForBookingIds = async (
   tx: Prisma.TransactionClient,
   bookingIds: string[],
@@ -70,23 +93,7 @@ export const restoreAddonStockForBookingIds = async (
     return;
   }
 
-  const quantityByProduct = new Map<string, number>();
-
-  for (const addon of addons) {
-    const current = quantityByProduct.get(addon.product_id) ?? 0;
-    quantityByProduct.set(addon.product_id, current + addon.quantity);
-  }
-
-  await Promise.all(
-    Array.from(quantityByProduct.entries()).map(([product_id, quantity]) =>
-      tx.product.update({
-        where: { id: product_id },
-        data: {
-          stock: { increment: quantity },
-        },
-      }),
-    ),
-  );
+  await incrementProductStock(tx, addons);
 };
 
 export const restoreAddonStockForBooking = async (
@@ -119,22 +126,7 @@ export const restoreRentalAddonStockForBookingIds = async (
 
   if (!rentalAddons.length) return;
 
-  const quantityByProduct = new Map<string, number>();
-  for (const addon of rentalAddons) {
-    const current = quantityByProduct.get(addon.product_id) ?? 0;
-    quantityByProduct.set(addon.product_id, current + addon.quantity);
-  }
-
   // Cộng lại stock cho các dụng cụ thuê
-  await Promise.all(
-    Array.from(quantityByProduct.entries()).map(([product_id, quantity]) =>
-      tx.product.update({
-        where: { id: product_id },
-        data: {
-          stock: { increment: quantity },
-        },
-      }),
-    ),
-  );
+  await incrementProductStock(tx, rentalAddons);
 };
 

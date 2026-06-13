@@ -19,17 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import {
-  BOOKING_STATUS_COLORS,
-  BOOKING_STATUS_LABELS,
   RECURRENCE_TYPE_LABELS,
-  SPORT_TYPE_LABELS,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/store/owner/useBookingStore";
 import type { OwnerBookingResponse } from "@/types";
-import { formatPrice } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatDateVn, formatPrice, getBookingStatusColor, getBookingStatusLabel, getSportTypeLabel } from "@/utils";
 import {
   AlarmClock,
   ArrowUpRight,
@@ -348,10 +343,7 @@ export function OwnerBookingsPage() {
             {booking.complex_name}
           </span>
           <span className="truncate text-xs text-muted-foreground">
-            {booking.sub_field_name} ·{" "}
-            {SPORT_TYPE_LABELS[
-              booking.sport_type as keyof typeof SPORT_TYPE_LABELS
-            ] ?? booking.sport_type}
+            {booking.sub_field_name} · {getSportTypeLabel(booking.sport_type)}
           </span>
         </div>
       ),
@@ -370,16 +362,16 @@ export function OwnerBookingsPage() {
               </span>
             </div>
             <span className="text-[11px] text-muted-foreground tabular-nums">
-              {format(new Date(booking.start_date), "dd/MM/yyyy")}
+              {formatDateVn(booking.start_date, "dd/MM/yyyy")}
               <ChevronsRight className="mx-0.5 inline size-3" />
-              {format(new Date(booking.end_date), "dd/MM/yyyy")}
+              {formatDateVn(booking.end_date, "dd/MM/yyyy")}
             </span>
             {booking.bookings?.[0] ? (
               <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums">
                 <Clock className="size-3" />
-                {format(new Date(booking.bookings[0].start_time), "HH:mm")}
+                {formatDateVn(booking.bookings[0].start_time, "HH:mm")}
                 {" → "}
-                {format(new Date(booking.bookings[0].end_time), "HH:mm")}
+                {formatDateVn(booking.bookings[0].end_time, "HH:mm")}
               </span>
             ) : null}
           </div>
@@ -388,15 +380,13 @@ export function OwnerBookingsPage() {
             <div className="flex items-center gap-1.5 text-xs font-semibold">
               <Calendar className="size-3.5 text-muted-foreground" />
               <span className="tabular-nums">
-                {format(new Date(booking.start_time), "EEE, dd/MM/yyyy", {
-                  locale: vi,
-                })}
+                {formatDateVn(booking.start_time, "EEE, dd/MM/yyyy")}
               </span>
             </div>
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums">
               <Clock className="size-3" />
-              {format(new Date(booking.start_time), "HH:mm")} →{" "}
-              {format(new Date(booking.end_time), "HH:mm")}
+              {formatDateVn(booking.start_time, "HH:mm")} →{" "}
+              {formatDateVn(booking.end_time, "HH:mm")}
             </span>
           </div>
         ),
@@ -419,10 +409,10 @@ export function OwnerBookingsPage() {
         <Badge
           className={cn(
             "h-6 rounded-full px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.14em]",
-            BOOKING_STATUS_COLORS[booking.status],
+            getBookingStatusColor(booking.status),
           )}
         >
-          {BOOKING_STATUS_LABELS[booking.status]}
+          {getBookingStatusLabel(booking.status)}
         </Badge>
       ),
     },
@@ -622,10 +612,10 @@ export function OwnerBookingsPage() {
                   <Badge
                     className={cn(
                       "h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.18em]",
-                      BOOKING_STATUS_COLORS[selectedBooking.status],
+                      getBookingStatusColor(selectedBooking.status),
                     )}
                   >
-                    {BOOKING_STATUS_LABELS[selectedBooking.status]}
+                    {getBookingStatusLabel(selectedBooking.status)}
                   </Badge>
                 </div>
                 <DialogTitle className="font-display text-xl font-black italic tracking-tight">
@@ -642,9 +632,7 @@ export function OwnerBookingsPage() {
                       className="mx-1 h-3"
                     />
                     <span>
-                      {SPORT_TYPE_LABELS[
-                        selectedBooking.sport_type as keyof typeof SPORT_TYPE_LABELS
-                      ] ?? selectedBooking.sport_type}
+                      {getSportTypeLabel(selectedBooking.sport_type)}
                     </span>
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -694,20 +682,13 @@ export function OwnerBookingsPage() {
                         Thời gian đặt
                       </span>
                       <span className="font-display text-base font-bold italic tabular-nums tracking-tight">
-                        {format(
-                          new Date(selectedBooking.start_time),
-                          "EEEE, dd/MM/yyyy",
-                          { locale: vi },
-                        )}
+                        {formatDateVn(selectedBooking.start_time, "EEEE, dd/MM/yyyy")}
                       </span>
                       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
                         <Clock className="size-3.5" />
-                        {format(
-                          new Date(selectedBooking.start_time),
-                          "HH:mm",
-                        )}{" "}
+                        {formatDateVn(selectedBooking.start_time, "HH:mm")}{" "}
                         →{" "}
-                        {format(new Date(selectedBooking.end_time), "HH:mm")}
+                        {formatDateVn(selectedBooking.end_time, "HH:mm")}
                       </span>
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
@@ -760,16 +741,12 @@ export function OwnerBookingsPage() {
                           </span>
                           <div className="flex min-w-0 flex-col">
                             <span className="truncate text-sm font-semibold tabular-nums">
-                              {format(
-                                new Date(slot.start_time),
-                                "EEE, dd/MM/yyyy",
-                                { locale: vi },
-                              )}
+                              {formatDateVn(slot.start_time, "EEE, dd/MM/yyyy")}
                             </span>
                             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
                               <Clock className="size-3" />
-                              {format(new Date(slot.start_time), "HH:mm")} →{" "}
-                              {format(new Date(slot.end_time), "HH:mm")}
+                              {formatDateVn(slot.start_time, "HH:mm")} →{" "}
+                              {formatDateVn(slot.end_time, "HH:mm")}
                             </span>
                           </div>
                         </div>
@@ -777,10 +754,10 @@ export function OwnerBookingsPage() {
                           <Badge
                             className={cn(
                               "h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                              BOOKING_STATUS_COLORS[slot.status],
+                              getBookingStatusColor(slot.status),
                             )}
                           >
-                            {BOOKING_STATUS_LABELS[slot.status]}
+                            {getBookingStatusLabel(slot.status)}
                           </Badge>
                           <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                             {formatPrice(slot.total_price)}

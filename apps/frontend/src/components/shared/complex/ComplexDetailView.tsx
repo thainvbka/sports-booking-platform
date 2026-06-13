@@ -12,17 +12,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import type { ComplexDetail, PaginationMeta, SubField } from "@/types";
-import { buildPageList } from "@/utils";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { MapPin, Search } from "lucide-react";
 import React, { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -307,66 +298,12 @@ export function ComplexDetailView({
             </div>
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="mt-4">
-                <Pagination className="mt-2">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          if (pagination.page <= 1) return;
-                          onPageChange(pagination.page - 1);
-                        }}
-                        className={
-                          pagination.page <= 1 ? "pointer-events-none opacity-50" : undefined
-                        }
-                        aria-disabled={pagination.page <= 1}
-                      />
-                    </PaginationItem>
-
-                    {buildPageList(pagination.page, pagination.totalPages).map(
-                      (item, idx) =>
-                        item === "ellipsis" ? (
-                          <PaginationItem key={`ellipsis-${idx}`}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={item}>
-                            <PaginationLink
-                              href="#"
-                              isActive={item === pagination.page}
-                              onClick={(event) => {
-                                event.preventDefault();
-                                if (item === pagination.page) return;
-                                onPageChange(item);
-                              }}
-                            >
-                              {item}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ),
-                    )}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          if (pagination.page >= pagination.totalPages) return;
-                          onPageChange(pagination.page + 1);
-                        }}
-                        className={
-                          pagination.page >= pagination.totalPages
-                            ? "pointer-events-none opacity-50"
-                            : undefined
-                        }
-                        aria-disabled={pagination.page >= pagination.totalPages}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
+              <PaginationBar
+                page={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={onPageChange}
+                className="mt-6"
+              />
             )}
           </>
         ) : (

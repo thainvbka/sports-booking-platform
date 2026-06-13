@@ -51,18 +51,13 @@ export const formatVietnamTime = (date: Date): string => {
   return `${hours}:${minutes}`;
 };
 
-/**
- * Format HH:MM — dùng cho PricingRule.
- */
-export const formatTimeForDisplay = (date: Date): string => {
-  const year = date.getUTCFullYear();
-  if (year === 1970 || year === 1969 || year === 2000) {
-    const hours = String(date.getUTCHours()).padStart(2, "0");
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
+export const parseTime = (timeStr?: string): Date => {
+  if (!timeStr) {
+    return new Date(0);
   }
-  const vnDate = toZonedTime(date, TIME_ZONE);
-  const hours = String(vnDate.getHours()).padStart(2, "0");
-  const minutes = String(vnDate.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  const date = new Date(0); // 1970-01-01T00:00:00.000Z
+  date.setUTCHours(hours, minutes, 0, 0);
+  return date;
 };
+

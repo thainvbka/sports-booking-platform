@@ -10,7 +10,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { addRoleInput } from "../../validations";
-import { roleCreationStrategy, getJwtPayloadAndRoles } from "./auth.service";
+import { roleCreationStrategy, getJwtPayloadAndRoles, issueSession } from "./auth.service";
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
@@ -55,19 +55,7 @@ export const addRoleToAccount = async (
   });
 
   // Tạo token mới với roles cập nhật
-  const { jwtPayload, roles, profiles } =
-    await getJwtPayloadAndRoles(accountId);
-
-  const accessToken = generateAccessToken(jwtPayload);
-  const refreshToken = generateRefreshToken(accountId);
-
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      account_id: accountId,
-      expires_at: getRefreshExpiryDate(),
-    },
-  });
+  const { accessToken, refreshToken, roles, profiles } = await issueSession(accountId);
 
   return {
     message: `Đã thêm vai trò ${roleData.role} thành công`,

@@ -7,17 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  BOOKING_STATUS_LABELS,
-  RECURRING_STATUS_LABELS,
-  SPORT_TYPE_LABELS,
-} from "@/lib/constants";
+
 import { cn } from "@/lib/utils";
 import {
   BookingStatus,
   type BookingResponse,
 } from "@/types";
-import { formatPrice } from "@/utils";
+import { formatPrice, getBookingStatusLabel, getRecurringStatusLabel, getSportTypeLabel } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
@@ -120,12 +116,10 @@ export function BookingCard({
   const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
 
   const statusLabel = isSingle
-    ? BOOKING_STATUS_LABELS[booking.status] ?? booking.status
-    : RECURRING_STATUS_LABELS[booking.status] ?? booking.status;
+    ? getBookingStatusLabel(booking.status)
+    : getRecurringStatusLabel(booking.status);
 
-  const sportLabel =
-    SPORT_TYPE_LABELS[booking.sport_type as keyof typeof SPORT_TYPE_LABELS] ??
-    booking.sport_type;
+  const sportLabel = getSportTypeLabel(booking.sport_type);
 
   const stubDate = isSingle
     ? new Date(booking.start_time)
@@ -429,7 +423,7 @@ function SessionsListDialog({
                       )}
                     />
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">
-                      {BOOKING_STATUS_LABELS[slot.status] || slot.status}
+                      {getBookingStatusLabel(slot.status)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground font-medium">

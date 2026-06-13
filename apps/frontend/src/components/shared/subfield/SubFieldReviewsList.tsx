@@ -4,15 +4,6 @@ import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -23,12 +14,11 @@ import { Toggle } from "@/components/ui/toggle";
 import type { ReviewRatingFilter, ReviewSortBy } from "@/hooks/useSubfieldReviews";
 import { cn } from "@/lib/utils";
 import type { GetSubfieldReviewsResponse, PublicSubfieldReview } from "@/types";
-import { buildPageList } from "@/utils";
 import { getReviewerDisplayName } from "@/utils/review.utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, ImageIcon, RotateCcw } from "lucide-react";
-import type { MouseEvent } from "react";
+import { ImageIcon, RotateCcw } from "lucide-react";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 
 interface ReviewsSummary {
   total: number;
@@ -289,90 +279,13 @@ export function SubfieldReviewsList({
 
       {/* Pagination component */}
       {pagination && pagination.totalPages > 1 ? (
-        <ReviewsPaginationBar
+        <PaginationBar
           page={pagination.page}
           totalPages={pagination.totalPages}
           onPageChange={onPageChange}
+          className="mt-6"
         />
       ) : null}
     </Card>
-  );
-}
-
-interface ReviewsPaginationBarProps {
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-function ReviewsPaginationBar({
-  page,
-  totalPages,
-  onPageChange,
-}: ReviewsPaginationBarProps) {
-  const pageItems = buildPageList(page, totalPages);
-
-  const go = (event: MouseEvent, target: number) => {
-    event.preventDefault();
-    if (target < 1 || target > totalPages || target === page) return;
-    onPageChange(target);
-  };
-
-  return (
-    <Pagination className="mt-6">
-      <PaginationContent className="gap-1 text-xs">
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            aria-disabled={page === 1}
-            className={cn(
-              "h-8 rounded-lg px-2.5 font-medium border-border/60 hover:bg-muted cursor-pointer",
-              page === 1 && "pointer-events-none opacity-50"
-            )}
-            onClick={(event) => go(event, page - 1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </PaginationPrevious>
-        </PaginationItem>
-
-        {pageItems.map((item, idx) =>
-          item === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${idx}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={item}>
-              <PaginationLink
-                href="#"
-                isActive={item === page}
-                onClick={(event) => go(event, item)}
-                className={cn(
-                  "h-8 w-8 rounded-lg font-medium cursor-pointer",
-                  item === page
-                    ? "bg-foreground text-background hover:bg-foreground hover:text-background"
-                    : "border border-border/60 hover:bg-muted"
-                )}
-              >
-                {item}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
-
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            aria-disabled={page === totalPages}
-            className={cn(
-              "h-8 rounded-lg px-2.5 font-medium border-border/60 hover:bg-muted cursor-pointer",
-              page === totalPages && "pointer-events-none opacity-50"
-            )}
-            onClick={(event) => go(event, page + 1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </PaginationNext>
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
   );
 }

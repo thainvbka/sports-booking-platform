@@ -175,19 +175,7 @@ export const verifyEmail = async (token: string) => {
     },
   });
 
-  //fetch roles và profiles & tạo payload cho jwt
-  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(updatedAccount.id);
-
-  const accessToken = generateAccessToken(jwtPayload);
-  const refreshToken = generateRefreshToken(updatedAccount.id);
-
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      account_id: updatedAccount.id,
-      expires_at: getRefreshExpiryDate(),
-    },
-  });
+  const { accessToken, refreshToken, roles, profiles } = await issueSession(updatedAccount.id);
 
   return {
     user: {
@@ -221,19 +209,7 @@ export const logIn = async (email: string, password: string) => {
     );
   }
 
-  //fetch roles và profiles & tạo payload cho jwt
-  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(user.id);
-
-  const accessToken = generateAccessToken(jwtPayload);
-  const refreshToken = generateRefreshToken(user.id);
-
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      account_id: user.id,
-      expires_at: getRefreshExpiryDate(),
-    },
-  });
+  const { accessToken, refreshToken, roles, profiles } = await issueSession(user.id);
 
   return {
     user: {
@@ -435,3 +411,24 @@ export const getJwtPayloadAndRoles = async (accountId: string) => {
   };
   return { jwtPayload, roles, profiles };
 };
+
+export const issueSession = async (
+  accountId: string,
+  tx: PrismaTransactionClient | typeof prisma = prisma,
+) => {
+  const { jwtPayload, roles, profiles } = await getJwtPayloadAndRoles(accountId);
+
+  const accessToken = generateAccessToken(jwtPayload);
+  const refreshToken = generateRefreshToken(accountId);
+
+  await tx.refreshToken.create({
+    data: {
+      token: refreshToken,
+      account_id: accountId,
+      expires_at: getRefreshExpiryDate(),
+    },
+  });
+
+  return { accessToken, refreshToken, roles, profiles };
+};
+

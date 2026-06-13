@@ -60,6 +60,34 @@ const resetBookingExpiryAfterPaymentFailure = async (
   console.log(`[Payment] Reset booking expiry for ${bookings.length} bookings after payment failure`);
 };
 
+const completeRecurringBookingIfAllPaid = async (
+  recurringBookingIds: string[],
+  tx: any,
+) => {
+  for (const recurringBookingId of recurringBookingIds) {
+    // Đếm số booking PENDING còn lại của recurring này
+    const pendingCount = await tx.booking.count({
+      where: {
+        recurring_booking_id: recurringBookingId,
+        status: BookingStatus.PENDING,
+      },
+    });
+
+    // Nếu không còn booking PENDING nào, đánh dấu recurring là COMPLETED
+    if (pendingCount === 0) {
+      await tx.recurringBooking.update({
+        where: {
+          id: recurringBookingId,
+        },
+        data: {
+          status: RecurringStatus.COMPLETED,
+        },
+      });
+    }
+  }
+};
+
+
 // Tạo Stripe Connect Account cho Owner
 export const createConnectAccount = async (ownerId: string) => {
   let owner = await prisma.owner.findUnique({
@@ -493,27 +521,8 @@ export const handleStripeWebhook = async (sig: string, data: any) => {
             ),
           );
 
-          for (const recurringBookingId of recurringBookingIds) {
-            // Đếm số booking PENDING còn lại của recurring này
-            const pendingCount = await tx.booking.count({
-              where: {
-                recurring_booking_id: recurringBookingId,
-                status: BookingStatus.PENDING,
-              },
-            });
+          await completeRecurringBookingIfAllPaid(recurringBookingIds, tx);
 
-            // Nếu không còn booking PENDING nào, đánh dấu recurring là COMPLETED
-            if (pendingCount === 0) {
-              await tx.recurringBooking.update({
-                where: {
-                  id: recurringBookingId,
-                },
-                data: {
-                  status: RecurringStatus.COMPLETED,
-                },
-              });
-            }
-          }
 
           const firstBooking = pendingBookings[0];
           return {
@@ -779,21 +788,8 @@ export const handleVnpayIpn = async (query: any) => {
           ),
         );
 
-        for (const recurringBookingId of recurringBookingIds) {
-          const pendingCount = await tx.booking.count({
-            where: {
-              recurring_booking_id: recurringBookingId,
-              status: BookingStatus.PENDING,
-            },
-          });
+        await completeRecurringBookingIfAllPaid(recurringBookingIds, tx);
 
-          if (pendingCount === 0) {
-            await tx.recurringBooking.update({
-              where: { id: recurringBookingId },
-              data: { status: RecurringStatus.COMPLETED },
-            });
-          }
-        }
 
         // Tạo bản ghi OwnerPayout nợ (PENDING) cho chủ sân
         const firstBooking = payment.bookings[0];

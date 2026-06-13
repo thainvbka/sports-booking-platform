@@ -1,4 +1,4 @@
-import { formatTimeForDisplay, parseTime } from "../../helpers";
+import { formatVietnamTime, parseTime } from "../../helpers";
 import {
   buildPricingRulesCacheKey,
   CACHE_KEYS,
@@ -97,7 +97,7 @@ export const createPricingRule = async (
           "Thứ 7",
         ];
         throw new BadRequestError(
-          `Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[day]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`,
+          `Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[day]} từ ${formatVietnamTime(overlappingRule.start_time)} đến ${formatVietnamTime(overlappingRule.end_time)}`,
         );
       }
 
@@ -253,7 +253,7 @@ export const updatePricingRule = async (
         "Thứ 7",
       ];
       throw new BadRequestError(
-        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatTimeForDisplay(overlappingRule.start_time)} đến ${formatTimeForDisplay(overlappingRule.end_time)}`,
+        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatVietnamTime(overlappingRule.start_time)} đến ${formatVietnamTime(overlappingRule.end_time)}`,
       );
     }
   }

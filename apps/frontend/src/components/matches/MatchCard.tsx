@@ -9,8 +9,8 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { SPORT_TYPE_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { getSportTypeLabel } from "@/utils";
 import {
   MATCH_SKILL_BADGE_STYLES,
   MATCH_SKILL_LABELS,
@@ -96,7 +96,7 @@ const getCountdown = (deadline: string | null) => {
 };
 
 export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
-  const sportLabel = SPORT_TYPE_LABELS[match.sport_type] ?? match.sport_type;
+  const sportLabel = getSportTypeLabel(match.sport_type);
   const fillPct = Math.min(
     100,
     Math.round((match.slots_filled / Math.max(match.slots_needed, 1)) * 100),
