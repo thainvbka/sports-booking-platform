@@ -22,6 +22,7 @@ import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils"
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useMemo } from "react";
 
 type BookingType = "single" | "recurring";
 
@@ -85,11 +86,25 @@ export function BookingScheduleStep({
   onEndTimeChange,
   isCustomTimeValid,
 }: BookingScheduleStepProps) {
+  const operatingHoursStr = useMemo(() => {
+    if (!availableRules || availableRules.length === 0) return "";
+    const allTimes = availableRules.flatMap((rule) => {
+      const start = parseRuleTimeToMinutes(rule.start_time);
+      const end = parseRuleTimeToMinutes(rule.end_time);
+      if (start === null || end === null) return [];
+      return [start, end];
+    });
+    if (allTimes.length === 0) return "";
+    const minTime = Math.min(...allTimes);
+    const maxTime = Math.max(...allTimes);
+    return `${formatMinutesToTime(minTime)} - ${formatMinutesToTime(maxTime)}`;
+  }, [availableRules]);
+
   return (
     <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
       <div className="space-y-2">
         <Label className="block text-sm font-semibold text-foreground">
-          Tình trạng sân ({date ? format(date, "dd/MM/yyyy") : "--/--/----"})
+          Tình trạng sân {date ? `ngày ${format(date, "dd/MM/yyyy")}` : ""} {operatingHoursStr ? `(${operatingHoursStr})` : ""}
         </Label>
         <p className="text-xs text-muted-foreground">
           Chọn khung giờ theo trạng thái thực tế của sân ở từng mốc 30 phút.

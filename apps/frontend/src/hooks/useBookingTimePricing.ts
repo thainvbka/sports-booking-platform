@@ -20,6 +20,8 @@ interface PriceCalculation {
 interface UseBookingTimePricingOptions {
   date?: Date;
   pricingRules: PricingRule[];
+  initialStartTime?: string;
+  initialEndTime?: string;
 }
 
 interface UseBookingTimePricingResult {
@@ -36,9 +38,12 @@ interface UseBookingTimePricingResult {
 export function useBookingTimePricing({
   date,
   pricingRules,
+  initialStartTime,
+  initialEndTime,
 }: UseBookingTimePricingOptions): UseBookingTimePricingResult {
   const [customStartTime, setCustomStartTimeState] = useState("");
   const [customEndTime, setCustomEndTimeState] = useState("");
+  const [hasAppliedInitial, setHasAppliedInitial] = useState(false);
 
   const toMinutes = useCallback((time: string) => {
     const [h, m] = time.split(":").map(Number);
@@ -108,6 +113,21 @@ export function useBookingTimePricing({
 
   useEffect(() => {
     if (timeOptions.length >= 2) {
+      if (!hasAppliedInitial && initialStartTime && initialEndTime) {
+        setHasAppliedInitial(true);
+        if (timeOptions.includes(initialStartTime)) {
+          setCustomStartTimeState(initialStartTime);
+        } else {
+          setCustomStartTimeState(timeOptions[0]);
+        }
+        if (timeOptions.includes(initialEndTime)) {
+          setCustomEndTimeState(initialEndTime);
+        } else {
+          setCustomEndTimeState(timeOptions[1]);
+        }
+        return;
+      }
+
       setCustomStartTimeState((prev) =>
         prev && timeOptions.includes(prev) ? prev : timeOptions[0],
       );
@@ -122,7 +142,7 @@ export function useBookingTimePricing({
 
     setCustomStartTimeState("");
     setCustomEndTimeState("");
-  }, [timeOptions]);
+  }, [timeOptions, initialStartTime, initialEndTime, hasAppliedInitial]);
 
   const setCustomStartTime = useCallback(
     (value: string) => {
@@ -176,7 +196,7 @@ export function useBookingTimePricing({
 
       if (segmentStart < segmentEnd) {
         const duration = segmentEnd - segmentStart;
-        const price = Number(rule.base_price) * (duration / ruleDuration);
+        const price = Number(rule.base_price) * (duration / 60);
 
         totalPrice += price;
         breakdown.push({

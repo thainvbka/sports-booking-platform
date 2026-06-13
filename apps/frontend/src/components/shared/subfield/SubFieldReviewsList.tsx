@@ -1,9 +1,8 @@
-import { RatingStars } from "@/components/shared/review/RatingStars";
 import { ReviewerAvatar } from "@/components/shared/review/ReviewerAvatar";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -28,7 +27,7 @@ import { buildPageList } from "@/utils";
 import { getReviewerDisplayName } from "@/utils/review.utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { ImageIcon, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageIcon, RotateCcw } from "lucide-react";
 import type { MouseEvent } from "react";
 
 interface ReviewsSummary {
@@ -53,7 +52,7 @@ interface SubfieldReviewsListProps {
 }
 
 const SORT_OPTIONS: Array<{ value: ReviewSortBy; label: string }> = [
-  { value: "newest", label: "Mới nhất" },
+  { value: "newest", label: "Gần đây nhất" },
   { value: "oldest", label: "Cũ nhất" },
   { value: "rating_desc", label: "Điểm cao trước" },
   { value: "rating_asc", label: "Điểm thấp trước" },
@@ -67,6 +66,18 @@ const RATING_OPTIONS: Array<{ value: ReviewRatingFilter; label: string }> = [
   { value: "2", label: "2 sao" },
   { value: "1", label: "1 sao" },
 ];
+
+const getStarBarColor = (star: number) => {
+  if (star >= 4) return "bg-emerald-500";
+  if (star === 3) return "bg-amber-500";
+  return "bg-rose-500";
+};
+// Star ratings details panel
+
+const renderStarsText = (rating: number) => {
+  const full = Math.round(rating);
+  return "★".repeat(full) + "☆".repeat(5 - full);
+};
 
 
 export function SubfieldReviewsList({
@@ -100,91 +111,72 @@ export function SubfieldReviewsList({
   };
 
   return (
-    <section className={cn("flex flex-col gap-4", className)}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          {/* <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-            <span className="h-px w-6 bg-border-strong" />
-            Match reports
-          </div> */}
-          <h2 className="mt-1.5 font-display text-2xl leading-tight font-black tracking-tight italic md:text-3xl">
-            Phản hồi từ người chơi
-          </h2>
-        </div>
-
-        {hasActiveFilter ? (
-          <Button type="button" variant="ghost" size="sm" onClick={resetFilters}>
-            <RotateCcw data-icon="inline-start" />
-            Đặt lại bộ lọc
-          </Button>
-        ) : null}
+    <Card className={cn("rounded-2xl border border-border/60 bg-card p-6 shadow-xs", className)}>
+      {/* Header section with summary meta */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-sm sm:text-base uppercase font-bold text-foreground">Phản hồi từ người chơi</h2>
+        <span className="text-xs text-muted-foreground font-medium">
+          {summary.average > 0 ? summary.average.toFixed(1) : "0.0"}/5 • {summary.total} đánh giá
+        </span>
       </div>
 
-      <Card className="rounded-2xl border-border/70 bg-card shadow-sm">
-        <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
-          <div className="flex items-center gap-4 md:w-52 md:shrink-0 md:flex-col md:items-start md:gap-1">
-            <div className="flex items-baseline gap-1">
-              <span className="font-display text-4xl leading-none font-black italic text-foreground md:text-5xl">
-                {summary.average > 0 ? summary.average.toFixed(1) : "0.0"}
-              </span>
-              <span className="font-display text-lg font-semibold text-muted-foreground/70">
-                /5
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <RatingStars
-                rating={summary.average}
-                iconClassName="h-3.5 w-3.5"
-              />
-              <p className="text-[11px] text-muted-foreground">
-                {summary.total} đánh giá
-              </p>
-            </div>
+      {/* Dashboard điểm số */}
+      <div className="mb-6 flex flex-col items-center gap-6 border-b border-border/60 pb-6 md:flex-row">
+        <div className="text-center md:border-r md:border-border/60 md:pr-8 md:min-w-[120px]">
+          <div className="text-4xl font-black text-foreground">
+            {summary.average > 0 ? summary.average.toFixed(1) : "0.0"}
           </div>
-
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            {distributionRows.map((row) => (
-              <div
-                key={row.star}
-                className="grid grid-cols-[1.75rem_1fr_3rem] items-center gap-2.5"
-              >
-                <span className="text-xs font-semibold text-muted-foreground tabular-nums">
-                  {row.star}★
-                </span>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-linear-to-r from-primary to-accent-sport transition-[width] duration-500"
-                    style={{ width: `${row.percent}%` }}
-                  />
-                </div>
-                <span className="text-right text-[11px] text-muted-foreground tabular-nums">
-                  {row.count}
-                  <span className="ml-1 text-muted-foreground/50">
-                    ({row.percent}%)
-                  </span>
-                </span>
+          <div className="my-1 text-sm text-amber-400 font-medium">
+            {renderStarsText(summary.average)}
+          </div>
+          <span className="text-xs text-muted-foreground">{summary.total} đánh giá</span>
+        </div>
+        
+        {/* Progress bars */}
+        <div className="flex w-full flex-1 flex-col gap-1.5">
+          {distributionRows.map((row) => (
+            <div key={row.star} className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="w-3 text-right font-medium">{row.star}</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn("h-full rounded-full transition-all duration-500", getStarBarColor(row.star))}
+                  style={{ width: `${row.percent}%` }}
+                />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <span className="w-8 text-right font-semibold">{row.percent}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-surface-2/60 p-2">
-        <span className="flex items-center gap-2 pl-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-          <span className="h-px w-4 bg-border-strong" />
-          Lọc
-        </span>
-
+      {/* Bộ lọc Review */}
+      <div className="mb-6 flex flex-wrap gap-2 overflow-x-auto pb-1">
         <Select
           value={ratingFilter}
           onValueChange={(value) => onRatingFilterChange(value as ReviewRatingFilter)}
         >
-          <SelectTrigger className="h-8 w-32 rounded-full bg-background text-xs">
+          <SelectTrigger className="h-8 w-32 rounded-xl bg-card text-xs font-semibold border-border/80 cursor-pointer">
             <SelectValue placeholder="Tất cả sao" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl">
             {RATING_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value} className="text-xs">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortBy}
+          onValueChange={(value) => onSortByChange(value as ReviewSortBy)}
+        >
+          <SelectTrigger className="h-8 w-32 rounded-xl bg-card text-xs font-semibold border-border/80 cursor-pointer">
+            <SelectValue placeholder="Gần đây nhất" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="text-xs">
                 {option.label}
               </SelectItem>
             ))}
@@ -196,35 +188,28 @@ export function SubfieldReviewsList({
           size="sm"
           pressed={hasImagesOnly}
           onPressedChange={onHasImagesOnlyChange}
-          className="h-8 rounded-full px-3 text-xs"
+          className="h-8 rounded-xl px-3 text-xs font-semibold border-border/80 cursor-pointer data-[state=pressed]:bg-primary/10 data-[state=pressed]:text-primary"
           aria-label="Chỉ xem đánh giá có hình ảnh"
         >
-          <ImageIcon data-icon="inline-start" />
-          Có hình
+          <ImageIcon className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+          Có ảnh
         </Toggle>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:inline">
-            Sắp xếp
-          </span>
-          <Select
-            value={sortBy}
-            onValueChange={(value) => onSortByChange(value as ReviewSortBy)}
+        {hasActiveFilter ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="h-8 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
           >
-            <SelectTrigger className="h-8 w-32 rounded-full bg-background text-xs">
-              <SelectValue placeholder="Mới nhất" />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <RotateCcw className="h-3 w-3 mr-1.5" />
+            Đặt lại
+          </Button>
+        ) : null}
       </div>
 
+      {/* Content body */}
       {isLoading ? (
         <LoadingState text="Đang tải đánh giá..." className="py-10" />
       ) : reviews.length === 0 ? (
@@ -240,16 +225,69 @@ export function SubfieldReviewsList({
           className="py-10"
         />
       ) : (
-        <ul
-          key={`reviews-list-${pagination?.page ?? 1}-${ratingFilter}-${sortBy}-${hasImagesOnly}-${reviews.map((r) => r.id).join(",")}`}
-          className="flex flex-col gap-2.5 motion-safe-stagger"
-        >
-          {reviews.map((review) => (
-            <ReviewClip key={review.id} review={review} />
-          ))}
-        </ul>
+        /* List Comments (Grid 2 cột gọn gàng) */
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {reviews.map((review) => {
+            const name = getReviewerDisplayName(review, "Người chơi");
+            
+            return (
+              <div
+                key={review.id}
+                className="flex gap-4 p-4 rounded-2xl border border-border/60 bg-card hover:bg-muted/30 transition duration-200"
+              >
+                <ReviewerAvatar
+                  name={name}
+                  avatar={review.player?.account?.avatar}
+                  className="h-9 w-9 shrink-0 text-xs font-bold text-muted-foreground bg-muted"
+                  fallbackClassName="bg-primary/10 text-primary font-semibold text-xs"
+                />
+                
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-xs text-foreground truncate">
+                        {name}
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {format(new Date(review.created_at), "dd 'thg' M yyyy", { locale: vi })}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-lg text-[11px] shrink-0 border border-amber-500/10">
+                      {review.rating}★
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-foreground/80 leading-relaxed italic pl-1.5 border-l-2 border-primary/20">
+                    {review.comment ? `"${review.comment}"` : "Không có nhận xét chi tiết."}
+                  </p>
+
+                  {/* Images attachment if any */}
+                  {review.images && review.images.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {review.images.slice(0, 3).map((image, index) => (
+                        <div
+                          key={`review-img-${index}`}
+                          className="relative h-12 w-12 overflow-hidden rounded-lg border border-border/70 bg-muted shrink-0"
+                        >
+                          <img
+                            src={image}
+                            alt="Review attachment"
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
+      {/* Pagination component */}
       {pagination && pagination.totalPages > 1 ? (
         <ReviewsPaginationBar
           page={pagination.page}
@@ -257,74 +295,7 @@ export function SubfieldReviewsList({
           onPageChange={onPageChange}
         />
       ) : null}
-    </section>
-  );
-}
-
-interface ReviewClipProps {
-  review: PublicSubfieldReview;
-}
-
-function ReviewClip({ review }: ReviewClipProps) {
-  const reviewerName = getReviewerDisplayName(review, "Người chơi");
-
-  return (
-    <li>
-      <Card className="rounded-xl border-border/70 bg-card shadow-none transition-colors hover:border-primary/30">
-        <CardContent className="flex gap-3 p-4">
-          <ReviewerAvatar
-            name={reviewerName}
-            avatar={review.player?.account?.avatar}
-            className="size-9 shrink-0"
-            fallbackClassName="bg-primary/10 text-primary"
-          />
-
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">
-                  {reviewerName}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {format(new Date(review.created_at), "dd MMM yyyy", { locale: vi })}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1.5 rounded-full border border-border/70 bg-surface-2/60 px-2 py-0.5">
-                <span className="font-display text-sm font-black italic text-foreground tabular-nums">
-                  {review.rating}
-                </span>
-                <RatingStars rating={review.rating} iconClassName="h-3 w-3" />
-              </div>
-            </div>
-
-            {review.comment ? (
-              <p className="text-sm leading-relaxed text-foreground/85">
-                {review.comment}
-              </p>
-            ) : null}
-
-            {review.images.length > 0 ? (
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {review.images.slice(0, 4).map((image, index) => (
-                  <div
-                    key={`${review.id}-image-${index}`}
-                    className="relative size-16 overflow-hidden rounded-lg border border-border/70"
-                  >
-                    <img
-                      src={image}
-                      alt="Review attachment"
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
-    </li>
+    </Card>
   );
 }
 
@@ -348,15 +319,20 @@ function ReviewsPaginationBar({
   };
 
   return (
-    <Pagination className="mt-4">
-      <PaginationContent>
+    <Pagination className="mt-6">
+      <PaginationContent className="gap-1 text-xs">
         <PaginationItem>
           <PaginationPrevious
             href="#"
             aria-disabled={page === 1}
-            className={cn(page === 1 && "pointer-events-none opacity-50")}
+            className={cn(
+              "h-8 rounded-lg px-2.5 font-medium border-border/60 hover:bg-muted cursor-pointer",
+              page === 1 && "pointer-events-none opacity-50"
+            )}
             onClick={(event) => go(event, page - 1)}
-          />
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </PaginationPrevious>
         </PaginationItem>
 
         {pageItems.map((item, idx) =>
@@ -370,6 +346,12 @@ function ReviewsPaginationBar({
                 href="#"
                 isActive={item === page}
                 onClick={(event) => go(event, item)}
+                className={cn(
+                  "h-8 w-8 rounded-lg font-medium cursor-pointer",
+                  item === page
+                    ? "bg-foreground text-background hover:bg-foreground hover:text-background"
+                    : "border border-border/60 hover:bg-muted"
+                )}
               >
                 {item}
               </PaginationLink>
@@ -382,10 +364,13 @@ function ReviewsPaginationBar({
             href="#"
             aria-disabled={page === totalPages}
             className={cn(
-              page === totalPages && "pointer-events-none opacity-50",
+              "h-8 rounded-lg px-2.5 font-medium border-border/60 hover:bg-muted cursor-pointer",
+              page === totalPages && "pointer-events-none opacity-50"
             )}
             onClick={(event) => go(event, page + 1)}
-          />
+          >
+            <ChevronRight className="h-4 w-4" />
+          </PaginationNext>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

@@ -18,7 +18,8 @@ export const parseRuleTimeToMinutes = (time: string | Date): number | null => {
 
   const d = new Date(time);
   if (Number.isNaN(d.getTime())) return null;
-  return d.getUTCHours() * 60 + d.getUTCMinutes();
+  const zonedDate = toZonedTime(d, VN_TIMEZONE);
+  return zonedDate.getHours() * 60 + zonedDate.getMinutes();
 };
 
 /**
@@ -65,21 +66,26 @@ export const formatTime = (time: string | Date | unknown): string => {
     if (/^\d{2}:\d{2}$/.test(time)) return time;
     if (/^\d{2}:\d{2}:\d{2}/.test(time)) return time.slice(0, 5);
     if (time.includes("T") && time.includes("Z")) {
-      const timePart = time.split("T")[1].split("Z")[0];
-      return timePart.slice(0, 5);
+      const date = new Date(time);
+      const zonedDate = toZonedTime(date, VN_TIMEZONE);
+      const hours = String(zonedDate.getHours()).padStart(2, "0");
+      const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
     }
     if (time.includes("T") || time.includes("-")) {
       const date = new Date(time);
-      const hours = String(date.getUTCHours()).padStart(2, "0");
-      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+      const zonedDate = toZonedTime(date, VN_TIMEZONE);
+      const hours = String(zonedDate.getHours()).padStart(2, "0");
+      const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
       return `${hours}:${minutes}`;
     }
     return time.slice(0, 5);
   }
 
   if (time instanceof Date) {
-    const hours = String(time.getUTCHours()).padStart(2, "0");
-    const minutes = String(time.getUTCMinutes()).padStart(2, "0");
+    const zonedDate = toZonedTime(time, VN_TIMEZONE);
+    const hours = String(zonedDate.getHours()).padStart(2, "0");
+    const minutes = String(zonedDate.getMinutes()).padStart(2, "0");
     return `${hours}:${minutes}`;
   }
 

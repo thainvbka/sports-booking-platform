@@ -88,14 +88,13 @@ export function TimeSlotsGrid({
     const slotStartMin = slotMin;
     const slotEndMin = slotMin + 30;
 
-    // Dùng <= để bôi đen cả slot tại end time (VD: 17:30-18:30 → highlight 17:30, 18:00, 18:30)
     if (selectedStart && selectedEnd) {
       const [sH, sM] = selectedStart.split(":").map(Number);
       const [eH, eM] = selectedEnd.split(":").map(Number);
       const selStartMin = sH * 60 + sM;
       const selEndMin = eH * 60 + eM;
 
-      if (slotStartMin >= selStartMin && slotStartMin <= selEndMin) {
+      if (slotStartMin >= selStartMin && slotStartMin < selEndMin) {
         return "SELECTED";
       }
     }
@@ -168,8 +167,8 @@ export function TimeSlotsGrid({
               <div
                 key={time}
                 className={cn(
-                  "relative flex flex-col items-center justify-center rounded-md border p-2 text-xs font-medium transition-all",
-                  "h-10",
+                  "relative flex flex-col items-center justify-center rounded-md border p-1 text-center transition-all",
+                  "h-10 text-[10px] font-medium",
                   status === "AVAILABLE" &&
                     "bg-card hover:border-primary/50 hover:bg-muted text-foreground shadow-sm",
                   status === "SELECTED" &&
@@ -189,23 +188,21 @@ export function TimeSlotsGrid({
                     : {}
                 }
               >
-                <span>{formatMinutesToTime(time)}</span>
-                {status !== "AVAILABLE" ? (
-                  <span
-                    className={cn(
-                      "text-[10px] font-normal",
-                      status === "SELECTED"
-                        ? "text-primary-foreground/80"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    {status === "SELECTED"
-                      ? "Chọn"
-                      : status === "PENDING"
-                        ? "Chờ"
-                        : "Đã đặt"}
-                  </span>
-                ) : null}
+                <span className="font-bold text-xs leading-none mb-0.5">{formatMinutesToTime(time)}</span>
+                <span
+                  className={cn(
+                    "text-[9px] font-normal leading-none opacity-85",
+                    status === "SELECTED"
+                      ? "text-primary-foreground/90"
+                      : status === "BOOKED"
+                        ? "text-rose-600/90 dark:text-rose-200/90"
+                        : status === "PENDING"
+                          ? "text-amber-600/90 dark:text-amber-200/90"
+                          : "text-muted-foreground",
+                  )}
+                >
+                  đến {formatMinutesToTime(time + 30)}
+                </span>
               </div>
             );
           })}

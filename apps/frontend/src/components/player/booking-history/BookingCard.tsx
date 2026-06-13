@@ -31,8 +31,8 @@ import {
   RefreshCcw,
   Star,
   Ticket,
-  XCircle,
   Trophy,
+  XCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -285,7 +285,7 @@ export function BookingCard({
                 className="flex-1 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 flex items-center justify-center gap-1.5 font-medium dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
               >
                 <Trophy className="size-4 text-amber-500" />
-                Tạo kèo ghép
+                Tạo kèo
               </Button>
             )}
 
@@ -449,7 +449,7 @@ function SessionsListDialog({
                       className="h-8 px-3 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 text-xs font-semibold gap-1.5 rounded-lg dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
                     >
                       <Trophy className="size-3.5 text-amber-500" />
-                      Tạo kèo ghép
+                      Tạo kèo
                     </Button>
                   )}
 

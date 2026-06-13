@@ -84,7 +84,7 @@ export const calculatePrice = (
     if (segmentStart < segmentEnd) {
       const duration_min = segmentEnd - segmentStart;
       const segment_price =
-        Number(rule.base_price) * (duration_min / ruleDurationMin);
+        Number(rule.base_price) * (duration_min / 60);
 
       totalPrice += segment_price;
       breakdown.push({

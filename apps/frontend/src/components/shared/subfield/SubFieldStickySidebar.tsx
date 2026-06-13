@@ -1,26 +1,24 @@
-import { RatingStars } from "@/components/shared/review/RatingStars";
-import { SubfieldPricingTabs } from "./SubFieldPricingTabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import type { PublicSubfieldDetail } from "@/types";
-import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
-import { ArrowRight, Clock3, ShieldCheck, Users, Zap } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type { PublicSubfieldDetail, SubfieldProduct } from "@/types";
+import { ArrowRight, Zap } from "lucide-react";
 import { useMemo } from "react";
 
 interface SubfieldStickySidebarProps {
   subfield: PublicSubfieldDetail;
+  products?: SubfieldProduct[];
   ratingAverage: number;
   ratingTotal: number;
   onBookNow: () => void;
+  className?: string;
 }
 
 export function SubfieldStickySidebar({
   subfield,
-  ratingAverage,
-  ratingTotal,
+  products = [],
   onBookNow,
+  className,
 }: SubfieldStickySidebarProps) {
   const minPrice = useMemo(() => {
     const prices = (subfield.pricing_rules || []).map((rule) => Number(rule.base_price));
@@ -28,157 +26,114 @@ export function SubfieldStickySidebar({
     return Math.min(...prices);
   }, [subfield.pricing_rules]);
 
-  const operatingHours = useMemo(() => {
-    const starts: number[] = [];
-    const ends: number[] = [];
-
-    for (const rule of subfield.pricing_rules || []) {
-      const startMin = parseRuleTimeToMinutes(rule.start_time);
-      const endMin = parseRuleTimeToMinutes(rule.end_time);
-
-      if (startMin !== null) starts.push(startMin);
-      if (endMin !== null) ends.push(endMin);
-    }
-
-    if (starts.length === 0 || ends.length === 0) {
-      return "--:-- - --:--";
-    }
-
-    return `${formatMinutesToTime(Math.min(...starts))} - ${formatMinutesToTime(Math.max(...ends))}`;
-  }, [subfield.pricing_rules]);
+  const displayProducts = products;
 
   return (
-    <aside className="flex flex-col gap-4 xl:sticky xl:top-24">
-      <Card className="relative overflow-hidden rounded-3xl border-border/70 bg-card shadow-card">
+    <aside className="flex flex-col gap-6 lg:sticky lg:top-24 self-start w-full z-20">
+      {/* Quick Booking CTA Card */}
+      <Card className="relative overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-sm">
+        {/* Top brand line */}
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-primary via-accent-sport to-primary"
         />
+        {/* Glow background accent */}
         <div
           aria-hidden
-          className="absolute -right-14 -top-14 size-48 rounded-full bg-primary/10 blur-3xl"
+          className="absolute -right-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"
         />
 
-        <CardHeader className="relative gap-2 px-6 pt-6 pb-0">
+        <CardHeader className="relative gap-2 px-6 pt-6 pb-2">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-accent-sport" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-accent-sport" />
-              </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <Zap className="h-3.5 w-3.5 fill-emerald-500/20 text-emerald-500" />
               Đặt nhanh
             </span>
             <Badge
               variant="secondary"
-              className="rounded-full border border-accent-sport/20 bg-accent-sport/10 px-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-sport"
+              className="rounded-lg border-0 bg-blue-500/10 hover:bg-blue-500/15 px-2.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400"
             >
-              <Zap data-icon="inline-start" className="text-accent-sport" />
               Hôm nay
             </Badge>
           </div>
         </CardHeader>
 
-        <CardContent className="relative flex flex-col gap-5 p-6 pt-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Giá từ
+        <CardContent className="relative flex flex-col gap-5 p-6 pt-2">
+          {/* Pricing Row */}
+          <div className="space-y-1">
+            <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
+              Giá thuê sân từ
             </p>
-            <div className="mt-1 flex items-baseline gap-1.5">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
               {minPrice !== null ? (
                 <>
-                  <span className="font-display text-4xl leading-none font-black italic tracking-tight text-foreground">
+                  <span className="font-display text-4xl font-black tracking-tight text-foreground leading-none">
                     {Number(minPrice).toLocaleString("vi-VN")}đ
                   </span>
-                  <span className="text-sm font-medium text-muted-foreground">/ giờ</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase">/ giờ</span>
                 </>
               ) : (
-                <span className="font-display text-xl italic text-muted-foreground">
+                <span className="font-display text-xl font-bold italic text-muted-foreground">
                   Đang cập nhật
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-surface-2/70 px-3 py-2">
-            <RatingStars rating={Math.round(ratingAverage || 0)} iconClassName="h-4 w-4" />
-            <span className="text-sm font-semibold text-foreground">
-              {ratingAverage > 0 ? ratingAverage.toFixed(1) : "0.0"}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              ({ratingTotal} đánh giá)
-            </span>
-          </div>
-
+          {/* CTA Button */}
           <Button
             size="lg"
-            className="h-12 w-full rounded-2xl text-base font-semibold shadow-lg shadow-primary/25 transition-transform hover:-translate-y-0.5"
+            className="h-12 w-full rounded-xl text-xs font-bold cursor-pointer bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white transition-all duration-200 shadow-md shadow-blue-500/10"
             onClick={onBookNow}
-            aria-label={`Đặt sân ${subfield.sub_field_name} ngay`}
+            aria-label="Đặt sân ngay"
           >
-            Đặt sân ngay
-            <ArrowRight data-icon="inline-end" />
+            ĐẶT SÂN NGAY
+            <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
-
-          <Separator />
-
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <StatLine
-              icon={<Users className="h-4 w-4 text-muted-foreground" />}
-              label="Sức chứa"
-              value={`${subfield.capacity} người`}
-            />
-            <StatLine
-              icon={<Clock3 className="h-4 w-4 text-muted-foreground" />}
-              label="Mở cửa"
-              value={operatingHours}
-            />
-          </dl>
-
-          <div className="flex items-start gap-2 rounded-2xl border border-dashed border-border/70 bg-surface-2/40 px-3 py-2.5 text-xs text-muted-foreground">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent-sport" />
-            <p>
-              Xác nhận ngay · Hủy linh hoạt theo chính sách sân. Giá đã bao gồm phí nền tảng.
-            </p>
-          </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border-border/70 shadow-sm">
-        <CardHeader className="gap-1 px-5 pt-5 pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-display text-base font-semibold">
-              Bảng giá theo ngày
-            </CardTitle>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              T2 → CN
-            </span>
+      {/* Dịch vụ thêm (Upsell Items) - Only render if products exist */}
+      {displayProducts.length > 0 && (
+        <Card className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-foreground">Dịch vụ bổ sung</h3>
+          <div className="flex flex-col gap-4">
+            {displayProducts.map((product) => {
+              const price = typeof product.price === "number" ? product.price : Number(product.price);
+              
+              return (
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between gap-3 rounded-xl p-2 transition hover:bg-muted/50 border border-transparent hover:border-border/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-lg bg-muted border border-border/60 shrink-0">
+                      <img
+                        src={product.image || "https://images.unsplash.com/photo-1519766304817-4f37bda74a27?w=80&h=80&fit=crop&q=80"}
+                        alt={product.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1519766304817-4f37bda74a27?w=80&h=80&fit=crop&q=80";
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">{product.name}</h4>
+                      <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                        {product.description || "Dịch vụ/sản phẩm chất lượng cao cho trận đấu."}
+                      </p>
+                      <span className="mt-1 block text-xs font-bold text-blue-600 dark:text-blue-400">
+                        {price.toLocaleString("vi-VN")}đ
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Giá theo từng khung giờ.
-          </p>
-        </CardHeader>
-        <CardContent className="px-5 pt-1 pb-5">
-          <SubfieldPricingTabs pricingRules={subfield.pricing_rules || []} embedded />
-        </CardContent>
-      </Card>
+        </Card>
+      )}
     </aside>
-  );
-}
-
-interface StatLineProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
-
-function StatLine({ icon, label, value }: StatLineProps) {
-  return (
-    <div className="flex flex-col gap-0.5 rounded-xl border border-border/60 bg-card/50 p-2.5">
-      <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        {icon}
-        {label}
-      </span>
-      <span className="truncate text-sm font-semibold text-foreground">{value}</span>
-    </div>
   );
 }

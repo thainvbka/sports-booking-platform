@@ -1,9 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
-import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
-import { Clock } from "lucide-react";
+import { formatTime, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes } from "@/utils/time.utils";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const dayTabLabels: Record<number, string> = {
@@ -17,23 +23,71 @@ const dayTabLabels: Record<number, string> = {
 };
 
 interface SubfieldPricingTabsProps {
+  subfieldId: string;
   pricingRules: PricingRule[];
+  onBookNow: (date: Date, startTime: string, endTime: string) => void;
   className?: string;
-  embedded?: boolean;
 }
 
-const formatRuleTime = (time: string | Date) => {
-  const mins = parseRuleTimeToMinutes(time);
-  if (mins === null) return "--:--";
-  return formatMinutesToTime(mins);
+const formatRuleHourRange = (start: string | Date, end: string | Date) => {
+  const startMins = parseRuleTimeToMinutes(start);
+  const endMins = parseRuleTimeToMinutes(end);
+  if (startMins === null || endMins === null) return "--:-- - --:--";
+  
+  const startHour = Math.floor(startMins / 60).toString().padStart(2, "0");
+  const startMin = (startMins % 60).toString().padStart(2, "0");
+  const endHour = Math.floor(endMins / 60).toString().padStart(2, "0");
+  const endMin = (endMins % 60).toString().padStart(2, "0");
+  return `${startHour}:${startMin} - ${endHour}:${endMin}`;
 };
 
 export function SubfieldPricingTabs({
+  subfieldId,
   pricingRules,
+  onBookNow,
   className,
-  embedded = false,
 }: SubfieldPricingTabsProps) {
   const [activePricingDay, setActivePricingDay] = useState("0");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
+  useEffect(() => {
+    if (!subfieldId || !selectedDate) return;
+    
+    let isMounted = true;
+    const fetchAvailability = async () => {
+      setIsLoadingBookings(true);
+      try {
+        const fmtDate = format(selectedDate, "yyyy-MM-dd");
+        const data = await publicService.getSubfieldAvailability(subfieldId, fmtDate);
+        if (isMounted) {
+          setBookings(data.data.availability.bookings || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch availability in PricingTabs", error);
+        if (isMounted) {
+          setBookings([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingBookings(false);
+        }
+      }
+    };
+    
+    void fetchAvailability();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [subfieldId, selectedDate]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setActivePricingDay(String(selectedDate.getDay()));
+    }
+  }, [selectedDate]);
 
   const rulesByDay = useMemo(() => {
     const grouped: Record<number, PricingRule[]> = {
@@ -61,105 +115,218 @@ export function SubfieldPricingTabs({
     return grouped;
   }, [pricingRules]);
 
-  useEffect(() => {
-    const firstDayWithRules = Object.keys(rulesByDay).find(
-      (day) => rulesByDay[Number(day)].length > 0,
-    );
+  const handleTabClick = (dayNum: number) => {
+    const today = new Date();
+    const todayDay = today.getDay();
+    let diff = dayNum - todayDay;
+    
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + diff);
+    
+    const todayZero = new Date(today.setHours(0,0,0,0));
+    const targetZero = new Date(targetDate.setHours(0,0,0,0));
+    if (targetZero < todayZero) {
+      targetDate.setDate(targetDate.getDate() + 7);
+    }
+    
+    setSelectedDate(targetDate);
+  };
 
-    setActivePricingDay(firstDayWithRules || "0");
-  }, [rulesByDay]);
+  const minPrice = useMemo(() => {
+    const prices = pricingRules.map((r) => Number(r.base_price));
+    return prices.length > 0 ? Math.min(...prices) : 0;
+  }, [pricingRules]);
 
-  const tabsContent = (
-    <Tabs
-      value={activePricingDay}
-      onValueChange={setActivePricingDay}
-      className="gap-3"
-    >
-      <TabsList className="grid h-auto w-full grid-cols-7 gap-1 rounded-full bg-surface-2/70 p-1">
-        {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+  const maxPrice = useMemo(() => {
+    const prices = pricingRules.map((r) => Number(r.base_price));
+    return prices.length > 0 ? Math.max(...prices) : 0;
+  }, [pricingRules]);
+
+  const hasPriceDifference = minPrice < maxPrice;
+
+  const getRuleClassification = (rule: PricingRule) => {
+    const rulePrice = Number(rule.base_price);
+    const startMins = parseRuleTimeToMinutes(rule.start_time);
+    const startHour = startMins !== null ? Math.floor(startMins / 60) : 0;
+
+    const isPeakTime = startHour >= 17 && startHour < 22;
+
+    if (isPeakTime) {
+      return "PEAK";
+    }
+    if (hasPriceDifference && rulePrice === minPrice) {
+      return "BUDGET";
+    }
+    return "REGULAR";
+  };
+
+  const getRuleSlotStatus = (rule: PricingRule) => {
+    const ruleStartMin = parseRuleTimeToMinutes(rule.start_time);
+    const ruleEndMin = parseRuleTimeToMinutes(rule.end_time);
+    if (ruleStartMin === null || ruleEndMin === null) return "AVAILABLE";
+
+    let hasPending = false;
+    let hasBooked = false;
+
+    for (const booking of bookings) {
+      const bStartMin = parseBookingTimeToVnMinutes(booking.start);
+      const bEndMin = parseBookingTimeToVnMinutes(booking.end);
+
+      if (Math.max(ruleStartMin, bStartMin) < Math.min(ruleEndMin, bEndMin)) {
+        if (booking.status === "PENDING") {
+          hasPending = true;
+        } else if (booking.status === "CONFIRMED" || booking.status === "COMPLETED") {
+          hasBooked = true;
+        }
+      }
+    }
+
+    if (hasBooked) return "BOOKED";
+    if (hasPending) return "PENDING";
+    return "AVAILABLE";
+  };
+
+  const selectedDayRules = rulesByDay[Number(activePricingDay)] || [];
+
+  return (
+    <Card className={cn("rounded-2xl border border-border/60 bg-card p-6 shadow-xs", className)}>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-sm sm:text-base uppercase font-bold text-foreground">Bảng giá theo khung giờ</h2>
+        
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 rounded-xl border-border/80 bg-muted/50 px-4 text-xs font-semibold hover:bg-muted/70 cursor-pointer"
+              >
+                <CalendarIcon className="size-3.5 text-muted-foreground" />
+                {format(selectedDate, "dd/MM/yyyy", { locale: vi })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* Tabs Thứ trong tuần */}
+      <div className="mb-6 flex gap-2 overflow-x-auto border-b border-border/60 pb-4">
+        {[1, 2, 3, 4, 5, 6, 0].map((day) => {
           const hasRules = rulesByDay[day].length > 0;
+          const isActive = activePricingDay === String(day);
           return (
-            <TabsTrigger
+            <button
               key={day}
-              value={String(day)}
+              onClick={() => handleTabClick(day)}
               className={cn(
-                "relative h-8 rounded-full bg-transparent text-xs font-semibold text-muted-foreground transition-colors",
-                "hover:text-foreground",
-                "data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-sm",
+                "rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                isActive
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
               {dayTabLabels[day]}
-              {hasRules ? (
-                <span
-                  aria-hidden
-                  className="absolute right-1 top-1 size-1.5 rounded-full bg-accent-sport data-[state=active]:bg-accent-sport"
-                />
-              ) : null}
-            </TabsTrigger>
+              {hasRules && !isActive && (
+                <span className="ml-1 inline-block size-1 rounded-full bg-emerald-500" />
+              )}
+            </button>
           );
         })}
-      </TabsList>
+      </div>
 
-      {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-        <TabsContent key={day} value={String(day)} className="m-0">
-          {rulesByDay[day].length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {rulesByDay[day].map((rule) => (
-                <li
-                  key={rule.id}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5 transition-colors hover:border-primary/30 hover:bg-surface-2/40"
+      {/* Grid Slots Giờ */}
+      {selectedDayRules.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {selectedDayRules.map((rule) => {
+            const rulePrice = Number(rule.base_price);
+            const classification = getRuleClassification(rule);
+            const status = getRuleSlotStatus(rule);
+
+            return (
+              <div
+                key={rule.id}
+                className={cn(
+                  "flex flex-col items-center justify-between gap-4 rounded-2xl border bg-card p-5 text-center shadow-xs transition duration-200 hover:shadow-sm",
+                  status === "AVAILABLE" && "border-emerald-500/20 bg-emerald-50/5 dark:bg-emerald-950/5",
+                  status === "PENDING" && "border-amber-500/20 bg-amber-50/5 dark:bg-amber-950/5",
+                  status === "BOOKED" && "border-rose-500/20 bg-rose-50/5 dark:bg-rose-950/5"
+                )}
+              >
+                <div className="flex flex-col items-center gap-1.5">
+                  {/* Classification Badge */}
+                  {classification === "PEAK" && (
+                    <Badge variant="outline" className="rounded-full border-red-200 bg-red-50 text-red-700 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400 text-[10px] font-bold px-2 py-0.5">
+                      Giờ cao điểm
+                    </Badge>
+                  )}
+                  {classification === "BUDGET" && (
+                    <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5">
+                      Giá tiết kiệm
+                    </Badge>
+                  )}
+                  {classification === "REGULAR" && (
+                    <Badge variant="outline" className="rounded-full border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5">
+                      Khung giờ thường
+                    </Badge>
+                  )}
+
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5">
+                    {formatRuleHourRange(rule.start_time, rule.end_time)}
+                  </span>
+                  
+                  <span className="text-base font-black text-foreground">
+                    {rulePrice.toLocaleString("vi-VN")}đ/h
+                  </span>
+
+                  {/* Status Label */}
+                  {status === "AVAILABLE" && (
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                      ✓ Available
+                    </span>
+                  )}
+                  {status === "PENDING" && (
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                      ⚡ Chờ thanh toán
+                    </span>
+                  )}
+                  {status === "BOOKED" && (
+                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                      🔥 Đã đặt
+                    </span>
+                  )}
+                </div>
+
+                <Button
+                  onClick={() => onBookNow(selectedDate, formatTime(rule.start_time), formatTime(rule.end_time))}
+                  disabled={status !== "AVAILABLE"}
+                  className={cn(
+                    "w-full rounded-xl text-xs font-bold text-white transition py-2 h-auto cursor-pointer",
+                    status === "AVAILABLE"
+                      ? "bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800"
+                      : "bg-muted text-muted-foreground cursor-not-allowed hover:bg-muted hover:text-muted-foreground"
+                  )}
                 >
-                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span className="flex size-7 items-center justify-center rounded-lg border border-border/60 bg-surface-2/60 text-muted-foreground transition-colors group-hover:border-primary/30 group-hover:text-primary">
-                      <Clock className="h-3.5 w-3.5" />
-                    </span>
-                    <span className="font-display font-semibold tracking-tight tabular-nums">
-                      {formatRuleTime(rule.start_time)}
-                      <span className="mx-1 text-muted-foreground/50">→</span>
-                      {formatRuleTime(rule.end_time)}
-                    </span>
-                  </span>
-                  <span className="font-display text-sm font-black italic tracking-tight text-foreground tabular-nums">
-                    {Number(rule.base_price).toLocaleString("vi-VN")}
-                    <span className="ml-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground not-italic">
-                      đ/h
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed border-border/70 bg-surface-2/30 px-3 py-5 text-center">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
-                Nghỉ
-              </span>
-              <p className="text-sm text-muted-foreground">
-                Chưa có bảng giá cho ngày này.
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      ))}
-    </Tabs>
-  );
-
-  if (embedded) {
-    return <div className={cn("flex flex-col gap-3", className)}>{tabsContent}</div>;
-  }
-
-  return (
-    <section className={cn(className)}>
-      <Card className="rounded-3xl border-border/70 shadow-sm">
-        <CardHeader className="gap-1 px-5 pt-5 pb-2">
-          <CardTitle className="font-display text-base font-semibold">
-            Bảng giá theo ngày
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Giá theo từng khung giờ.</p>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 px-5 pt-1 pb-5">
-          {tabsContent}
-        </CardContent>
-      </Card>
-    </section>
+                  {status === "AVAILABLE" ? "ĐẶT NGAY" : status === "PENDING" ? "ĐANG GIỮ" : "HẾT CHỖ"}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border/80 bg-surface-2/20 py-8 px-4 text-center">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nghỉ hoạt động</span>
+          <p className="text-xs text-muted-foreground">Không có bảng giá hoặc lịch hoạt động cho ngày này.</p>
+        </div>
+      )}
+    </Card>
   );
 }

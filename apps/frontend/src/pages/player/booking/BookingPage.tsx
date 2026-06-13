@@ -37,7 +37,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 type BookingType = "single" | "recurring";
@@ -47,6 +47,11 @@ export default function BookingPage() {
   const { subfieldId } = useParams<{ subfieldId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [searchParams] = useSearchParams();
+
+  const queryDate = searchParams.get("date");
+  const queryStart = searchParams.get("start");
+  const queryEnd = searchParams.get("end");
 
   const {
     subfield,
@@ -70,7 +75,15 @@ export default function BookingPage() {
   const [bookingType, setBookingType] = useState<BookingType>("single");
   const [currentStep, setCurrentStep] = useState<Step>(1);
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(() => {
+    if (queryDate) {
+      const parsed = new Date(queryDate);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+    return new Date();
+  });
   const [endDate, setEndDate] = useState<Date | undefined>(addMonths(new Date(), 1));
   const [recurringType, setRecurringType] = useState<"WEEKLY" | "MONTHLY">(
     "WEEKLY",
@@ -88,6 +101,8 @@ export default function BookingPage() {
   } = useBookingTimePricing({
     date,
     pricingRules: subfield?.pricing_rules || [],
+    initialStartTime: queryStart || undefined,
+    initialEndTime: queryEnd || undefined,
   });
 
   const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
