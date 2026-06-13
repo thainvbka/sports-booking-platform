@@ -1,14 +1,14 @@
+import { type SearchFiltersValue } from "@/components/shared/ui-utility/SearchFilters";
+import { publicService } from "@/services/public.service";
+import { type Complex, type SubField } from "@/types";
+import {
+  parseNumberParam,
+  parseSportTypesFromParams,
+  type TabValue,
+} from "@/utils/searchPage.utils";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { publicService } from "@/services/public.service";
-import { type Complex, type SubField } from "@/types";
-import { type SearchFiltersValue } from "@/components/shared/ui-utility/SearchFilters";
-import {
-  parseSportTypesFromParams,
-  parseNumberParam,
-  type TabValue,
-} from "@/utils/searchPage.utils";
 
 export function useSearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();

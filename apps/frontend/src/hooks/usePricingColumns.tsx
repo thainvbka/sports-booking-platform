@@ -1,19 +1,19 @@
-import { useMemo } from "react";
+import type { Column } from "@/components/shared/ui-utility/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, FilePen, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
 import {
+  formatDuration,
   formatPrice,
   formatTime,
   getRuleClassification,
   minutesBetween,
-  formatDuration,
   PRICING_TIER_CONFIGS,
 } from "@/utils";
-import type { Column } from "@/components/shared/ui-utility/DataTable";
-import { cn } from "@/lib/utils";
+import { Clock, FilePen, Trash2 } from "lucide-react";
+import { useMemo } from "react";
 
 interface PricingColumnsProps {
   pricingRules: PricingRule[];

@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import type { PricingRule } from "@/types";
-import { formatTime, parseRuleTimeToMinutes, getRuleClassification } from "@/utils";
+import { formatTime, getRuleClassification, parseRuleTimeToMinutes } from "@/utils";
+import { useMemo } from "react";
 
 export interface TimelineSegment {
   start: number;

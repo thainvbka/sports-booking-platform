@@ -1,18 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    RECURRENCE_TYPE_LABELS,
+  RECURRENCE_TYPE_LABELS,
 } from "@/lib/constants";
 import { type BookingResponse, BookingStatus } from "@/types";
 import {
-  formatPrice,
   formatDateVn,
+  formatPrice,
   getBookingStatusColor,
   getBookingStatusLabel,
   getRecurringStatusColor,

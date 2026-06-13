@@ -1,7 +1,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { getBookingStatusLabel } from "@/utils";
 import { BookingStatus } from "@/types";
+import { getBookingStatusLabel } from "@/utils";
 import type { LucideIcon } from "lucide-react";
 import { BadgeCheck, Clock, CreditCard, XCircle, Zap } from "lucide-react";
 

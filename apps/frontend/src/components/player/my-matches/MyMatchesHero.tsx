@@ -15,14 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Sparkles } from "lucide-react";
-import { getNameInitials } from "@/utils/review.utils";
 import {
   MATCH_STATUS_BADGE_CONFIG,
   MATCH_STATUS_OPTIONS,
   type MatchStatus,
 } from "@/types/match.type";
+import { getNameInitials } from "@/utils/review.utils";
+import { ArrowUpRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MyMatchesHeroProps {
   user: { avatar?: string | null; full_name?: string } | null;

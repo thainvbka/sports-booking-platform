@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useMatchStore } from "@/store/useMatchStore";
-import { type MyMatchType, type MatchStatus } from "@/types/match.type";
+import { type MatchStatus, type MyMatchType } from "@/types/match.type";
+import { useEffect } from "react";
 
 const PAGE_SIZE = 8;
 

@@ -1,11 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { LogOut } from "lucide-react";
 import { MatchCard } from "@/components/matches/MatchCard";
+import { Button } from "@/components/ui/button";
 import {
   MATCH_LEAVABLE_PARTICIPATION_STATUSES,
   type Match,
 } from "@/types/match.type";
+import { LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MyMatchGridItemProps {
   match: Match;
