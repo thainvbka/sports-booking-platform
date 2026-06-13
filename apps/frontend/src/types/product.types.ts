@@ -9,7 +9,7 @@ export interface OwnerProduct {
   price: number;
   stock: number;
   image?: string | null;
-  sport_type?: SportType | null;
+  sport_types: SportType[];
   status: ProductStatus;
   type: ProductType;
   created_at: string;
@@ -47,7 +47,7 @@ export interface CreateProductPayload {
   description?: string;
   price: number;
   stock: number;
-  sport_type?: SportType | null;
+  sport_types?: SportType[];
   status?: ProductStatus;
   type?: ProductType;
   image?: string;
@@ -58,7 +58,7 @@ export interface UpdateProductPayload {
   description?: string;
   price?: number;
   stock?: number;
-  sport_type?: SportType | null;
+  sport_types?: SportType[];
   status?: ProductStatus;
   type?: ProductType;
   image?: string;

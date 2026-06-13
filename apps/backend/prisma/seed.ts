@@ -138,7 +138,7 @@ const addMonths = (d: Date, n: number): Date => {
 
 const setHM = (base: Date, hh: number, mm = 0): Date => {
   const d = new Date(base);
-  d.setHours(hh, mm, 0, 0);
+  d.setUTCHours(hh, mm, 0, 0);
   return d;
 };
 
@@ -908,10 +908,11 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
             const pType = tmpl.name.startsWith("Thuê")
               ? ProductType.RENTAL
               : ProductType.SALE;
+            const isGeneric = tmpl.name === "Nước uống thể thao 500ml";
             const product = await prisma.product.create({
               data: {
                 complex_id: complex.id,
-                sport_type: sport,
+                sport_types: isGeneric ? [] : [sport],
                 name: tmpl.name,
                 description: faker.commerce.productDescription(),
                 price: tmpl.price,

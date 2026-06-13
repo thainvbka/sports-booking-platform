@@ -425,6 +425,7 @@ export function MatchDetailPage() {
               canModerate
               onAccept={handleAccept}
               onReject={handleReject}
+              matchStatus={currentMatch.status}
             />
 
             {participantsPagination &&

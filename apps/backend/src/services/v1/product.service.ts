@@ -71,7 +71,10 @@ export const getProductsBySubfield = async (subfield_id: string) => {
       complex_id: subfield.complex_id,
       status: "ACTIVE",
       stock: { gt: 0 },
-      OR: [{ sport_type: null }, { sport_type: subfield.sport_type }],
+      OR: [
+        { sport_types: { equals: [] } },
+        { sport_types: { has: subfield.sport_type } },
+      ],
     },
     orderBy: [{ name: "asc" }],
     select: {
@@ -81,7 +84,7 @@ export const getProductsBySubfield = async (subfield_id: string) => {
       price: true,
       stock: true,
       image: true,
-      sport_type: true,
+      sport_types: true,
       status: true,
       type: true,
       created_at: true,
@@ -110,7 +113,12 @@ export const ownerGetProducts = async (
   const where: any = {
     ...(query.complex_id ? { complex_id: query.complex_id } : {}),
     ...(query.status ? { status: query.status } : {}),
-    ...(query.sport_type ? { sport_type: query.sport_type } : {}),
+    ...(query.sport_type ? {
+      OR: [
+        { sport_types: { equals: [] } },
+        { sport_types: { has: query.sport_type } },
+      ],
+    } : {}),
     ...(query.type ? { type: query.type } : {}),
     ...(query.min_price !== undefined || query.max_price !== undefined
       ? {
@@ -158,7 +166,7 @@ export const ownerGetProducts = async (
         price: true,
         stock: true,
         image: true,
-        sport_type: true,
+        sport_types: true,
         status: true,
         type: true,
         created_at: true,
@@ -203,7 +211,7 @@ export const ownerCreateProduct = async (
       description: data.description,
       price: data.price,
       stock: data.stock,
-      sport_type: data.sport_type as SportType | null | undefined,
+      sport_types: data.sport_types ?? [],
       status: data.status ?? ProductStatus.ACTIVE,
       type: data.type,
       image: product_image ?? data.image,
@@ -264,8 +272,8 @@ export const ownerUpdateProduct = async (
         : {}),
       ...(data.price !== undefined ? { price: data.price } : {}),
       ...(data.stock !== undefined ? { stock: data.stock } : {}),
-      ...(data.sport_type !== undefined
-        ? { sport_type: data.sport_type as SportType | null }
+      ...(data.sport_types !== undefined
+        ? { sport_types: data.sport_types }
         : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
       ...(data.type !== undefined ? { type: data.type } : {}),

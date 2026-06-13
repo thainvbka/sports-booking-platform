@@ -357,7 +357,7 @@ model Product {
   id             String        @id @default(uuid()) @db.Uuid
   complex_id     String        @db.Uuid
   complex        Complex       @relation(fields: [complex_id], references: [id], onDelete: Cascade)
-  sport_type     SportType?
+  sport_types    SportType[]
   name           String        @db.VarChar(200)
   description    String?       @db.Text
   price          Decimal       @db.Decimal(10, 2)
@@ -370,7 +370,6 @@ model Product {
   booking_addons BookingAddon[]
 
   @@index([complex_id])
-  @@index([complex_id, sport_type])
   @@index([status])
 }
 

@@ -163,7 +163,7 @@ export const createBooking = async (
             id: true,
             price: true,
             stock: true,
-            sport_type: true,
+            sport_types: true,
           },
         })
       : [];
@@ -172,8 +172,8 @@ export const createBooking = async (
       products
         .filter(
           (product) =>
-            product.sport_type === null ||
-            product.sport_type === subField.sport_type,
+            product.sport_types.length === 0 ||
+            product.sport_types.includes(subField.sport_type),
         )
         .map((product) => [product.id, product]),
     );
@@ -220,7 +220,10 @@ export const createBooking = async (
           complex_id: subField.complex_id,
           status: "ACTIVE",
           stock: { gte: addon.quantity },
-          OR: [{ sport_type: null }, { sport_type: subField.sport_type }],
+          OR: [
+            { sport_types: { equals: [] } },
+            { sport_types: { has: subField.sport_type } },
+          ],
         },
         data: {
           stock: { decrement: addon.quantity },

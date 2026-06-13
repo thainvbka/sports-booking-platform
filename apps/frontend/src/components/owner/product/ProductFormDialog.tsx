@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +67,7 @@ interface ProductFormState {
   description: string;
   price: string;
   stock: string;
-  sport_type: SportType | "NONE";
+  sport_types: SportType[];
   status: ProductStatus;
   type: ProductType;
 }
@@ -77,7 +78,7 @@ const defaultFormState: ProductFormState = {
   description: "",
   price: "",
   stock: "0",
-  sport_type: "NONE",
+  sport_types: [],
   status: "ACTIVE",
   type: "SALE",
 };
@@ -107,7 +108,7 @@ export function ProductFormDialog({
         description: product.description || "",
         price: String(product.price),
         stock: String(product.stock),
-        sport_type: product.sport_type || "NONE",
+        sport_types: product.sport_types || [],
         status: product.status,
         type: product.type || "SALE",
       });
@@ -148,7 +149,7 @@ export function ProductFormDialog({
       description: formState.description,
       price: formState.price,
       stock: formState.stock,
-      sport_type: formState.sport_type === "NONE" ? null : formState.sport_type,
+      sport_types: formState.sport_types,
       status: formState.status,
       type: formState.type,
     };
@@ -402,39 +403,56 @@ export function ProductFormDialog({
                 )}
               </div>
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-2">
                 <Label className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Môn thể thao
+                  Môn thể thao áp dụng
                 </Label>
-                <Select
-                  value={formState.sport_type}
-                  onValueChange={(selectedValue) =>
-                    updateField(
-                      "sport_type",
-                      selectedValue as SportType | "NONE",
-                    )
-                  }
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Áp dụng cho mọi môn" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="NONE">Tất cả môn</SelectItem>
-                      {Object.entries(SPORT_TYPE_LABELS).map(
-                        ([sportValue, label]) => (
-                          <SelectItem key={sportValue} value={sportValue}>
-                            {label}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {errors.sport_type && (
+                <div className="rounded-xl border border-border/60 bg-muted/30 p-3 flex flex-col gap-3">
+                  <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <Checkbox
+                      checked={formState.sport_types.length === 0}
+                      onCheckedChange={(checked) => {
+                        if (checked) updateField("sport_types", []);
+                      }}
+                      disabled={isSubmitting}
+                    />
+                    <span className="text-foreground">Tất cả các môn (Dùng chung)</span>
+                  </label>
+
+                  <div className="h-px bg-border/60" />
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {Object.entries(SPORT_TYPE_LABELS).map(([sportValue, label]) => {
+                      const sport = sportValue as SportType;
+                      const isChecked = formState.sport_types.includes(sport);
+                      return (
+                        <label
+                          key={sport}
+                          className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-primary transition-colors text-foreground"
+                        >
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                updateField("sport_types", [...formState.sport_types, sport]);
+                              } else {
+                                updateField(
+                                  "sport_types",
+                                  formState.sport_types.filter((s) => s !== sport),
+                                );
+                              }
+                            }}
+                            disabled={isSubmitting}
+                          />
+                          <span>{label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+                {errors.sport_types && (
                   <p className="text-xs text-destructive">
-                    {errors.sport_type}
+                    {errors.sport_types}
                   </p>
                 )}
               </div>

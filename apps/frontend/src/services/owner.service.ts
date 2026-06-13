@@ -13,12 +13,7 @@ import type {
   SubfieldDetail,
 } from "@/types";
 
-/**
- * Service for Owner-related API calls
- * @author thainvbka
- *
- * @type {{ getComplexes: (params?: { page?: number; limit?: number; search?: string; }) => unknown; getComplexById: (id: string, params?: { page?: number; limit?: number; search?: string; }) => unknown; createComplex: (formData: FormData) => unknown; ... 21 more ...; getStatsMetrics: () => unknown; }}
- */
+
 export const ownerService = {
   //complexes
   getComplexes: async (params?: {

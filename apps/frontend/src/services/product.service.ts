@@ -57,6 +57,11 @@ const toProductFormData = (
       return;
     }
 
+    if (Array.isArray(value)) {
+      formData.append(key, value.join(","));
+      return;
+    }
+
     formData.append(key, String(value));
   });
 

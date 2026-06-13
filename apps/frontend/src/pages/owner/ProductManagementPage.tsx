@@ -342,9 +342,9 @@ export function ProductManagementPage() {
           className="h-5 gap-1 rounded-full border-border/60 bg-background/70 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
         >
           <Tag className="size-2.5" />
-          {product.sport_type
-            ? SPORT_TYPE_LABELS[product.sport_type]
-            : "Tất cả"}
+          {!product.sport_types || product.sport_types.length === 0
+            ? "Tất cả"
+            : product.sport_types.map((sport) => SPORT_TYPE_LABELS[sport]).join(", ")}
         </Badge>
       ),
     },

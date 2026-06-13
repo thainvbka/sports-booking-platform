@@ -23,6 +23,7 @@ interface ParticipantListProps {
   canModerate?: boolean;
   onAccept?: (participantId: string) => void;
   onReject?: (participantId: string) => void;
+  matchStatus?: string;
 }
 
 const formatDateTime = (value: string | null) => {
@@ -43,6 +44,7 @@ export function ParticipantList({
   canModerate,
   onAccept,
   onReject,
+  matchStatus,
 }: ParticipantListProps) {
   if (isLoading) {
     return (
@@ -88,8 +90,23 @@ export function ParticipantList({
 
           <TableBody>
             {participants.map((participant) => {
-              const canHandle =
-                canModerate && participant.status === "PENDING";
+              const isMatchOpen = !matchStatus || matchStatus === "OPEN";
+              const isMatchOpenOrFull =
+                !matchStatus ||
+                matchStatus === "OPEN" ||
+                matchStatus === "FULL";
+
+              const canHandleAccept =
+                canModerate &&
+                participant.status === "PENDING" &&
+                isMatchOpen;
+
+              const canHandleReject =
+                canModerate &&
+                participant.status === "PENDING" &&
+                isMatchOpenOrFull;
+
+              const canHandle = canHandleAccept || canHandleReject;
               const fullName = participant.player.full_name || "Người chơi";
 
               return (
@@ -175,7 +192,7 @@ export function ParticipantList({
                           size="sm"
                           variant="outline"
                           onClick={() => onReject?.(participant.id)}
-                          disabled={!canHandle}
+                          disabled={!canHandleReject}
                           className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-700/50 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                           <X data-icon="inline-start" />
@@ -184,7 +201,7 @@ export function ParticipantList({
                         <Button
                           size="sm"
                           onClick={() => onAccept?.(participant.id)}
-                          disabled={!canHandle}
+                          disabled={!canHandleAccept}
                         >
                           <Check data-icon="inline-start" />
                           Duyệt

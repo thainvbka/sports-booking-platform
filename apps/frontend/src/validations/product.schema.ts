@@ -41,7 +41,7 @@ const createProductBodySchema = z.object({
     .number()
     .int("Số lượng tồn kho phải là số nguyên")
     .min(0, "Tồn kho không được âm"),
-  sport_type: z.nativeEnum(SportType).nullable().optional(),
+  sport_types: z.array(z.nativeEnum(SportType)).optional().default([]),
   status: z.nativeEnum(ProductStatus).optional(),
   type: z.nativeEnum(ProductType).optional(),
 });
