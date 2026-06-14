@@ -1,38 +1,40 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
 import { cn } from "@/lib/utils";
 import {
   BookingStatus,
   type BookingResponse,
 } from "@/types";
-import { formatPrice, getBookingStatusLabel, getRecurringStatusLabel, getSportTypeLabel } from "@/utils";
+import {
+  formatPrice,
+  getBookingStatusLabel,
+  getRecurringStatusLabel,
+  getSportTypeLabel,
+  canCancelBooking,
+  canCreateReviewBooking,
+  canUpdateReviewBooking,
+  type SingleBooking,
+} from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
 import {
-  AlarmClock,
-  BadgeCheck,
   CalendarDays,
   Clock,
   CreditCard,
   MapPin,
   RefreshCcw,
-  Star,
   Ticket,
   Trophy,
   XCircle,
+  BadgeCheck,
 } from "lucide-react";
 import { useState } from "react";
+import { SessionsListDialog } from "./SessionsListDialog";
+import { ReviewSectionInline } from "./ReviewSectionInline";
+import { ExpiresChip } from "./ExpiresChip";
 
-export type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;
+export type { SingleBooking } from "@/utils";
 
 export const STATUS_VISUAL: Record<
   BookingStatus,
@@ -56,33 +58,6 @@ export const STATUS_VISUAL: Record<
   },
 };
 
-export function canCancelBooking(booking: BookingResponse): boolean {
-  if (!["PENDING", "COMPLETED"].includes(booking.status)) return false;
-  if (booking.type === "SINGLE") {
-    return new Date(booking.start_time) > new Date();
-  }
-  return new Date(booking.start_date) > new Date();
-}
-
-export function canCreateReviewBooking(
-  booking: BookingResponse,
-): booking is SingleBooking {
-  return (
-    booking.type === "SINGLE" &&
-    booking.status === BookingStatus.CONFIRMED &&
-    !booking.review
-  );
-}
-
-export function canUpdateReviewBooking(
-  booking: BookingResponse,
-): booking is SingleBooking {
-  return (
-    booking.type === "SINGLE" &&
-    booking.status === BookingStatus.CONFIRMED &&
-    !!booking.review
-  );
-}
 
 interface BookingCardProps {
   booking: BookingResponse;
@@ -322,234 +297,5 @@ export function BookingCard({
         />
       )}
     </article>
-  );
-}
-
-interface SessionsListDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  booking: BookingResponse;
-  onReviewClick: (booking: SingleBooking) => void;
-  onCreateMatchClick: (booking: BookingResponse) => void;
-}
-
-function SessionsListDialog({
-  open,
-  onOpenChange,
-  booking,
-  onReviewClick,
-  onCreateMatchClick,
-}: SessionsListDialogProps) {
-  const isSingle = booking.type === "SINGLE";
-  if (isSingle) return null;
-
-  const mockSingleBooking = (
-    slot: Extract<BookingResponse, { type: "RECURRING" }>["bookings"][number]
-  ): SingleBooking => ({
-    type: "SINGLE",
-    id: slot.id,
-    start_time: slot.start_time,
-    end_time: slot.end_time,
-    total_price: slot.total_price,
-    status: slot.status,
-    complex_name: booking.complex_name,
-    complex_address: booking.complex_address,
-    sport_type: booking.sport_type,
-    sub_field_name: booking.sub_field_name,
-    expires_at: null,
-    created_at: booking.created_at,
-    review: slot.review,
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full p-6 rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-        <DialogHeader className="space-y-2 text-left shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
-              <RefreshCcw className="size-5" />
-            </div>
-            <div>
-              <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
-                Danh sách buổi đặt định kỳ
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm line-clamp-1">
-                Lịch đặt định kỳ tại {booking.complex_name} · {booking.sub_field_name}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-y-auto pr-1 mt-4 space-y-3 scrollbar-thin scrollbar-thumb-border">
-          {booking.bookings.map((slot, idx) => {
-            const slotIndex = booking.bookings.length - idx;
-            const slotDate = new Date(slot.start_time);
-            const isSlotFuture = slotDate > new Date();
-            const canCreateMatch =
-              isSlotFuture &&
-              (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED);
-            const canReview =
-              !isSlotFuture &&
-              (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED) &&
-              !slot.review;
-            const hasReview =
-              !isSlotFuture &&
-              (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED) &&
-              !!slot.review;
-
-            const mockSingle = mockSingleBooking(slot);
-
-            return (
-              <div
-                key={slot.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/20 transition-all text-xs"
-              >
-                {/* Left: Session Number + Date/Time */}
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-foreground text-sm">
-                      Buổi #{slotIndex}
-                    </span>
-                    <span
-                      className={cn(
-                        "size-2 rounded-full",
-                        slot.status === BookingStatus.PENDING && "bg-amber-500",
-                        slot.status === BookingStatus.CONFIRMED && "bg-emerald-500",
-                        slot.status === BookingStatus.COMPLETED && "bg-sky-500",
-                        slot.status === BookingStatus.CANCELED && "bg-rose-500",
-                      )}
-                    />
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">
-                      {getBookingStatusLabel(slot.status)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                    <Clock className="size-3.5 text-primary/70 shrink-0" />
-                    {format(slotDate, "EEEE, dd/MM/yyyy HH:mm", { locale: vi })} –{" "}
-                    {format(new Date(slot.end_time), "HH:mm")}
-                  </div>
-                </div>
-
-                {/* Right: Actions */}
-                <div className="flex items-center gap-2 self-end sm:self-center">
-                  {canCreateMatch && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onCreateMatchClick(mockSingle)}
-                      className="h-8 px-3 border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 text-xs font-semibold gap-1.5 rounded-lg dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
-                    >
-                      <Trophy className="size-3.5 text-amber-500" />
-                      Tạo kèo
-                    </Button>
-                  )}
-
-                  {canReview && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onReviewClick(mockSingle)}
-                      className="h-8 px-3 border-primary/30 text-primary hover:bg-primary/5 text-xs font-semibold gap-1.5 rounded-lg"
-                    >
-                      <Star className="size-3.5" />
-                      Đánh giá buổi chơi
-                    </Button>
-                  )}
-
-                  {hasReview && slot.review && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onReviewClick(mockSingle)}
-                      className="h-8 px-3 border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100/50 text-xs font-bold gap-1.5 rounded-lg dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/50"
-                    >
-                      <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                      <span>{slot.review.rating}/5 sao</span>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ReviewSectionInline({
-  booking,
-  canCreate,
-  hasExisting,
-  onEditClick,
-}: {
-  booking: SingleBooking;
-  canCreate: boolean;
-  hasExisting: boolean;
-  onEditClick: () => void;
-}) {
-  const [showDetails, setShowDetails] = useState(false);
-
-  if (!hasExisting && !canCreate) return null;
-
-  if (hasExisting && booking.review) {
-    return (
-      <div
-        className="rounded-lg bg-amber-50 border border-amber-200 p-3 transition-all cursor-pointer group animate-fade-in dark:bg-amber-950/30 dark:border-amber-700/50"
-        onMouseEnter={() => setShowDetails(true)}
-        onMouseLeave={() => setShowDetails(false)}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Star className="size-4 fill-amber-400 text-amber-400 animate-pulse" />
-            <span className="font-semibold text-amber-800 dark:text-amber-300">
-              {booking.review.rating}/5 sao
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditClick();
-            }}
-            className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            Chỉnh sửa
-          </Button>
-        </div>
-        {showDetails && booking.review.comment && (
-          <p className="text-xs text-amber-700 dark:text-amber-400 italic mt-2 animate-fade-in">"{booking.review.comment}"</p>
-        )}
-      </div>
-    );
-  }
-
-  if (canCreate) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onEditClick}
-        className="w-full justify-center"
-      >
-        <Star className="size-4" data-icon="inline-start" />
-        Thêm đánh giá
-      </Button>
-    );
-  }
-
-  return null;
-}
-
-function ExpiresChip({ expiresAt }: { expiresAt: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.18em] animate-pulse status-surface-warning">
-      <AlarmClock className="size-3" />
-      Hết hạn {format(new Date(expiresAt), "HH:mm dd/MM")}
-    </span>
   );
 }
