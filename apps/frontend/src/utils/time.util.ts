@@ -143,3 +143,52 @@ export function formatDuration(minutes: number): string {
   return `${h}h${String(m).padStart(2, "0")}`;
 }
 
+/**
+ * Formats a datetime string to Vietnamese locale "dd/MM/yyyy, HH:mm".
+ * Returns "—" for null/invalid input.
+ * Used for displaying exact deadline timestamps in match detail views.
+ */
+export const formatMatchDateTime = (value: string | null): string => {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+/**
+ * Formats a start/end time pair into a Vietnamese range string.
+ * Example: "14:00 → 15:30 · T4, 18/06/2026"
+ * Returns "—" when start is null/invalid.
+ */
+export const formatMatchTimeRange = (
+  start: string | null,
+  end: string | null,
+): string => {
+  if (!start) return "—";
+  const s = new Date(start);
+  if (Number.isNaN(s.getTime())) return start;
+  const startStr = s.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateStr = s.toLocaleDateString("vi-VN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  if (!end) return `${startStr} · ${dateStr}`;
+  const e = new Date(end);
+  if (Number.isNaN(e.getTime())) return `${startStr} · ${dateStr}`;
+  const endStr = e.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${startStr} → ${endStr} · ${dateStr}`;
+};

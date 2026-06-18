@@ -9,15 +9,19 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import {
+  MATCH_SPORT_TINT_LIGHT,
+  MATCH_STATUS_ACCENT,
+  MATCH_STATUS_PROGRESS,
+} from "@/utils/match-styles.util";
 import { cn } from "@/lib/utils";
 import {
   MATCH_SKILL_BADGE_STYLES,
   MATCH_SKILL_LABELS,
   type Match,
-  type MatchStatus,
-  type SportType,
 } from "@/types/match.type";
 import { getSportTypeLabel } from "@/utils";
+import { getMatchCountdown } from "@/utils/match.util";
 import { getNameInitials } from "@/utils/review.util";
 import {
   CalendarClock,
@@ -37,33 +41,6 @@ interface MatchCardProps {
   isPlayer?: boolean;
 }
 
-const STATUS_ACCENT: Record<MatchStatus, string> = {
-  OPEN: "from-accent-sport to-emerald-400",
-  FULL: "from-amber-400 to-amber-300",
-  CLOSED: "from-slate-400 to-slate-300",
-  EXPIRED: "from-orange-400 to-orange-300",
-  CANCELED: "from-rose-500 to-rose-400",
-  COMPLETED: "from-blue-500 to-cyan-400",
-};
-
-const STATUS_PROGRESS: Record<MatchStatus, string> = {
-  OPEN: "bg-accent-sport",
-  FULL: "bg-amber-500",
-  CLOSED: "bg-slate-400",
-  EXPIRED: "bg-orange-500",
-  CANCELED: "bg-rose-500",
-  COMPLETED: "bg-blue-500",
-};
-
-const SPORT_TINT: Record<SportType, string> = {
-  FOOTBALL: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700/50",
-  BASKETBALL: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-700/50",
-  TENNIS: "bg-lime-100 text-lime-700 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300 dark:border-lime-700/50",
-  BADMINTON: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-700/50",
-  VOLLEYBALL: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700/50",
-  PICKLEBALL: "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-700/50",
-};
-
 const formatShortTime = (value: string | null): string => {
   if (!value) return "—";
   const d = new Date(value);
@@ -79,29 +56,13 @@ const formatShortTime = (value: string | null): string => {
   return `${time} · ${date}`;
 };
 
-const getCountdown = (deadline: string | null) => {
-  if (!deadline) return { label: "Không giới hạn", urgent: false, expired: false };
-  const diff = new Date(deadline).getTime() - Date.now();
-  if (diff <= 0) return { label: "Hết hạn", urgent: true, expired: true };
-  const mins = Math.floor(diff / 60000);
-  const days = Math.floor(mins / 1440);
-  const hours = Math.floor((mins % 1440) / 60);
-  const label =
-    days > 0
-      ? `${days}d ${hours}h`
-      : hours > 0
-        ? `${hours}h ${mins % 60}m`
-        : `${Math.max(mins, 1)}m`;
-  return { label, urgent: mins <= 180, expired: false };
-};
-
 export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
   const sportLabel = getSportTypeLabel(match.sport_type);
   const fillPct = Math.min(
     100,
     Math.round((match.slots_filled / Math.max(match.slots_needed, 1)) * 100),
   );
-  const countdown = getCountdown(match.join_deadline);
+  const countdown = getMatchCountdown(match.join_deadline);
   const countdownTone = countdown.expired
     ? "text-rose-600 dark:text-rose-400"
     : countdown.urgent
@@ -124,7 +85,7 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
         aria-hidden
         className={cn(
           "h-1 w-full bg-gradient-to-r",
-          STATUS_ACCENT[match.status],
+          MATCH_STATUS_ACCENT[match.status],
         )}
       />
 
@@ -156,7 +117,7 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
               variant="outline"
               className={cn(
                 "border text-[10.5px] font-semibold",
-                SPORT_TINT[match.sport_type],
+                MATCH_SPORT_TINT_LIGHT[match.sport_type],
               )}
             >
               {sportLabel}
@@ -239,7 +200,7 @@ export function MatchCard({ match, actions, isPlayer }: MatchCardProps) {
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500",
-                STATUS_PROGRESS[match.status],
+                MATCH_STATUS_PROGRESS[match.status],
               )}
               style={{ width: `${fillPct}%` }}
             />
