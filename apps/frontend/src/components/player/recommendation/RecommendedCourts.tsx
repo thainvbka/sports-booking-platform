@@ -2,7 +2,7 @@ import { RecommendationCard } from "@/components/player/recommendation/Recommend
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRecommendations } from "@/hooks/useRecommendations";
+import { useRecommendations } from "@/hooks/player/useRecommendations";
 import { cn } from "@/lib/utils";
 import {
   RefreshCw,

@@ -5,13 +5,13 @@ import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useMyMatches } from "@/hooks/useMyMatches";
+import { useMyMatches } from "@/hooks/player/useMyMatches";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   type MatchStatus,
   type MyMatchType,
 } from "@/types/match.type";
-import { getPlayerProfileId } from "@/utils/userProfile";
+import { getPlayerProfileId } from "@/utils/userProfile.util";
 import { CircleAlert } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -8,7 +8,7 @@ interface AdminPaymentFilters {
 }
 
 interface AdminPaymentState {
-  payments: any[];
+  payments: unknown[];
   pagination: PaginationMeta | null;
   stats: {
     totalRevenue: number;
@@ -56,19 +56,30 @@ export const useAdminPaymentStore = create<AdminPaymentState>((set, get) => ({
         limit: queryParams.limit,
         ...filters,
       });
-      if (res.success) {
+      if (res.success && res.data) {
+        const data = res.data as {
+          payments: unknown[];
+          pagination: PaginationMeta | null;
+          stats: {
+            totalRevenue: number;
+            failedCount: number;
+            successCount: number;
+            refundedCount: number;
+          };
+        };
         set({
-          payments: res.data.payments,
-          pagination: res.data.pagination,
-          stats: res.data.stats,
+          payments: data.payments,
+          pagination: data.pagination,
+          stats: data.stats,
           isLoading: false,
         });
       } else {
         set({ error: res.message, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string } | null;
       set({
-        error: error.message || "Failed to fetch system payments",
+        error: err?.message || "Failed to fetch system payments",
         isLoading: false,
       });
     }

@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { PublicSubfieldDetail, SubfieldProduct } from "@/types";
 import { ArrowRight, Zap } from "lucide-react";
 import { useMemo } from "react";
@@ -29,7 +30,7 @@ export function SubfieldStickySidebar({
   const displayProducts = products;
 
   return (
-    <aside className="flex flex-col gap-6 lg:sticky lg:top-24 self-start w-full z-20">
+    <aside className={cn("flex flex-col gap-6 lg:sticky lg:top-24 self-start w-full z-20", className)}>
       {/* Quick Booking CTA Card */}
       <Card className="relative overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-sm">
         {/* Top brand line */}

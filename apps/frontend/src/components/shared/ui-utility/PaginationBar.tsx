@@ -8,7 +8,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { buildPageList } from "@/utils/pagination";
+import { buildPageList } from "@/utils/pagination.util";
 
 export interface PaginationBarProps {
   page: number;

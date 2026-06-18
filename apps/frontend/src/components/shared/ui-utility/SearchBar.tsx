@@ -8,12 +8,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { SportType as SportTypeValue, type SportType } from "@/types";
+import { SPORT_TYPE_OPTIONS } from "@/lib/constants";
 import { getSportTypeLabel } from "@/utils";
 import { Search, Trophy } from "lucide-react";
 import type { FormEvent } from "react";
-
-const SPORT_TYPE_OPTIONS = Object.values(SportTypeValue) as SportType[];
 type SearchBarVariant = "default" | "hero";
 
 interface SearchBarProps {

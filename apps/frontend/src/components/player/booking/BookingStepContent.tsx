@@ -1,4 +1,4 @@
-import type { PublicSubfieldDetail, SubfieldProduct } from "@/types";
+import type { PricingRule, PublicSubfieldDetail, SubfieldProduct } from "@/types";
 import { BookingAddonsStep } from "./BookingAddonsStep";
 import { BookingConfirmStep } from "./BookingConfirmStep";
 import { BookingScheduleStep } from "./BookingScheduleStep";
@@ -12,12 +12,12 @@ interface BookingStepContentProps {
   setDate: (date: Date | undefined) => void;
   bookingType: BookingType;
   setBookingType: (type: BookingType) => void;
-  setCurrentStep: (step: any) => void;
+  setCurrentStep: (step: number) => void;
   endDate: Date | undefined;
   setEndDate: (date: Date | undefined) => void;
   recurringType: "WEEKLY" | "MONTHLY";
   setRecurringType: (type: "WEEKLY" | "MONTHLY") => void;
-  availableRules: any[];
+  availableRules: PricingRule[];
   customStartTime: string;
   customEndTime: string;
   timeOptions: string[];

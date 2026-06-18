@@ -11,7 +11,7 @@ interface AdminState {
   fetchAllData: () => Promise<void>;
 }
 
-export const useAdminStore = create<AdminState>((set) => ({
+export const useAdminStore = create<AdminState>((set, get) => ({
   analytics: null,
   isLoading: false,
   error: null,
@@ -25,35 +25,16 @@ export const useAdminStore = create<AdminState>((set) => ({
       } else {
         set({ error: res.message, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string } | null;
       set({
-        error: error.message || "Failed to fetch analytics",
+        error: err?.message || "Failed to fetch analytics",
         isLoading: false,
       });
     }
   },
 
   fetchAllData: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await adminService.getAnalytics();
-
-      if (res.success) {
-        set({
-          analytics: res.data.analytics,
-          isLoading: false,
-        });
-      } else {
-        set({
-          error: res.message,
-          isLoading: false,
-        });
-      }
-    } catch (error: any) {
-      set({
-        error: error.message || "Failed to fetch admin data",
-        isLoading: false,
-      });
-    }
+    await get().fetchAnalytics();
   },
 }));

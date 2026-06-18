@@ -65,9 +65,10 @@ export const useAdminComplexStore = create<AdminComplexState>((set, get) => ({
       } else {
         set({ error: res.message, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string } | null;
       set({
-        error: error.message || "Failed to fetch complexes",
+        error: err?.message || "Failed to fetch complexes",
         isLoading: false,
       });
     }
@@ -91,14 +92,15 @@ export const useAdminComplexStore = create<AdminComplexState>((set, get) => ({
   updateComplexStatus: async (id, status) => {
     set({ isLoading: true });
     try {
-      const res = await adminService.updateComplexStatus(id, status as any);
+      const res = await adminService.updateComplexStatus(id, status);
       if (res.success) {
         await get().fetchComplexes();
       } else {
         throw new Error(res.message);
       }
-    } catch (error: any) {
-      set({ error: error.message || "Failed to update complex status" });
+    } catch (error) {
+      const err = error as { message?: string } | null;
+      set({ error: err?.message || "Failed to update complex status" });
       throw error;
     } finally {
       set({ isLoading: false });

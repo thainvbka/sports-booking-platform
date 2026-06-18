@@ -22,7 +22,7 @@ interface SearchResultTabProps<T> {
   gridKey?: string;
 }
 
-export function SearchResultTab<T extends unknown>({
+export function SearchResultTab<T,>({
   value,
   items,
   pagination,

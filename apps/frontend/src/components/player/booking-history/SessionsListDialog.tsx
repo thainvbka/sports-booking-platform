@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -5,13 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Clock, RefreshCcw, Trophy, Star } from "lucide-react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { BookingStatus, type BookingResponse } from "@/types";
 import { getBookingStatusLabel, toSingleBooking, type SingleBooking } from "@/utils";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { Clock, RefreshCcw, Star, Trophy } from "lucide-react";
 
 interface SessionsListDialogProps {
   open: boolean;
@@ -58,16 +58,15 @@ export function SessionsListDialog({
             const canCreateMatch =
               isSlotFuture &&
               (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED);
+                slot.status === BookingStatus.COMPLETED) &&
+              !slot.matchId;
             const canReview =
               !isSlotFuture &&
-              (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED) &&
+              slot.status === BookingStatus.CONFIRMED &&
               !slot.review;
             const hasReview =
               !isSlotFuture &&
-              (slot.status === BookingStatus.CONFIRMED ||
-                slot.status === BookingStatus.COMPLETED) &&
+              slot.status === BookingStatus.CONFIRMED &&
               !!slot.review;
 
             const singleBooking = toSingleBooking(slot, booking);

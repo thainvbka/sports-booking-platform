@@ -8,7 +8,7 @@ interface AdminRecurringBookingFilters {
 }
 
 interface AdminRecurringBookingState {
-  recurringBookings: any[];
+  recurringBookings: unknown[];
   pagination: PaginationMeta | null;
   stats: {
     total: number;
@@ -46,19 +46,31 @@ export const useAdminRecurringBookingStore =
           limit: queryParams.limit,
           ...filters,
         });
-        if (res.success) {
+        if (res.success && res.data) {
+          const data = res.data as {
+            recurringBookings: unknown[];
+            pagination: PaginationMeta | null;
+            stats: {
+              total: number;
+              pending: number;
+              confirmed: number;
+              completed: number;
+              canceled: number;
+            };
+          };
           set({
-            recurringBookings: res.data.recurringBookings,
-            pagination: res.data.pagination,
-            stats: res.data.stats,
+            recurringBookings: data.recurringBookings,
+            pagination: data.pagination,
+            stats: data.stats,
             isLoading: false,
           });
         } else {
           set({ error: res.message, isLoading: false });
         }
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as { message?: string } | null;
         set({
-          error: error.message || "Failed to fetch recurring bookings",
+          error: err?.message || "Failed to fetch recurring bookings",
           isLoading: false,
         });
       }

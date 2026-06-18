@@ -1,12 +1,12 @@
-import { JoinMatchDialog } from "@/components/matches/JoinMatchDialog";
-import { MatchParticipantsAvatarGroup } from "@/components/matches/MatchParticipantsAvatarGroup";
-import { MatchStatusBadge } from "@/components/matches/MatchStatusBadge";
-import { ParticipantList } from "@/components/matches/ParticipantList";
-import { ParticipantStatusBadge } from "@/components/matches/ParticipantStatusBadge";
+import { JoinMatchDialog } from "@/components/shared/matches/JoinMatchDialog";
+import { MatchParticipantsAvatarGroup } from "@/components/shared/matches/MatchParticipantsAvatarGroup";
+import { MatchStatusBadge } from "@/components/shared/matches/MatchStatusBadge";
+import { ParticipantList } from "@/components/shared/matches/ParticipantList";
+import { ParticipantStatusBadge } from "@/components/shared/matches/ParticipantStatusBadge";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,8 +35,8 @@ import {
   type MatchStatus,
   type SportType,
 } from "@/types/match.type";
-import { getNameInitials } from "@/utils/review.utils";
-import { getPlayerProfileId } from "@/utils/userProfile";
+import { getNameInitials } from "@/utils/review.util";
+import { getPlayerProfileId } from "@/utils/userProfile.util";
 import {
   CalendarClock,
   CircleAlert,
@@ -52,7 +52,7 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 
@@ -157,7 +157,6 @@ export function MatchDetailPage() {
     participantsPagination,
     isLoading,
     isLoadingDetail,
-    error,
     fetchMatchById,
     fetchParticipants,
     joinMatch,
@@ -198,7 +197,7 @@ export function MatchDetailPage() {
     });
   }, [id, isCreator, participantPage, fetchParticipants]);
 
-  const refreshCurrentMatch = async () => {
+  const refreshCurrentMatch = useCallback(async () => {
     if (!id) return;
     await fetchMatchById(id, detailScope);
     if (isCreator) {
@@ -207,7 +206,7 @@ export function MatchDetailPage() {
         limit: PARTICIPANTS_PAGE_SIZE,
       });
     }
-  };
+  }, [id, fetchMatchById, detailScope, isCreator, fetchParticipants, participantPage]);
 
   useEffect(() => {
     const handleMatchNotification = (e: Event) => {

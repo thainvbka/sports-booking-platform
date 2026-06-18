@@ -29,8 +29,8 @@ export const adminService = {
     id: string,
     role: string,
     status: string,
-  ): Promise<ApiResponse<any>> => {
-    const res = await api.patch<ApiResponse<any>>(`/admin/users/${id}/status`, {
+  ): Promise<ApiResponse<unknown>> => {
+    const res = await api.patch<ApiResponse<unknown>>(`/admin/users/${id}/status`, {
       role,
       status,
     });
@@ -42,8 +42,8 @@ export const adminService = {
     limit?: number;
     search?: string;
     status?: string;
-  }): Promise<ApiResponse<any>> => {
-    const res = await api.get<ApiResponse<any>>("/admin/payments", { params });
+  }): Promise<ApiResponse<unknown>> => {
+    const res = await api.get<ApiResponse<unknown>>("/admin/payments", { params });
     return res.data;
   },
 
@@ -52,8 +52,8 @@ export const adminService = {
     limit?: number;
     search?: string;
     status?: string;
-  }): Promise<ApiResponse<any>> => {
-    const res = await api.get<ApiResponse<any>>("/admin/bookings", { params });
+  }): Promise<ApiResponse<unknown>> => {
+    const res = await api.get<ApiResponse<unknown>>("/admin/bookings", { params });
     return res.data;
   },
 
@@ -62,8 +62,8 @@ export const adminService = {
     limit?: number;
     search?: string;
     status?: string;
-  }): Promise<ApiResponse<any>> => {
-    const res = await api.get<ApiResponse<any>>("/admin/bookings/recurring", {
+  }): Promise<ApiResponse<unknown>> => {
+    const res = await api.get<ApiResponse<unknown>>("/admin/bookings/recurring", {
       params,
     });
     return res.data;

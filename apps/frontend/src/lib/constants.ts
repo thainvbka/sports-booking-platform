@@ -140,4 +140,128 @@ export const PAYMENT_STATUS_COLORS: Record<string, string> = {
   REFUNDED: "bg-blue-100 text-blue-800 dark:bg-sky-500/15 dark:text-sky-300",
 };
 
+// Colors for charts (SVG Hex values)
+export const CHART_COLORS = {
+  // Booking Statuses
+  STATUS_COMPLETED: "#10b981",
+  STATUS_CONFIRMED: "#3b82f6",
+  STATUS_PENDING: "#f59e0b",
+  STATUS_CANCELLED: "#ef4444",
+
+  // Top fields & Revenue
+  BOOKINGS: "#8b5cf6",
+  BOOKINGS_LIGHT: "#a78bfa",
+  REVENUE: "#f97316",
+  REVENUE_LIGHT: "#fb923c",
+
+  // Hourly Distribution
+  CYAN_DARK: "#06b6d4",
+  CYAN_MEDIUM: "#22d3ee",
+  CYAN_LIGHT: "#67e8f9",
+};
+
+import { CheckCircle2, Clock, RefreshCw, XCircle, type LucideIcon } from "lucide-react";
+
+export const STATUS_TONES: Record<
+  string,
+  { bg: string; border: string; label: string; icon: LucideIcon }
+> = {
+  PENDING: {
+    bg: PAYOUT_STATUS_COLORS.PENDING,
+    border: "border-slate-300/60 dark:border-slate-800",
+    label: PAYOUT_STATUS_LABELS.PENDING,
+    icon: Clock,
+  },
+  REQUESTED: {
+    bg: PAYOUT_STATUS_COLORS.REQUESTED,
+    border: "border-amber-300/60 dark:border-amber-800",
+    label: PAYOUT_STATUS_LABELS.REQUESTED,
+    icon: Clock,
+  },
+  PROCESSING: {
+    bg: PAYOUT_STATUS_COLORS.PROCESSING,
+    border: "border-blue-300/60 dark:border-blue-800",
+    label: PAYOUT_STATUS_LABELS.PROCESSING,
+    icon: RefreshCw,
+  },
+  PAID: {
+    bg: PAYOUT_STATUS_COLORS.PAID,
+    border: "border-emerald-300/60 dark:border-emerald-800",
+    label: PAYOUT_STATUS_LABELS.PAID,
+    icon: CheckCircle2,
+  },
+  CANCELLED: {
+    bg: PAYOUT_STATUS_COLORS.CANCELLED,
+    border: "border-rose-300/60 dark:border-rose-800",
+    label: PAYOUT_STATUS_LABELS.CANCELLED,
+    icon: XCircle,
+  },
+};
+
+// Sport Type Options & Parsing
+export const SPORT_TYPE_OPTIONS = Object.values(SportType) as SportType[];
+
+export const parseSportType = (value: string): SportType | "ALL" => {
+  if (value === "ALL") {
+    return "ALL";
+  }
+  return SPORT_TYPE_OPTIONS.find((sportType) => sportType === value) ?? "ALL";
+};
+
+// Sport Emojis & Taglines
+export const SPORT_EMOJIS: Record<SportType, string> = {
+  FOOTBALL: "⚽",
+  BASKETBALL: "🏀",
+  TENNIS: "🎾",
+  BADMINTON: "🏸",
+  VOLLEYBALL: "🏐",
+  PICKLEBALL: "🏓",
+};
+
+export const SPORT_TAGLINES: Record<SportType, string> = {
+  BADMINTON: "Indoor • Đèn LED",
+  FOOTBALL: "Sân 5 / 7 / 11",
+  PICKLEBALL: "Hot • Thịnh hành",
+  TENNIS: "Clay • Hard court",
+  BASKETBALL: "3x3 • Full court",
+  VOLLEYBALL: "Sân tiêu chuẩn",
+};
+
+// Homepage specific structures
+export interface HomeSportCategory {
+  name: string;
+  emoji: string;
+  type: SportType;
+  courtCount: number;
+  tagline: string;
+}
+
+export interface HomeStat {
+  value: string;
+  label: string;
+}
+
+export const SPORT_CATEGORIES: HomeSportCategory[] = [
+  SportType.BADMINTON,
+  SportType.FOOTBALL,
+  SportType.PICKLEBALL,
+  SportType.TENNIS,
+  SportType.BASKETBALL,
+].map((type) => ({
+  type,
+  name: SPORT_TYPE_LABELS[type] || String(type),
+  emoji: SPORT_EMOJIS[type] || "🔥",
+  courtCount: 0,
+  tagline: SPORT_TAGLINES[type] || "Tiêu chuẩn",
+}));
+
+export const HERO_STATS: HomeStat[] = [
+  { value: "500+", label: "Sân đối tác" },
+  { value: "50K+", label: "Người chơi" },
+  { value: "100K+", label: "Lượt đặt sân" },
+  { value: "4.8/5", label: "Đánh giá trung bình" },
+];
+
+
+
 

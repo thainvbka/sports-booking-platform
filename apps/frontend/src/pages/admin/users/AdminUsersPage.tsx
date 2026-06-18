@@ -2,17 +2,7 @@ import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
 import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { StatsGrid } from "@/components/admin/StatsGrid";
-import { DataTable, type Column } from "@/components/shared/ui-utility/DataTable";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,33 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/useDebounce";
-import {
-  ROLE_COLORS,
-  ROLE_LABELS,
-  USER_STATUS_COLORS,
-  USER_STATUS_LABELS,
-} from "@/lib/constants";
-import { useAdminUserStore } from "@/store/admin/useAdminUserStore";
-import type { AdminUser } from "@/types/admin.types";
-import { formatDateVn, getNameInitials } from "@/utils";
-import {
-  Ban,
-  Calendar,
-  CheckCircle,
-  Mail,
-  MoreHorizontal,
-  Phone,
-  Search,
-  Shield,
-  ShieldCheck,
-  User,
-  UserCog,
-  Users,
-  XCircle,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useAdminUsersData } from "@/hooks/admin/useAdminUsersData";
+import { useUserColumns } from "@/hooks/admin/useUserColumns";
+import { Search } from "lucide-react";
 
 export default function AdminUsersPage() {
   const {
@@ -56,261 +22,25 @@ export default function AdminUsersPage() {
     isLoading,
     filters,
     queryParams,
-    fetchUsers,
     setFilters,
     setPage,
-    updateUserStatus,
-  } = useAdminUserStore();
+    searchValue,
+    setSearchValue,
+    handleStatusUpdate,
+    totalUsers,
+    statItems,
+  } = useAdminUsersData();
 
-  const [searchValue, setSearchValue] = useState(filters.search || "");
-
-  useEffect(() => {
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const debouncedSearchValue = useDebounce(searchValue, 500);
-
-  useEffect(() => {
-    if (debouncedSearchValue !== (filters.search || "")) {
-      setFilters({ search: debouncedSearchValue });
-    }
-  }, [debouncedSearchValue, filters.search, setFilters]);
-
-  const handleStatusUpdate = async (
-    id: string,
-    role: string,
-    status: string,
-  ) => {
-    try {
-      await updateUserStatus(id, role, status);
-      toast.success("Cập nhật trạng thái thành công");
-    } catch (error: any) {
-      toast.error(error.message || "Không thể cập nhật trạng thái");
-    }
-  };
-
-  const getUserRoles = (user: AdminUser) => {
-    const roles: string[] = [];
-    if (user.admin) roles.push("ADMIN");
-    if (user.owner) roles.push("OWNER");
-    if (user.player) roles.push("PLAYER");
-    return roles;
-  };
-
-  const getUserStatus = (user: AdminUser) => {
-    if (user.admin) return user.admin.status;
-    if (user.owner) return user.owner.status;
-    return user.player?.status || "ACTIVE";
-  };
-
-
-
-  const roleBreakdown = useMemo(() => {
-    const counts = { PLAYER: 0, OWNER: 0, ADMIN: 0 };
-    for (const u of users) {
-      const r = (getUserRoles(u)[0] || "PLAYER") as keyof typeof counts;
-      counts[r] = (counts[r] ?? 0) + 1;
-    }
-    return counts;
-  }, [users]);
-
-  const columns: Column<AdminUser>[] = [
-    {
-      header: "STT",
-      className: "w-14",
-      cell: (_, index) => (
-        <span className="font-mono text-[11px] font-semibold text-muted-foreground tabular-nums">
-          {String(
-            (queryParams.page - 1) * queryParams.limit + index + 1,
-          ).padStart(2, "0")}
-        </span>
-      ),
-    },
-    {
-      header: "Người dùng",
-      className: "w-72",
-      cell: (user) => (
-        <div className="flex items-center gap-3 py-1">
-          <Avatar className="size-9 border border-border/60">
-            <AvatarImage
-              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                user.full_name || "U",
-              )}&background=random`}
-              alt={user.full_name}
-            />
-            <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
-              {getNameInitials(user.full_name, "U")}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-sm font-semibold">
-              <User className="size-3.5 text-primary" />
-              <span className="truncate">{user.full_name}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Mail className="size-3" />
-              <span className="truncate">{user.email}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Phone className="size-3" />
-              <span>{user.phone_number}</span>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: "Vai trò",
-      className: "w-44",
-      cell: (user) => {
-        const roles = getUserRoles(user);
-        return (
-          <div className="flex flex-wrap gap-1">
-            {roles.map((role) => (
-              <Badge
-                key={role}
-                variant="secondary"
-                className={`${ROLE_COLORS[role as keyof typeof ROLE_COLORS]} h-5 border-none py-0 text-[10px] shadow-none`}
-              >
-                {ROLE_LABELS[role as keyof typeof ROLE_LABELS]}
-              </Badge>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      header: "Trạng thái",
-      className: "w-36",
-      cell: (user) => {
-        const status = getUserStatus(user);
-        return (
-          <Badge
-            className={`${USER_STATUS_COLORS[status]} h-5 border-none py-0 text-[10px] shadow-none`}
-          >
-            {USER_STATUS_LABELS[status]}
-          </Badge>
-        );
-      },
-    },
-    {
-      header: "Ngày tham gia",
-      className: "w-40",
-      cell: (user) => (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="size-3.5" />
-          <span>
-            {formatDateVn(user.created_at, "dd/MM/yyyy")}
-          </span>
-        </div>
-      ),
-    },
-    {
-      header: "",
-      className: "w-12 text-right",
-      cell: (user) => {
-        const role = getUserRoles(user)[0] || "PLAYER";
-        const status = getUserStatus(user);
-
-        if (role === "ADMIN") {
-          return (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 opacity-40"
-              disabled
-            >
-              <MoreHorizontal />
-              <span className="sr-only">Không có hành động</span>
-            </Button>
-          );
-        }
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8">
-                <MoreHorizontal />
-                <span className="sr-only">Mở menu hành động</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                {status !== "ACTIVE" && (
-                  <DropdownMenuItem
-                    onClick={() => handleStatusUpdate(user.id, role, "ACTIVE")}
-                    className="text-emerald-600 dark:text-emerald-400"
-                  >
-                    <CheckCircle /> Kích hoạt
-                  </DropdownMenuItem>
-                )}
-                {status !== "INACTIVE" &&
-                  status !== "BANNED" &&
-                  status !== "SUSPENDED" && (
-                    <DropdownMenuItem
-                      onClick={() =>
-                        handleStatusUpdate(
-                          user.id,
-                          role,
-                          role === "OWNER" ? "SUSPENDED" : "INACTIVE",
-                        )
-                      }
-                      className="text-rose-600 dark:text-rose-400"
-                    >
-                      <Ban />
-                      {role === "OWNER" ? "Tạm đình chỉ" : "Khóa tài khoản"}
-                    </DropdownMenuItem>
-                  )}
-                {role === "OWNER" && status === "PENDING" && (
-                  <DropdownMenuItem
-                    onClick={() => handleStatusUpdate(user.id, role, "REJECTED")}
-                    className="text-rose-600 dark:text-rose-400"
-                  >
-                    <XCircle /> Từ chối duyệt
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
-  const totalUsers = pagination?.total ?? users.length;
-  const statItems = [
-    {
-      label: "Tổng người dùng",
-      value: totalUsers,
-      icon: Users,
-      color: "blue" as const,
-    },
-    {
-      label: "Người chơi",
-      value: roleBreakdown.PLAYER,
-      icon: ShieldCheck,
-      color: "green" as const,
-    },
-    {
-      label: "Chủ sân",
-      value: roleBreakdown.OWNER,
-      icon: UserCog,
-      color: "purple" as const,
-    },
-    {
-      label: "Quản trị",
-      value: roleBreakdown.ADMIN,
-      icon: Shield,
-      color: "red" as const,
-    },
-  ];
+  const columns = useUserColumns({
+    page: queryParams.page,
+    limit: queryParams.limit,
+    onStatusUpdate: handleStatusUpdate,
+  });
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-8 lg:px-6">
       <AdminPageHeader
         index={1}
-        // eyebrow="Admin · Identity"
         title="Quản lý"
         titleAccent="người dùng"
         description="Kiểm soát danh tính, vai trò và trạng thái hoạt động của người chơi, chủ sân và quản trị viên."
@@ -334,7 +64,7 @@ export default function AdminUsersPage() {
             setFilters({ role: value === "ALL" ? undefined : value })
           }
         >
-          <SelectTrigger className="h-9 w-full shrink-0 md:w-[160px]">
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
             <SelectValue placeholder="Vai trò" />
           </SelectTrigger>
           <SelectContent>
@@ -350,7 +80,7 @@ export default function AdminUsersPage() {
             setFilters({ status: value === "ALL" ? undefined : value })
           }
         >
-          <SelectTrigger className="h-9 w-full shrink-0 md:w-[160px]">
+          <SelectTrigger className="h-9 w-full shrink-0 md:w-[180px]">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
           <SelectContent>

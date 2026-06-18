@@ -8,7 +8,7 @@ import {
   formatMinutesToTime,
   parseBookingTimeToVnMinutes,
   parseRuleTimeToMinutes,
-} from "@/utils/time.utils";
+} from "@/utils/time.util";
 import { format } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

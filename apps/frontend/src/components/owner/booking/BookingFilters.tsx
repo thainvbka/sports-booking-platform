@@ -1,32 +1,29 @@
-import { Badge } from "@/components/ui/badge";
+import { OwnerFilterActions, OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
-    Calendar as CalendarIcon,
-    Coins,
-    Filter,
-    RotateCcw,
-    Tag,
+  Calendar as CalendarIcon,
+  Coins,
+  Tag,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -101,20 +98,7 @@ export function BookingFilters({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="flex items-center gap-2">
-        {activeCount > 0 ? (
-          <Badge
-            variant="outline"
-            className="rounded-full border-primary/30 bg-primary/10 text-[10px] font-semibold uppercase tracking-wider text-primary"
-          >
-            {activeCount} đang áp dụng
-          </Badge>
-        ) : null}
-        <Separator
-          orientation="horizontal"
-          className="ml-1 flex-1 bg-border/70"
-        />
-      </div>
+      <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div className="flex flex-col gap-1.5">
@@ -216,25 +200,13 @@ export function BookingFilters({
           </div>
         </div>
 
-        <div className="flex items-end gap-2 md:col-span-2 xl:col-span-1">
-          <Button
-            onClick={handleApply}
-            disabled={isLoading}
-            className="rounded-full"
-          >
-            <Filter data-icon="inline-start" />
-            Áp dụng lọc
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleClear}
-            disabled={isLoading || activeCount === 0}
-            className="rounded-full"
-          >
-            <RotateCcw data-icon="inline-start" />
-            Xóa bộ lọc
-          </Button>
-        </div>
+        <OwnerFilterActions
+          onApply={handleApply}
+          onClear={handleClear}
+          isLoading={isLoading}
+          clearDisabled={activeCount === 0}
+          className="md:col-span-2 xl:col-span-1"
+        />
       </div>
     </div>
   );

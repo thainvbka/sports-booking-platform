@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
@@ -361,9 +362,9 @@ function getPayloadConfigFromPayload(
 }
 
 export {
-    ChartContainer, ChartLegend,
-    ChartLegendContent,
-    ChartStyle, ChartTooltip,
-    ChartTooltipContent
+  ChartContainer, ChartLegend,
+  ChartLegendContent,
+  ChartStyle, ChartTooltip,
+  ChartTooltipContent
 };
 

@@ -8,7 +8,7 @@ interface AdminBookingFilters {
 }
 
 interface AdminBookingState {
-  bookings: any[];
+  bookings: unknown[];
   pagination: PaginationMeta | null;
   stats: {
     total: number;
@@ -58,19 +58,31 @@ export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
         limit: queryParams.limit,
         ...filters,
       });
-      if (res.success) {
+      if (res.success && res.data) {
+        const data = res.data as {
+          bookings: unknown[];
+          pagination: PaginationMeta | null;
+          stats: {
+            total: number;
+            confirmed: number;
+            completed: number;
+            canceled: number;
+            pending: number;
+          };
+        };
         set({
-          bookings: res.data.bookings,
-          pagination: res.data.pagination,
-          stats: res.data.stats,
+          bookings: data.bookings,
+          pagination: data.pagination,
+          stats: data.stats,
           isLoading: false,
         });
       } else {
         set({ error: res.message, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string } | null;
       set({
-        error: error.message || "Failed to fetch system bookings",
+        error: err?.message || "Failed to fetch system bookings",
         isLoading: false,
       });
     }

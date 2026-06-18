@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
-import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
+import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.util";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";

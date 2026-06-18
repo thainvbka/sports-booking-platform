@@ -1,6 +1,7 @@
 import { ReviewerAvatar } from "@/components/shared/review/ReviewerAvatar";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
+import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -11,14 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
-import type { ReviewRatingFilter, ReviewSortBy } from "@/hooks/useSubfieldReviews";
+import type { ReviewRatingFilter, ReviewSortBy } from "@/hooks/player/useSubfieldReviews";
 import { cn } from "@/lib/utils";
 import type { GetSubfieldReviewsResponse, PublicSubfieldReview } from "@/types";
-import { getReviewerDisplayName } from "@/utils/review.utils";
+import { getReviewerDisplayName } from "@/utils/review.util";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ImageIcon, RotateCcw } from "lucide-react";
-import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 
 interface ReviewsSummary {
   total: number;

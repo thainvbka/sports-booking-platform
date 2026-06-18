@@ -1,8 +1,8 @@
-import { MatchCard } from "@/components/matches/MatchCard";
+import { MatchCard } from "@/components/shared/matches/MatchCard";
 import {
   MatchFilters,
   type MatchFiltersValue,
-} from "@/components/matches/MatchFilters";
+} from "@/components/shared/matches/MatchFilters";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { SearchBar } from "@/components/shared/ui-utility/SearchBar";

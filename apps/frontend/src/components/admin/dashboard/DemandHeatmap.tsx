@@ -15,12 +15,17 @@ import {
 const DAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_LABEL = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
+interface HeatmapHourRow {
+  hour: number | string;
+  [day: string]: number | string;
+}
+
 interface DemandHeatmapProps {
-  data: any[];
+  data: HeatmapHourRow[];
 }
 
 export function DemandHeatmap({ data }: DemandHeatmapProps) {
-  const allVals = data.flatMap((r) => DAY_KEYS.map((k) => r[k] ?? 0));
+  const allVals = data.flatMap((r) => DAY_KEYS.map((k) => Number(r[k] ?? 0)));
   const maxVal = Math.max(...allVals, 1);
 
   const cellBg = (v: number) => {
@@ -69,7 +74,7 @@ export function DemandHeatmap({ data }: DemandHeatmapProps) {
                       <Tooltip key={k}>
                         <TooltipTrigger asChild>
                           <div
-                            className={`flex-1 h-3.5 rounded-[2px] cursor-crosshair transition-transform hover:scale-110 hover:z-10 ${cellBg(row[k] ?? 0)}`}
+                            className={`flex-1 h-3.5 rounded-[2px] cursor-crosshair transition-transform hover:scale-110 hover:z-10 ${cellBg(Number(row[k] ?? 0))}`}
                           />
                         </TooltipTrigger>
                         <TooltipContent

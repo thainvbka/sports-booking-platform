@@ -4,9 +4,9 @@ import { SubfieldReviewsList } from "@/components/shared/subfield/SubFieldReview
 import { SubfieldStickySidebar } from "@/components/shared/subfield/SubFieldStickySidebar";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
-import { useSubfieldData } from "@/hooks/useSubfieldData";
-import { useSubfieldReviews } from "@/hooks/useSubfieldReviews";
-import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.utils";
+import { useSubfieldData } from "@/hooks/player/useSubfieldData";
+import { useSubfieldReviews } from "@/hooks/player/useSubfieldReviews";
+import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.util";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";

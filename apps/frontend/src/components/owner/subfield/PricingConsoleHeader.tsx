@@ -7,7 +7,7 @@ import type { PricingRule } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon, Plus } from "lucide-react";
-import type { TimelineSegment } from "../../../hooks/useTimelineSegments";
+import type { TimelineSegment } from "@/hooks/player/useTimelineSegments";
 import { CopyPricingDropdown } from "./CopyPricingDropdown";
 import { SubFieldTimelineHeatmap } from "./SubFieldTimelineHeatmap";
 
@@ -109,7 +109,7 @@ export function PricingConsoleHeader({
               onClick={() => {
                 const newD = new Date(date);
                 const currentDay = date.getDay();
-                let diff = w.dayOfWeek - currentDay;
+                const diff = w.dayOfWeek - currentDay;
                 newD.setDate(date.getDate() + diff);
                 setDate(newD);
               }}

@@ -1,13 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { FormDialogShell } from "@/components/shared/dialogs/FormDialogShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -39,7 +31,6 @@ import {
   Building2,
   Coins,
   ImagePlus,
-  Loader2,
   PackagePlus,
   Pencil,
   ShoppingBag,
@@ -203,43 +194,34 @@ export function ProductFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 sm:max-w-2xl">
-        <div
-          aria-hidden
-          className="h-1 w-full bg-gradient-to-r from-primary via-amber-500 to-primary"
-        />
-
-        <div className="flex flex-col gap-5 px-6 py-5">
-          <DialogHeader className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-                {mode === "create" ? (
-                  <PackagePlus className="size-5" />
-                ) : (
-                  <Pencil className="size-5" />
-                )}
-              </span>
-              <div className="flex min-w-0 flex-col gap-0.5">
-                {/* <Badge
-                  variant="outline"
-                  className="h-5 w-fit gap-1 rounded-full border-primary/20 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.22em] text-primary"
-                >
-                  <ShoppingBag className="size-2.5" />
-                  Pro shop ·{" "}
-                  {mode === "create" ? "SKU mới" : "Chỉnh sửa SKU"}
-                </Badge> */}
-                <DialogTitle className="font-display text-lg font-black italic tracking-tight">
-                  {mode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
-                </DialogTitle>
-                <DialogDescription className="text-xs">
-                  {mode === "create"
-                    ? "Tạo SKU mới để bán kèm trong dòng vận hành."
-                    : "Điều chỉnh thông tin SKU theo nhu cầu kinh doanh."}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
+    <FormDialogShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={mode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
+      description={
+        mode === "create"
+          ? "Tạo SKU mới để bán kèm trong dòng vận hành."
+          : "Điều chỉnh thông tin SKU theo nhu cầu kinh doanh."
+      }
+      icon={mode === "create" ? PackagePlus : Pencil}
+      accentGradientClass="bg-gradient-to-r from-primary via-amber-500 to-primary"
+      maxWidthClass="sm:max-w-2xl"
+      formId="product-form"
+      isSubmitting={!!isSubmitting}
+      submitLabel={
+        mode === "create" ? (
+          <>
+            <PackagePlus data-icon="inline-start" />
+            Tạo sản phẩm
+          </>
+        ) : (
+          <>
+            <Pencil data-icon="inline-start" />
+            Lưu thay đổi
+          </>
+        )
+      }
+    >
 
           <form
             id="product-form"
@@ -529,42 +511,6 @@ export function ProductFormDialog({
             </div>
           </form>
 
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-              className="rounded-full"
-            >
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              form="product-form"
-              disabled={isSubmitting}
-              className="rounded-full"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 data-icon="inline-start" className="animate-spin" />
-                  Đang xử lý…
-                </>
-              ) : mode === "create" ? (
-                <>
-                  <PackagePlus data-icon="inline-start" />
-                  Tạo sản phẩm
-                </>
-              ) : (
-                <>
-                  <Pencil data-icon="inline-start" />
-                  Lưu thay đổi
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
+    </FormDialogShell>
   );
 }

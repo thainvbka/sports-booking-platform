@@ -16,8 +16,8 @@ import { DeletePricingRuleDialog } from "./DeletePricingRuleDialog";
 import { PricingRuleFormDialog } from "./PricingRuleFormDialog";
 
 // Extracted sub-components and hooks
-import { usePricingColumns } from "../../../hooks/usePricingColumns";
-import { useTimelineSegments } from "../../../hooks/useTimelineSegments";
+import { usePricingColumns } from "@/hooks/owner/usePricingColumns";
+import { useTimelineSegments } from "@/hooks/player/useTimelineSegments";
 import { BulkSelectionBar } from "./BulkSelectionBar";
 import { PricingConsoleHeader } from "./PricingConsoleHeader";
 

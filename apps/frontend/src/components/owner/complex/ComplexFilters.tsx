@@ -1,15 +1,14 @@
-import { Badge } from "@/components/ui/badge";
+import { OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { ComplexStatus } from "@/types";
 import { RotateCcw, Tag } from "lucide-react";
 
@@ -38,20 +37,7 @@ export function ComplexFilters({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      {activeCount > 0 && (
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className="rounded-full border-primary/30 bg-primary/10 text-[10px] font-semibold uppercase tracking-wider text-primary"
-          >
-            {activeCount} đang áp dụng
-          </Badge>
-          <Separator
-            orientation="horizontal"
-            className="ml-1 flex-1 bg-border/70"
-          />
-        </div>
-      )}
+      <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5 min-w-[200px]">

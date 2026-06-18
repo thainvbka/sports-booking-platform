@@ -837,6 +837,7 @@ const formatRecurringBooking = (
             updated_at: b.review.updated_at,
           }
         : null,
+      matchId: b.match?.id || null,
     })),
     ...(includePlayer && {
       player_name: recurring.player.account.full_name,
@@ -869,6 +870,11 @@ const recurringBookingSelect = {
       total_price: true,
       status: true,
       expires_at: true,
+      match: {
+        select: {
+          id: true,
+        },
+      },
       review: {
         select: {
           id: true,
@@ -900,8 +906,18 @@ export const getPlayerBookings = async (
     throw new ForbiddenError("You are not allowed to view bookings");
   }
 
-  const [singleBookings, recurringBookings, singleSummary, recurringSummary] =
-    await Promise.all([
+  const [
+    singleBookings,
+    recurringBookings,
+    pendingSingleCount,
+    confirmedSingleCount,
+    completedSingleCount,
+    canceledSingleCount,
+    pendingRecurringCount,
+    confirmedRecurringCount,
+    completedRecurringCount,
+    canceledRecurringCount,
+  ] = await Promise.all([
     prisma.booking.findMany({
       where: {
         player_id,
@@ -929,6 +945,11 @@ export const getPlayerBookings = async (
             updated_at: true,
           },
         },
+        match: {
+          select: {
+            id: true,
+          },
+        },
         sub_field: {
           select: {
             sub_field_name: true,
@@ -945,24 +966,68 @@ export const getPlayerBookings = async (
     prisma.recurringBooking.findMany({
       where: {
         player_id,
-        ...(status ? { status } : {}),
+        ...(status ? {
+          OR: [
+            { status: status as any },
+            {
+              bookings: {
+                some: { status }
+              }
+            }
+          ]
+        } : {}),
       },
       select: recurringBookingSelect,
       orderBy: { created_at: "desc" },
       take: QUERY_HARD_LIMIT,
     }),
-    prisma.booking.groupBy({
-      by: ["status"],
+    prisma.booking.count({
+      where: { player_id, recurring_booking_id: null, status: BookingStatus.PENDING },
+    }),
+    prisma.booking.count({
+      where: { player_id, recurring_booking_id: null, status: BookingStatus.CONFIRMED },
+    }),
+    prisma.booking.count({
+      where: { player_id, recurring_booking_id: null, status: BookingStatus.COMPLETED },
+    }),
+    prisma.booking.count({
+      where: { player_id, recurring_booking_id: null, status: BookingStatus.CANCELED },
+    }),
+    prisma.recurringBooking.count({
       where: {
         player_id,
-        recurring_booking_id: null,
+        OR: [
+          { status: "PENDING" },
+          { bookings: { some: { status: BookingStatus.PENDING } } },
+        ],
       },
-      _count: { status: true },
     }),
-    prisma.recurringBooking.groupBy({
-      by: ["status"],
-      where: { player_id },
-      _count: { status: true },
+    prisma.recurringBooking.count({
+      where: {
+        player_id,
+        OR: [
+          { status: "CONFIRMED" },
+          { bookings: { some: { status: BookingStatus.CONFIRMED } } },
+        ],
+      },
+    }),
+    prisma.recurringBooking.count({
+      where: {
+        player_id,
+        OR: [
+          { status: "COMPLETED" },
+          { bookings: { some: { status: BookingStatus.COMPLETED } } },
+        ],
+      },
+    }),
+    prisma.recurringBooking.count({
+      where: {
+        player_id,
+        OR: [
+          { status: "CANCELED" },
+          { bookings: { some: { status: BookingStatus.CANCELED } } },
+        ],
+      },
     }),
   ]);
 
@@ -980,6 +1045,7 @@ export const getPlayerBookings = async (
     expires_at: b.expires_at,
     created_at: b.created_at,
     review: b.review,
+    matchId: b.match?.id || null,
   }));
 
   const formattedRecurring = recurringBookings.map((r) =>
@@ -992,19 +1058,13 @@ export const getPlayerBookings = async (
 
   const total = allBookings.length;
   const skip = (page - 1) * limit;
+  
   const statusSummary = {
-    PENDING: 0,
-    CONFIRMED: 0,
-    COMPLETED: 0,
-    CANCELED: 0,
+    PENDING: pendingSingleCount + pendingRecurringCount,
+    CONFIRMED: confirmedSingleCount + confirmedRecurringCount,
+    COMPLETED: completedSingleCount + completedRecurringCount,
+    CANCELED: canceledSingleCount + canceledRecurringCount,
   };
-
-  for (const item of singleSummary) {
-    statusSummary[item.status] += item._count.status;
-  }
-  for (const item of recurringSummary) {
-    statusSummary[item.status] += item._count.status;
-  }
 
   const totalSummary =
     statusSummary.PENDING +

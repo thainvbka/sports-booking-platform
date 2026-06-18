@@ -12,6 +12,7 @@ export function PaymentFailedPage() {
 
   // Khi user bị redirect từ Stripe checkout (cancel), thông báo backend reset booking timeout
   useEffect(() => {
+    sessionStorage.removeItem("pending_checkout");
     const bookingIdsParam = searchParams.get("booking_ids");
     if (!bookingIdsParam || hasCancelled.current) return;
     hasCancelled.current = true;

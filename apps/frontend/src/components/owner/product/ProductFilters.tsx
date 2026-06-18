@@ -1,5 +1,4 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { OwnerFilterActions, OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { SPORT_TYPE_LABELS } from "@/lib/constants";
 import type { ComplexListItem, ProductStatus, SportType } from "@/types";
 import {
@@ -20,8 +18,6 @@ import {
 import {
   Building2,
   Coins,
-  Filter,
-  RotateCcw,
   Tag,
   Warehouse,
 } from "lucide-react";
@@ -148,20 +144,7 @@ export function ProductFilters({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        {activeCount > 0 ? (
-          <Badge
-            variant="outline"
-            className="rounded-full border-primary/30 bg-primary/10 text-[10px] font-semibold uppercase tracking-wider text-primary"
-          >
-            {activeCount} đang áp dụng
-          </Badge>
-        ) : null}
-        <Separator
-          orientation="horizontal"
-          className="ml-1 flex-1 bg-border/70"
-        />
-      </div>
+      <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div className="flex flex-col gap-1.5">
@@ -312,25 +295,13 @@ export function ProductFilters({
           )}
         </div>
 
-        <div className="flex items-end gap-2 md:col-span-2 xl:col-span-3">
-          <Button
-            onClick={handleApply}
-            disabled={isLoading}
-            className="rounded-full"
-          >
-            <Filter data-icon="inline-start" />
-            Áp dụng lọc
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleClear}
-            disabled={isLoading || activeCount === 0}
-            className="rounded-full"
-          >
-            <RotateCcw data-icon="inline-start" />
-            Xóa bộ lọc
-          </Button>
-        </div>
+        <OwnerFilterActions
+          onApply={handleApply}
+          onClear={handleClear}
+          isLoading={isLoading}
+          clearDisabled={activeCount === 0}
+          className="md:col-span-2 xl:col-span-3"
+        />
       </div>
     </div>
   );

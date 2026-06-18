@@ -65,6 +65,7 @@ export interface SingleBookingResponse {
   expires_at: string | null;
   created_at: string;
   review?: BookingReviewSummary | null;
+  matchId?: string | null;
 }
 
 export interface RecurringBookingResponse {
@@ -89,6 +90,7 @@ export interface RecurringBookingResponse {
     total_price: number;
     status: BookingStatus;
     review?: BookingReviewSummary | null;
+    matchId?: string | null;
   }[];
 }
 

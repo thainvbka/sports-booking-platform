@@ -110,4 +110,19 @@ export const bookingService = {
     );
     return response.data;
   },
+
+  recoverPendingCheckout: async () => {
+    const pendingCheckoutStr = sessionStorage.getItem("pending_checkout");
+    if (!pendingCheckoutStr) return;
+    try {
+      const pendingCheckout = JSON.parse(pendingCheckoutStr);
+      if (Date.now() - pendingCheckout.timestamp < 35 * 60 * 1000) {
+        await bookingService.cancelStripeCheckout(pendingCheckout.bookingIds);
+      }
+    } catch (err) {
+      console.error("Failed to restore booking expiry:", err);
+    } finally {
+      sessionStorage.removeItem("pending_checkout");
+    }
+  },
 };

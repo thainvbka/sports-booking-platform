@@ -173,3 +173,76 @@ export interface AdminComplexesResponse {
 
 export type AdminAnalyticsResponse = ApiResponse<{ analytics: AdminAnalytics }>;
 export type AdminComplexesApiResponse = ApiResponse<AdminComplexesResponse>;
+
+export interface BookingSubField {
+  sub_field_name: string;
+  sport_type: string;
+  complex: { complex_name: string; owner: { company_name: string } };
+}
+
+export interface BookingPlayer {
+  account: { full_name: string; phone_number: string };
+}
+
+export interface AdminBookingRow {
+  id: string;
+  status: string;
+  total_price: number | string;
+  start_time: string;
+  end_time: string;
+  created_at: string;
+  player: BookingPlayer;
+  sub_field: BookingSubField;
+}
+
+export interface ChildBooking {
+  id: string;
+  status: string;
+  total_price: number | string;
+  start_time: string;
+  end_time: string;
+}
+
+export interface AdminRecurringRow {
+  id: string;
+  status: string;
+  recurrence_type: string;
+  start_date: string;
+  end_date: string;
+  total_value: number;
+  child_count: number;
+  status_breakdown: Record<string, number>;
+  player: BookingPlayer;
+  sub_field: BookingSubField;
+  bookings: ChildBooking[];
+}
+
+export type BookingView = "single" | "recurring";
+
+export interface LinkedBooking {
+  total_price: number | string;
+  start_time: string;
+  player?: {
+    account: {
+      full_name: string;
+      email: string;
+    };
+  };
+  sub_field?: {
+    sub_field_name: string;
+    complex?: {
+      complex_name: string;
+    };
+  };
+}
+
+export interface AdminPayment {
+  id: string;
+  transaction_code: string;
+  provider: string;
+  amount: number | string;
+  status: string;
+  created_at: string;
+  bookings: LinkedBooking[];
+}
+

@@ -26,6 +26,9 @@ export default function BookingReviewPage() {
     if (!id) return;
     const fetchBooking = async () => {
       try {
+        // Recover pending checkout expiry if back button was pressed
+        await bookingService.recoverPendingCheckout();
+
         const data = await bookingService.reviewBooking(id);
         const payload = data.data as { booking: BookingReviewResponse };
         setBooking(payload.booking);
@@ -52,6 +55,14 @@ export default function BookingReviewPage() {
           : await bookingService.createVnpayCheckoutSession([booking.id]);
 
       if (result?.data?.url) {
+        sessionStorage.setItem(
+          "pending_checkout",
+          JSON.stringify({
+            bookingIds: [booking.id],
+            provider: paymentMethod,
+            timestamp: Date.now(),
+          })
+        );
         window.location.href = result.data.url;
       } else {
         toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");

@@ -1,12 +1,12 @@
 import { RecommendedCourtsBanner } from "@/components/player/recommendation/RecommendedCourtsBanner";
 import { ComplexCard } from "@/components/shared/complex/ComplexCard";
 import { SubFieldCard } from "@/components/shared/subfield/SubFieldCard";
-import { SearchFilters } from "@/components/shared/ui-utility/SearchFilters";
+import { SearchFilters } from "@/components/shared/search/filters/SearchFilters";
 import { Tabs } from "@/components/ui/tabs";
 import { SearchHero } from "@/components/shared/search/SearchHero";
 import { ResultTabsList } from "@/components/shared/search/ResultTabsList";
 import { SearchResultTab } from "@/components/shared/search/SearchResultTab";
-import { useSearchResults } from "@/hooks/useSearchResults";
+import { useSearchResults } from "@/hooks/player/useSearchResults";
 
 export function SearchPage() {
   const {

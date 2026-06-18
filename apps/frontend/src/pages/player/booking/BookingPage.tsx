@@ -7,12 +7,12 @@ import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useBookingAddons } from "@/hooks/useBookingAddons";
-import { useBookingSubmit } from "@/hooks/useBookingSubmit";
-import { useBookingTimePricing } from "@/hooks/useBookingTimePricing";
-import { useBookingWizard } from "@/hooks/useBookingWizard";
-import { useSubfieldData } from "@/hooks/useSubfieldData";
-import { useSubfieldReviews } from "@/hooks/useSubfieldReviews";
+import { useBookingAddons } from "@/hooks/player/useBookingAddons";
+import { useBookingSubmit } from "@/hooks/player/useBookingSubmit";
+import { useBookingTimePricing } from "@/hooks/player/useBookingTimePricing";
+import { useBookingWizard } from "@/hooks/player/useBookingWizard";
+import { useSubfieldData } from "@/hooks/player/useSubfieldData";
+import { useSubfieldReviews } from "@/hooks/player/useSubfieldReviews";
 import { useAuthStore } from "@/store/useAuthStore";
 import { addMonths } from "date-fns";
 import { CheckCircle2 } from "lucide-react";
@@ -234,7 +234,7 @@ export default function BookingPage() {
                 setDate={setDate}
                 bookingType={bookingType}
                 setBookingType={setBookingType}
-                setCurrentStep={setCurrentStep}
+                setCurrentStep={(step) => setCurrentStep(step as Parameters<typeof setCurrentStep>[0])}
                 endDate={endDate}
                 setEndDate={setEndDate}
                 recurringType={recurringType}

@@ -58,8 +58,9 @@ export default function Dashboard() {
   const fetchRecentPayments = async () => {
     try {
       const res = await adminService.getPayments({ page: 1, limit: 10 });
-      if (res.success) {
-        setRecentPayments(res.data.payments);
+      if (res.success && res.data) {
+        const data = res.data as { payments?: RecentPayment[] };
+        setRecentPayments(data.payments || []);
       }
     } catch (error) {
       console.error("Failed to fetch recent payments", error);
@@ -73,7 +74,7 @@ export default function Dashboard() {
     const totalDaily = daily.reduce((a, b) => a + b.bookings, 0) || 1;
 
     return hourly.map((row) => {
-      const result: Record<string, number | string> = { hour: row.hour };
+      const result: { hour: number | string; [key: string]: number | string } = { hour: row.hour };
       const DAYS_NAME = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       DAYS_NAME.forEach((day) => {
         const dPoint = daily.find((d) => d.name === day) || { bookings: 0 };

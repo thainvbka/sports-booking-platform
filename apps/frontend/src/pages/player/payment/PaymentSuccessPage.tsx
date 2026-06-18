@@ -20,6 +20,7 @@ export function PaymentSuccessPage() {
   const hasCalled = useRef(false);
 
   useEffect(() => {
+    sessionStorage.removeItem("pending_checkout");
     const isVnpay = searchParams.has("vnp_TxnRef");
 
     if (isVnpay) {

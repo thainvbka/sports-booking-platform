@@ -24,7 +24,7 @@ export function StripeReturnPage() {
         } else {
           setStatus("incomplete");
         }
-      } catch (error) {
+      } catch {
         setStatus("incomplete");
       }
     };
@@ -37,7 +37,7 @@ export function StripeReturnPage() {
       setStatus("loading");
       const data = await ownerService.createStripeLink();
       window.location.href = data.data.url;
-    } catch (error) {
+    } catch {
       toast.error(
         "Đã có lỗi xảy ra khi tạo liên kết Stripe. Vui lòng thử lại sau.",
       );

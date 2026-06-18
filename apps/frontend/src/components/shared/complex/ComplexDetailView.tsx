@@ -69,18 +69,20 @@ export function ComplexDetailView({
   const [, setSearchParams] = useSearchParams();
   const isFirstRender = React.useRef(true);
 
+  const pageValue = pagination?.page;
+
   // Sync URL with pagination and search (skip first render)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-    if (!pagination) return;
+    if (pageValue === undefined) return;
     const params: Record<string, string> = {};
-    if (pagination.page > 1) params.page = pagination.page.toString();
+    if (pageValue > 1) params.page = pageValue.toString();
     if (searchTerm) params.search = searchTerm;
     setSearchParams(params, { replace: true });
-  }, [pagination?.page, searchTerm, setSearchParams]);
+  }, [pageValue, searchTerm, setSearchParams]);
 
   // Loading state
   if (isLoading) {

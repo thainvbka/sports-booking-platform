@@ -36,6 +36,9 @@ export default function RecurringBookingReviewPage() {
     if (!id) return;
     const fetchBooking = async () => {
       try {
+        // Recover pending checkout expiry if back button was pressed
+        await bookingService.recoverPendingCheckout();
+
         const response = await bookingService.reviewRecurringBooking(id);
         setBooking(
           response.data.recurringBooking as RecurringBookingReviewResponse,
@@ -59,12 +62,21 @@ export default function RecurringBookingReviewPage() {
     setIsPaying(true);
 
     try {
+      const slotIds = booking.slots.map((slot) => slot.id);
       const result =
         paymentMethod === "STRIPE"
-          ? await bookingService.createCheckoutSession(booking.slots.map((slot) => slot.id))
-          : await bookingService.createVnpayCheckoutSession(booking.slots.map((slot) => slot.id));
+          ? await bookingService.createCheckoutSession(slotIds)
+          : await bookingService.createVnpayCheckoutSession(slotIds);
 
       if (result?.data?.url) {
+        sessionStorage.setItem(
+          "pending_checkout",
+          JSON.stringify({
+            bookingIds: slotIds,
+            provider: paymentMethod,
+            timestamp: Date.now(),
+          })
+        );
         window.location.href = result.data.url;
       } else {
         toast.error("Không nhận được URL thanh toán. Vui lòng thử lại.");

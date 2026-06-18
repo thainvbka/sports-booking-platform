@@ -1,4 +1,4 @@
-import { MatchCard } from "@/components/matches/MatchCard";
+import { MatchCard } from "@/components/shared/matches/MatchCard";
 import { Button } from "@/components/ui/button";
 import {
   MATCH_LEAVABLE_PARTICIPATION_STATUSES,

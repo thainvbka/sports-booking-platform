@@ -6,19 +6,20 @@ import {
   type BookingResponse,
 } from "@/types";
 import {
+  canCancelBooking,
+  canCreateReviewBooking,
+  canUpdateReviewBooking,
   formatPrice,
   getBookingStatusLabel,
   getRecurringStatusLabel,
   getSportTypeLabel,
-  canCancelBooking,
-  canCreateReviewBooking,
-  canUpdateReviewBooking,
   type SingleBooking,
 } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
 import {
+  BadgeCheck,
   CalendarDays,
   Clock,
   CreditCard,
@@ -27,16 +28,15 @@ import {
   Ticket,
   Trophy,
   XCircle,
-  BadgeCheck,
 } from "lucide-react";
 import { useState } from "react";
-import { SessionsListDialog } from "./SessionsListDialog";
-import { ReviewSectionInline } from "./ReviewSectionInline";
 import { ExpiresChip } from "./ExpiresChip";
+import { ReviewSectionInline } from "./ReviewSectionInline";
+import { SessionsListDialog } from "./SessionsListDialog";
 
 export type { SingleBooking } from "@/utils";
 
-export const STATUS_VISUAL: Record<
+const STATUS_VISUAL: Record<
   BookingStatus,
   { icon: LucideIcon; className: string }
 > = {
@@ -245,7 +245,8 @@ export function BookingCard({
           {isSingle &&
             (booking.status === BookingStatus.CONFIRMED ||
               booking.status === BookingStatus.COMPLETED) &&
-            new Date(booking.start_time) > new Date() && (
+            new Date(booking.start_time) > new Date() &&
+            !booking.matchId && (
               <Button
                 variant="outline"
                 size="sm"

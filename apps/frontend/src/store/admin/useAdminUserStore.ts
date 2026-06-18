@@ -56,9 +56,10 @@ export const useAdminUserStore = create<AdminUserState>((set, get) => ({
       } else {
         set({ error: res.message, isLoading: false });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string } | null;
       set({
-        error: error.message || "Failed to fetch users",
+        error: err?.message || "Failed to fetch users",
         isLoading: false,
       });
     }
@@ -88,8 +89,9 @@ export const useAdminUserStore = create<AdminUserState>((set, get) => ({
       } else {
         throw new Error(res.message);
       }
-    } catch (error: any) {
-      set({ error: error.message || "Failed to update user status" });
+    } catch (error) {
+      const err = error as { message?: string } | null;
+      set({ error: err?.message || "Failed to update user status" });
       throw error;
     } finally {
       set({ isLoading: false });

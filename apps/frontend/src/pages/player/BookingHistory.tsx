@@ -1,19 +1,19 @@
 import { DeleteBookingDialog } from "@/components/player/booking-history/DeleteBookingDialog";
 import { ReviewDialog } from "@/components/player/review/ReviewDialog";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
-import { useBookings } from "@/hooks/useBookings";
-import { usePaymentFlow } from "@/hooks/usePaymentFlow";
-import { useBookingActions } from "@/hooks/useBookingActions";
+import { useBookingActions } from "@/hooks/player/useBookingActions";
+import { useBookings } from "@/hooks/player/useBookings";
+import { usePaymentFlow } from "@/hooks/player/usePaymentFlow";
 import { BookingStatus } from "@/types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { CreateMatchDialog } from "@/components/matches/CreateMatchDialog";
+import { CreateMatchDialog } from "@/components/shared/matches/CreateMatchDialog";
 import { BookingCard } from "@/components/player/booking-history/BookingCard";
-import { PaymentMethodDialog } from "@/components/player/booking-history/PaymentMethodDialog";
-import { BookingCardSkeletonGrid, EmptyLedger } from "@/components/player/booking-history/BookingsPageStates";
 import { BookingHistoryHero } from "@/components/player/booking-history/BookingHistoryHero";
+import { BookingCardSkeletonGrid, EmptyLedger } from "@/components/player/booking-history/BookingsPageStates";
 import { BookingStatusTabs } from "@/components/player/booking-history/BookingStatusTabs";
+import { PaymentMethodDialog } from "@/components/player/booking-history/PaymentMethodDialog";
 
 const PAGE_SIZE = 9;
 

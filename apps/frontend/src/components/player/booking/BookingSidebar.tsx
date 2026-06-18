@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { PublicSubfieldDetail, PublicSubfieldReview } from "@/types";
 import { formatPrice } from "@/utils";
-import { getReviewerDisplayName } from "@/utils/review.utils";
+import { getReviewerDisplayName } from "@/utils/review.util";
 import {
   ArrowUpRight,
   CalendarClock,

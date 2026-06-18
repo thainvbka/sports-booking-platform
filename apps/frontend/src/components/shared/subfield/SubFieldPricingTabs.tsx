@@ -22,14 +22,18 @@ const dayTabLabels: Record<number, string> = {
   6: "T7",
 };
 
+interface BookingAvailability {
+  start: string;
+  end: string;
+  status: string;
+}
+
 interface SubfieldPricingTabsProps {
   subfieldId: string;
   pricingRules: PricingRule[];
   onBookNow: (date: Date, startTime: string, endTime: string) => void;
   className?: string;
 }
-
-
 
 export function SubfieldPricingTabs({
   subfieldId,
@@ -39,15 +43,13 @@ export function SubfieldPricingTabs({
 }: SubfieldPricingTabsProps) {
   const [activePricingDay, setActivePricingDay] = useState("0");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [bookings, setBookings] = useState<BookingAvailability[]>([]);
 
   useEffect(() => {
     if (!subfieldId || !selectedDate) return;
     
     let isMounted = true;
     const fetchAvailability = async () => {
-      setIsLoadingBookings(true);
       try {
         const fmtDate = format(selectedDate, "yyyy-MM-dd");
         const data = await publicService.getSubfieldAvailability(subfieldId, fmtDate);
@@ -58,10 +60,6 @@ export function SubfieldPricingTabs({
         console.error("Failed to fetch availability in PricingTabs", error);
         if (isMounted) {
           setBookings([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingBookings(false);
         }
       }
     };
@@ -108,7 +106,7 @@ export function SubfieldPricingTabs({
   const handleTabClick = (dayNum: number) => {
     const today = new Date();
     const todayDay = today.getDay();
-    let diff = dayNum - todayDay;
+    const diff = dayNum - todayDay;
     
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + diff);
@@ -121,16 +119,6 @@ export function SubfieldPricingTabs({
     
     setSelectedDate(targetDate);
   };
-
-  const minPrice = useMemo(() => {
-    const prices = pricingRules.map((r) => Number(r.base_price));
-    return prices.length > 0 ? Math.min(...prices) : 0;
-  }, [pricingRules]);
-
-  const maxPrice = useMemo(() => {
-    const prices = pricingRules.map((r) => Number(r.base_price));
-    return prices.length > 0 ? Math.max(...prices) : 0;
-  }, [pricingRules]);
 
   const getRuleSlotStatus = (rule: PricingRule) => {
     const ruleStartMin = parseRuleTimeToMinutes(rule.start_time);
