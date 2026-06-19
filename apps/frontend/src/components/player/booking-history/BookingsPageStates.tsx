@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { Ticket } from "lucide-react";
 
 export function BookingCardSkeletonGrid() {
@@ -46,19 +47,11 @@ export function BookingCardSkeletonGrid() {
 
 export function EmptyLedger() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border/70 bg-background/60 py-16 text-center">
-      <div className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-        <Ticket className="size-6" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <h3 className="italic tracking-tight text-heading">
-          Chưa có vé nào trong sổ
-        </h3>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Khi bạn đặt sân, mỗi lượt sẽ hiện ở đây như một tấm vé — theo dõi
-          thanh toán, thời gian và đánh giá ở cùng một nơi.
-        </p>
-      </div>
-    </div>
+    <EmptyState
+      title="Chưa có vé nào trong sổ"
+      description="Khi bạn đặt sân, mỗi lượt sẽ hiện ở đây như một tấm vé — theo dõi thanh toán, thời gian và đánh giá ở cùng một nơi."
+      icon={<Ticket className="size-6 text-primary" />}
+      className="bg-background/60 py-16"
+    />
   );
 }

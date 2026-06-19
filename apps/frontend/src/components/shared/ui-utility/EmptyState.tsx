@@ -10,6 +10,7 @@ interface EmptyStateProps {
   onAction?: () => void;
   icon?: ReactNode;
   className?: string;
+  children?: ReactNode;
 }
 
 export function EmptyState({
@@ -19,6 +20,7 @@ export function EmptyState({
   onAction,
   icon,
   className,
+  children,
 }: EmptyStateProps) {
   return (
     <div
@@ -43,6 +45,8 @@ export function EmptyState({
           {actionLabel}
         </Button>
       ) : null}
+
+      {children}
     </div>
   );
 }
