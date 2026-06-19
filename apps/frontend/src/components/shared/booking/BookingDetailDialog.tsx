@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { RECURRENCE_TYPE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
-import type { OwnerBookingResponse } from "@/types";
+import { BookingStatus, type BookingResponse, type OwnerBookingResponse } from "@/types";
 import {
   formatDateVn,
   formatPrice,
@@ -22,22 +24,44 @@ import {
   MapPin,
   Phone,
   Sparkles,
+  Star,
   Ticket,
   User,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
-interface BookingDetailDialogProps {
-  booking: OwnerBookingResponse | null;
+export interface BookingDetailDialogProps {
+  booking: BookingResponse | OwnerBookingResponse | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Slot-based customization
+  customerSection?: ReactNode;
+  reviewSection?: ReactNode;
+  design?: "premium" | "standard";
+  // Quick props for review section
+  onReviewClick?: () => void;
+  canCreateReview?: boolean;
+  canUpdateReview?: boolean;
+  // Optional custom renderer for slot actions
+  renderSlotAction?: (slot: any, idx: number) => ReactNode;
 }
 
 export function BookingDetailDialog({
   booking,
   open,
   onOpenChange,
+  customerSection,
+  reviewSection,
+  design = "premium",
+  onReviewClick,
+  canCreateReview = false,
+  canUpdateReview = false,
+  renderSlotAction,
 }: BookingDetailDialogProps) {
   if (!booking) return null;
+
+  const isSingle = booking.type === "SINGLE";
+  const hasCustomerInfo = "player_name" in booking && "player_phone" in booking;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,42 +107,66 @@ export function BookingDetailDialog({
                 <MapPin className="size-3" />
                 {booking.complex_address}
               </span>
+              {booking.type === "RECURRING" && (
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <Clock className="size-3" />
+                  <span className="font-medium text-foreground">
+                    {RECURRENCE_TYPE_LABELS[booking.recurrence_type] || booking.recurrence_type}
+                  </span>
+                  <Separator orientation="vertical" className="mx-1 h-3" />
+                  <span>
+                    {formatDateVn(booking.start_date)} → {formatDateVn(booking.end_date)}
+                  </span>
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
-          {/* Customer */}
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <User className="size-4" />
-              </span>
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-semibold">
-                  {booking.player_name}
+          {/* Customer Section */}
+          {customerSection}
+          {!customerSection && hasCustomerInfo && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <User className="size-4" />
                 </span>
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
-                  <Phone className="size-3" />
-                  {booking.player_phone}
-                </span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold">
+                    {(booking as OwnerBookingResponse).player_name}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+                    <Phone className="size-3" />
+                    {(booking as OwnerBookingResponse).player_phone}
+                  </span>
+                </div>
               </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Khách
+              </span>
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Khách
-            </span>
-          </div>
+          )}
 
           {/* Time / price */}
-          {booking.type === "SINGLE" ? (
-            <div className="relative overflow-hidden rounded-xl border border-border/60 bg-card p-4">
+          {isSingle ? (
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-xl border border-border/60 bg-card p-4",
+                design === "premium" && "bg-card",
+              )}
+            >
               {/* ticket notches */}
-              <span
-                aria-hidden
-                className="absolute -left-2 top-1/2 size-4 -translate-y-1/2 rounded-full bg-background ring-1 ring-border/60"
-              />
-              <span
-                aria-hidden
-                className="absolute -right-2 top-1/2 size-4 -translate-y-1/2 rounded-full bg-background ring-1 ring-border/60"
-              />
+              {design === "premium" && (
+                <>
+                  <span
+                    aria-hidden
+                    className="absolute -left-2 top-1/2 size-4 -translate-y-1/2 rounded-full bg-background ring-1 ring-border/60"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute -right-2 top-1/2 size-4 -translate-y-1/2 rounded-full bg-background ring-1 ring-border/60"
+                  />
+                </>
+              )}
 
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-col gap-1">
@@ -176,7 +224,7 @@ export function BookingDetailDialog({
                 {booking.bookings?.map((slot, idx) => (
                   <li
                     key={slot.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card px-3 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card px-3 py-2.5 hover:bg-muted/10 transition-colors"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-[10px] font-bold tabular-nums text-muted-foreground">
@@ -193,22 +241,61 @@ export function BookingDetailDialog({
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge
-                        className={cn(
-                          "h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                          getBookingStatusColor(slot.status),
-                        )}
-                      >
-                        {getBookingStatusLabel(slot.status)}
-                      </Badge>
-                      <span className="text-xs font-semibold tabular-nums text-muted-foreground">
-                        {formatPrice(slot.total_price)}
-                      </span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge
+                          className={cn(
+                            "h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.14em] shadow-none border-none",
+                            getBookingStatusColor(slot.status),
+                          )}
+                        >
+                          {getBookingStatusLabel(slot.status)}
+                        </Badge>
+                        <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+                          {formatPrice(slot.total_price)}
+                        </span>
+                      </div>
+                      {renderSlotAction?.(slot, idx)}
                     </div>
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Review Section */}
+          {reviewSection}
+          {!reviewSection && onReviewClick && isSingle && booking.status === BookingStatus.CONFIRMED && (canCreateReview || canUpdateReview) && (
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-base mb-1">Đánh giá sân</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {canCreateReview ? "Chia sẻ trải nghiệm của bạn" : "Xem hoặc cập nhật đánh giá"}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={canUpdateReview ? "outline" : "default"}
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.stopPropagation();
+                    onReviewClick();
+                  }}
+                  className="h-9 font-medium"
+                >
+                  {canCreateReview ? (
+                    <>
+                      <Star className="w-4 h-4 mr-1.5" />
+                      Viết đánh giá
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-1.5" />
+                      Xem/Cập nhật
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </div>

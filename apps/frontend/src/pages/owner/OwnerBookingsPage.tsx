@@ -3,7 +3,7 @@ import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { Button } from "@/components/ui/button";
 import { BookingsHero } from "@/components/owner/booking/BookingsHero";
-import { BookingDetailDialog } from "@/components/owner/booking/BookingDetailDialog";
+import { BookingDetailDialog } from "@/components/shared/booking/BookingDetailDialog";
 import { ConfirmBookingDialog } from "@/components/owner/booking/ConfirmBookingDialog";
 import { CancelBookingDialog } from "@/components/owner/booking/CancelBookingDialog";
 import { useOwnerBookings } from "@/hooks/owner/useOwnerBookings";
