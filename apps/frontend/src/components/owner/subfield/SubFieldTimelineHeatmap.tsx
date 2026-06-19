@@ -14,13 +14,7 @@ import {
   PRICING_TIER_CONFIGS,
 } from "@/utils";
 import { Clock } from "lucide-react";
-
-export interface TimelineSegment {
-  start: number;
-  end: number;
-  rule?: PricingRule;
-  classification: "PEAK" | "BUDGET" | "REGULAR" | "CLOSED";
-}
+import type { TimelineSegment } from "@/hooks/player/useTimelineSegments";
 
 interface SubFieldTimelineHeatmapProps {
   segments: TimelineSegment[];
@@ -73,12 +67,7 @@ export function SubFieldTimelineHeatmap({
               const price = Number(rule.base_price);
               const config = PRICING_TIER_CONFIGS[seg.classification as PricingTier];
               
-              const bgClassMap: Record<PricingTier, string> = {
-                PEAK: "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 text-white",
-                BUDGET: "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white",
-                REGULAR: "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white",
-              };
-              const bgClass = bgClassMap[seg.classification as PricingTier];
+              const bgClass = config.colorClass;
               const label = config.label;
 
               return (

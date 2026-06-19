@@ -2,24 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { WEEKDAYS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatDateVn } from "@/utils";
 import { CalendarIcon, Plus } from "lucide-react";
 import type { TimelineSegment } from "@/hooks/player/useTimelineSegments";
 import { CopyPricingDropdown } from "./CopyPricingDropdown";
 import { SubFieldTimelineHeatmap } from "./SubFieldTimelineHeatmap";
-
-const WEEKDAYS = [
-  { dayOfWeek: 1, short: "T2", full: "Thứ 2" },
-  { dayOfWeek: 2, short: "T3", full: "Thứ 3" },
-  { dayOfWeek: 3, short: "T4", full: "Thứ 4" },
-  { dayOfWeek: 4, short: "T5", full: "Thứ 5" },
-  { dayOfWeek: 5, short: "T6", full: "Thứ 6" },
-  { dayOfWeek: 6, short: "T7", full: "Thứ 7" },
-  { dayOfWeek: 0, short: "CN", full: "Chủ nhật" },
-];
 
 interface PricingConsoleHeaderProps {
   date: Date;
@@ -68,7 +58,7 @@ export function PricingConsoleHeader({
                 className="h-9 gap-2 rounded-xl border-border/80 bg-muted/40 px-3.5 text-xs font-semibold hover:bg-muted/70 cursor-pointer"
               >
                 <CalendarIcon className="size-3.5 text-muted-foreground" />
-                {format(date, "EEEE, dd/MM/yyyy", { locale: vi })}
+                {formatDateVn(date, "EEEE, dd/MM/yyyy")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">

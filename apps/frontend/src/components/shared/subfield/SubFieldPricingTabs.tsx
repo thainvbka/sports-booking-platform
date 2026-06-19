@@ -6,9 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
-import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS, DAYS_OF_WEEK_SHORT } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS, DAYS_OF_WEEK_SHORT, formatDateVn } from "@/utils";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -42,7 +40,7 @@ export function SubfieldPricingTabs({
     let isMounted = true;
     const fetchAvailability = async () => {
       try {
-        const fmtDate = format(selectedDate, "yyyy-MM-dd");
+        const fmtDate = formatDateVn(selectedDate, "yyyy-MM-dd");
         const data = await publicService.getSubfieldAvailability(subfieldId, fmtDate);
         if (isMounted) {
           setBookings(data.data.availability.bookings || []);
@@ -153,7 +151,7 @@ export function SubfieldPricingTabs({
                 className="h-9 gap-2 rounded-xl border-border/80 bg-muted/50 px-4 text-xs font-semibold hover:bg-muted/70 cursor-pointer"
               >
                 <CalendarIcon className="size-3.5 text-muted-foreground" />
-                {format(selectedDate, "dd/MM/yyyy", { locale: vi })}
+                {formatDateVn(selectedDate, "dd/MM/yyyy")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">

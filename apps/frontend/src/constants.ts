@@ -281,6 +281,22 @@ export const DAYS_OF_WEEK_SHORT: Record<number, string> = {
   6: "T7",
 };
 
+export interface WeekdayItem {
+  dayOfWeek: number;
+  short: string;
+  full: string;
+}
+
+export const WEEKDAYS: WeekdayItem[] = [
+  { dayOfWeek: 1, short: "T2", full: "Thứ 2" },
+  { dayOfWeek: 2, short: "T3", full: "Thứ 3" },
+  { dayOfWeek: 3, short: "T4", full: "Thứ 4" },
+  { dayOfWeek: 4, short: "T5", full: "Thứ 5" },
+  { dayOfWeek: 5, short: "T6", full: "Thứ 6" },
+  { dayOfWeek: 6, short: "T7", full: "Thứ 7" },
+  { dayOfWeek: 0, short: "CN", full: "Chủ nhật" },
+];
+
 export interface BankItem {
   code: string;
   fullName: string;

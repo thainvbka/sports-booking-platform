@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -8,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePricingStore } from "@/store/owner/usePricingStore";
 import type { PricingRule } from "@/types";
-import { formatTime, parseRuleTimeToMinutes } from "@/utils";
+import { WEEKDAYS } from "@/constants";
+import { formatTime, parseRuleTimeToMinutes, formatDateVn } from "@/utils";
 
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
@@ -20,16 +19,6 @@ import { usePricingColumns } from "@/hooks/owner/usePricingColumns";
 import { useTimelineSegments } from "@/hooks/player/useTimelineSegments";
 import { BulkSelectionBar } from "./BulkSelectionBar";
 import { PricingConsoleHeader } from "./PricingConsoleHeader";
-
-const WEEKDAYS = [
-  { dayOfWeek: 1, short: "T2", full: "Thứ 2" },
-  { dayOfWeek: 2, short: "T3", full: "Thứ 3" },
-  { dayOfWeek: 3, short: "T4", full: "Thứ 4" },
-  { dayOfWeek: 4, short: "T5", full: "Thứ 5" },
-  { dayOfWeek: 5, short: "T6", full: "Thứ 6" },
-  { dayOfWeek: 6, short: "T7", full: "Thứ 7" },
-  { dayOfWeek: 0, short: "CN", full: "Chủ nhật" },
-];
 
 interface SubFieldPricingConsoleProps {
   subfieldId: string;
@@ -250,10 +239,9 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
           ) : (
             <EmptyState
               title={`Chưa có bảng giá cho ${currentDayLabel}`}
-              description={`Thiết lập khung giờ và giá để khách hàng có thể đặt sân vào ${format(
+              description={`Thiết lập khung giờ và giá để khách hàng có thể đặt sân vào ${formatDateVn(
                 date,
                 "EEEE, dd/MM/yyyy",
-                { locale: vi },
               )}.`}
               icon={<CalendarIcon className="size-7 text-muted-foreground/70" />}
               actionLabel="Thêm khung giờ đầu tiên"
