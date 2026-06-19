@@ -230,10 +230,11 @@ export const updatePricingRule = async (
   const isTimeChanged = data.start_time || data.end_time;
 
   if (isTimeChanged) {
+    const targetDayOfWeek = typeof data.day_of_week === "number" ? data.day_of_week : existingRule.day_of_week;
     const overlappingRule = await prisma.pricingRule.findFirst({
       where: {
-        sub_field_id: data.sub_field_id,
-        day_of_week: data.day_of_week,
+        sub_field_id: data.sub_field_id || existingRule.sub_field_id,
+        day_of_week: targetDayOfWeek,
         AND: [
           { start_time: { lt: nextEndTime } },
           { end_time: { gt: nextStartTime } },
@@ -253,7 +254,7 @@ export const updatePricingRule = async (
         "Thứ 7",
       ];
       throw new BadRequestError(
-        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[data.day_of_week!]} từ ${formatVietnamTime(overlappingRule.start_time)} đến ${formatVietnamTime(overlappingRule.end_time)}`,
+        `Cập nhật thất bại: Khung giờ bị trùng với khung giờ hiện có vào ${dayNames[targetDayOfWeek]} từ ${formatVietnamTime(overlappingRule.start_time)} đến ${formatVietnamTime(overlappingRule.end_time)}`,
       );
     }
   }

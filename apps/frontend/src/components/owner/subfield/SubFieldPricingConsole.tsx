@@ -68,10 +68,8 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
         time_slots: data.time_slots,
       });
       toast.success("Thêm khung giờ thành công.");
-      await fetchPricingRules(subfieldId, date.getDay());
+      await fetchPricingRules(subfieldId, date.getDay(), true);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể tạo khung giờ";
-      toast.error(message);
       throw error;
     }
   };
@@ -88,8 +86,6 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
       toast.success("Cập nhật khung giờ thành công.");
       setEditingRule(null);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể cập nhật khung giờ";
-      toast.error(message);
       throw error;
     }
   };
@@ -102,8 +98,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
       setDeletingRule(null);
       setSelectedRuleIds(selectedRuleIds.filter((ruleId) => ruleId !== deletingRule.id));
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể xóa khung giờ";
-      toast.error(message);
+      // Error is toasted globally by Axios interceptor
     }
   };
 
@@ -114,8 +109,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
       toast.success("Xóa các khung giờ đã chọn thành công.");
       setSelectedRuleIds([]);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể xóa khung giờ";
-      toast.error(message);
+      // Error is toasted globally by Axios interceptor
     }
   };
 
@@ -133,8 +127,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
       await copyPricingRules(subfieldId, sourceDay, filteredTargetDays);
       toast.success("Sao chép giá thành công.");
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể sao chép giá";
-      toast.error(message);
+      // Error is toasted globally by Axios interceptor
     }
   };
 

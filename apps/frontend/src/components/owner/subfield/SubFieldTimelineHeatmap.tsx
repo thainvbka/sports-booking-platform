@@ -124,18 +124,15 @@ export function SubFieldTimelineHeatmap({
 
       {/* Color legends */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[10px] font-semibold text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-5 rounded bg-emerald-500" />
-          <span>Giá tiết kiệm</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-5 rounded bg-blue-500" />
-          <span>Giờ thường</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-5 rounded bg-amber-500" />
-          <span>Giờ cao điểm</span>
-        </div>
+        {(["BUDGET", "REGULAR", "PEAK"] as const).map((tier) => {
+          const config = PRICING_TIER_CONFIGS[tier];
+          return (
+            <div key={tier} className="flex items-center gap-1.5">
+              <span className={cn("h-2.5 w-5 rounded", config.colorClass)} />
+              <span>{config.label}</span>
+            </div>
+          );
+        })}
         <div className="flex items-center gap-1.5">
           <span className="h-2.5 w-5 rounded border border-dashed border-border bg-slate-100 dark:bg-slate-900/40 bg-[linear-gradient(45deg,rgba(0,0,0,0.03)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.03)_50%,rgba(0,0,0,0.03)_75%,transparent_75%,transparent)] bg-[size:5px_5px]" />
           <span>Chưa cấu hình</span>
