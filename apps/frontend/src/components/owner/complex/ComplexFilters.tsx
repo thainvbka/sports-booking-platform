@@ -1,15 +1,10 @@
 import { COMPLEX_STATUS_LABELS } from "@/constants";
-import { OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  FilterFieldWrapper,
+  FilterSelectField,
+  OwnerFilterActiveBadge,
+} from "@/components/owner/OwnerFilterShell";
+import { Button } from "@/components/ui/button";
 import { ComplexStatus } from "@/types";
 import { RotateCcw, Tag } from "lucide-react";
 
@@ -20,12 +15,12 @@ interface ComplexFiltersProps {
   onClear: () => void;
 }
 
-const STATUS_OPTIONS = [
-  { id: "ALL" as const, label: "Tất cả" },
-  { id: ComplexStatus.ACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.ACTIVE] },
-  { id: ComplexStatus.PENDING, label: COMPLEX_STATUS_LABELS[ComplexStatus.PENDING] },
-  { id: ComplexStatus.INACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.INACTIVE] },
-  { id: ComplexStatus.REJECTED, label: COMPLEX_STATUS_LABELS[ComplexStatus.REJECTED] },
+const STATUS_OPTIONS: Array<{ value: ComplexStatus | "ALL"; label: string }> = [
+  { value: "ALL" as const, label: "Tất cả" },
+  { value: ComplexStatus.ACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.ACTIVE] },
+  { value: ComplexStatus.PENDING, label: COMPLEX_STATUS_LABELS[ComplexStatus.PENDING] },
+  { value: ComplexStatus.INACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.INACTIVE] },
+  { value: ComplexStatus.REJECTED, label: COMPLEX_STATUS_LABELS[ComplexStatus.REJECTED] },
 ];
 
 export function ComplexFilters({
@@ -41,32 +36,17 @@ export function ComplexFilters({
       <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1.5 min-w-[200px]">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Tag className="size-3" />
-            Trạng thái
-          </Label>
-          <Select
+        <FilterFieldWrapper label="Trạng thái" icon={Tag} className="min-w-[200px]">
+          <FilterSelectField
             value={value}
             onValueChange={(selectedValue) =>
               onApply(selectedValue as ComplexStatus | "ALL")
             }
+            options={STATUS_OPTIONS}
+            placeholder="Tất cả trạng thái"
             disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Tất cả trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {STATUS_OPTIONS.map((status) => (
-                  <SelectItem key={status.id} value={status.id}>
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+          />
+        </FilterFieldWrapper>
 
         {activeCount > 0 && (
           <Button

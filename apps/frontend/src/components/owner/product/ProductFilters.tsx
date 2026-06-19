@@ -1,14 +1,10 @@
-import { OwnerFilterActions, OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  FilterFieldWrapper,
+  FilterSelectField,
+  NumericRangeField,
+  OwnerFilterActions,
+  OwnerFilterActiveBadge,
+} from "@/components/owner/OwnerFilterShell";
 import { SPORT_TYPE_LABELS } from "@/constants";
 import type { ComplexListItem, ProductStatus, SportType } from "@/types";
 import {
@@ -50,6 +46,20 @@ const defaultFormState: ProductFilterFormState = {
   min_stock: "",
   max_stock: "",
 };
+
+const STATUS_OPTIONS: Array<{ value: ProductStatus | "ALL"; label: string }> = [
+  { value: "ALL", label: "Tất cả trạng thái" },
+  { value: "ACTIVE", label: "Đang bán" },
+  { value: "INACTIVE", label: "Ngừng bán" },
+];
+
+const SPORT_OPTIONS: Array<{ value: SportType | "ALL"; label: string }> = [
+  { value: "ALL", label: "Tất cả môn" },
+  ...Object.entries(SPORT_TYPE_LABELS).map(([sportValue, label]) => ({
+    value: sportValue as SportType,
+    label,
+  })),
+];
 
 export function ProductFilters({
   complexes,
@@ -142,17 +152,18 @@ export function ProductFilters({
     formState.max_stock,
   ].filter((v) => v !== "").length;
 
+  const complexOptions = [
+    { value: "ALL", label: "Tất cả cơ sở" },
+    ...complexes.map((c) => ({ value: c.id, label: c.complex_name })),
+  ];
+
   return (
     <div className="flex flex-col gap-3">
       <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Building2 className="size-3" />
-            Cơ sở
-          </Label>
-          <Select
+        <FilterFieldWrapper label="Cơ sở" icon={Building2}>
+          <FilterSelectField
             value={formState.complex_id || "ALL"}
             onValueChange={(selectedValue) =>
               updateField(
@@ -160,140 +171,67 @@ export function ProductFilters({
                 selectedValue === "ALL" ? "" : selectedValue,
               )
             }
+            options={complexOptions}
+            placeholder="Tất cả cơ sở"
             disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Tất cả cơ sở" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="ALL">Tất cả cơ sở</SelectItem>
-                {complexes.map((complex) => (
-                  <SelectItem key={complex.id} value={complex.id}>
-                    {complex.complex_name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          />
           {errors.complex_id && (
             <p className="text-[11px] text-destructive">{errors.complex_id}</p>
           )}
-        </div>
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Tag className="size-3" />
-            Trạng thái
-          </Label>
-          <Select
+        <FilterFieldWrapper label="Trạng thái" icon={Tag}>
+          <FilterSelectField
             value={formState.status}
             onValueChange={(selectedValue) =>
               updateField("status", selectedValue as ProductStatus | "ALL")
             }
+            options={STATUS_OPTIONS}
+            placeholder="Tất cả trạng thái"
             disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Tất cả trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                <SelectItem value="ACTIVE">Đang bán</SelectItem>
-                <SelectItem value="INACTIVE">Ngừng bán</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+          />
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Môn thể thao
-          </Label>
-          <Select
+        <FilterFieldWrapper label="Môn thể thao">
+          <FilterSelectField
             value={formState.sport_type}
             onValueChange={(selectedValue) =>
               updateField("sport_type", selectedValue as SportType | "ALL")
             }
+            options={SPORT_OPTIONS}
+            placeholder="Tất cả môn"
             disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Tất cả môn" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="ALL">Tất cả môn</SelectItem>
-                {Object.entries(SPORT_TYPE_LABELS).map(([sportValue, label]) => (
-                  <SelectItem key={sportValue} value={sportValue}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+          />
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Coins className="size-3" />
-            Khoảng giá (VND)
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              min={1}
-              placeholder="Từ"
-              value={formState.min_price}
-              onChange={(event) => updateField("min_price", event.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-            <Input
-              type="number"
-              min={1}
-              placeholder="Đến"
-              value={formState.max_price}
-              onChange={(event) => updateField("max_price", event.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-          </div>
+        <FilterFieldWrapper label="Khoảng giá (VND)" icon={Coins}>
+          <NumericRangeField
+            min={1}
+            minValue={formState.min_price}
+            maxValue={formState.max_price}
+            onMinChange={(val) => updateField("min_price", val)}
+            onMaxChange={(val) => updateField("max_price", val)}
+            disabled={isLoading}
+          />
           {errors.min_price && (
             <p className="text-[11px] text-destructive">{errors.min_price}</p>
           )}
-        </div>
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5 xl:col-span-1">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Warehouse className="size-3" />
-            Khoảng tồn kho
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              min={0}
-              step={1}
-              placeholder="Từ"
-              value={formState.min_stock}
-              onChange={(event) => updateField("min_stock", event.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-            <Input
-              type="number"
-              min={0}
-              step={1}
-              placeholder="Đến"
-              value={formState.max_stock}
-              onChange={(event) => updateField("max_stock", event.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-          </div>
+        <FilterFieldWrapper label="Khoảng tồn kho" icon={Warehouse} className="xl:col-span-1">
+          <NumericRangeField
+            min={0}
+            step={1}
+            minValue={formState.min_stock}
+            maxValue={formState.max_stock}
+            onMinChange={(val) => updateField("min_stock", val)}
+            onMaxChange={(val) => updateField("max_stock", val)}
+            disabled={isLoading}
+          />
           {errors.min_stock && (
             <p className="text-[11px] text-destructive">{errors.min_stock}</p>
           )}
-        </div>
+        </FilterFieldWrapper>
 
         <OwnerFilterActions
           onApply={handleApply}

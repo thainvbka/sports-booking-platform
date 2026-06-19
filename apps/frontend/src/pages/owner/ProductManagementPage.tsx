@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ProductsHero } from "@/components/owner/product/ProductsHero";
 import { useProductManagement } from "@/hooks/owner/useProductManagement";
 import { useProductColumns } from "@/hooks/owner/useProductColumns";
-import { AlertCircle, ArrowUpRight } from "lucide-react";
+import { AlertCircle, RotateCcw } from "lucide-react";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -92,7 +92,7 @@ export function ProductManagementPage() {
             onClick={handleClearFilters}
             className="h-7 rounded-full px-2 text-[11px] font-semibold"
           >
-            <ArrowUpRight data-icon="inline-start" />
+            <RotateCcw data-icon="inline-start" />
             Đặt lại
           </Button>
         ) : null}

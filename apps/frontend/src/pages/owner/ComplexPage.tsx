@@ -7,7 +7,7 @@ import { useComplexesFilters } from "@/hooks/owner/useComplexesFilters";
 import { ComplexesHero } from "@/components/owner/complex/ComplexesHero";
 import { EmptyComplexState } from "@/components/owner/complex/EmptyComplexState";
 import { ComplexesSkeletonGrid } from "@/components/owner/complex/ComplexesSkeletonGrid";
-import { X } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 export function ComplexesPage() {
   const {
@@ -66,7 +66,7 @@ export function ComplexesPage() {
                 onClick={resetFilters}
                 className="h-7 rounded-full px-2 text-[11px] font-semibold"
               >
-                <X data-icon="inline-start" />
+                <RotateCcw data-icon="inline-start" />
                 Đặt lại
               </Button>
             ) : null}

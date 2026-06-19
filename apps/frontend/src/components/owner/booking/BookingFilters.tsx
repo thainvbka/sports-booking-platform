@@ -1,21 +1,17 @@
-import { OwnerFilterActions, OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
+import {
+  FilterFieldWrapper,
+  FilterSelectField,
+  NumericRangeField,
+  OwnerFilterActions,
+  OwnerFilterActiveBadge,
+} from "@/components/owner/OwnerFilterShell";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { BookingStatus } from "@/types";
 import { format } from "date-fns";
@@ -101,38 +97,19 @@ export function BookingFilters({
       <OwnerFilterActiveBadge count={activeCount} />
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Tag className="size-3" />
-            Trạng thái
-          </Label>
-          <Select
+        <FilterFieldWrapper label="Trạng thái" icon={Tag}>
+          <FilterSelectField
             value={status}
             onValueChange={(selectedValue) =>
               setStatus(selectedValue as BookingStatus | "ALL")
             }
+            options={statusList}
+            placeholder="Tất cả trạng thái"
             disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Tất cả trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {statusList.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+          />
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <CalendarIcon className="size-3" />
-            Thời gian
-          </Label>
+        <FilterFieldWrapper label="Thời gian" icon={CalendarIcon}>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -171,34 +148,17 @@ export function BookingFilters({
               />
             </PopoverContent>
           </Popover>
-        </div>
+        </FilterFieldWrapper>
 
-        <div className="flex flex-col gap-1.5">
-          <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            <Coins className="size-3" />
-            Khoảng giá (VND)
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              min={0}
-              placeholder="Từ"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-            <Input
-              type="number"
-              min={0}
-              placeholder="Đến"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              disabled={isLoading}
-              className="tabular-nums"
-            />
-          </div>
-        </div>
+        <FilterFieldWrapper label="Khoảng giá (VND)" icon={Coins}>
+          <NumericRangeField
+            minValue={minPrice}
+            maxValue={maxPrice}
+            onMinChange={setMinPrice}
+            onMaxChange={setMaxPrice}
+            disabled={isLoading}
+          />
+        </FilterFieldWrapper>
 
         <OwnerFilterActions
           onApply={handleApply}

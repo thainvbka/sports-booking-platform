@@ -1,10 +1,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Filter, RotateCcw, Search, X } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 interface OwnerFilterShellProps {
   searchValue: string;
@@ -115,5 +124,124 @@ export function OwnerFilterActions({
         Xóa bộ lọc
       </Button>
     </div>
+  );
+}
+
+interface FilterFieldWrapperProps {
+  label: string;
+  icon?: ComponentType<{ className?: string }>;
+  children: ReactNode;
+  className?: string;
+}
+
+export function FilterFieldWrapper({
+  label,
+  icon: Icon,
+  children,
+  className,
+}: FilterFieldWrapperProps) {
+  return (
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      <Label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {Icon ? <Icon className="size-3 shrink-0" /> : null}
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+interface NumericRangeFieldProps {
+  min?: number;
+  max?: number;
+  step?: number;
+  minPlaceholder?: string;
+  maxPlaceholder?: string;
+  minValue: string;
+  maxValue: string;
+  onMinChange: (value: string) => void;
+  onMaxChange: (value: string) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+export function NumericRangeField({
+  min = 0,
+  max,
+  step,
+  minPlaceholder = "Từ",
+  maxPlaceholder = "Đến",
+  minValue,
+  maxValue,
+  onMinChange,
+  onMaxChange,
+  disabled,
+  className,
+}: NumericRangeFieldProps) {
+  return (
+    <div className={cn("grid grid-cols-2 gap-2", className)}>
+      <Input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        placeholder={minPlaceholder}
+        value={minValue}
+        onChange={(e) => onMinChange(e.target.value)}
+        disabled={disabled}
+        className="tabular-nums"
+      />
+      <Input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        placeholder={maxPlaceholder}
+        value={maxValue}
+        onChange={(e) => onMaxChange(e.target.value)}
+        disabled={disabled}
+        className="tabular-nums"
+      />
+    </div>
+  );
+}
+
+interface FilterSelectOption<T extends string> {
+  value: T;
+  label: string;
+}
+
+interface FilterSelectFieldProps<T extends string> {
+  value: T;
+  onValueChange: (value: T) => void;
+  options: FilterSelectOption<T>[];
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+export function FilterSelectField<T extends string>({
+  value,
+  onValueChange,
+  options,
+  placeholder = "Chọn giá trị",
+  disabled,
+  className,
+}: FilterSelectFieldProps<T>) {
+  return (
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger className={cn("w-full", className)}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }

@@ -8,7 +8,7 @@ import { ConfirmBookingDialog } from "@/components/owner/booking/ConfirmBookingD
 import { CancelBookingDialog } from "@/components/owner/booking/CancelBookingDialog";
 import { useOwnerBookings } from "@/hooks/owner/useOwnerBookings";
 import { useBookingColumns } from "@/hooks/owner/useBookingColumns";
-import { ArrowUpRight } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 export function OwnerBookingsPage() {
   const {
@@ -81,7 +81,7 @@ export function OwnerBookingsPage() {
             onClick={handleClearAllFilters}
             className="h-7 rounded-full px-2 text-[11px] font-semibold"
           >
-            <ArrowUpRight data-icon="inline-start" />
+            <RotateCcw data-icon="inline-start" />
             Đặt lại
           </Button>
         ) : null}
