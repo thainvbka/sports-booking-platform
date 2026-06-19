@@ -6,7 +6,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { BookingStatusDataItem } from "@/hooks/owner/useDashboardChartData";
-import { CHART_COLORS } from "@/lib/constants";
+import { CHART_COLORS } from "@/constants";
 import { Pie, PieChart } from "recharts";
 
 interface BookingStatusPieChartProps {

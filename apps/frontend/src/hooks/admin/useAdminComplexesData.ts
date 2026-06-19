@@ -1,6 +1,6 @@
 import { useAdminComplexStore } from "@/store/admin/useAdminComplexStore";
-import { extractLegalDocumentUrls } from "@/lib/legal-docs";
-import { COMPLEX_STATUS_LABELS } from "@/lib/constants";
+import { extractLegalDocumentUrls } from "@/utils";
+import { COMPLEX_STATUS_LABELS } from "@/constants";
 import { toast } from "sonner";
 import { CheckCircle, Clock3, PauseCircle, ShieldX } from "lucide-react";
 import { useState } from "react";

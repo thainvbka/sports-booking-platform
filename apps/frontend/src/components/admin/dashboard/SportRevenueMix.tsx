@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import type { SportRevenuePoint } from "@/types/admin.types";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { fmtM } from "@/lib/format";
+import { fmtM } from "@/utils";
 import { formatPrice } from "@/utils";
 
 const COLORS = [

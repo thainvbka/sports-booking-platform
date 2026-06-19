@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/lib/constants";
+import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/constants";
 import type { AdminPayment } from "@/types/admin.types";
 import { formatDateVn, formatPrice } from "@/utils";
 import { CreditCard, Eye, MoreHorizontal, Receipt } from "lucide-react";

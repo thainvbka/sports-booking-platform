@@ -1,4 +1,6 @@
+import { SPORT_EMOJIS, SPORT_TYPE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
+import type { SportType } from "@/types";
 
 interface ImageFallbackProps {
   sportType?: string | null;
@@ -7,45 +9,14 @@ interface ImageFallbackProps {
   showLabel?: boolean;
 }
 
-const SPORT_FALLBACK_VISUAL: Record<
-  string,
-  { gradient: string; emoji: string; label: string }
-> = {
-  FOOTBALL: {
-    gradient: "from-green-800 to-green-600",
-    emoji: "⚽",
-    label: "Bóng đá",
-  },
-  BASKETBALL: {
-    gradient: "from-orange-700 to-red-600",
-    emoji: "🏀",
-    label: "Bóng rổ",
-  },
-  TENNIS: {
-    gradient: "from-yellow-600 to-orange-500",
-    emoji: "🎾",
-    label: "Tennis",
-  },
-  BADMINTON: {
-    gradient: "from-blue-700 to-cyan-600",
-    emoji: "🏸",
-    label: "Cầu lông",
-  },
-  VOLLEYBALL: {
-    gradient: "from-sky-700 to-indigo-600",
-    emoji: "🏐",
-    label: "Bóng chuyền",
-  },
-  PICKLEBALL: {
-    gradient: "from-purple-700 to-fuchsia-600",
-    emoji: "🏓",
-    label: "Pickleball",
-  },
-  DEFAULT: {
-    gradient: "from-slate-700 to-slate-600",
-    emoji: "🏟️",
-    label: "Khu thể thao",
-  },
+const SPORT_FALLBACK_GRADIENTS: Record<string, string> = {
+  FOOTBALL: "from-green-800 to-green-600",
+  BASKETBALL: "from-orange-700 to-red-600",
+  TENNIS: "from-yellow-600 to-orange-500",
+  BADMINTON: "from-blue-700 to-cyan-600",
+  VOLLEYBALL: "from-sky-700 to-indigo-600",
+  PICKLEBALL: "from-purple-700 to-fuchsia-600",
+  DEFAULT: "from-slate-700 to-slate-600",
 };
 
 export function ImageFallback({
@@ -55,21 +26,23 @@ export function ImageFallback({
   showLabel = true,
 }: ImageFallbackProps) {
   const key = (sportType ?? "DEFAULT").toUpperCase();
-  const visual = SPORT_FALLBACK_VISUAL[key] ?? SPORT_FALLBACK_VISUAL.DEFAULT;
+  const gradient = SPORT_FALLBACK_GRADIENTS[key] ?? SPORT_FALLBACK_GRADIENTS.DEFAULT;
+  const emoji = SPORT_EMOJIS[key as SportType] ?? "🏟️";
+  const label = SPORT_TYPE_LABELS[key as SportType] ?? "Khu thể thao";
 
   return (
     <div
       className={cn(
         "h-full w-full bg-linear-to-br text-white",
         "flex flex-col items-center justify-center gap-2",
-        visual.gradient,
+        gradient,
         className,
       )}
     >
-      <span className="text-4xl opacity-90">{visual.emoji}</span>
+      <span className="text-4xl opacity-90">{emoji}</span>
       {showLabel ? (
         <p className="max-w-[85%] truncate text-xs font-medium text-white/80">
-          {title || visual.label}
+          {title || label}
         </p>
       ) : null}
     </div>

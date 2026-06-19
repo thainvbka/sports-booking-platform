@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
+import { DAYS_OF_WEEK_FULL } from "@/constants";
 import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.util";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -47,15 +48,6 @@ interface BookingScheduleStepProps {
   isCustomTimeValid: boolean;
 }
 
-const dayNames: Record<number, string> = {
-  0: "Chủ nhật",
-  1: "Thứ 2",
-  2: "Thứ 3",
-  3: "Thứ 4",
-  4: "Thứ 5",
-  5: "Thứ 6",
-  6: "Thứ 7",
-};
 
 const formatRuleTime = (time: string | Date) => {
   const mins = parseRuleTimeToMinutes(time);
@@ -220,7 +212,7 @@ export function BookingScheduleStep({
           availableRules.length > 0 ? (
             <div className="rounded-xl border border-primary/20 bg-linear-to-br from-primary/8 to-primary/3 p-4 shadow-sm">
               <p className="mb-2 text-sm font-semibold text-primary">
-                Bảng giá hôm nay ({dayNames[date.getDay()]})
+                Bảng giá hôm nay ({DAYS_OF_WEEK_FULL[date.getDay()]})
               </p>
               <div className="space-y-1.5 text-xs">
                 {availableRules.map((rule) => (

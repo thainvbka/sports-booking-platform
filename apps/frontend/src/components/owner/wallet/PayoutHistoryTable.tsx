@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { STATUS_TONES } from "@/lib/constants";
+import { STATUS_TONES } from "@/constants";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils";
 import { FileText } from "lucide-react";

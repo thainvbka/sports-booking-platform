@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RECURRENCE_TYPE_LABELS } from "@/lib/constants";
+import { RECURRENCE_TYPE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { Column } from "@/components/shared/ui-utility/DataTable";
 import type { OwnerBookingResponse } from "@/types";

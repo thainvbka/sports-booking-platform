@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SPORT_TYPE_LABELS } from "@/lib/constants";
+import { SPORT_TYPE_LABELS } from "@/constants";
 import type { ComplexListItem, ProductStatus, SportType } from "@/types";
 import {
   ownerProductFilterSchema,

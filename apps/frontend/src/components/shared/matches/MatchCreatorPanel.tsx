@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MATCH_STATUS_PROGRESS } from "@/utils/match-styles.util";
+import { MATCH_STATUS_PROGRESS } from "@/types/match.type";
 import { cn } from "@/lib/utils";
 import type { MatchStatus } from "@/types/match.type";
 import type { Participant } from "@/types/match.type";

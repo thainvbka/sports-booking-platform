@@ -13,7 +13,7 @@ import {
   MATCH_SPORT_TINT_LIGHT,
   MATCH_STATUS_ACCENT,
   MATCH_STATUS_PROGRESS,
-} from "@/utils/match-styles.util";
+} from "@/types/match.type";
 import { cn } from "@/lib/utils";
 import {
   MATCH_SKILL_BADGE_STYLES,

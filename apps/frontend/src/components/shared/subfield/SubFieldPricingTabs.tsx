@@ -6,21 +6,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
-import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS } from "@/utils";
+import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS, DAYS_OF_WEEK_SHORT } from "@/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-const dayTabLabels: Record<number, string> = {
-  0: "CN",
-  1: "T2",
-  2: "T3",
-  3: "T4",
-  4: "T5",
-  5: "T6",
-  6: "T7",
-};
 
 interface BookingAvailability {
   start: string;
@@ -194,7 +185,7 @@ export function SubfieldPricingTabs({
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
-              {dayTabLabels[day]}
+              {DAYS_OF_WEEK_SHORT[day]}
               {hasRules && !isActive && (
                 <span className="ml-1 inline-block size-1 rounded-full bg-emerald-500" />
               )}

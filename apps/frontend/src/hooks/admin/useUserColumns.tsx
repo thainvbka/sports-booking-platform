@@ -7,7 +7,7 @@ import {
   ROLE_LABELS,
   USER_STATUS_COLORS,
   USER_STATUS_LABELS,
-} from "@/lib/constants";
+} from "@/constants";
 import type { AdminUser } from "@/types/admin.types";
 import { formatDateVn, getUserRoles, getUserStatus } from "@/utils";
 import { Calendar } from "lucide-react";

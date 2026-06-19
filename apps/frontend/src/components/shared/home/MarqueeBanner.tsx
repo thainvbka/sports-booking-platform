@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { publicService } from "@/services/public.service";
 import { matchService } from "@/services/match.service";
-import { SPORT_CATEGORIES } from "@/lib/constants";
+import { SPORT_CATEGORIES } from "@/constants";
 
 export function MarqueeBanner() {
   const [announcements, setAnnouncements] = useState<string[]>([

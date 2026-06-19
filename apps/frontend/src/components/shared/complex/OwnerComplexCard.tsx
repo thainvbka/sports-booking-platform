@@ -1,3 +1,4 @@
+import { COMPLEX_STATUS_LABELS } from "@/constants";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -31,35 +32,35 @@ type StatusMeta = {
 
 const STATUS_META: Record<ComplexStatus, StatusMeta> = {
   [ComplexStatus.ACTIVE]: {
-    label: "Hoạt động",
+    label: COMPLEX_STATUS_LABELS[ComplexStatus.ACTIVE],
     icon: CheckCircle2,
     chip: "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
     bar: "bg-emerald-500",
     dot: "bg-emerald-500",
   },
   [ComplexStatus.PENDING]: {
-    label: "Chờ duyệt",
+    label: COMPLEX_STATUS_LABELS[ComplexStatus.PENDING],
     icon: Clock,
     chip: "border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300",
     bar: "bg-amber-500",
     dot: "bg-amber-500",
   },
   [ComplexStatus.REJECTED]: {
-    label: "Bị từ chối",
+    label: COMPLEX_STATUS_LABELS[ComplexStatus.REJECTED],
     icon: XCircle,
     chip: "border-rose-500/40 bg-rose-500/15 text-rose-700 dark:text-rose-300",
     bar: "bg-rose-500",
     dot: "bg-rose-500",
   },
   [ComplexStatus.DRAFT]: {
-    label: "Nháp",
+    label: COMPLEX_STATUS_LABELS[ComplexStatus.DRAFT],
     icon: PencilLine,
     chip: "border-border bg-background/90 text-muted-foreground",
     bar: "bg-muted-foreground",
     dot: "bg-muted-foreground",
   },
   [ComplexStatus.INACTIVE]: {
-    label: "Ngừng hoạt động",
+    label: COMPLEX_STATUS_LABELS[ComplexStatus.INACTIVE],
     icon: MinusCircle,
     chip: "border-slate-500/40 bg-slate-500/15 text-slate-700 dark:text-slate-300",
     bar: "bg-slate-500",

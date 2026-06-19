@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
 import type { TopSubFieldsDataItem } from "@/hooks/owner/useDashboardChartData";
-import { CHART_COLORS } from "@/lib/constants";
+import { CHART_COLORS } from "@/constants";
 
 interface TopSubFieldsBarChartProps {
   data: TopSubFieldsDataItem[];

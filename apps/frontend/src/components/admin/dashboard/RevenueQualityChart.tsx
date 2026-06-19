@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { fmtM, fmtPct } from "@/lib/format";
+import { fmtM, fmtPct } from "@/utils";
 import type { RevenueTrendPoint } from "@/types/admin.types";
 import { formatPrice } from "@/utils";
 import { useMemo } from "react";

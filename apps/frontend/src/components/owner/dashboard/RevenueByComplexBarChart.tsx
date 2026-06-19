@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/chart";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
 import type { RevenueByComplexDataItem } from "@/hooks/owner/useDashboardChartData";
-import { CHART_COLORS } from "@/lib/constants";
+import { CHART_COLORS } from "@/constants";
 
 interface RevenueByComplexBarChartProps {
   data: RevenueByComplexDataItem[];

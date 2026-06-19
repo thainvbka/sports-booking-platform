@@ -1,6 +1,8 @@
 import type { PricingRule, SubField } from "@/types";
 import { formatTime, parseRuleTimeToMinutes } from "./time.util";
 
+import type { PricingTier } from "@/constants";
+
 export const getPriceRange = (
   subField: SubField,
 ): { min: number; max: number } => {
@@ -14,47 +16,6 @@ export const getPriceRange = (
   };
 };
 
-export type PricingTier = "PEAK" | "BUDGET" | "REGULAR";
-
-export interface PricingTierConfig {
-  label: string;
-  subLabel: string;
-  badgeClass: string;
-  textClass: string;
-  colorClass: string;
-  cardClass: string;
-  solidBadgeClass: string;
-}
-
-export const PRICING_TIER_CONFIGS: Record<PricingTier, PricingTierConfig> = {
-  PEAK: {
-    label: "Giờ cao điểm",
-    subLabel: "cao điểm",
-    badgeClass: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/30 dark:bg-orange-950/20 dark:text-orange-400",
-    textClass: "text-orange-600 dark:text-orange-400",
-    colorClass: "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 text-white",
-    cardClass: "border-orange-200 bg-orange-50/20 dark:border-orange-900/30 dark:bg-orange-950/10",
-    solidBadgeClass: "border-orange-300 bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300",
-  },
-  BUDGET: {
-    label: "Giá tiết kiệm",
-    subLabel: "tiết kiệm nhất",
-    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-400",
-    textClass: "text-emerald-600 dark:text-emerald-400",
-    colorClass: "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white",
-    cardClass: "border-emerald-200 bg-emerald-50/20 dark:border-emerald-900/30 dark:bg-emerald-950/10",
-    solidBadgeClass: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  },
-  REGULAR: {
-    label: "Giờ thường",
-    subLabel: "bình thường",
-    badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400",
-    textClass: "text-blue-600 dark:text-blue-400",
-    colorClass: "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white",
-    cardClass: "border-blue-200 bg-blue-50/20 dark:border-blue-900/30 dark:bg-blue-950/10",
-    solidBadgeClass: "border-blue-300 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
-  },
-};
 
 export const getRuleClassification = (
   rule: PricingRule,

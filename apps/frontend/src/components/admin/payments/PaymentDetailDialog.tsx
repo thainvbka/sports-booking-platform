@@ -3,7 +3,7 @@ import {
   DetailInfoCard,
   DetailSummaryRow,
 } from "@/components/admin/details/AdminDetailDialog";
-import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/lib/constants";
+import { PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from "@/constants";
 import type { AdminPayment } from "@/types/admin.types";
 import { formatDateVn, formatPrice } from "@/utils";
 import { Receipt } from "lucide-react";

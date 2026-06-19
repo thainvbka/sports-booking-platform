@@ -6,7 +6,7 @@ import { MatchInfoCard } from "@/components/shared/matches/MatchInfoCard";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { LoadingState } from "@/components/shared/ui-utility/LoadingState";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
-import { SPORT_TYPE_LABELS } from "@/lib/constants";
+import { SPORT_TYPE_LABELS } from "@/constants";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useMatchStore } from "@/store/useMatchStore";
 import { MATCH_LEAVABLE_PARTICIPATION_STATUSES } from "@/types/match.type";

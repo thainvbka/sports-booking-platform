@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { extractLegalDocumentUrls } from "@/lib/legal-docs";
+import { extractLegalDocumentUrls } from "@/utils";
 import { FileWarning, Images } from "lucide-react";
 
 type LegalDocumentsDialogProps = {

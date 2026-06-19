@@ -12,7 +12,7 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
 import { LayoutList, Repeat2, Search } from "lucide-react";
-import { BOOKING_STATUS_LABELS, RECURRING_STATUS_LABELS } from "@/lib/constants";
+import { BOOKING_STATUS_LABELS, RECURRING_STATUS_LABELS } from "@/constants";
 import type { BookingView } from "@/types/admin.types";
 
 interface BookingViewFiltersProps {

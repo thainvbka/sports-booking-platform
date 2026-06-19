@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Eye, MapPin, MoreHorizontal, Repeat2, User } from "lucide-react";
 import { formatDateVn, formatPrice, sportLabel } from "@/utils";
-import { RECURRENCE_TYPE_LABELS, RECURRING_STATUS_COLORS, RECURRING_STATUS_LABELS } from "@/lib/constants";
+import { RECURRENCE_TYPE_LABELS, RECURRING_STATUS_COLORS, RECURRING_STATUS_LABELS } from "@/constants";
 import type { AdminRecurringRow } from "@/types/admin.types";
 
 export function useRecurringBookingColumns(onViewDetail: (booking: AdminRecurringRow) => void) {

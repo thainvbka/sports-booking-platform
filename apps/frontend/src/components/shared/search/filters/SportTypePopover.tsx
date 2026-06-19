@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { SPORT_TYPE_OPTIONS } from "@/lib/constants";
+import { SPORT_TYPE_OPTIONS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { SportType as SportTypeValue } from "@/types";
 import { getSportTypeLabel } from "@/utils";

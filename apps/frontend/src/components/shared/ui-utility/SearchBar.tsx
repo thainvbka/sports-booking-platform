@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { SPORT_TYPE_OPTIONS } from "@/lib/constants";
+import { SPORT_TYPE_OPTIONS } from "@/constants";
 import { getSportTypeLabel } from "@/utils";
 import { Search, Trophy } from "lucide-react";
 import type { FormEvent } from "react";

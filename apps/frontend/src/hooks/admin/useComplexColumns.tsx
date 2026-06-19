@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { COMPLEX_STATUS_COLORS, COMPLEX_STATUS_LABELS } from "@/lib/constants";
+import { COMPLEX_STATUS_COLORS, COMPLEX_STATUS_LABELS } from "@/constants";
 import type { AdminComplex } from "@/types/admin.types";
 import { formatPrice, sportLabel } from "@/utils";
 import {

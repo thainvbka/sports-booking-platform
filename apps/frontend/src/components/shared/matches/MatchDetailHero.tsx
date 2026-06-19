@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   MATCH_SPORT_TINT_DARK,
   MATCH_STATUS_PROGRESS,
-} from "@/utils/match-styles.util";
+} from "@/types/match.type";
 import { cn } from "@/lib/utils";
 import {
   type MatchStatus,

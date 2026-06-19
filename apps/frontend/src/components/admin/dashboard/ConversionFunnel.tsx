@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BOOKING_STATUS_LABELS } from "@/lib/constants";
+import { BOOKING_STATUS_LABELS } from "@/constants";
 import type { ConversionFunnelPoint } from "@/types/admin.types";
 import { BookingStatus } from "@/types";
 

@@ -14,7 +14,7 @@ import {
   PRODUCT_TYPE_COLORS,
   PRODUCT_TYPE_LABELS,
   SPORT_TYPE_LABELS,
-} from "@/lib/constants";
+} from "@/constants";
 import { cn } from "@/lib/utils";
 import type { OwnerProduct } from "@/types";
 import { formatPrice } from "@/utils";

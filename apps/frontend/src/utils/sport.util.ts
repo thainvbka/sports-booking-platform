@@ -1,4 +1,4 @@
-import { SPORT_EMOJIS, SPORT_TYPE_LABELS } from "@/lib/constants";
+import { SPORT_EMOJIS, SPORT_TYPE_LABELS } from "@/constants";
 import type { SportType } from "@/types";
 
 export const getSportTypeEmoji = (sportType: SportType | string): string => {

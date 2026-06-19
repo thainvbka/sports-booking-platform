@@ -1,4 +1,5 @@
 import { BookingStatus, ProductStatus, ProductType, SportType } from "@/types";
+import { CheckCircle2, Clock, RefreshCw, XCircle, type LucideIcon } from "lucide-react";
 
 export const SPORT_TYPE_LABELS: Record<SportType, string> = {
   [SportType.FOOTBALL]: "Bóng đá",
@@ -160,8 +161,6 @@ export const CHART_COLORS = {
   CYAN_LIGHT: "#67e8f9",
 };
 
-import { CheckCircle2, Clock, RefreshCw, XCircle, type LucideIcon } from "lucide-react";
-
 export const STATUS_TONES: Record<
   string,
   { bg: string; border: string; label: string; icon: LucideIcon }
@@ -261,6 +260,111 @@ export const HERO_STATS: HomeStat[] = [
   { value: "100K+", label: "Lượt đặt sân" },
   { value: "4.8/5", label: "Đánh giá trung bình" },
 ];
+
+export const DAYS_OF_WEEK_FULL: Record<number, string> = {
+  0: "Chủ nhật",
+  1: "Thứ 2",
+  2: "Thứ 3",
+  3: "Thứ 4",
+  4: "Thứ 5",
+  5: "Thứ 6",
+  6: "Thứ 7",
+};
+
+export const DAYS_OF_WEEK_SHORT: Record<number, string> = {
+  0: "CN",
+  1: "T2",
+  2: "T3",
+  3: "T4",
+  4: "T5",
+  5: "T6",
+  6: "T7",
+};
+
+export interface BankItem {
+  code: string;
+  fullName: string;
+}
+
+export const VIETNAM_BANKS: BankItem[] = [
+  { code: "970436", fullName: "Vietcombank (VCB)" },
+  { code: "970415", fullName: "VietinBank (ICB)" },
+  { code: "970418", fullName: "BIDV" },
+  { code: "970405", fullName: "Agribank" },
+  { code: "970422", fullName: "MB Bank (MB)" },
+  { code: "970414", fullName: "Techcombank (TCB)" },
+  { code: "970432", fullName: "VPBank (VPB)" },
+  { code: "970416", fullName: "ACB" },
+  { code: "970403", fullName: "Sacombank (STB)" },
+  { code: "970441", fullName: "VIB" },
+  { code: "970423", fullName: "TPBank (TPB)" },
+  { code: "970426", fullName: "MSB" },
+  { code: "970448", fullName: "OCB" },
+  { code: "970428", fullName: "SHB" },
+  { code: "970431", fullName: "Eximbank (EIB)" },
+  { code: "970437", fullName: "HDBank (HDB)" },
+];
+
+export const BANK_LEGACY_MAPPINGS: Record<string, string> = {
+  vietcombank: "970436",
+  vietinbank: "970415",
+  bidv: "970418",
+  agribank: "970405",
+  mb: "970422",
+  techcombank: "970414",
+  vpb: "970432",
+  acb: "970416",
+  sacombank: "970403",
+  vib: "970441",
+  tpb: "970423",
+  msb: "970426",
+  ocb: "970448",
+  shb: "970428",
+  eximbank: "970431",
+  hdbank: "970437",
+};
+
+export type PricingTier = "PEAK" | "BUDGET" | "REGULAR";
+
+export interface PricingTierConfig {
+  label: string;
+  subLabel: string;
+  badgeClass: string;
+  textClass: string;
+  colorClass: string;
+  cardClass: string;
+  solidBadgeClass: string;
+}
+
+export const PRICING_TIER_CONFIGS: Record<PricingTier, PricingTierConfig> = {
+  PEAK: {
+    label: "Giờ cao điểm",
+    subLabel: "cao điểm",
+    badgeClass: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/30 dark:bg-orange-950/20 dark:text-orange-400",
+    textClass: "text-orange-600 dark:text-orange-400",
+    colorClass: "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500 text-white",
+    cardClass: "border-orange-200 bg-orange-50/20 dark:border-orange-900/30 dark:bg-orange-950/10",
+    solidBadgeClass: "border-orange-300 bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300",
+  },
+  BUDGET: {
+    label: "Giá tiết kiệm",
+    subLabel: "tiết kiệm nhất",
+    badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-400",
+    textClass: "text-emerald-600 dark:text-emerald-400",
+    colorClass: "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white",
+    cardClass: "border-emerald-200 bg-emerald-50/20 dark:border-emerald-900/30 dark:bg-emerald-950/10",
+    solidBadgeClass: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+  },
+  REGULAR: {
+    label: "Giờ thường",
+    subLabel: "bình thường",
+    badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400",
+    textClass: "text-blue-600 dark:text-blue-400",
+    colorClass: "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white",
+    cardClass: "border-blue-200 bg-blue-50/20 dark:border-blue-900/30 dark:bg-blue-950/10",
+    solidBadgeClass: "border-blue-300 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
+  },
+};
 
 
 

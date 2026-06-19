@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { HERO_STATS, parseSportType, SPORT_CATEGORIES } from "@/lib/constants";
+import { HERO_STATS, parseSportType, SPORT_CATEGORIES } from "@/constants";
 
 export function HeroSection() {
   return (

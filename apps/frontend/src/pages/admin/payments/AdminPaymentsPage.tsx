@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PAYMENT_STATUS_LABELS } from "@/lib/constants";
+import { PAYMENT_STATUS_LABELS } from "@/constants";
 import { PaymentDetailDialog } from "@/components/admin/payments/PaymentDetailDialog";
 import { usePaymentColumns } from "@/hooks/admin/usePaymentColumns";
 import { useAdminPaymentsData } from "@/hooks/admin/useAdminPaymentsData";

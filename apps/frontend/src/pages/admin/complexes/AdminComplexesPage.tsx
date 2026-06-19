@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { COMPLEX_STATUS_LABELS } from "@/lib/constants";
+import { COMPLEX_STATUS_LABELS } from "@/constants";
 import { ComplexDetailDialog } from "@/components/admin/complexes/ComplexDetailDialog";
 import { useComplexColumns } from "@/hooks/admin/useComplexColumns";
 import { useAdminComplexesData } from "@/hooks/admin/useAdminComplexesData";

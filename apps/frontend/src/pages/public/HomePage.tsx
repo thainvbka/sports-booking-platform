@@ -5,7 +5,7 @@ import { HowItWorksSection } from "@/components/shared/home/HowItWorksSection";
 import { LiveCourtsSection } from "@/components/shared/home/LiveCourtsSection";
 import { MarqueeBanner } from "@/components/shared/home/MarqueeBanner";
 import { SportCategoriesSection } from "@/components/shared/home/SportCategoriesSection";
-import { SPORT_CATEGORIES, type HomeSportCategory } from "@/lib/constants";
+import { SPORT_CATEGORIES, type HomeSportCategory } from "@/constants";
 import { RecommendedCourts } from "@/components/player/recommendation/RecommendedCourts";
 import { publicService } from "@/services/public.service";
 import type { Complex, PublicSubfield } from "@/types";

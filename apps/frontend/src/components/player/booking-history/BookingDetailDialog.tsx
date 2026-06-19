@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   RECURRENCE_TYPE_LABELS,
-} from "@/lib/constants";
+} from "@/constants";
 import { type BookingResponse, BookingStatus } from "@/types";
 import {
   formatDateVn,

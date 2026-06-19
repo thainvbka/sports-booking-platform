@@ -10,7 +10,7 @@ import {
   RECURRENCE_TYPE_LABELS,
   RECURRING_STATUS_COLORS,
   RECURRING_STATUS_LABELS,
-} from "@/lib/constants";
+} from "@/constants";
 import type { AdminRecurringRow } from "@/types/admin.types";
 
 interface RecurringBookingDetailDialogProps {

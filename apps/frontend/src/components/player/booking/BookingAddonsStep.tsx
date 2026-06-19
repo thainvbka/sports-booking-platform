@@ -1,7 +1,7 @@
 import { ImageFallback } from "@/components/shared/ui-utility/ImageFallback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_TYPE_COLORS, PRODUCT_TYPE_LABELS } from "@/lib/constants";
+import { PRODUCT_TYPE_COLORS, PRODUCT_TYPE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { SubfieldProduct } from "@/types";
 import { formatPrice } from "@/utils";

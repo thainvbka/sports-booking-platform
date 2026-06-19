@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { SPORT_TYPE_LABELS } from "@/lib/constants";
+import { SPORT_TYPE_LABELS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type {
   ComplexListItem,

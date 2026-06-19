@@ -3,7 +3,7 @@ import {
   BOOKING_STATUS_LABELS,
   RECURRING_STATUS_COLORS,
   RECURRING_STATUS_LABELS,
-} from "@/lib/constants";
+} from "@/constants";
 import { BookingStatus, type BookingResponse } from "@/types";
 
 export type SingleBooking = Extract<BookingResponse, { type: "SINGLE" }>;

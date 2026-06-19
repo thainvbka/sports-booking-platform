@@ -18,7 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { PAYMENT_STATUS_LABELS } from "@/lib/constants";
+import { PAYMENT_STATUS_LABELS } from "@/constants";
 
 export interface RecentPayment {
   id: string;

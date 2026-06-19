@@ -1,3 +1,4 @@
+import { COMPLEX_STATUS_LABELS } from "@/constants";
 import { OwnerFilterActiveBadge } from "@/components/owner/OwnerFilterShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,10 +22,10 @@ interface ComplexFiltersProps {
 
 const STATUS_OPTIONS = [
   { id: "ALL" as const, label: "Tất cả" },
-  { id: ComplexStatus.ACTIVE, label: "Hoạt động" },
-  { id: ComplexStatus.PENDING, label: "Chờ duyệt" },
-  { id: ComplexStatus.INACTIVE, label: "Ngừng" },
-  { id: ComplexStatus.REJECTED, label: "Từ chối" },
+  { id: ComplexStatus.ACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.ACTIVE] },
+  { id: ComplexStatus.PENDING, label: COMPLEX_STATUS_LABELS[ComplexStatus.PENDING] },
+  { id: ComplexStatus.INACTIVE, label: COMPLEX_STATUS_LABELS[ComplexStatus.INACTIVE] },
+  { id: ComplexStatus.REJECTED, label: COMPLEX_STATUS_LABELS[ComplexStatus.REJECTED] },
 ];
 
 export function ComplexFilters({

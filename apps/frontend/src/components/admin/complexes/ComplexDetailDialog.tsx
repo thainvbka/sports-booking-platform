@@ -5,7 +5,7 @@ import {
 } from "@/components/admin/details/AdminDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
-import { COMPLEX_STATUS_COLORS, COMPLEX_STATUS_LABELS } from "@/lib/constants";
+import { COMPLEX_STATUS_COLORS, COMPLEX_STATUS_LABELS } from "@/constants";
 import { formatDateVn, formatPrice, sportLabel } from "@/utils";
 import type { AdminComplex } from "@/types/admin.types";
 import { LegalDocumentsGrid } from "./LegalDocumentsGrid";
