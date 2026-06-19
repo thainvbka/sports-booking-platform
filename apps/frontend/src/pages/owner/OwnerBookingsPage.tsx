@@ -2,13 +2,14 @@ import { BookingFilters } from "@/components/owner/booking/BookingFilters";
 import { OwnerFilterShell } from "@/components/owner/OwnerFilterShell";
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { Button } from "@/components/ui/button";
-import { BookingsHero } from "@/components/owner/booking/BookingsHero";
 import { BookingDetailDialog } from "@/components/shared/booking/BookingDetailDialog";
 import { ConfirmBookingDialog } from "@/components/owner/booking/ConfirmBookingDialog";
 import { CancelBookingDialog } from "@/components/owner/booking/CancelBookingDialog";
 import { useOwnerBookings } from "@/hooks/owner/useOwnerBookings";
 import { useBookingColumns } from "@/hooks/owner/useBookingColumns";
-import { RotateCcw } from "lucide-react";
+import { OwnerPageHero } from "@/components/owner/OwnerPageHero";
+import { Badge } from "@/components/ui/badge";
+import { AlarmClock, Ban, CheckCircle2, Layers, RotateCcw, Sparkles, Wallet } from "lucide-react";
 
 export function OwnerBookingsPage() {
   const {
@@ -52,9 +53,64 @@ export function OwnerBookingsPage() {
   return (
     <div className="flex flex-col gap-5 pb-10">
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <BookingsHero
-        total={pagination?.total ?? bookings.length}
-        stats={stats}
+      <OwnerPageHero
+        title={
+          <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
+            Quản lý lịch sử <span className="italic text-primary">đặt sân</span>
+          </h1>
+        }
+        description={
+          <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
+            Theo dõi, xác nhận và điều phối mọi lượt đặt — đơn lẻ lẫn định kỳ —
+            từ một bảng điều khiển duy nhất.
+          </p>
+        }
+        action={
+          <Badge
+            variant="outline"
+            className="h-5 gap-1 rounded-full border-primary/30 bg-primary/10 px-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-primary"
+          >
+            <Sparkles className="size-2.5" />
+            {pagination?.total ?? bookings.length} lịch đặt
+          </Badge>
+        }
+        stats={[
+          {
+            icon: Layers,
+            label: "Tổng",
+            value: stats.total,
+            tone: "slate",
+            hint: "Tất cả lượt đặt",
+          },
+          {
+            icon: CheckCircle2,
+            label: "Đã xác nhận",
+            value: stats.confirmed,
+            tone: "emerald",
+            hint: "Sẵn sàng đón khách",
+          },
+          {
+            icon: AlarmClock,
+            label: "Chờ xác nhận",
+            value: stats.completed,
+            tone: "sky",
+            hint: "Cần bạn duyệt",
+          },
+          {
+            icon: Wallet,
+            label: "Chưa thanh toán",
+            value: stats.pending,
+            tone: "amber",
+            hint: "Đang chờ ví",
+          },
+          {
+            icon: Ban,
+            label: "Đã hủy",
+            value: stats.canceled,
+            tone: "rose",
+            hint: "Không hoạt động",
+          },
+        ]}
       />
 
       {/* ── TOOLBAR ──────────────────────────────────────────── */}

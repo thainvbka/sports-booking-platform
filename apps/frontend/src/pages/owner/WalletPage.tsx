@@ -1,12 +1,22 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { BalanceCards } from "@/components/owner/wallet/BalanceCards";
 import { BankDetailsCard } from "@/components/owner/wallet/BankDetailsCard";
 import { PayoutHistoryTable } from "@/components/owner/wallet/PayoutHistoryTable";
 import { useWallet } from "@/hooks/owner/useWallet";
-import { Clock, RefreshCw, ShieldCheck } from "lucide-react";
+import {
+  Clock,
+  RefreshCw,
+  ShieldCheck,
+  ArrowUpRight,
+  CheckCircle2,
+  TrendingUp,
+  Wallet as WalletIcon,
+  AlertCircle,
+} from "lucide-react";
+import { OwnerPageHero } from "@/components/owner/OwnerPageHero";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { formatPrice } from "@/utils";
 
 export function WalletPage() {
   const {
@@ -20,19 +30,13 @@ export function WalletPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO HEADER ───────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-accent-sport/5 px-4 py-3.5 shadow-sm md:px-6 md:py-4">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 -top-14 size-56 rounded-full bg-primary/15 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-20 left-10 size-48 rounded-full bg-accent-sport/10 blur-3xl"
-        />
-
-        <div className="relative flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="flex min-w-0 flex-col gap-1.5">
+      {/* ── HERO HEADER & BALANCES ───────────────────────── */}
+      {isLoading && !wallet ? (
+        <div className="animate-pulse rounded-2xl border border-border/60 bg-muted/10 h-[240px]" />
+      ) : (
+        <OwnerPageHero
+          variant="card"
+          badge={
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 variant="outline"
@@ -49,15 +53,18 @@ export function WalletPage() {
                 Hoạt động
               </Badge>
             </div>
+          }
+          title={
             <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl mt-1">
               Ví doanh thu & <span className="italic text-primary">Đối soát</span>
             </h1>
+          }
+          description={
             <p className="hidden max-w-xl text-xs text-muted-foreground md:block mt-0.5">
               Quản lý số dư đặt sân nội địa Việt Nam qua VNPAY, cập nhật tài khoản ngân hàng và thực hiện yêu cầu quyết toán về tài khoản của bạn.
             </p>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
+          }
+          action={
             <Button
               variant="outline"
               size="sm"
@@ -68,45 +75,76 @@ export function WalletPage() {
               <RefreshCw className={cn("size-3.5 mr-2", isLoading && "animate-spin")} />
               Làm mới
             </Button>
-          </div>
-        </div>
-      </section>
+          }
+          stats={[
+            {
+              icon: WalletIcon,
+              label: "Số dư khả dụng (Tích lũy)",
+              value: formatPrice(wallet?.balances.pending ?? 0),
+              tone: "emerald",
+              hint: "Có thể yêu cầu chi trả về ngân hàng",
+              extra: (
+                <Button
+                  onClick={handleRequestPayout}
+                  disabled={isSubmitting || (wallet?.balances.pending ?? 0) <= 0 || !hasConfiguredBank}
+                  className="w-full h-8 rounded-full bg-emerald-600 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50 transition-colors mt-2"
+                >
+                  <ArrowUpRight className="size-3.5 mr-1" />
+                  Yêu cầu thanh toán ngay
+                </Button>
+              ),
+            },
+            {
+              icon: Clock,
+              label: "Đang xử lý / Chờ duyệt",
+              value: formatPrice(wallet?.balances.requested ?? 0),
+              tone: "amber",
+              hint: "Gom các đợt đang chờ Admin duyệt",
+              extra: (
+                <Alert className="border-amber-500/10 bg-amber-500/5 text-amber-800 dark:text-amber-300 py-1.5 px-3 mt-2">
+                  <AlertCircle className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <AlertDescription className="text-[10px] text-muted-foreground leading-normal">
+                    Duyệt trong 24 giờ làm việc.
+                  </AlertDescription>
+                </Alert>
+              ),
+            },
+            {
+              icon: CheckCircle2,
+              label: "Đã thanh toán (Paid)",
+              value: formatPrice(wallet?.balances.paid ?? 0),
+              tone: "blue",
+              hint: "Tổng số tiền đã quyết toán thành công",
+              extra: (
+                <Alert className="border-blue-500/10 bg-blue-500/5 text-blue-800 dark:text-blue-300 py-1.5 px-3 mt-2">
+                  <TrendingUp className="size-3.5 text-blue-500 shrink-0 mt-0.5" />
+                  <AlertDescription className="text-[10px] text-muted-foreground leading-normal">
+                    Đã chuyển vào tài khoản bank.
+                  </AlertDescription>
+                </Alert>
+              ),
+            },
+          ]}
+        />
+      )}
 
-      {isLoading && !wallet ? (
+      {/* ── LOWER SECTION ────────────────────────────────── */}
+      {(!isLoading || wallet) && (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-24 bg-muted/40" />
-              <CardContent className="h-16 bg-muted/20" />
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* ── BALANCES CARDS ────────────────────────────────── */}
-          <BalanceCards
-            wallet={wallet}
-            hasConfiguredBank={hasConfiguredBank}
-            isSubmitting={isSubmitting}
-            onRequestPayout={handleRequestPayout}
-          />
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {/* ── BANK DETAILS SETUP ───────────────────────────── */}
-            <div className="md:col-span-1">
-              <BankDetailsCard
-                wallet={wallet}
-                hasConfiguredBank={hasConfiguredBank}
-                onSuccess={() => fetchWalletData(true)}
-              />
-            </div>
-
-            {/* ── PAYOUT HISTORY TABLE ────────────────────────── */}
-            <div className="md:col-span-2">
-              <PayoutHistoryTable batches={wallet?.batches} />
-            </div>
+          {/* ── BANK DETAILS SETUP ───────────────────────────── */}
+          <div className="md:col-span-1">
+            <BankDetailsCard
+              wallet={wallet}
+              hasConfiguredBank={hasConfiguredBank}
+              onSuccess={() => fetchWalletData(true)}
+            />
           </div>
-        </>
+
+          {/* ── PAYOUT HISTORY TABLE ────────────────────────── */}
+          <div className="md:col-span-2">
+            <PayoutHistoryTable batches={wallet?.batches} />
+          </div>
+        </div>
       )}
     </div>
   );

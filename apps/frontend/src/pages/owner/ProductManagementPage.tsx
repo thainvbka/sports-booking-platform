@@ -5,10 +5,10 @@ import { UpdateProductStockDialog } from "@/components/owner/product/UpdateProdu
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ProductsHero } from "@/components/owner/product/ProductsHero";
 import { useProductManagement } from "@/hooks/owner/useProductManagement";
 import { useProductColumns } from "@/hooks/owner/useProductColumns";
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { OwnerPageHero } from "@/components/owner/OwnerPageHero";
+import { AlertCircle, CircleOff, Layers, PackagePlus, RotateCcw, ShieldAlert, Zap } from "lucide-react";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -54,11 +54,57 @@ export function ProductManagementPage() {
   return (
     <div className="flex flex-col gap-5 pb-10">
       {/* ── HERO ─────────────────────────────────────────── */}
-      <ProductsHero
-        totalItems={totalItems}
-        inventoryStats={inventoryStats}
-        onCreateClick={() => setCreateDialogOpen(true)}
-        lowStockThreshold={LOW_STOCK_THRESHOLD}
+      <OwnerPageHero
+        title={
+          <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
+            Quản lý <span className="italic text-primary">sản phẩm</span>
+          </h1>
+        }
+        description={
+          <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
+            Theo dõi danh mục, giá bán và tồn kho của từng cơ sở — cảnh báo ngay
+            khi có mặt hàng sắp hết.
+          </p>
+        }
+        action={
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            className="h-9 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow shadow-primary/25 hover:bg-primary/92"
+          >
+            <PackagePlus data-icon="inline-start" />
+            Thêm sản phẩm
+          </Button>
+        }
+        stats={[
+          {
+            icon: Layers,
+            label: "Tổng số sản phẩm",
+            value: totalItems,
+            tone: "slate",
+            hint: "Toàn bộ mặt hàng",
+          },
+          {
+            icon: Zap,
+            label: "Đang bán",
+            value: inventoryStats.active,
+            tone: "emerald",
+            hint: "Hiển thị công khai",
+          },
+          {
+            icon: ShieldAlert,
+            label: "Sắp hết",
+            value: inventoryStats.lowStock,
+            tone: "amber",
+            hint: `≤ ${LOW_STOCK_THRESHOLD} đơn vị`,
+          },
+          {
+            icon: CircleOff,
+            label: "Tạm ngừng",
+            value: inventoryStats.inactive,
+            tone: "rose",
+            hint: "Không bán ra",
+          },
+        ]}
       />
 
       {/* ── TOOLBAR ──────────────────────────────────────── */}

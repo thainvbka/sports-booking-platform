@@ -4,10 +4,12 @@ import { OwnerComplexCard } from "@/components/shared/complex/OwnerComplexCard";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Button } from "@/components/ui/button";
 import { useComplexesFilters } from "@/hooks/owner/useComplexesFilters";
-import { ComplexesHero } from "@/components/owner/complex/ComplexesHero";
 import { EmptyComplexState } from "@/components/owner/complex/EmptyComplexState";
 import { ComplexesSkeletonGrid } from "@/components/owner/complex/ComplexesSkeletonGrid";
-import { RotateCcw } from "lucide-react";
+import { OwnerPageHero } from "@/components/owner/OwnerPageHero";
+import { ComplexFormDialog } from "@/components/shared/complex/ComplexFormDialog";
+import { ComplexStatus } from "@/types";
+import { CheckCircle2, Clock, Layers, MinusCircle, RotateCcw } from "lucide-react";
 
 export function ComplexesPage() {
   const {
@@ -31,10 +33,49 @@ export function ComplexesPage() {
   return (
     <div className="flex flex-col gap-5 pb-10">
       {/* ── HERO ──────────────────────────────────────────────── */}
-      <ComplexesHero
-        pagination={pagination as { total: number } | null}
-        complexesCount={complexes.length}
-        statusCounts={statusCounts}
+      <OwnerPageHero
+        title={
+          <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
+            Quản lý <span className="italic text-primary">khu phức hợp</span>
+          </h1>
+        }
+        description={
+          <p className="hidden max-w-xl text-xs text-muted-foreground md:block">
+            Theo dõi trạng thái khai thác, tiến độ duyệt và khả năng phục vụ của
+            toàn bộ cơ sở trong một khung quản trị duy nhất.
+          </p>
+        }
+        action={<ComplexFormDialog />}
+        stats={[
+          {
+            icon: Layers,
+            label: "Tổng khu",
+            value: pagination?.total ?? complexes.length,
+            tone: "slate",
+            hint: "Toàn bộ cơ sở",
+          },
+          {
+            icon: CheckCircle2,
+            label: "Hoạt động",
+            value: statusCounts[ComplexStatus.ACTIVE],
+            tone: "emerald",
+            hint: "Đang nhận đặt",
+          },
+          {
+            icon: Clock,
+            label: "Chờ duyệt",
+            value: statusCounts[ComplexStatus.PENDING],
+            tone: "amber",
+            hint: "Đợi admin duyệt",
+          },
+          {
+            icon: MinusCircle,
+            label: "Đã ngừng",
+            value: statusCounts[ComplexStatus.INACTIVE],
+            tone: "rose",
+            hint: "Tạm dừng vận hành",
+          },
+        ]}
       />
 
       {/* ── TOOLBAR ───────────────────────────────────────────── */}
