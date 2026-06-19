@@ -16,8 +16,7 @@ import type { ReviewRatingFilter, ReviewSortBy } from "@/hooks/player/useSubfiel
 import { cn } from "@/lib/utils";
 import type { GetSubfieldReviewsResponse, PublicSubfieldReview } from "@/types";
 import { getReviewerDisplayName } from "@/utils/review.util";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatDateVn } from "@/utils";
 import { ImageIcon, RotateCcw } from "lucide-react";
 
 interface ReviewsSummary {
@@ -239,7 +238,7 @@ export function SubfieldReviewsList({
                         {name}
                       </h4>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {format(new Date(review.created_at), "dd 'thg' M yyyy", { locale: vi })}
+                        {formatDateVn(review.created_at, "dd 'thg' M yyyy")}
                       </p>
                     </div>
                     

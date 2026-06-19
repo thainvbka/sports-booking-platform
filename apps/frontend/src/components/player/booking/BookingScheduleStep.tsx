@@ -19,9 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
 import { DAYS_OF_WEEK_FULL } from "@/constants";
-import { formatMinutesToTime, parseRuleTimeToMinutes } from "@/utils/time.util";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatMinutesToTime, parseRuleTimeToMinutes, formatDateVn } from "@/utils/time.util";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -96,7 +94,7 @@ export function BookingScheduleStep({
     <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
       <div className="space-y-2">
         <Label className="block text-sm font-semibold text-foreground">
-          Tình trạng sân {date ? `ngày ${format(date, "dd/MM/yyyy")}` : ""} {operatingHoursStr ? `(${operatingHoursStr})` : ""}
+          Tình trạng sân {date ? `ngày ${formatDateVn(date, "dd/MM/yyyy")}` : ""} {operatingHoursStr ? `(${operatingHoursStr})` : ""}
         </Label>
         <p className="text-xs text-muted-foreground">
           Chọn khung giờ theo trạng thái thực tế của sân ở từng mốc 30 phút.
@@ -137,7 +135,7 @@ export function BookingScheduleStep({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy", { locale: vi }) : "Chọn ngày"}
+                  {date ? formatDateVn(date, "dd/MM/yyyy") : "Chọn ngày"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -168,7 +166,7 @@ export function BookingScheduleStep({
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {endDate
-                      ? format(endDate, "dd/MM/yyyy", { locale: vi })
+                      ? formatDateVn(endDate, "dd/MM/yyyy")
                       : "Chọn ngày"}
                   </Button>
                 </PopoverTrigger>

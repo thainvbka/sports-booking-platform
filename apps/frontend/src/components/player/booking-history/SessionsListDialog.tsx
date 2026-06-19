@@ -8,9 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { BookingStatus, type BookingResponse } from "@/types";
-import { getBookingStatusLabel, toSingleBooking, type SingleBooking } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { getBookingStatusLabel, toSingleBooking, type SingleBooking, formatDateVn } from "@/utils";
 import { Clock, RefreshCcw, Star, Trophy } from "lucide-react";
 
 interface SessionsListDialogProps {
@@ -97,8 +95,8 @@ export function SessionsListDialog({
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground font-medium">
                     <Clock className="size-3.5 text-primary/70 shrink-0" />
-                    {format(slotDate, "EEEE, dd/MM/yyyy HH:mm", { locale: vi })} –{" "}
-                    {format(new Date(slot.end_time), "HH:mm")}
+                    {formatDateVn(slot.start_time, "EEEE, dd/MM/yyyy HH:mm")} –{" "}
+                    {formatDateVn(slot.end_time, "HH:mm")}
                   </div>
                 </div>
 

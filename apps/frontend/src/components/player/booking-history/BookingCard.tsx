@@ -14,9 +14,8 @@ import {
   getRecurringStatusLabel,
   getSportTypeLabel,
   type SingleBooking,
+  formatDateVn,
 } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
@@ -168,13 +167,13 @@ export function BookingCard({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <div className="flex items-center gap-1 font-semibold text-foreground">
             <CalendarDays className="size-3.5 text-primary/70" />
-            {format(stubDate, "dd MMM yyyy", { locale: vi })}
+            {formatDateVn(stubDate, "dd MMM yyyy")}
           </div>
           {isSingle ? (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="size-3.5" />
-              {format(new Date(booking.start_time), "HH:mm")} –{" "}
-              {format(new Date(booking.end_time), "HH:mm")}
+              {formatDateVn(booking.start_time, "HH:mm")} –{" "}
+              {formatDateVn(booking.end_time, "HH:mm")}
             </div>
           ) : (
             <>
@@ -185,14 +184,8 @@ export function BookingCard({
               {booking.bookings.length > 0 && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Clock className="size-3.5" />
-                  {format(
-                    new Date(booking.bookings[0].start_time),
-                    "HH:mm",
-                  )} –{" "}
-                  {format(
-                    new Date(booking.bookings[0].end_time),
-                    "HH:mm",
-                  )}
+                  {formatDateVn(booking.bookings[0].start_time, "HH:mm")} –{" "}
+                  {formatDateVn(booking.bookings[0].end_time, "HH:mm")}
                 </div>
               )}
             </>

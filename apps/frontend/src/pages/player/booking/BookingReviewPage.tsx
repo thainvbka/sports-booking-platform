@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { bookingService } from "@/services/booking.service";
 import type { ApiError, BookingReviewResponse } from "@/types";
-import { formatPrice } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, formatDateVn } from "@/utils";
 import { ArrowLeft, Calendar, Clock, MapPin, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -155,9 +153,7 @@ export default function BookingReviewPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Ngày</p>
                   <p className="font-medium">
-                    {format(new Date(booking.start_time), "EEEE, dd/MM/yyyy", {
-                      locale: vi,
-                    })}
+                    {formatDateVn(booking.start_time, "EEEE, dd/MM/yyyy")}
                   </p>
                 </div>
               </div>
@@ -169,8 +165,8 @@ export default function BookingReviewPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Thời gian</p>
                   <p className="font-medium">
-                    {format(new Date(booking.start_time), "HH:mm")} -{" "}
-                    {format(new Date(booking.end_time), "HH:mm")}
+                    {formatDateVn(booking.start_time, "HH:mm")} -{" "}
+                    {formatDateVn(booking.end_time, "HH:mm")}
                   </p>
                 </div>
               </div>
@@ -181,7 +177,7 @@ export default function BookingReviewPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Hạn thanh toán</p>
                     <p className="font-medium text-orange-600">
-                      {format(expiresAtDate, "HH:mm dd/MM/yyyy")}
+                      {formatDateVn(expiresAtDate, "HH:mm dd/MM/yyyy")}
                     </p>
                   </div>
                 </div>

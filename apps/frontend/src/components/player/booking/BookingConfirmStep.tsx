@@ -1,9 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import type { SubfieldProduct } from "@/types";
-import { formatPrice } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, formatDateVn } from "@/utils";
 import { CalendarRange, Clock3, Info, Package, Repeat2 } from "lucide-react";
 
 type BookingType = "single" | "recurring";
@@ -45,11 +43,11 @@ export function BookingConfirmStep({
           label={isRecurring ? "Định kỳ" : "Một lần"}
           value={
             isRecurring
-              ? `${date ? format(date, "dd/MM", { locale: vi }) : "--/--"} → ${
-                  endDate ? format(endDate, "dd/MM/yyyy", { locale: vi }) : "--/--/----"
+              ? `${date ? formatDateVn(date, "dd/MM") : "--/--"} → ${
+                  endDate ? formatDateVn(endDate, "dd/MM/yyyy") : "--/--/----"
                 }`
               : date
-                ? format(date, "EEEE, dd/MM/yyyy", { locale: vi })
+                ? formatDateVn(date, "EEEE, dd/MM/yyyy")
                 : "--/--/----"
           }
         />

@@ -7,9 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { bookingService } from "@/services/booking.service";
 import type { ApiError, RecurringBookingReviewResponse } from "@/types";
-import { formatPrice } from "@/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { formatPrice, formatDateVn } from "@/utils";
 import {
   ArrowLeft,
   Calendar,
@@ -185,11 +183,11 @@ export default function RecurringBookingReviewPage() {
                   </p>
                   <p className="font-medium text-sm">
                     {booking.start_date
-                      ? format(new Date(booking.start_date), "dd/MM/yyyy")
+                      ? formatDateVn(booking.start_date, "dd/MM/yyyy")
                       : "N/A"}{" "}
                     -{" "}
                     {booking.end_date
-                      ? format(new Date(booking.end_date), "dd/MM/yyyy")
+                      ? formatDateVn(booking.end_date, "dd/MM/yyyy")
                       : "N/A"}
                   </p>
                 </div>
@@ -201,7 +199,7 @@ export default function RecurringBookingReviewPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Hạn thanh toán</p>
                     <p className="font-medium text-orange-600">
-                      {format(expiresAtDate, "HH:mm dd/MM/yyyy")}
+                      {formatDateVn(expiresAtDate, "HH:mm dd/MM/yyyy")}
                     </p>
                   </div>
                 </div>
@@ -260,9 +258,7 @@ export default function RecurringBookingReviewPage() {
                       >
                         <span className="font-medium">
                           {hasValidDate
-                            ? `${format(startDate, "EEEE, dd/MM/yyyy", {
-                                locale: vi,
-                              })} | ${format(startDate, "HH:mm")} - ${format(endDate, "HH:mm")}`
+                            ? `${formatDateVn(slot.startTime, "EEEE, dd/MM/yyyy")} | ${formatDateVn(slot.startTime, "HH:mm")} - ${formatDateVn(slot.endTime, "HH:mm")}`
                             : "Đang cập nhật..."}
                         </span>
                         <span className="shrink-0 font-semibold text-primary">
