@@ -184,6 +184,14 @@ export interface BookingPlayer {
   account: { full_name: string; phone_number: string };
 }
 
+export interface AdminBookingStats {
+  total: number;
+  confirmed: number;
+  completed: number;
+  canceled: number;
+  pending: number;
+}
+
 export interface AdminBookingRow {
   id: string;
   status: string;

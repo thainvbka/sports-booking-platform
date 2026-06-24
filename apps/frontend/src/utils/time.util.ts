@@ -5,6 +5,15 @@ import { vi } from "date-fns/locale";
 const VN_TIMEZONE = "Asia/Ho_Chi_Minh";
 
 /**
+ * Lấy thứ trong tuần (0=CN, 1=T2, ..., 6=T7) theo múi giờ Việt Nam.
+ * Dùng thay cho Date.getDay() để tránh lệch thứ khi người dùng ở múi giờ khác VN.
+ */
+export const getVnDayOfWeek = (date: Date): number => {
+  const zonedDate = toZonedTime(date, VN_TIMEZONE);
+  return zonedDate.getDay();
+};
+
+/**
  * Parse pricing rule time (string "HH:MM" hoặc Date từ Prisma @db.Time)
  * về số phút trong ngày.
  * - String "HH:MM": parse trực tiếp (face value).

@@ -246,8 +246,8 @@ export default function RecurringBookingReviewPage() {
               <ScrollArea className="h-112 w-full pr-4">
                 <div className="space-y-2">
                   {slots.map((slot) => {
-                    const startDate = new Date(slot.startTime);
-                    const endDate = new Date(slot.endTime);
+                    const startDate = new Date(slot.start_time);
+                    const endDate = new Date(slot.end_time);
                     const hasValidDate =
                       !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime());
 
@@ -258,11 +258,11 @@ export default function RecurringBookingReviewPage() {
                       >
                         <span className="font-medium">
                           {hasValidDate
-                            ? `${formatDateVn(slot.startTime, "EEEE, dd/MM/yyyy")} | ${formatDateVn(slot.startTime, "HH:mm")} - ${formatDateVn(slot.endTime, "HH:mm")}`
+                            ? `${formatDateVn(slot.start_time, "EEEE, dd/MM/yyyy")} | ${formatDateVn(slot.start_time, "HH:mm")} - ${formatDateVn(slot.end_time, "HH:mm")}`
                             : "Đang cập nhật..."}
                         </span>
                         <span className="shrink-0 font-semibold text-primary">
-                          {formatPrice(slot.price)}
+                          {formatPrice(slot.total_price)}
                         </span>
                       </div>
                     );

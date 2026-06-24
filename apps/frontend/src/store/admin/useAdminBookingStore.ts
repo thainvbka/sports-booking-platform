@@ -1,4 +1,5 @@
 import { adminService } from "@/services/admin.service";
+import type { AdminBookingRow, AdminBookingStats } from "@/types/admin.types";
 import type { PaginationMeta } from "@/types/index";
 import { create } from "zustand";
 
@@ -8,15 +9,9 @@ interface AdminBookingFilters {
 }
 
 interface AdminBookingState {
-  bookings: unknown[];
+  bookings: AdminBookingRow[];
   pagination: PaginationMeta | null;
-  stats: {
-    total: number;
-    confirmed: number;
-    completed: number;
-    canceled: number;
-    pending: number;
-  };
+  stats: AdminBookingStats;
   queryParams: {
     page: number;
     limit: number;
@@ -32,7 +27,7 @@ interface AdminBookingState {
 }
 
 export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
-  bookings: [],
+  bookings: [] as AdminBookingRow[],
   pagination: null,
   stats: {
     total: 0,
@@ -59,17 +54,7 @@ export const useAdminBookingStore = create<AdminBookingState>((set, get) => ({
         ...filters,
       });
       if (res.success && res.data) {
-        const data = res.data as {
-          bookings: unknown[];
-          pagination: PaginationMeta | null;
-          stats: {
-            total: number;
-            confirmed: number;
-            completed: number;
-            canceled: number;
-            pending: number;
-          };
-        };
+        const data = res.data;
         set({
           bookings: data.bookings,
           pagination: data.pagination,

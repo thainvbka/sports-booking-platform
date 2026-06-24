@@ -1,6 +1,7 @@
 import type { PricingRule } from "@/types";
 import {
   formatMinutesToTime,
+  getVnDayOfWeek,
   parseRuleTimeToMinutes,
 } from "@/utils/time.util";
 import { format } from "date-fns";
@@ -54,7 +55,7 @@ export function useBookingTimePricing({
     if (!date) return [];
 
     return (pricingRules || [])
-      .filter((rule) => rule.day_of_week === date.getDay())
+      .filter((rule) => rule.day_of_week === getVnDayOfWeek(date))
       .sort((a, b) => {
         const aMin = parseRuleTimeToMinutes(a.start_time) ?? Number.MAX_SAFE_INTEGER;
         const bMin = parseRuleTimeToMinutes(b.start_time) ?? Number.MAX_SAFE_INTEGER;

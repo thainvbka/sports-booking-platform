@@ -1,10 +1,13 @@
 import { api } from "@/lib/axios";
 import type {
   AdminAnalyticsResponse,
+  AdminBookingRow,
+  AdminBookingStats,
   AdminComplexesApiResponse,
+  AdminRecurringRow,
   AdminUsersResponse,
 } from "@/types/admin.types";
-import type { ApiResponse } from "@/types/index";
+import type { ApiResponse, PaginationMeta } from "@/types/index";
 
 export const adminService = {
   getAnalytics: async (): Promise<AdminAnalyticsResponse> => {
@@ -52,8 +55,8 @@ export const adminService = {
     limit?: number;
     search?: string;
     status?: string;
-  }): Promise<ApiResponse<unknown>> => {
-    const res = await api.get<ApiResponse<unknown>>("/admin/bookings", { params });
+  }): Promise<ApiResponse<{ bookings: AdminBookingRow[]; pagination: PaginationMeta | null; stats: AdminBookingStats }>> => {
+    const res = await api.get<ApiResponse<{ bookings: AdminBookingRow[]; pagination: PaginationMeta | null; stats: AdminBookingStats }>>("/admin/bookings", { params });
     return res.data;
   },
 
@@ -62,8 +65,8 @@ export const adminService = {
     limit?: number;
     search?: string;
     status?: string;
-  }): Promise<ApiResponse<unknown>> => {
-    const res = await api.get<ApiResponse<unknown>>("/admin/bookings/recurring", {
+  }): Promise<ApiResponse<{ recurringBookings: AdminRecurringRow[]; pagination: PaginationMeta | null; stats: AdminBookingStats }>> => {
+    const res = await api.get<ApiResponse<{ recurringBookings: AdminRecurringRow[]; pagination: PaginationMeta | null; stats: AdminBookingStats }>>("/admin/bookings/recurring", {
       params,
     });
     return res.data;

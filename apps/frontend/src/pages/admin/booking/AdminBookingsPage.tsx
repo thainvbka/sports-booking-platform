@@ -8,7 +8,6 @@ import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { useAdminBookingsData } from "@/hooks/admin/useAdminBookingsData";
 import { useRecurringBookingColumns } from "@/hooks/admin/useRecurringBookingColumns";
 import { useSingleBookingColumns } from "@/hooks/admin/useSingleBookingColumns";
-import type { AdminBookingRow, AdminRecurringRow } from "@/types/admin.types";
 
 export default function AdminBookingsPage() {
   const {
@@ -96,7 +95,7 @@ export default function AdminBookingsPage() {
       >
         {activeView === "single" ? (
           <DataTable
-            data={bookings as AdminBookingRow[]}
+            data={bookings}
             columns={singleColumns}
             isLoading={singleLoading}
             paginationStyle="search"
@@ -113,7 +112,7 @@ export default function AdminBookingsPage() {
           />
         ) : (
           <DataTable
-            data={recurringBookings as AdminRecurringRow[]}
+            data={recurringBookings}
             columns={recurringColumns}
             isLoading={recurringLoading}
             paginationStyle="search"

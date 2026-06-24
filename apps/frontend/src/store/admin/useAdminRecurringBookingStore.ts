@@ -1,4 +1,5 @@
 import { adminService } from "@/services/admin.service";
+import type { AdminBookingStats, AdminRecurringRow } from "@/types/admin.types";
 import type { PaginationMeta } from "@/types/index";
 import { create } from "zustand";
 
@@ -8,15 +9,9 @@ interface AdminRecurringBookingFilters {
 }
 
 interface AdminRecurringBookingState {
-  recurringBookings: unknown[];
+  recurringBookings: AdminRecurringRow[];
   pagination: PaginationMeta | null;
-  stats: {
-    total: number;
-    pending: number;
-    confirmed: number;
-    completed: number;
-    canceled: number;
-  };
+  stats: AdminBookingStats;
   queryParams: { page: number; limit: number };
   filters: AdminRecurringBookingFilters;
   isLoading: boolean;
@@ -47,17 +42,7 @@ export const useAdminRecurringBookingStore =
           ...filters,
         });
         if (res.success && res.data) {
-          const data = res.data as {
-            recurringBookings: unknown[];
-            pagination: PaginationMeta | null;
-            stats: {
-              total: number;
-              pending: number;
-              confirmed: number;
-              completed: number;
-              canceled: number;
-            };
-          };
+          const data = res.data;
           set({
             recurringBookings: data.recurringBookings,
             pagination: data.pagination,

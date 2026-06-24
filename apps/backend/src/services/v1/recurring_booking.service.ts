@@ -459,9 +459,9 @@ export const reviewRecurringBookingService = async (
     total_price: totalAmount,
     slots: recurringBooking.bookings.map((b) => ({
       id: b.id,
-      startTime: b.start_time,
-      endTime: b.end_time,
-      price: b.total_price,
+      start_time: b.start_time,
+      end_time: b.end_time,
+      total_price: b.total_price,
     })),
     expires_at: firstBooking.expires_at,
   };

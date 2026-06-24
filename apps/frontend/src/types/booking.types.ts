@@ -118,9 +118,9 @@ export interface RecurringBookingReviewResponse {
   total_price: number;
   slots: {
     id: string;
-    startTime: string;
-    endTime: string;
-    price: number;
+    start_time: string;
+    end_time: string;
+    total_price: number;
   }[];
   expires_at: string;
 }

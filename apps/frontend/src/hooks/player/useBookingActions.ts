@@ -26,26 +26,28 @@ export function useBookingActions({
   const handleCancel = async () => {
     if (!selectedBookingId) return;
 
-    if (selectedBookingType === "SINGLE") {
-      await bookingService.cancelBooking(selectedBookingId).catch(() => {
-        toast.error("Đã xảy ra lỗi khi hủy đặt sân");
-        throw new Error("Cancel booking failed");
-      });
-    } else {
-      await bookingService.cancelRecurringBooking(selectedBookingId).catch(() => {
-        toast.error("Đã xảy ra lỗi khi hủy đặt sân định kỳ");
-        throw new Error("Cancel recurring booking failed");
-      });
+    try {
+      if (selectedBookingType === "SINGLE") {
+        await bookingService.cancelBooking(selectedBookingId);
+      } else {
+        await bookingService.cancelRecurringBooking(selectedBookingId);
+      }
+
+      updateBookingStatus(
+        selectedBookingId,
+        selectedBookingType,
+        BookingStatus.CANCELED,
+      );
+
+      toast.success("Đã hủy đặt sân thành công");
+      setSelectedBookingId(null);
+    } catch {
+      const errorMsg =
+        selectedBookingType === "SINGLE"
+          ? "Đã xảy ra lỗi khi hủy đặt sân"
+          : "Đã xảy ra lỗi khi hủy đặt sân định kỳ";
+      toast.error(errorMsg);
     }
-
-    updateBookingStatus(
-      selectedBookingId,
-      selectedBookingType,
-      BookingStatus.CANCELED,
-    );
-
-    toast.success("Đã hủy đặt sân thành công");
-    setSelectedBookingId(null);
   };
 
   const handleReviewSuccess = (bookingId: string, review: ReviewItem) => {

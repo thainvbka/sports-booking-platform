@@ -76,7 +76,7 @@ export default function BookingReviewPage() {
 
   const addonTotal =
     booking?.booking_addons?.reduce((sum, addon) => sum + addon.line_total, 0) ?? 0;
-  const fieldTotal = Math.max(booking?.total_price ?? 0 - addonTotal, 0);
+  const fieldTotal = Math.max((booking?.total_price ?? 0) - addonTotal, 0);
   const expiresAtDate = booking?.expires_at ? new Date(booking.expires_at) : null;
   const hasValidExpiresAt = expiresAtDate && !Number.isNaN(expiresAtDate.getTime());
 
