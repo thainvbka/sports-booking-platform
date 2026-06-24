@@ -27,7 +27,7 @@ export const createRecurringBookingSchema = z
 
       // day_of_week: z.number().min(0).max(6), // 0 (Chủ nhật) -> 6 (Thứ 7)
 
-      recurring_type: z.nativeEnum(RecurringBookingType),
+      recurrence_type: z.nativeEnum(RecurringBookingType),
 
       // Nếu có thêm type để phân biệt đặt lẻ/cố định
       type: z.enum(["ONE_TIME", "RECURRING"]).optional(),

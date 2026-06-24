@@ -15,7 +15,7 @@ export interface CreateRecurringBookingData {
   end_time: string; // ISO String
   start_date: string; // YYYY-MM-DD
   end_date: string; // YYYY-MM-DD
-  recurring_type: "WEEKLY" | "MONTHLY";
+  recurrence_type: "WEEKLY" | "MONTHLY";
   type: "RECURRING";
 }
 

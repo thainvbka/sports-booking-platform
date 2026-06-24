@@ -185,9 +185,9 @@ export const createRecurringBookingService = async (
 
       bookingSlots.push({ start: slotStart, end: slotEnd });
 
-      if (data.recurring_type === RecurringBookingType.WEEKLY) {
+      if (data.recurrence_type === RecurringBookingType.WEEKLY) {
         currentDate = addDays(currentDate, 7);
-      } else if (data.recurring_type === RecurringBookingType.MONTHLY) {
+      } else if (data.recurrence_type === RecurringBookingType.MONTHLY) {
         currentDate = addMonths(currentDate, 1);
       }
     }
@@ -272,7 +272,7 @@ export const createRecurringBookingService = async (
       data: {
         player_id,
         sub_field_id,
-        recurrence_type: data.recurring_type,
+        recurrence_type: data.recurrence_type,
         start_date: data.start_date,
         end_date: data.end_date,
         status: "PENDING",

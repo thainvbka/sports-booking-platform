@@ -77,7 +77,7 @@ export function useBookingSubmit({
           end_time: getIsoDateTimeVn(date, customEndTime),
           start_date: format(date, "yyyy-MM-dd"),
           end_date: format(endDate, "yyyy-MM-dd"),
-          recurring_type: recurringType,
+          recurrence_type: recurringType,
           type: "RECURRING",
         },
       );
