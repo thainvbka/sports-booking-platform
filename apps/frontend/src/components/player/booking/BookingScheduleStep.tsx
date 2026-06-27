@@ -19,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
 import { DAYS_OF_WEEK_FULL } from "@/constants";
-import { formatMinutesToTime, parseRuleTimeToMinutes, formatDateVn } from "@/utils/time.util";
+import { formatMinutesToTime, parseRuleTimeToMinutes, formatDateVn, getVnDayOfWeek } from "@/utils/time.util";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -210,7 +210,7 @@ export function BookingScheduleStep({
           availableRules.length > 0 ? (
             <div className="rounded-xl border border-primary/20 bg-linear-to-br from-primary/8 to-primary/3 p-4 shadow-sm">
               <p className="mb-2 text-sm font-semibold text-primary">
-                Bảng giá hôm nay ({DAYS_OF_WEEK_FULL[date.getDay()]})
+                Bảng giá hôm nay ({DAYS_OF_WEEK_FULL[getVnDayOfWeek(date)]})
               </p>
               <div className="space-y-1.5 text-xs">
                 {availableRules.map((rule) => (

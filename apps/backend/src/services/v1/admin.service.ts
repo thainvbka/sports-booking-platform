@@ -950,7 +950,12 @@ export const getPayments = async (
     where.status = status;
   }
 
-  const [payments, total, paymentStats] = await Promise.all([
+  // Build a separate where for stats that excludes the status filter
+  // so all status counts are visible even when filtering by a specific status
+  const statsWhere: any = { ...where };
+  delete statsWhere.status;
+
+  const [payments, total, paymentStats, statusCounts] = await Promise.all([
     prisma.payment.findMany({
       where,
       skip,
@@ -977,20 +982,15 @@ export const getPayments = async (
     }),
     prisma.payment.count({ where }),
     prisma.payment.aggregate({
-      where: { status: "SUCCESS" },
+      where: { ...statsWhere, status: "SUCCESS" },
       _sum: { amount: true },
     }),
     prisma.payment.groupBy({
       by: ["status"],
+      where: statsWhere,
       _count: { id: true },
     }),
   ]);
-
-  // Thêm một query nữa để lấy tổng số lượng cho stats chính xác
-  const statusCounts = await prisma.payment.groupBy({
-    by: ["status"],
-    _count: { id: true },
-  });
 
   const statsMap = statusCounts.reduce(
     (acc, s) => ({ ...acc, [s.status]: s._count.id }),
@@ -1002,6 +1002,7 @@ export const getPayments = async (
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     stats: {
       totalRevenue: Number(paymentStats._sum.amount) || 0,
+      pendingCount: statsMap["PENDING"] || 0,
       failedCount: statsMap["FAILED"] || 0,
       successCount: statsMap["SUCCESS"] || 0,
       refundedCount: statsMap["REFUNDED"] || 0,

@@ -6,6 +6,7 @@ import { WEEKDAYS } from "@/constants";
 import { cn } from "@/lib/utils";
 import type { PricingRule } from "@/types";
 import { formatDateVn } from "@/utils";
+import { getVnDayOfWeek } from "@/utils/time.util";
 import { CalendarIcon, Plus } from "lucide-react";
 import type { TimelineSegment } from "@/hooks/player/useTimelineSegments";
 import { CopyPricingDropdown } from "./CopyPricingDropdown";
@@ -92,13 +93,13 @@ export function PricingConsoleHeader({
 
       <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1.5 border-b border-border/40">
         {WEEKDAYS.map((w) => {
-          const isActive = w.dayOfWeek === date.getDay();
+          const isActive = w.dayOfWeek === getVnDayOfWeek(date);
           return (
             <button
               key={w.dayOfWeek}
               onClick={() => {
                 const newD = new Date(date);
-                const currentDay = date.getDay();
+                const currentDay = getVnDayOfWeek(date);
                 const diff = w.dayOfWeek - currentDay;
                 newD.setDate(date.getDate() + diff);
                 setDate(newD);

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { publicService } from "@/services/public.service";
 import type { PricingRule } from "@/types";
 import { formatTime, getRuleClassification, parseBookingTimeToVnMinutes, parseRuleTimeToMinutes, PRICING_TIER_CONFIGS, DAYS_OF_WEEK_SHORT, formatDateVn } from "@/utils";
+import { getVnDayOfWeek } from "@/utils/time.util";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -62,7 +63,7 @@ export function SubfieldPricingTabs({
 
   useEffect(() => {
     if (selectedDate) {
-      setActivePricingDay(String(selectedDate.getDay()));
+      setActivePricingDay(String(getVnDayOfWeek(selectedDate)));
     }
   }, [selectedDate]);
 
@@ -94,7 +95,7 @@ export function SubfieldPricingTabs({
 
   const handleTabClick = (dayNum: number) => {
     const today = new Date();
-    const todayDay = today.getDay();
+    const todayDay = getVnDayOfWeek(today);
     const diff = dayNum - todayDay;
     
     const targetDate = new Date(today);

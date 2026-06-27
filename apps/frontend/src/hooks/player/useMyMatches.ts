@@ -2,7 +2,7 @@ import { useMatchStore } from "@/store/useMatchStore";
 import { type MatchStatus, type MyMatchType } from "@/types/match.type";
 import { useEffect } from "react";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 
 interface UseMyMatchesProps {
   type: MyMatchType;

@@ -45,6 +45,7 @@ export const cleanupExpiredBookings = async () => {
       },
       select: {
         id: true,
+        payment_id: true,
         player: {
           select: {
             account_id: true,
@@ -64,6 +65,7 @@ export const cleanupExpiredBookings = async () => {
     });
 
     let canceledCount = 0;
+    const paymentIdsToCheck = new Set<string>();
 
     for (const booking of expiredBookings) {
       const canceled = await prisma.$transaction(async (tx) => {
@@ -90,11 +92,27 @@ export const cleanupExpiredBookings = async () => {
 
       if (canceled) {
         canceledCount += 1;
+        if (booking.payment_id) {
+          paymentIdsToCheck.add(booking.payment_id);
+        }
         await sendNotificationIfNotExists(booking.player.account_id, {
           message: `Phiên đặt sân ${booking.sub_field.sub_field_name} tại ${booking.sub_field.complex.complex_name} đã hết hạn và bị hủy tự động.`,
           type: "BOOKING",
           target_role: "PLAYER",
           link_to: "/bookings",
+        });
+      }
+    }
+
+    // Mark PENDING payments as FAILED when all their bookings have been canceled
+    for (const paymentId of paymentIdsToCheck) {
+      const remainingPending = await prisma.booking.count({
+        where: { payment_id: paymentId, status: "PENDING" },
+      });
+      if (remainingPending === 0) {
+        await prisma.payment.updateMany({
+          where: { id: paymentId, status: "PENDING" },
+          data: { status: "FAILED" },
         });
       }
     }

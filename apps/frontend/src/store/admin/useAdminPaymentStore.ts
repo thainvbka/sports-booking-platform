@@ -12,6 +12,7 @@ interface AdminPaymentState {
   pagination: PaginationMeta | null;
   stats: {
     totalRevenue: number;
+    pendingCount: number;
     failedCount: number;
     successCount: number;
     refundedCount: number;
@@ -35,6 +36,7 @@ export const useAdminPaymentStore = create<AdminPaymentState>((set, get) => ({
   pagination: null,
   stats: {
     totalRevenue: 0,
+    pendingCount: 0,
     failedCount: 0,
     successCount: 0,
     refundedCount: 0
@@ -62,6 +64,7 @@ export const useAdminPaymentStore = create<AdminPaymentState>((set, get) => ({
           pagination: PaginationMeta | null;
           stats: {
             totalRevenue: number;
+            pendingCount: number;
             failedCount: number;
             successCount: number;
             refundedCount: number;

@@ -3,7 +3,7 @@ import { useUrlPageSync } from "@/hooks/useUrlPageSync";
 import { useAdminPaymentStore } from "@/store/admin/useAdminPaymentStore";
 import type { AdminPayment } from "@/types/admin.types";
 import { formatPrice } from "@/utils";
-import { AlertCircle, ArrowRightLeft, CheckCircle2, TrendingUp } from "lucide-react";
+import { AlertCircle, ArrowRightLeft, CheckCircle2, TrendingUp, Clock } from "lucide-react";
 import { useState } from "react";
 
 export function useAdminPaymentsData() {
@@ -62,6 +62,12 @@ export function useAdminPaymentsData() {
       color: "slate" as const,
     },
     {
+      label: "Chờ thanh toán",
+      value: stats.pendingCount,
+      icon: Clock,
+      color: "orange" as const,
+    },
+    {
       label: "Giao dịch thành công",
       value: stats.successCount,
       icon: CheckCircle2,
@@ -83,7 +89,7 @@ export function useAdminPaymentsData() {
 
   const totalCount =
     pagination?.total ??
-    stats.successCount + stats.failedCount + stats.refundedCount;
+    stats.successCount + stats.failedCount + stats.refundedCount + stats.pendingCount;
 
   return {
     payments: payments as AdminPayment[],

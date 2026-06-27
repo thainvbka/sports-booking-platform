@@ -21,6 +21,9 @@ import {
 } from "vnpay";
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
 
+/** Platform fee rate, configurable via env. Default: 10% */
+const PLATFORM_FEE_RATE = Number(process.env.PLATFORM_FEE_RATE) || 0.1;
+
 /**
  * Reset booking expires_at sau khi thanh toán thất bại.
  * Tính thời gian còn lại dựa trên created_at + INITIAL timeout.
@@ -337,7 +340,7 @@ export const createCheckoutSession = async (
   }
 
   //phí nền tảng (10%)
-  const platformFee = Math.round(totalAmount * 0.1);
+  const platformFee = Math.round(totalAmount * PLATFORM_FEE_RATE);
 
   //tang booking timeout khi bat dau thanh toan (30 phút theo yêu cầu của Stripe)
   await prisma.booking.updateMany({
@@ -657,13 +660,13 @@ export const createVnpayCheckoutSession = async (
 
   // Tạo Payment và cập nhật Bookings trong transaction
   await prisma.$transaction(async (tx) => {
-    // 1. Tạo Payment record ở trạng thái FAILED (mặc định cho đến khi IPN cập nhật thành SUCCESS)
+    // 1. Tạo Payment record ở trạng thái PENDING (chờ IPN callback cập nhật kết quả)
     const newPayment = await tx.payment.create({
       data: {
         amount: expectedAmount,
         provider: PaymentProvider.VNPAY,
         transaction_code: transactionCode,
-        status: PaymentStatus.FAILED,
+        status: PaymentStatus.PENDING,
       },
     });
 
@@ -750,9 +753,14 @@ export const handleVnpayIpn = async (query: any) => {
     return IpnInvalidAmount;
   }
 
-  // 4. Nếu đơn hàng đã SUCCESS từ trước
+  // 4. Nếu đơn hàng đã được xử lý (SUCCESS hoặc FAILED)
   if (payment.status === PaymentStatus.SUCCESS) {
     console.log(`::: VNPAY IPN: Order already successfully processed. TxnRef: ${transactionCode}`);
+    return InpOrderAlreadyConfirmed;
+  }
+
+  if (payment.status === PaymentStatus.FAILED) {
+    console.log(`::: VNPAY IPN: Order already marked as FAILED. TxnRef: ${transactionCode}`);
     return InpOrderAlreadyConfirmed;
   }
 
@@ -795,7 +803,7 @@ export const handleVnpayIpn = async (query: any) => {
         const firstBooking = payment.bookings[0];
         const owner = firstBooking.sub_field.complex.owner;
         const totalAmount = Number(payment.amount);
-        const platformFee = Math.round(totalAmount * 0.1); // Phí 10%
+        const platformFee = Math.round(totalAmount * PLATFORM_FEE_RATE);
         const payoutAmount = totalAmount - platformFee;
 
         await tx.ownerPayout.create({

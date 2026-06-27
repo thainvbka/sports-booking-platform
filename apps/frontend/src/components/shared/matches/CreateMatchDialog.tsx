@@ -64,8 +64,14 @@ export function CreateMatchDialog({
       if (booking.type === "SINGLE") {
         const startTime = new Date(booking.start_time);
         const deadlineDate = new Date(startTime.getTime() - 2 * 60 * 60 * 1000);
-        // Format to YYYY-MM-DDTHH:MM
-        defaultDeadline = deadlineDate.toISOString().slice(0, 16);
+        // Format to YYYY-MM-DDTHH:MM using local time (not UTC) so datetime-local input
+        // displays the correct local time regardless of the user's timezone.
+        const year = deadlineDate.getFullYear();
+        const month = String(deadlineDate.getMonth() + 1).padStart(2, "0");
+        const day = String(deadlineDate.getDate()).padStart(2, "0");
+        const hours = String(deadlineDate.getHours()).padStart(2, "0");
+        const minutes = String(deadlineDate.getMinutes()).padStart(2, "0");
+        defaultDeadline = `${year}-${month}-${day}T${hours}:${minutes}`;
       }
 
       reset({

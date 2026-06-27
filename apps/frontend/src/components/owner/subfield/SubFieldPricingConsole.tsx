@@ -8,6 +8,7 @@ import { usePricingStore } from "@/store/owner/usePricingStore";
 import type { PricingRule } from "@/types";
 import { WEEKDAYS } from "@/constants";
 import { formatTime, parseRuleTimeToMinutes, formatDateVn } from "@/utils";
+import { getVnDayOfWeek } from "@/utils/time.util";
 
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
@@ -57,7 +58,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
   // Fetch pricing rules when date or subfield changes
   useEffect(() => {
     if (subfieldId && date) {
-      fetchPricingRules(subfieldId, date.getDay());
+      fetchPricingRules(subfieldId, getVnDayOfWeek(date));
     }
   }, [subfieldId, date, fetchPricingRules]);
 
@@ -68,7 +69,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
         time_slots: data.time_slots,
       });
       toast.success("Thêm khung giờ thành công.");
-      await fetchPricingRules(subfieldId, date.getDay(), true);
+      await fetchPricingRules(subfieldId, getVnDayOfWeek(date), true);
     } catch (error: unknown) {
       throw error;
     }
@@ -78,7 +79,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
     if (!subfieldId || !editingRule) return;
     try {
       const timeSlot = data.time_slots[0];
-      await updatePricingRule(editingRule.id, subfieldId, date.getDay(), {
+      await updatePricingRule(editingRule.id, subfieldId, getVnDayOfWeek(date), {
         start_time: timeSlot.start_time,
         end_time: timeSlot.end_time,
         base_price: timeSlot.base_price,
@@ -93,7 +94,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
   const handleDeletePricingRule = async () => {
     if (!subfieldId || !deletingRule) return;
     try {
-      await deletePricingRule(deletingRule.id, subfieldId, date.getDay());
+      await deletePricingRule(deletingRule.id, subfieldId, getVnDayOfWeek(date));
       toast.success("Xóa khung giờ thành công.");
       setDeletingRule(null);
       setSelectedRuleIds(selectedRuleIds.filter((ruleId) => ruleId !== deletingRule.id));
@@ -105,7 +106,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
   const handleBulkDelete = async () => {
     if (!subfieldId || selectedRuleIds.length === 0) return;
     try {
-      await bulkDeletePricingRules(selectedRuleIds, subfieldId, date.getDay());
+      await bulkDeletePricingRules(selectedRuleIds, subfieldId, getVnDayOfWeek(date));
       toast.success("Xóa các khung giờ đã chọn thành công.");
       setSelectedRuleIds([]);
     } catch (error: unknown) {
@@ -115,7 +116,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
 
   const handleCopyPricing = async (targetDays: number[]) => {
     if (!subfieldId) return;
-    const sourceDay = date.getDay();
+    const sourceDay = getVnDayOfWeek(date);
     const filteredTargetDays = targetDays.filter((day) => day !== sourceDay);
 
     if (filteredTargetDays.length === 0) {
@@ -166,7 +167,7 @@ export function SubFieldPricingConsole({ subfieldId }: SubFieldPricingConsolePro
     return rules;
   }, [pricingRules, sortBy, sortOrder]);
 
-  const dayOfWeek = date.getDay();
+  const dayOfWeek = getVnDayOfWeek(date);
   const currentDayLabel = WEEKDAYS.find((w) => w.dayOfWeek === dayOfWeek)?.full;
   const allSelected = (pricingRules ?? []).length > 0 && selectedRuleIds.length === (pricingRules ?? []).length;
 

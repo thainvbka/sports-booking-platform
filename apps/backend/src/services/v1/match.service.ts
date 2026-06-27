@@ -931,12 +931,17 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
     }),
   ]);
 
-  const total =
-    query.type === "created"
-      ? createdCount
-      : query.type === "joined"
-        ? joinedCount
-        : pendingCount;
+  let total: number;
+  if (query.type === "created") {
+    total = createdCount;
+  } else if (query.type === "joined") {
+    total = joinedCount;
+  } else if (query.type === "pending") {
+    total = pendingCount;
+  } else {
+    // No type filter — count all matches matching the actual where clause
+    total = await prisma.match.count({ where });
+  }
 
   return {
     items: matches.map((match) => ({
@@ -1564,104 +1569,94 @@ export const cancelMatch = async (creatorId: string, matchId: string) => {
 export const syncMatchStatusesByTime = async () => {
   const now = new Date();
 
-  // 1. Transition ended matches (FULL or CLOSED) to COMPLETED
-  await prisma.match.updateMany({
+  // 1. Collect IDs of FULL/CLOSED matches whose booking has ended → COMPLETED
+  const endedMatches = await prisma.match.findMany({
     where: {
-      status: {
-        in: [MatchStatus.FULL, MatchStatus.CLOSED],
-      },
-      booking: {
-        end_time: {
-          lte: now,
-        },
-      },
+      status: { in: [MatchStatus.FULL, MatchStatus.CLOSED] },
+      booking: { end_time: { lte: now } },
     },
-    data: {
-      status: MatchStatus.COMPLETED,
-      version: {
-        increment: 1,
-      },
-    },
+    select: { id: true },
   });
 
-  // 2. Transition OPEN matches with NO accepted participants (slots_filled === 0) to EXPIRED
-  await prisma.match.updateMany({
+  if (endedMatches.length > 0) {
+    await prisma.match.updateMany({
+      where: { id: { in: endedMatches.map((m) => m.id) } },
+      data: { status: MatchStatus.COMPLETED, version: { increment: 1 } },
+    });
+    for (const m of endedMatches) {
+      await invalidateMatchCaches(m.id);
+    }
+  }
+
+  // 2. Collect IDs of OPEN matches with no participants (slots_filled === 0) → EXPIRED
+  const expiredMatches = await prisma.match.findMany({
     where: {
       status: MatchStatus.OPEN,
       slots_filled: 0,
       OR: [
-        {
-          join_deadline: {
-            lt: now,
-          },
-        },
-        {
-          booking: {
-            start_time: {
-              lte: now,
-            },
-          },
-        },
+        { join_deadline: { lt: now } },
+        { booking: { start_time: { lte: now } } },
       ],
     },
-    data: {
-      status: MatchStatus.EXPIRED,
-      version: {
-        increment: 1,
-      },
-    },
+    select: { id: true },
   });
 
-  // 3. Transition OPEN matches WITH accepted participants (slots_filled > 0) to CLOSED
-  await prisma.match.updateMany({
+  if (expiredMatches.length > 0) {
+    await prisma.match.updateMany({
+      where: { id: { in: expiredMatches.map((m) => m.id) } },
+      data: { status: MatchStatus.EXPIRED, version: { increment: 1 } },
+    });
+    for (const m of expiredMatches) {
+      await invalidateMatchCaches(m.id);
+    }
+  }
+
+  // 3. Collect IDs of OPEN matches WITH participants (slots_filled > 0) → CLOSED
+  const closedMatches = await prisma.match.findMany({
     where: {
       status: MatchStatus.OPEN,
-      slots_filled: {
-        gt: 0,
-      },
+      slots_filled: { gt: 0 },
       OR: [
-        {
-          join_deadline: {
-            lt: now,
-          },
-        },
-        {
-          booking: {
-            start_time: {
-              lte: now,
-            },
-          },
-        },
+        { join_deadline: { lt: now } },
+        { booking: { start_time: { lte: now } } },
       ],
     },
-    data: {
-      status: MatchStatus.CLOSED,
-      version: {
-        increment: 1,
-      },
-    },
+    select: { id: true },
   });
 
-  await invalidateMatchCaches();
+  if (closedMatches.length > 0) {
+    await prisma.match.updateMany({
+      where: { id: { in: closedMatches.map((m) => m.id) } },
+      data: { status: MatchStatus.CLOSED, version: { increment: 1 } },
+    });
+    for (const m of closedMatches) {
+      await invalidateMatchCaches(m.id);
+    }
+  }
+
+  // Always invalidate the list cache even if nothing changed
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.MATCHES_LIST);
 };
 
 export const cancelMatchesByCanceledBookings = async () => {
-  await prisma.match.updateMany({
+  // Collect IDs before updating so we can invalidate their detail caches
+  const matchesToCancel = await prisma.match.findMany({
     where: {
-      status: {
-        not: MatchStatus.CANCELED,
-      },
-      booking: {
-        status: BookingStatus.CANCELED,
-      },
+      status: { not: MatchStatus.CANCELED },
+      booking: { status: BookingStatus.CANCELED },
     },
-    data: {
-      status: MatchStatus.CANCELED,
-      version: {
-        increment: 1,
-      },
-    },
+    select: { id: true },
   });
 
-  await invalidateMatchCaches();
+  if (matchesToCancel.length > 0) {
+    await prisma.match.updateMany({
+      where: { id: { in: matchesToCancel.map((m) => m.id) } },
+      data: { status: MatchStatus.CANCELED, version: { increment: 1 } },
+    });
+    for (const m of matchesToCancel) {
+      await invalidateMatchCaches(m.id);
+    }
+  }
+
+  await cacheHelper.delByPattern(CACHE_KEYS.PATTERNS.MATCHES_LIST);
 };

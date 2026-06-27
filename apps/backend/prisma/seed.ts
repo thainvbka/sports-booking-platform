@@ -1117,19 +1117,34 @@ async function tryCreateBooking(args: {
       },
     });
     paymentId = payment.id;
-  } else if (status === BookingStatus.CANCELED && rand() < 0.25) {
-    // 25% đơn huỷ có refund (đã thanh toán rồi mới huỷ)
+  } else if (status === BookingStatus.PENDING) {
+    // Giả lập giao dịch đang chờ thanh toán
     const provider = weightedPick(PROVIDERS, PROVIDER_WEIGHTS);
     const payment = await prisma.payment.create({
       data: {
         amount: finalTotal,
         provider,
         transaction_code: nextTxn(provider),
-        status: PaymentStatus.REFUNDED,
+        status: PaymentStatus.PENDING,
         created_at: createdAt,
       },
     });
     paymentId = payment.id;
+  } else if (status === BookingStatus.CANCELED) {
+    if (rand() < 0.45) {
+      // 45% đơn huỷ có bản ghi giao dịch FAILED (hết hạn hoặc huỷ thanh toán tại gateway)
+      const provider = weightedPick(PROVIDERS, PROVIDER_WEIGHTS);
+      const payment = await prisma.payment.create({
+        data: {
+          amount: finalTotal,
+          provider,
+          transaction_code: nextTxn(provider),
+          status: PaymentStatus.FAILED,
+          created_at: createdAt,
+        },
+      });
+      paymentId = payment.id;
+    }
   }
 
   await prisma.booking.update({

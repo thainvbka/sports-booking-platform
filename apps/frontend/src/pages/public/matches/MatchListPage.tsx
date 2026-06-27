@@ -1,10 +1,10 @@
 import { MatchCard } from "@/components/shared/matches/MatchCard";
 import { MatchCardSkeletonGrid } from "@/components/shared/matches/MatchCardSkeleton";
-import { MatchListHero } from "@/components/shared/matches/MatchListHero";
 import {
   MatchFilters,
   type MatchFiltersValue,
 } from "@/components/shared/matches/MatchFilters";
+import { MatchListHero } from "@/components/shared/matches/MatchListHero";
 import { EmptyState } from "@/components/shared/ui-utility/EmptyState";
 import { PaginationBar } from "@/components/shared/ui-utility/PaginationBar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -21,7 +21,7 @@ import { CircleAlert } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 interface MatchFilterValues {
   q: string;
   sport_type?: MatchSportType;

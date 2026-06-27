@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { WEEKDAYS } from "@/constants";
 import { Copy } from "lucide-react";
+import { getVnDayOfWeek } from "@/utils/time.util";
 
 interface CopyPricingDropdownProps {
   date: Date;
@@ -26,7 +27,7 @@ export function CopyPricingDropdown({
   onCopy,
   isLoading,
 }: CopyPricingDropdownProps) {
-  const currentDayOfWeek = date.getDay();
+  const currentDayOfWeek = getVnDayOfWeek(date);
 
   return (
     <DropdownMenu onOpenChange={(open) => { if (open) setCopyTargetDays([]); }}>

@@ -129,13 +129,28 @@ export function useBookingTimePricing({
         return;
       }
 
+      const defaultStart = timeOptions[0];
+
       setCustomStartTimeState((prev) =>
-        prev && timeOptions.includes(prev) ? prev : timeOptions[0],
+        prev && timeOptions.includes(prev) ? prev : defaultStart,
       );
 
       setCustomEndTimeState((prev) => {
         if (prev && timeOptions.includes(prev)) return prev;
-        return timeOptions[1];
+        // Find the first valid end time after the chosen start within any rule
+        const startMin = toMinutes(defaultStart);
+        const firstValidEnd = timeOptions.find((t) => {
+          const tMin = toMinutes(t);
+          if (tMin <= startMin) return false;
+          // Must be a boundary (end_time) of some rule that covers defaultStart
+          return availableRules.some((rule) => {
+            const rStart = parseRuleTimeToMinutes(rule.start_time);
+            const rEnd = parseRuleTimeToMinutes(rule.end_time);
+            if (rStart === null || rEnd === null) return false;
+            return rEnd === tMin && startMin >= rStart;
+          });
+        });
+        return firstValidEnd ?? timeOptions[1] ?? "";
       });
 
       return;

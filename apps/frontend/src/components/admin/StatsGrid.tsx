@@ -77,9 +77,16 @@ const ACCENT: Record<
 };
 
 export function StatsGrid({ items }: StatsGridProps) {
+  const columnClass =
+    items.length === 5
+      ? "lg:grid-cols-5"
+      : items.length === 3
+        ? "lg:grid-cols-3"
+        : "lg:grid-cols-4";
+
   return (
     <div className="overflow-hidden rounded-xl border border-border/60 bg-card">
-      <div className="grid grid-cols-2 lg:grid-cols-4">
+      <div className={cn("grid grid-cols-2", columnClass)}>
         {items.map((item, idx) => {
           const Icon = item.icon;
           const tone = ACCENT[item.color ?? "slate"];

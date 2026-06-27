@@ -130,12 +130,14 @@ export const PAYOUT_STATUS_COLORS: Record<string, string> = {
 
 // Payment Statuses
 export const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Chờ xử lý",
   SUCCESS: "Thành công",
   FAILED: "Thất bại",
   REFUNDED: "Đã hoàn tiền",
 };
 
 export const PAYMENT_STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300",
   SUCCESS: "bg-green-100 text-green-800 dark:bg-emerald-500/15 dark:text-emerald-300",
   FAILED: "bg-red-100 text-red-800 dark:bg-rose-500/15 dark:text-rose-300",
   REFUNDED: "bg-blue-100 text-blue-800 dark:bg-sky-500/15 dark:text-sky-300",
