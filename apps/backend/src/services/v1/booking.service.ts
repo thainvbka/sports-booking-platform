@@ -93,6 +93,9 @@ export const createBooking = async (
       },
     });
 
+    let isUpdatingExisting = false;
+    let existingBookingId: string | null = null;
+
     if (overlappingBooking) {
       if (overlappingBooking.player_id === player_id) {
         if (
@@ -104,51 +107,37 @@ export const createBooking = async (
           );
         }
 
-        // PENDING và CHÍNH XÁC cùng thời gian → Gia hạn
+        // PENDING và CHÍNH XÁC cùng thời gian → Gia hạn & Cập nhật Addons
         if (
           overlappingBooking.start_time.getTime() ===
             new Date(data.start_time).getTime() &&
           overlappingBooking.end_time.getTime() ===
             new Date(data.end_time).getTime()
         ) {
-          const updatedBooking = await tx.booking.update({
-            where: { id: overlappingBooking.id },
-            data: {
-              expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
-            },
-            include: {
-              booking_addons: {
-                include: {
-                  product: {
-                    select: {
-                      name: true,
-                      image: true,
-                    },
-                  },
-                },
-              },
-            },
+          isUpdatingExisting = true;
+          existingBookingId = overlappingBooking.id;
+
+          // 2a. Khôi phục tồn kho cho các addon cũ của booking này trước khi tính toán lại
+          await restoreAddonStockForBooking(tx, existingBookingId);
+          
+          // 2b. Xóa các record bookingAddon cũ
+          await tx.bookingAddon.deleteMany({
+            where: { booking_id: existingBookingId },
           });
-
-          return {
-            message:
-              "Đã tiếp tục phiên đặt sân trước đó! Vui lòng kiểm tra lại thông tin.",
-            booking: updatedBooking,
-          };
+        } else {
+          throw new BadRequestError(
+            "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
+          );
         }
-
+      } else {
         throw new BadRequestError(
-          "Bạn đã đặt một khung giờ khác trùng với khung giờ này. Vui lòng kiểm tra lại lịch đặt sân.",
+          `Đã có người đặt khoảng thời gian từ ${formatVietnamTime(
+            overlappingBooking.start_time,
+          )} đến ${formatVietnamTime(
+            overlappingBooking.end_time,
+          )} trên sân này. Vui lòng chọn khung giờ khác.`,
         );
       }
-
-      throw new BadRequestError(
-        `Đã có người đặt khoảng thời gian từ ${formatVietnamTime(
-          overlappingBooking.start_time,
-        )} đến ${formatVietnamTime(
-          overlappingBooking.end_time,
-        )} trên sân này. Vui lòng chọn khung giờ khác.`,
-      );
     }
 
     const productIds = normalizedAddons.map((item) => item.product_id);
@@ -201,17 +190,34 @@ export const createBooking = async (
       return sum + Number(product.price) * addon.quantity;
     }, 0);
 
-    const createdBooking = await tx.booking.create({
-      data: {
-        player_id,
-        sub_field_id,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        total_price: totalPrice + addonSubtotal,
-        status: "PENDING",
-        expires_at: new Date(Date.now() + BOOKING_TIMEOUT.INITIAL),
-      },
-    });
+    const targetTotalPrice = totalPrice + addonSubtotal;
+    const targetExpiresAt = new Date(Date.now() + BOOKING_TIMEOUT.INITIAL);
+    let targetBookingId: string;
+
+    if (isUpdatingExisting && existingBookingId) {
+      const updatedBooking = await tx.booking.update({
+        where: { id: existingBookingId },
+        data: {
+          total_price: targetTotalPrice,
+          expires_at: targetExpiresAt,
+          payment_id: null, // Reset payment link cũ do số tiền/addon thay đổi
+        },
+      });
+      targetBookingId = updatedBooking.id;
+    } else {
+      const createdBooking = await tx.booking.create({
+        data: {
+          player_id,
+          sub_field_id,
+          start_time: data.start_time,
+          end_time: data.end_time,
+          total_price: targetTotalPrice,
+          status: "PENDING",
+          expires_at: targetExpiresAt,
+        },
+      });
+      targetBookingId = createdBooking.id;
+    }
 
     for (const addon of normalizedAddons) {
       const updated = await tx.product.updateMany({
@@ -240,7 +246,7 @@ export const createBooking = async (
     if (normalizedAddons.length > 0) {
       await tx.bookingAddon.createMany({
         data: normalizedAddons.map((addon) => ({
-          booking_id: createdBooking.id,
+          booking_id: targetBookingId,
           product_id: addon.product_id,
           quantity: addon.quantity,
           unit_price: productMap.get(addon.product_id)!.price,
@@ -248,8 +254,8 @@ export const createBooking = async (
       });
     }
 
-    const createdWithAddons = await tx.booking.findUnique({
-      where: { id: createdBooking.id },
+    const finalBooking = await tx.booking.findUnique({
+      where: { id: targetBookingId },
       include: {
         booking_addons: {
           include: {
@@ -264,13 +270,15 @@ export const createBooking = async (
       },
     });
 
-    if (!createdWithAddons) {
-      throw new NotFoundError("Booking not found after creation");
+    if (!finalBooking) {
+      throw new NotFoundError("Booking not found after creation/update");
     }
 
     return {
-      message: "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
-      booking: createdWithAddons,
+      message: isUpdatingExisting
+        ? "Đã tiếp tục phiên đặt sân trước đó và cập nhật danh sách dịch vụ đi kèm!"
+        : "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
+      booking: finalBooking,
     };
   });
 
