@@ -20,6 +20,7 @@ import { Check, Clock3, Phone, X } from "lucide-react";
 interface ParticipantListProps {
   participants: Participant[];
   isLoading?: boolean;
+  isActionLoading?: boolean;
   canModerate?: boolean;
   onAccept?: (participantId: string) => void;
   onReject?: (participantId: string) => void;
@@ -41,12 +42,13 @@ const formatDateTime = (value: string | null) => {
 export function ParticipantList({
   participants,
   isLoading,
+  isActionLoading,
   canModerate,
   onAccept,
   onReject,
   matchStatus,
 }: ParticipantListProps) {
-  if (isLoading) {
+  if (isLoading && participants.length === 0) {
     return (
       <LoadingState text="Đang tải danh sách thành viên..." className="py-8" />
     );
@@ -192,7 +194,7 @@ export function ParticipantList({
                           size="sm"
                           variant="outline"
                           onClick={() => onReject?.(participant.id)}
-                          disabled={!canHandleReject}
+                          disabled={!canHandleReject || isActionLoading}
                           className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-700/50 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                         >
                           <X data-icon="inline-start" />
@@ -201,7 +203,7 @@ export function ParticipantList({
                         <Button
                           size="sm"
                           onClick={() => onAccept?.(participant.id)}
-                          disabled={!canHandleAccept}
+                          disabled={!canHandleAccept || isActionLoading}
                         >
                           <Check data-icon="inline-start" />
                           Duyệt

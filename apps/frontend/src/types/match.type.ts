@@ -252,6 +252,17 @@ export interface PaginatedResult<T> {
   pagination: Pagination;
 }
 
+export interface PublicMatchesSummary {
+  total: number;
+  open: number;
+  almostFull: number;
+  totalSlotsLeft: number;
+}
+
+export interface PublicMatchesPaginatedResult<T> extends PaginatedResult<T> {
+  summary: PublicMatchesSummary;
+}
+
 export interface MyMatchesSummary {
   created: number;
   joined: number;

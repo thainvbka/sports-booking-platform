@@ -36,7 +36,7 @@ const VALID_MATCH_SORT = new Set(["created_at:desc", "start_time:asc", "start_ti
 export function MatchListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuthStore();
-  const { matches, pagination, isLoading, error, fetchPublicMatches } =
+  const { matches, pagination, isLoading, error, publicMatchesSummary, fetchPublicMatches } =
     useMatchStore();
 
   const appliedFilters = useMemo<MatchFilterValues>(() => {
@@ -90,11 +90,11 @@ export function MatchListPage() {
   const hasData = matches.length > 0;
   const isPlayer = Boolean(user?.roles.includes("PLAYER"));
 
-  const openCount = useMemo(() => matches.filter((m) => m.status === "OPEN").length, [matches]);
-  const almostFullCount = useMemo(() => matches.filter((m) => m.slots_left > 0 && m.slots_left <= 2).length, [matches]);
-  const totalSlotsLeft = useMemo(() => matches.reduce((s, m) => s + m.slots_left, 0), [matches]);
+  const openCount = publicMatchesSummary?.open ?? 0;
+  const almostFullCount = publicMatchesSummary?.almostFull ?? 0;
+  const totalSlotsLeft = publicMatchesSummary?.totalSlotsLeft ?? 0;
 
-  const total = pagination?.total_items ?? matches.length;
+  const total = publicMatchesSummary?.total ?? pagination?.total_items ?? matches.length;
   const currentPage = pagination?.page ?? page;
   const totalPages = Math.max(pagination?.total_pages ?? 1, 1);
 
@@ -176,10 +176,7 @@ export function MatchListPage() {
           )}
 
           {hasData && (
-            <div
-              key={`matches-grid-${currentPage}-${appliedFilters.q}-${appliedFilters.sport_type}-${appliedFilters.status}-${appliedFilters.sort}-${matches.map((m) => m.id).join(",")}`}
-              className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 motion-safe-stagger"
-            >
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 motion-safe-stagger">
               {matches.map((match) => (
                 <MatchCard key={match.id} match={match} isPlayer={isPlayer} />
               ))}

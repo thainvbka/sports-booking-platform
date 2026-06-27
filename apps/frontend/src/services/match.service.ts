@@ -16,6 +16,7 @@ import type {
   Pagination,
   Participant,
   ParticipantStatus,
+  PublicMatchesPaginatedResult,
   SkillLevel,
   SportType,
 } from "@/types/match.type";
@@ -247,8 +248,8 @@ const toParticipant = (
 
 export const getPublicMatches = async (
   query: PublicMatchesQuery = {},
-): Promise<PaginatedResult<Match>> => {
-  const response = await api.get<ApiResponse<PaginatedResult<Match>>>(
+): Promise<PublicMatchesPaginatedResult<Match>> => {
+  const response = await api.get<ApiResponse<PublicMatchesPaginatedResult<Match>>>(
     "/public/matches",
     {
       params: query,

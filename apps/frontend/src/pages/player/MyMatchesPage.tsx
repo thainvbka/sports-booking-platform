@@ -96,10 +96,7 @@ export function MyMatchesPage() {
           ) : null}
 
           {matches.length > 0 ? (
-            <div
-              key={`my-matches-grid-${type}-${status}-${page}-${matches.map((m) => m.id).join(",")}`}
-              className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 motion-safe-stagger"
-            >
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 motion-safe-stagger">
               {matches.map((match) => (
                 <MyMatchGridItem
                   key={match.id}

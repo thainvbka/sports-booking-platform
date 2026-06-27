@@ -28,6 +28,7 @@ export function MatchDetailPage() {
     participantsPagination,
     isLoading,
     isLoadingDetail,
+    isLoadingParticipants,
     fetchMatchById,
     fetchParticipants,
     joinMatch,
@@ -37,6 +38,7 @@ export function MatchDetailPage() {
     closeMatch,
     reopenMatch,
     cancelMatch,
+    clearMatchDetail,
   } = useMatchStore();
 
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -50,7 +52,11 @@ export function MatchDetailPage() {
   useEffect(() => {
     if (!id) return;
     void fetchMatchById(id, detailScope);
-  }, [id, detailScope, fetchMatchById]);
+
+    return () => {
+      clearMatchDetail();
+    };
+  }, [id, detailScope, fetchMatchById, clearMatchDetail]);
 
   const isCreator = useMemo(() => {
     if (!currentMatch || !playerId || currentMatch.id !== id) return false;
@@ -64,10 +70,13 @@ export function MatchDetailPage() {
 
   const refreshCurrentMatch = useCallback(async () => {
     if (!id) return;
-    await fetchMatchById(id, detailScope);
+    const promises: Promise<void>[] = [fetchMatchById(id, detailScope)];
     if (isCreator) {
-      await fetchParticipants(id, { page: participantPage, limit: PARTICIPANTS_PAGE_SIZE });
+      promises.push(
+        fetchParticipants(id, { page: participantPage, limit: PARTICIPANTS_PAGE_SIZE }),
+      );
     }
+    await Promise.all(promises);
   }, [id, fetchMatchById, detailScope, isCreator, fetchParticipants, participantPage]);
 
   useEffect(() => {
@@ -233,6 +242,7 @@ export function MatchDetailPage() {
             slotsNeeded={slotsNeeded}
             participants={participants}
             isLoading={isLoading}
+            isLoadingParticipants={isLoadingParticipants}
             onAccept={handleAccept}
             onReject={handleReject}
             onClose={handleClose}

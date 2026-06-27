@@ -26,6 +26,7 @@ import type {
   MyMatchesSummary,
   Pagination,
   Participant,
+  PublicMatchesSummary,
 } from "@/types/match.type";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -36,6 +37,7 @@ interface MatchStoreState {
   isLoading: boolean;
   error: string | null;
   myMatchesSummary: MyMatchesSummary | null;
+  publicMatchesSummary: PublicMatchesSummary | null;
 
   currentMatch: MatchDetail | null;
   isLoadingDetail: boolean;
@@ -43,6 +45,7 @@ interface MatchStoreState {
   participants: Participant[];
   participantsMatch: MatchParticipantsSummary | null;
   participantsPagination: Pagination | null;
+  isLoadingParticipants: boolean;
 
   fetchPublicMatches: (query?: PublicMatchesQuery) => Promise<void>;
   fetchMatchById: (id: string, scope?: "public" | "player") => Promise<void>;
@@ -64,6 +67,7 @@ interface MatchStoreState {
   reopenMatch: (id: string) => Promise<Match | null>;
   cancelMatch: (id: string) => Promise<Match | null>;
 
+  clearMatchDetail: () => void;
   reset: () => void;
 }
 
@@ -73,11 +77,13 @@ const INITIAL_STATE = {
   isLoading: false,
   error: null as string | null,
   myMatchesSummary: null as MyMatchesSummary | null,
+  publicMatchesSummary: null as PublicMatchesSummary | null,
   currentMatch: null as MatchDetail | null,
   isLoadingDetail: false,
   participants: [] as Participant[],
   participantsMatch: null as MatchParticipantsSummary | null,
   participantsPagination: null as Pagination | null,
+  isLoadingParticipants: false,
 };
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
@@ -169,6 +175,7 @@ export const useMatchStore = create<MatchStoreState>()(
         set((state) => {
           state.matches = result.items;
           state.pagination = result.pagination;
+          state.publicMatchesSummary = result.summary;
           state.isLoading = false;
         });
       } catch (error) {
@@ -234,7 +241,7 @@ export const useMatchStore = create<MatchStoreState>()(
 
     fetchParticipants: async (id, query = {}) => {
       set((state) => {
-        state.isLoading = true;
+        state.isLoadingParticipants = true;
         state.error = null;
       });
 
@@ -245,7 +252,7 @@ export const useMatchStore = create<MatchStoreState>()(
           state.participantsMatch = result.match;
           state.participants = result.items;
           state.participantsPagination = result.pagination;
-          state.isLoading = false;
+          state.isLoadingParticipants = false;
         });
       } catch (error) {
         set((state) => {
@@ -253,7 +260,7 @@ export const useMatchStore = create<MatchStoreState>()(
             error,
             "Khong the tai danh sach nguoi tham gia",
           );
-          state.isLoading = false;
+          state.isLoadingParticipants = false;
         });
       }
     },
@@ -634,6 +641,15 @@ export const useMatchStore = create<MatchStoreState>()(
       }
     },
 
+    clearMatchDetail: () => {
+      set((state) => {
+        state.currentMatch = null;
+        state.participants = [];
+        state.participantsMatch = null;
+        state.participantsPagination = null;
+      });
+    },
+
     reset: () => {
       set((state) => {
         state.matches = [];
@@ -641,11 +657,13 @@ export const useMatchStore = create<MatchStoreState>()(
         state.isLoading = false;
         state.error = null;
         state.myMatchesSummary = null;
+        state.publicMatchesSummary = null;
         state.currentMatch = null;
         state.isLoadingDetail = false;
         state.participants = [];
         state.participantsMatch = null;
         state.participantsPagination = null;
+        state.isLoadingParticipants = false;
       });
     },
   })),

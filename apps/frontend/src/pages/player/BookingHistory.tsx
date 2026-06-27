@@ -83,10 +83,7 @@ export function PlayerBookingsPage() {
           ) : bookings.length === 0 ? (
             <EmptyLedger />
           ) : (
-            <div
-              key={`bookings-grid-${selectedStatus}-${page}-${bookings.map((b) => b.id).join(",")}`}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-max motion-safe-stagger"
-            >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-max motion-safe-stagger">
               {bookings.map((booking) => (
                 <BookingCard
                   key={`${booking.type}-${booking.id}`}

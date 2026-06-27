@@ -415,7 +415,7 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
   const where = buildPublicMatchWhere(query);
   const orderBy = parseMatchSort(query.sort);
 
-  const [total, matches] = await prisma.$transaction([
+  const [total, matches, allMatchesStats] = await prisma.$transaction([
     prisma.match.count({ where }),
     prisma.match.findMany({
       where,
@@ -424,7 +424,30 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
       take: limit,
       select: matchListSelect,
     }),
+    prisma.match.findMany({
+      where,
+      select: {
+        status: true,
+        slots_needed: true,
+        slots_filled: true,
+      },
+    }),
   ]);
+
+  let openCount = 0;
+  let almostFullCount = 0;
+  let totalSlotsLeft = 0;
+
+  for (const m of allMatchesStats) {
+    const slotsLeft = Math.max(m.slots_needed - m.slots_filled, 0);
+    if (m.status === "OPEN") {
+      openCount++;
+    }
+    if (slotsLeft > 0 && slotsLeft <= 2) {
+      almostFullCount++;
+    }
+    totalSlotsLeft += slotsLeft;
+  }
 
   const result = {
     items: matches.map(mapMatchListItem),
@@ -434,6 +457,12 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
       total_items: total,
       total_pages: Math.ceil(total / limit),
       has_next: page * limit < total,
+    },
+    summary: {
+      total,
+      open: openCount,
+      almostFull: almostFullCount,
+      totalSlotsLeft,
     },
   };
 

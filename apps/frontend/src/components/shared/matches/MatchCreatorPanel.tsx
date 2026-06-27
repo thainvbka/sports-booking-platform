@@ -69,6 +69,7 @@ export interface MatchCreatorPanelProps {
   slotsNeeded: number;
   participants: Participant[];
   isLoading: boolean;
+  isLoadingParticipants?: boolean;
   onAccept: (participantId: string) => void;
   onReject: (participantId: string) => void;
   onClose: () => void;
@@ -87,6 +88,7 @@ export function MatchCreatorPanel({
   slotsNeeded,
   participants,
   isLoading,
+  isLoadingParticipants,
   onAccept,
   onReject,
   onClose,
@@ -183,7 +185,8 @@ export function MatchCreatorPanel({
 
         <ParticipantList
           participants={participants}
-          isLoading={isLoading}
+          isLoading={isLoadingParticipants}
+          isActionLoading={isLoading}
           canModerate
           onAccept={onAccept}
           onReject={onReject}
