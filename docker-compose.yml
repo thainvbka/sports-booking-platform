@@ -11,6 +11,11 @@ services:
       - ./.env
     networks:
       - my-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # --- REDIS CACHE ---
   redis:
@@ -23,15 +28,20 @@ services:
     command: redis-server --save 60 1 --loglevel warning
     networks:
       - my-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # ---  BACKEND ---
-  backend:
+  # ---  BACKEND 1 ---
+  backend-1:
     build:
       context: ./apps/backend
       dockerfile: Dockerfile.dev
-    container_name: sports-booking-backend
+    container_name: sports-booking-backend-1
     ports:
-      - "${SERVER_PORT:-3000}:3000"
+      - "3001:3000"
       - "${PRISMA_STUDIO_PORT:-5555}:5555"
     volumes:
       # Bind mount host backend folder to enable hot-reloading
@@ -44,9 +54,56 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}?schema=public
       REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
+      CORS_ORIGIN: http://localhost,http://localhost:${CLIENT_PORT:-5173}
+      CLIENT_URL: http://localhost:${CLIENT_PORT:-5173}
     depends_on:
-      - postgres-db
-      - redis
+      postgres-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  # ---  BACKEND 2 ---
+  backend-2:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile.dev
+    container_name: sports-booking-backend-2
+    ports:
+      - "3002:3000"
+    volumes:
+      # Bind mount host backend folder to enable hot-reloading
+      - ./apps/backend:/app
+      - /app/node_modules
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      # Override DB and Redis hosts to use Docker container service names
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
+      CORS_ORIGIN: http://localhost,http://localhost:${CLIENT_PORT:-5173}
+      CLIENT_URL: http://localhost:${CLIENT_PORT:-5173}
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  # --- LOCAL LOAD BALANCER / GATEWAY ---
+  nginx-dev:
+    image: nginx:alpine
+    container_name: sports-booking-nginx-dev
+    ports:
+      - "${SERVER_PORT:-3000}:3000"
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend-1
+      - backend-2
     networks:
       - my-network
 
