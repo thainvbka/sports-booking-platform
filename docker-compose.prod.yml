@@ -28,14 +28,14 @@ services:
   redis:
     image: redis:7-alpine
     container_name: sports-booking-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:-sports_booking_redis_secure_pass} --save 60 1 --loglevel warning
+    command: redis-server --requirepass ${REDIS_PASSWORD} --save 60 1 --loglevel warning
     restart: unless-stopped
     volumes:
       - redis-data:/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-sports_booking_redis_secure_pass}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,7 +54,7 @@ services:
       NODE_ENV: production
       # Force DB and Redis hosts to map to their production service containers
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD:-sports_booking_redis_secure_pass}@redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       REDIS_HOST: redis
     depends_on:
       postgres-db:
@@ -108,7 +108,7 @@ services:
       - "9999:8080"
     environment:
       DOZZLE_USERNAME: ${DOZZLE_USERNAME:-admin}
-      DOZZLE_PASSWORD: ${DOZZLE_PASSWORD:-sports_booking_log_password_secure}
+      DOZZLE_PASSWORD: ${DOZZLE_PASSWORD}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
