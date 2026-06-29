@@ -176,6 +176,9 @@ jobs:
             echo "::::: Starting and recreating frontend service (Nginx) to refresh load balancer upstreams..."
             docker compose -f docker-compose.prod.yml --env-file .env.production up -d --force-recreate frontend
             
+            echo "::::: Starting log viewer service (Dozzle)..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d dozzle
+            
             echo "::::: Running final health checks..."
             docker compose -f docker-compose.prod.yml --env-file .env.production ps
             

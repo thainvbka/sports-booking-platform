@@ -100,6 +100,21 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ---  DOZZLE LOG VIEWER (Production) ---
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: sports-booking-log-viewer
+    ports:
+      - "9999:8080"
+    environment:
+      DOZZLE_USERNAME: ${DOZZLE_USERNAME:-admin}
+      DOZZLE_PASSWORD: ${DOZZLE_PASSWORD:-sports_booking_log_password_secure}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - app-network
+
 volumes:
   postgres-data:
     driver: local
