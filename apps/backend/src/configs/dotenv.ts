@@ -47,6 +47,7 @@ const config = {
   VNPAY_SECURE_SECRET: process.env.VNPAY_SECURE_SECRET || "secret",
   VNPAY_HOST: process.env.VNPAY_HOST || "https://sandbox.vnpayment.vn",
   VNPAY_RETURN_URL: process.env.VNPAY_RETURN_URL || "http://localhost:5173/bookings/success",
+  PLATFORM_FEE_RATE: Number(process.env.PLATFORM_FEE_RATE) || 0.1,
 };
 
 export default config;

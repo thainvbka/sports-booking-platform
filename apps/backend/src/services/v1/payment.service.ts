@@ -22,7 +22,7 @@ import {
 import { BadRequestError, NotFoundError } from "../../utils/error.response";
 
 /** Platform fee rate, configurable via env. Default: 10% */
-const PLATFORM_FEE_RATE = Number(process.env.PLATFORM_FEE_RATE) || 0.1;
+const PLATFORM_FEE_RATE = config.PLATFORM_FEE_RATE;
 
 /**
  * Reset booking expires_at sau khi thanh toán thất bại.
