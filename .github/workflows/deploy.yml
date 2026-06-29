@@ -176,8 +176,13 @@ jobs:
             echo "::::: Starting and recreating frontend service (Nginx) to refresh load balancer upstreams..."
             docker compose -f docker-compose.prod.yml --env-file .env.production up -d --force-recreate frontend
             
+            echo "::::: Generating Dozzle users.yml from .env.production..."
+            DOZZLE_USER=$(grep -E "^DOZZLE_USERNAME=" .env.production | cut -d '=' -f2 | xargs || echo "admin")
+            DOZZLE_PASS=$(grep -E "^DOZZLE_PASSWORD=" .env.production | cut -d '=' -f2 | xargs || echo "sports_booking_log_password_secure")
+            docker run --rm amir20/dozzle generate "$DOZZLE_USER" --password "$DOZZLE_PASS" --name "Admin" > users.yml
+
             echo "::::: Starting log viewer service (Dozzle)..."
-            docker compose -f docker-compose.prod.yml --env-file .env.production up -d dozzle
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --force-recreate dozzle
             
             echo "::::: Running final health checks..."
             docker compose -f docker-compose.prod.yml --env-file .env.production ps
