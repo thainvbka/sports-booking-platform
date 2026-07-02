@@ -82,7 +82,7 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers 
 
 const hash = (p: string) => bcrypt.hashSync(p, 10);
 const rand = () => Math.random();
@@ -168,7 +168,7 @@ const nextTxn = (prefix: string): string =>
 /** Làm tròn về bội số 10.000 cho giá VNĐ */
 const roundVnd = (n: number): number => Math.round(n / 10_000) * 10_000;
 
-// ─── Lookup data ──────────────────────────────────────────────────────────────
+// Lookup data 
 
 const SPORT_TYPES = Object.values(SportType);
 
@@ -398,7 +398,7 @@ const SPORT_IMAGES: Record<SportType, Record<"complex" | "subfield" | "product",
   },
 };
 
-// ─── Pexels image fetcher ─────────────────────────────────────────────────────
+// Pexels image fetcher 
 //
 // Khi có PEXELS_API_KEY trong .env, seed sẽ fetch ảnh thực tế theo từng môn +
 // loại (complex / subfield / product), cache trong process và pick xoay vòng
@@ -593,7 +593,7 @@ const CLOSE_REASONS = [
   "Thời tiết xấu",
 ];
 
-// ─── Internal types ───────────────────────────────────────────────────────────
+// Internal types 
 
 interface PlayerInfo {
   id: string;
@@ -616,7 +616,7 @@ interface ProductInfo {
   type: ProductType;
 }
 
-// ─── Slot conflict tracking ──────────────────────────────────────────────────
+// Slot conflict tracking 
 
 const subfieldSlots = new Map<string, Set<string>>();
 const playerSlots = new Map<string, Set<string>>();
@@ -642,7 +642,7 @@ const occupySlot = (sfId: string, plId: string, key: string): void => {
   p.add(key);
 };
 
-// ─── Pricing helpers ─────────────────────────────────────────────────────────
+// Pricing helpers 
 
 const computeFieldPrice = (sport: SportType, startH: number, isWeekend: boolean): number => {
   const [pMin, pMax] = PRICE_RANGE[sport];
@@ -652,7 +652,7 @@ const computeFieldPrice = (sport: SportType, startH: number, isWeekend: boolean)
   return roundVnd(base * peakMul * weekendMul);
 };
 
-// ─── 1. Accounts ─────────────────────────────────────────────────────────────
+// 1. Accounts 
 
 interface SeededOwner {
   ownerId: string;
@@ -767,7 +767,7 @@ async function seedAccounts() {
   return { owners, players };
 }
 
-// ─── 2. Complexes / SubFields / PricingRules / Products ──────────────────────
+// 2. Complexes / SubFields / PricingRules / Products 
 
 interface SeededComplex {
   complexId: string;
@@ -946,7 +946,7 @@ async function seedComplexesAndProducts(owners: SeededOwner[]) {
   return { complexes, subfields, productsByComplex };
 }
 
-// ─── 3. Bookings + Payments + Addons + Reviews ───────────────────────────────
+// 3. Bookings + Payments + Addons + Reviews 
 
 /**
  * Cố gắng đặt 1 booking trên (player, subfield) tại 1 slot ngẫu nhiên.
@@ -1269,7 +1269,7 @@ async function seedBookings(
   console.log(`     → ${totalBookings} bookings`);
 }
 
-// ─── 4. Recurring bookings ────────────────────────────────────────────────────
+// 4. Recurring bookings 
 
 async function seedRecurringBookings(
   players: PlayerInfo[],
@@ -1351,7 +1351,7 @@ async function seedRecurringBookings(
   console.log(`     → ${totalRecurring} recurring, ${totalChildren} children`);
 }
 
-// ─── 5. Matches + Participants ────────────────────────────────────────────────
+// 5. Matches + Participants 
 
 async function seedMatches(players: PlayerInfo[]) {
   console.log("  [5/9] Matches & participants...");
@@ -1591,7 +1591,7 @@ async function seedMatches(players: PlayerInfo[]) {
   console.log(`     → ${totalMatches} matches, ${totalParticipants} participants`);
 }
 
-// ─── 6. OwnerPayouts & PayoutBatches ─────────────────────────────────────────
+// 6. OwnerPayouts & PayoutBatches 
 
 async function seedOwnerPayouts() {
   console.log("  [6/9] OwnerPayouts & PayoutBatches...");
@@ -1689,7 +1689,7 @@ async function seedOwnerPayouts() {
     });
   }
 
-  // ── PayoutBatch: gom các payout cùng owner + cùng tháng + cùng status ──
+  // PayoutBatch: gom các payout cùng owner + cùng tháng + cùng status 
   let totalBatches = 0;
 
   const groupByKey = (statusFilter: PayoutStatus) => {
@@ -1793,7 +1793,7 @@ async function seedOwnerPayouts() {
   );
 }
 
-// ─── 7. Sync SubField caches ─────────────────────────────────────────────────
+// 7. Sync SubField caches 
 
 async function syncSubFieldCaches() {
   console.log("  [7/9] Sync SubField caches (avg_rating, total_reviews)...");
@@ -1824,7 +1824,7 @@ async function syncSubFieldCaches() {
   console.log(`     → ${subFields.length} sub-fields synced`);
 }
 
-// ─── 7. Sync Complex caches ──────────────────────────────────────────────────
+// 7. Sync Complex caches 
 
 async function syncComplexCaches() {
   console.log("  [8/9] Sync Complex caches (price range / sports / rating)...");
@@ -1879,7 +1879,7 @@ async function syncComplexCaches() {
   console.log(`     → ${complexes.length} complexes synced`);
 }
 
-// ─── 8. Notifications ────────────────────────────────────────────────────────
+// 8. Notifications 
 
 async function seedNotifications(players: PlayerInfo[], owners: SeededOwner[]) {
   console.log("  [9/9] Notifications...");
@@ -2058,7 +2058,7 @@ async function seedNotifications(players: PlayerInfo[], owners: SeededOwner[]) {
   console.log(`     → ${total} notifications`);
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// Main 
 
 async function cleanup() {
   console.log("Cleaning up existing data...");

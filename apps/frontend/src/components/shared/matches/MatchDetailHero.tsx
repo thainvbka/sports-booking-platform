@@ -18,7 +18,7 @@ import type { MatchCountdown } from "@/utils/match.util";
 import { CalendarClock, MapPin, Sparkles, Timer } from "lucide-react";
 import { formatMatchDateTime } from "@/utils/time.util";
 
-// ── Private: HeroMetaTile ───────────────────────────────────────────────────
+// Private: HeroMetaTile 
 function HeroMetaTile({
   icon,
   label,
@@ -46,7 +46,7 @@ function HeroMetaTile({
   );
 }
 
-// ── Public: MatchDetailHero ─────────────────────────────────────────────────
+// Public: MatchDetailHero 
 export interface MatchDetailHeroProps {
   title: string;
   description: string | null;

@@ -104,7 +104,7 @@ export function OwnerLayout() {
         collapsible="icon"
         className="border-sidebar-border"
       >
-        {/* ── Brand ─────────────────────────────────────────────── */}
+        {/*  Brand  */}
         <SidebarHeader className="gap-0 px-3 pb-2 pt-4">
           <Link
             to={isPlayer ? "/" : (isAdmin ? "/admin" : "/owner")}
@@ -128,7 +128,7 @@ export function OwnerLayout() {
           </Link>
         </SidebarHeader>
 
-        {/* ── Navigation ────────────────────────────────────────── */}
+        {/*  Navigation  */}
         <SidebarContent className="px-2">
           <SidebarGroup>
             <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden">
@@ -220,7 +220,7 @@ export function OwnerLayout() {
           </SidebarGroup>
         </SidebarContent>
 
-        {/* ── Footer · user card ────────────────────────────────── */}
+        {/*  Footer · user card  */}
         <SidebarFooter className="gap-2 border-t border-sidebar-border/60 p-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -280,7 +280,7 @@ export function OwnerLayout() {
         </SidebarFooter>
       </Sidebar>
 
-      {/* ── Main inset ──────────────────────────────────────────── */}
+      {/*  Main inset  */}
       <SidebarInset className="flex flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border/60 bg-background/80 px-3 backdrop-blur-md md:h-16 md:px-6">

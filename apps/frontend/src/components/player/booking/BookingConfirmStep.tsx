@@ -111,7 +111,7 @@ export function BookingConfirmStep({
   );
 }
 
-// ─── Small helper ─────────────────────────────────────────────────────────
+// Small helper 
 function RecapChip({
   icon: Icon,
   label,

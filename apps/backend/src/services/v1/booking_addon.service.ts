@@ -110,7 +110,6 @@ export const restoreRentalAddonStockForBookingIds = async (
 ) => {
   if (!bookingIds.length) return;
 
-  // Lấy các addon đi kèm thuộc loại RENTAL
   const rentalAddons = await tx.bookingAddon.findMany({
     where: {
       booking_id: { in: bookingIds },
@@ -126,7 +125,6 @@ export const restoreRentalAddonStockForBookingIds = async (
 
   if (!rentalAddons.length) return;
 
-  // Cộng lại stock cho các dụng cụ thuê
   await incrementProductStock(tx, rentalAddons);
 };
 

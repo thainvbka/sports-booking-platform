@@ -131,7 +131,7 @@ export default function BookingPage() {
       ? priceCalculation.totalPrice + addonSubtotal
       : priceCalculation.totalPrice;
 
-  // ─── Loading & error guards ──────────────────────────────────────────────
+  // Loading & error guards 
   if (isSubfieldLoading) {
     return (
       <div className="page-shell py-10">
@@ -186,7 +186,7 @@ export default function BookingPage() {
 
   return (
     <div className="relative">
-      {/* ── Backdrop ──────────────────────────────────────────────── */}
+      {/*  Backdrop  */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] overflow-hidden"
@@ -200,10 +200,10 @@ export default function BookingPage() {
       <div className="page-shell flex flex-col gap-6 lg:gap-8 pt-10 sm:pt-12 lg:pt-14 pb-8 motion-safe-fade-up">
         <BookingPageHero subfield={subfield} />
 
-        {/* ── Stepper ─────────────────────────────────────────────── */}
+        {/*  Stepper  */}
         <BookingStepper currentStep={displayStep} steps={stepperSteps} />
 
-        {/* ── Content grid ────────────────────────────────────────── */}
+        {/*  Content grid  */}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="overflow-hidden border-border/70 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-surface-2/50 px-5 py-4">

@@ -79,7 +79,7 @@ export function OwnerDashboardPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO & STATS ───────────────────────────────────────── */}
+      {/*  HERO & STATS  */}
       <OwnerPageHero
         variant="card"
         badge={
@@ -197,7 +197,7 @@ export function OwnerDashboardPage() {
         ]}
       />
 
-      {/* ── CHARTS ROW 1 ───────────────────────────────────────── */}
+      {/*  CHARTS ROW 1  */}
       <section className="grid gap-4 lg:grid-cols-2">
         <ChartCard
           icon={PieChartIcon}
@@ -218,7 +218,7 @@ export function OwnerDashboardPage() {
         </ChartCard>
       </section>
 
-      {/* ── CHARTS ROW 2 ───────────────────────────────────────── */}
+      {/*  CHARTS ROW 2  */}
       <section className="grid gap-4 lg:grid-cols-2">
         <ChartCard
           icon={BarChart3}

@@ -216,7 +216,7 @@ export function ContactPage() {
       </section>
 
       <div className="page-shell py-10">
-        {/* ── Main grid: channels + form ─────────────────────────── */}
+        {/*  Main grid: channels + form  */}
         <section className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] motion-safe-stagger">
           {/* LEFT column: channels + hours + FAQ */}
           <div className="flex flex-col gap-5">
@@ -446,7 +446,7 @@ export function ContactPage() {
           </Card>
         </section>
 
-        {/* ── Legal ribbon ─────────────────────────────────────────── */}
+        {/*  Legal ribbon  */}
         <section className="mt-10 rounded-3xl border border-border/70 bg-surface-2/60 p-5 sm:p-7">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
@@ -498,9 +498,9 @@ export function ContactPage() {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────── */
+/*  */
 /* FAQ item                                                         */
-/* ──────────────────────────────────────────────────────────────── */
+/*  */
 function FaqItem({
   item,
   index,

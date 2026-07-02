@@ -110,7 +110,7 @@ export function MainLayout() {
         Bỏ qua điều hướng và đến nội dung chính
       </a>
 
-      {/* ── HEADER ───────────────────────────────────────────────── */}
+      {/*  HEADER  */}
       <header className="sticky top-0 z-50 w-full">
         {/* scoreboard strip */}
         <div
@@ -423,9 +423,9 @@ export function MainLayout() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────── */
+/*  */
 /* Mobile Sheet body                                                */
-/* ─────────────────────────────────────────────────────────────── */
+/*  */
 function MobileSheetBody({
   navItems,
   currentPath,
@@ -618,9 +618,9 @@ function MobileSheetBody({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────── */
+/*  */
 /* Utils                                                            */
-/* ─────────────────────────────────────────────────────────────── */
+/*  */
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 0) return "?";

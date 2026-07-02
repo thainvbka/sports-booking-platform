@@ -30,7 +30,7 @@ export function WalletPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO HEADER & BALANCES ───────────────────────── */}
+      {/*  HERO HEADER & BALANCES  */}
       {isLoading && !wallet ? (
         <div className="animate-pulse rounded-2xl border border-border/60 bg-muted/10 h-[240px]" />
       ) : (
@@ -128,10 +128,10 @@ export function WalletPage() {
         />
       )}
 
-      {/* ── LOWER SECTION ────────────────────────────────── */}
+      {/*  LOWER SECTION  */}
       {(!isLoading || wallet) && (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {/* ── BANK DETAILS SETUP ───────────────────────────── */}
+          {/*  BANK DETAILS SETUP  */}
           <div className="md:col-span-1">
             <BankDetailsCard
               wallet={wallet}
@@ -140,7 +140,7 @@ export function WalletPage() {
             />
           </div>
 
-          {/* ── PAYOUT HISTORY TABLE ────────────────────────── */}
+          {/*  PAYOUT HISTORY TABLE  */}
           <div className="md:col-span-2">
             <PayoutHistoryTable batches={wallet?.batches} />
           </div>

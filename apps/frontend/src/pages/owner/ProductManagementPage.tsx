@@ -53,7 +53,7 @@ export function ProductManagementPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO ─────────────────────────────────────────── */}
+      {/*  HERO  */}
       <OwnerPageHero
         title={
           <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
@@ -107,7 +107,7 @@ export function ProductManagementPage() {
         ]}
       />
 
-      {/* ── TOOLBAR ──────────────────────────────────────── */}
+      {/*  TOOLBAR  */}
       <OwnerFilterShell
         searchValue={searchValue}
         onSearchChange={setSearchValue}
@@ -129,7 +129,7 @@ export function ProductManagementPage() {
         </Alert>
       ) : null}
 
-      {/* ── TABLE ────────────────────────────────────────── */}
+      {/*  TABLE  */}
       <div className="flex items-center justify-between gap-2 px-0.5">
         {hasActiveFilters ? (
           <Button
@@ -161,7 +161,7 @@ export function ProductManagementPage() {
         }
       />
 
-      {/* ── Dialogs ─────────────────── */}
+      {/*  Dialogs  */}
       <ProductFormDialog
         open={createDialogOpen}
         mode="create"

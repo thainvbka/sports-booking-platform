@@ -102,7 +102,7 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
           )}
         />
 
-        {/* ── Image ─────────────────────────────────────────────── */}
+        {/*  Image  */}
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           {complex.complex_image ? (
             <img
@@ -147,7 +147,7 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
           </span>
         </div>
 
-        {/* ── Body ──────────────────────────────────────────────── */}
+        {/*  Body  */}
         <CardContent className="flex flex-1 flex-col gap-2.5 px-4 pb-3 pt-3">
           <h3 className="line-clamp-1 font-display text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
             {complex.complex_name}
@@ -161,7 +161,7 @@ export function OwnerComplexCard({ complex }: OwnerComplexCardProps) {
           </div>
         </CardContent>
 
-        {/* ── Footer ────────────────────────────────────────────── */}
+        {/*  Footer  */}
         <CardFooter className="mt-auto flex items-center justify-between gap-2 border-t border-border/60 bg-muted/30 px-4 py-2.5">
           <div className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <span

@@ -99,7 +99,7 @@ export function SubFieldDetailPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── BREADCRUMB ──────────────────────────────────────── */}
+      {/*  BREADCRUMB  */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

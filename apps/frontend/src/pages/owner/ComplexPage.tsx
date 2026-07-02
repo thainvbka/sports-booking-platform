@@ -32,7 +32,7 @@ export function ComplexesPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO ──────────────────────────────────────────────── */}
+      {/*  HERO  */}
       <OwnerPageHero
         title={
           <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
@@ -78,7 +78,7 @@ export function ComplexesPage() {
         ]}
       />
 
-      {/* ── TOOLBAR ───────────────────────────────────────────── */}
+      {/*  TOOLBAR  */}
       <OwnerFilterShell
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -94,7 +94,7 @@ export function ComplexesPage() {
         />
       </OwnerFilterShell>
 
-      {/* ── LIST ──────────────────────────────────────────────── */}
+      {/*  LIST  */}
       {isLoading && !hasComplexes ? (
         <ComplexesSkeletonGrid length={8} />
       ) : visibleComplexes.length > 0 ? (

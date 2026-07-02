@@ -20,7 +20,7 @@ interface BookingPageHeroProps {
 export function BookingPageHero({ subfield }: BookingPageHeroProps) {
   return (
     <>
-      {/* ── Breadcrumb ──────────────────────────────────────────── */}
+      {/*  Breadcrumb  */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -51,7 +51,7 @@ export function BookingPageHero({ subfield }: BookingPageHeroProps) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* ── Hero ────────────────────────────────────────────────── */}
+      {/*  Hero  */}
       <header className="flex flex-wrap items-start gap-5">
         {/* left block */}
         <div className="flex min-w-0 flex-1 flex-col gap-3">

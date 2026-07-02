@@ -18,7 +18,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-// ── Private: InfoRow ─────────────────────────────────────────────────────────
+// Private: InfoRow 
 function InfoRow({
   icon,
   label,
@@ -41,7 +41,7 @@ function InfoRow({
   );
 }
 
-// ── Public: MatchInfoCard ────────────────────────────────────────────────────
+// Public: MatchInfoCard 
 export interface MatchInfoCardProps {
   startTime: string | null;
   endTime: string | null;

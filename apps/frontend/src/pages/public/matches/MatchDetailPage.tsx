@@ -88,7 +88,7 @@ export function MatchDetailPage() {
     return () => window.removeEventListener("match_status_changed", handleMatchNotification);
   }, [id, refreshCurrentMatch]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
+  // Handlers 
   const handleJoin = async (introduction?: string) => {
     if (!id) return false;
     const result = await joinMatch(id, introduction);
@@ -121,7 +121,7 @@ export function MatchDetailPage() {
     if (await cancelMatch(id)) await refreshCurrentMatch();
   };
 
-  // ── Guards ─────────────────────────────────────────────────────────────────
+  // Guards 
   if (!id) {
     return (
       <div className="page-shell-compact py-16">
@@ -156,7 +156,7 @@ export function MatchDetailPage() {
     );
   }
 
-  // ── Derived state ──────────────────────────────────────────────────────────
+  // Derived state 
   const isDeadlinePassed = currentMatch.join_deadline
     ? new Date(currentMatch.join_deadline).getTime() <= Date.now()
     : false;
@@ -208,7 +208,7 @@ export function MatchDetailPage() {
                 : "Bạn có thể gửi yêu cầu tham gia ngay."
       : null;
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // Render 
   return (
     <div className="flex min-h-[60vh] flex-col bg-background">
       <MatchDetailHero

@@ -16,7 +16,7 @@ import { Clock3 } from "lucide-react";
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
-// ── Route → breadcrumb label map ──────────────────────────────────────────────
+// Route → breadcrumb label map 
 const ROUTE_LABELS: Record<string, string> = {
   dashboard: "Bảng điều khiển",
   users: "Người dùng",
@@ -32,7 +32,7 @@ function formatSegment(segment: string) {
   );
 }
 
-// ── Tiny realtime clock pill ──────────────────────────────────────────────────
+// Tiny realtime clock pill 
 function useLiveTime() {
   const [now, setNow] = React.useState(() => new Date());
   React.useEffect(() => {

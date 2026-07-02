@@ -63,7 +63,7 @@ export function LoginPage() {
 
   return (
     <div className="relative flex w-full flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* ── Header ────────────────────────────────────────────── */}
+      {/*  Header  */}
       <header className="flex flex-col gap-3">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.28em] text-muted-foreground backdrop-blur-sm">
           <ShieldCheck className="size-3 text-primary" />
@@ -81,7 +81,7 @@ export function LoginPage() {
         </p>
       </header>
 
-      {/* ── Form ──────────────────────────────────────────────── */}
+      {/*  Form  */}
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
         {/* Email */}
         <div className="flex flex-col gap-2">
@@ -194,7 +194,7 @@ export function LoginPage() {
         </Button>
       </form>
 
-      {/* ── Footer ─────────────────────────────────────────── */}
+      {/*  Footer  */}
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />

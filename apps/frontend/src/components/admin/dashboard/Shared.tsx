@@ -4,7 +4,7 @@
  */
 import { TrendingDown, TrendingUp } from "lucide-react";
 
-// ─── TrendBadge ──────────────────────────────────────────────────────────────
+// TrendBadge 
 // Inline MoM growth pill with up/down icon — used in KPI card footers.
 
 interface TrendBadgeProps {
@@ -38,7 +38,7 @@ export function TrendBadge({ growth, dark = false }: TrendBadgeProps) {
   );
 }
 
-// ─── MomBadge ────────────────────────────────────────────────────────────────
+// MomBadge 
 // Block MoM growth badge without icon — used in chart card header corners.
 
 interface MomBadgeProps {
@@ -62,7 +62,7 @@ export function MomBadge({ growth, className = "" }: MomBadgeProps) {
   );
 }
 
-// ─── DarkTip ─────────────────────────────────────────────────────────────────
+// DarkTip 
 // Generic dark-themed Recharts tooltip, used across all dashboard charts.
 
 interface TipPayloadItem {
@@ -129,7 +129,7 @@ export function DarkTip({
   );
 }
 
-// ─── StatChip ────────────────────────────────────────────────────────────────
+// StatChip 
 // Small labeled stat tile used in chart summary strips.
 
 type StatChipColor =
@@ -208,7 +208,7 @@ export function StatChip({
   );
 }
 
-// ─── ChartLegendItem ─────────────────────────────────────────────────────────
+// ChartLegendItem 
 // A single legend entry — line+dot for area/line series, rect for bar series.
 
 interface ChartLegendItemProps {

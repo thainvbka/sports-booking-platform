@@ -15,7 +15,7 @@ import {
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 
-// ── Private: Scoreboard chip ────────────────────────────────────────────────
+// Private: Scoreboard chip 
 interface ScoreboardChipProps {
   label: string;
   value: number | string;
@@ -86,7 +86,7 @@ function ScoreboardChip({
   );
 }
 
-// ── Public: MatchListHero ───────────────────────────────────────────────────
+// Public: MatchListHero 
 const VALID_SPORT_TYPES = new Set<string>(Object.values(SportType));
 
 export interface MatchListHeroProps {

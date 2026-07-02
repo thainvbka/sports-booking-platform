@@ -109,7 +109,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 pb-8">
-      {/* ── HERO HEADER ── */}
+      {/*  HERO HEADER  */}
       <header className="rounded-xl border border-border/60 bg-card px-4 py-3 md:px-5 md:py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 flex-1">
@@ -163,7 +163,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* ── SECTION 1: PULSE (KPIs) ── */}
+      {/*  SECTION 1: PULSE (KPIs)  */}
       <section>
         <SectionHeading
           index={1}
@@ -172,7 +172,7 @@ export default function Dashboard() {
         <KpiCards kpis={analytics.kpis} />
       </section>
 
-      {/* ── SECTION 2: PERFORMANCE CORE ── */}
+      {/*  SECTION 2: PERFORMANCE CORE  */}
       {/* Chart chính 2/3 · funnel 1/3 — đủ rộng cho cả hai */}
       <section>
         <SectionHeading
@@ -189,7 +189,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ── SECTION 3: ACTIVITY & MANAGEMENT ── */}
+      {/*  SECTION 3: ACTIVITY & MANAGEMENT  */}
       {/* Hai danh sách cân bằng 50/50 — mỗi bên đọc rõ, không cảm giác thừa cột */}
       <section>
         <SectionHeading
@@ -202,7 +202,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ── SECTION 4: GROWTH & QUALITY ── */}
+      {/*  SECTION 4: GROWTH & QUALITY  */}
       {/* Ba khối đồng nhất 1/3 — dễ đọc, hết cảm giác "bậc thang" */}
       <section>
         <SectionHeading
@@ -221,7 +221,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ── SECTION 5: DEEP ANALYTICS ── */}
+      {/*  SECTION 5: DEEP ANALYTICS  */}
       {/* Heatmap cần chiều ngang — giữ 2/3 · providers 1/3, nhất quán với Section 2 */}
       <section>
         <SectionHeading

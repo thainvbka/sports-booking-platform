@@ -116,7 +116,7 @@ export function BookingCard({
         isPending && "ring-1 ring-amber-300/50 dark:ring-amber-700/40",
       )}
     >
-      {/* ── Main Content ──────────────────────────────────────────── */}
+      {/*  Main Content  */}
       <div className="flex flex-col gap-3 p-4 sm:p-5">
         {/* Top row: Sport badge + Status */}
         <div className="flex items-start justify-between gap-3">

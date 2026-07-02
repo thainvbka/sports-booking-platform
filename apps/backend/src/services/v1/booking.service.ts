@@ -28,7 +28,6 @@ export interface filter {
   max_price?: number;
 }
 
-// Hard limit để tránh OOM — cần chuyển sang DB-level pagination trong tương lai
 const QUERY_HARD_LIMIT = 500;
 
 export const createBooking = async (
@@ -276,7 +275,7 @@ export const createBooking = async (
 
     return {
       message: isUpdatingExisting
-        ? "Đã tiếp tục phiên đặt sân trước đó và cập nhật danh sách dịch vụ đi kèm!"
+        ? "Đã tiếp tục phiên đặt sân trước đó và cập nhật danh sách sản phẩm đi kèm!"
         : "Đặt sân thành công! Vui lòng kiểm tra lại thông tin.",
       booking: finalBooking,
     };

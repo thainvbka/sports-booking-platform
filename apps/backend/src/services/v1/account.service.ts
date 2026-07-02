@@ -14,7 +14,7 @@ import { roleCreationStrategy, getJwtPayloadAndRoles, issueSession } from "./aut
 
 type PrismaTransactionClient = Prisma.TransactionClient;
 
-// ── Add Role ────────────────────────────────────────────────────
+// Add Role 
 export const addRoleToAccount = async (
   accountId: string,
   roleData: addRoleInput,
@@ -73,7 +73,7 @@ export const addRoleToAccount = async (
   };
 };
 
-// ── Update Profile ──────────────────────────────────────────────
+// Update Profile 
 interface UpdateProfileData {
   full_name?: string;
   phone_number?: string;

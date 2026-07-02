@@ -24,7 +24,7 @@ interface StatsGridProps {
   items: StatItem[];
 }
 
-// ── Compact accent tokens ─────────────────────────────────────────────────────
+// Compact accent tokens 
 // Drives the small icon tile (border + bg) and its symbol color. The card body
 // stays neutral so the ribbon reads like an operational dashboard, not a
 // marketing banner.

@@ -53,7 +53,7 @@ export function BookingSidebar({
 
   return (
     <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-      {/* ── Order summary ──────────────────────────────────────── */}
+      {/*  Order summary  */}
       <Card className="relative overflow-hidden border-border/70 shadow-sm">
         {/* decorative ticket notch */}
         <span
@@ -133,7 +133,7 @@ export function BookingSidebar({
         </CardContent>
       </Card>
 
-      {/* ── Highlighted reviews ────────────────────────────────── */}
+      {/*  Highlighted reviews  */}
       <Card className="border-border/70 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2">
@@ -217,7 +217,7 @@ export function BookingSidebar({
   );
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────
+// Sub-components 
 function MetaRow({
   icon: Icon,
   label,

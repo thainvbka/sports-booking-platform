@@ -106,7 +106,7 @@ const LEGAL_LINKS = [
 export function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      {/*  HERO  */}
       <section className="relative isolate overflow-hidden border-b border-border/60 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
         {/* atmospheric backdrop */}
         <div
@@ -257,7 +257,7 @@ export function AboutPage() {
         />
       </section>
 
-      {/* ── STATS RIBBON ─────────────────────────────────────────────── */}
+      {/*  STATS RIBBON  */}
       <section className="border-b border-border/60 bg-surface-2/60">
         <div className="page-shell py-8 md:py-10">
           <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:gap-x-6 lg:grid-cols-4 motion-safe-stagger">
@@ -288,7 +288,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* ── STORY ─────────────────────────────────────────────────── */}
+      {/*  STORY  */}
       <section className="relative overflow-hidden py-20 md:py-24">
         <div
           aria-hidden
@@ -390,7 +390,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* ── VALUES ─────────────────────────────────────────────────── */}
+      {/*  VALUES  */}
       <section className="relative overflow-hidden border-y border-border/60 bg-surface-2/50 py-20 md:py-24">
         <div
           aria-hidden
@@ -421,7 +421,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* ── MILESTONES TIMELINE ────────────────────────────────────── */}
+      {/*  MILESTONES TIMELINE  */}
       <section className="py-20 md:py-24">
         <div className="page-shell">
           <div className="mx-auto max-w-3xl text-center">
@@ -481,7 +481,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* ── LEGAL RIBBON ──────────────────────────────────────────── */}
+      {/*  LEGAL RIBBON  */}
       <section className="border-t border-border/60 bg-gradient-to-b from-surface-2/60 to-background py-20 md:py-24">
         <div className="page-shell">
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -534,7 +534,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────────────── */}
+      {/*  CTA  */}
       <section className="relative isolate overflow-hidden border-t border-border/60 bg-gradient-to-br from-primary via-primary to-slate-900 text-white">
         <div aria-hidden className="absolute inset-0 sports-field-pattern opacity-10" />
         <div
@@ -594,9 +594,9 @@ export function AboutPage() {
   );
 }
 
-/* ────────────────────────────────────────────────────────────────── */
+/*  */
 /* Subcomponents                                                      */
-/* ────────────────────────────────────────────────────────────────── */
+/*  */
 
 type ValueTone = "primary" | "sport" | "amber";
 

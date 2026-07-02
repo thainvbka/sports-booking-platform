@@ -52,7 +52,7 @@ export function OwnerBookingsPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10">
-      {/* ── HERO ─────────────────────────────────────────────── */}
+      {/*  HERO  */}
       <OwnerPageHero
         title={
           <h1 className="truncate font-display text-xl font-black leading-tight tracking-tight text-foreground md:text-2xl">
@@ -113,7 +113,7 @@ export function OwnerBookingsPage() {
         ]}
       />
 
-      {/* ── TOOLBAR ──────────────────────────────────────────── */}
+      {/*  TOOLBAR  */}
       <OwnerFilterShell
         searchValue={searchValue}
         onSearchChange={setSearchValue}
@@ -128,7 +128,7 @@ export function OwnerBookingsPage() {
         />
       </OwnerFilterShell>
 
-      {/* ── TABLE ────────────────────────────────────────────── */}
+      {/*  TABLE  */}
       <div className="flex items-center justify-between gap-2 px-0.5">
         {hasActiveFilters ? (
           <Button
@@ -160,14 +160,14 @@ export function OwnerBookingsPage() {
         }
       />
 
-      {/* ── Detail Dialog ───────────────────────────────────── */}
+      {/*  Detail Dialog  */}
       <BookingDetailDialog
         booking={selectedBooking}
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
       />
 
-      {/* ── Confirm Dialog ─────────────────────────────────── */}
+      {/*  Confirm Dialog  */}
       <ConfirmBookingDialog
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
@@ -175,7 +175,7 @@ export function OwnerBookingsPage() {
         isLoading={isLoading}
       />
 
-      {/* ── Cancel Dialog ──────────────────────────────────── */}
+      {/*  Cancel Dialog  */}
       <CancelBookingDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}

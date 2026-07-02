@@ -14,7 +14,7 @@ import type { MatchStatus } from "@/types/match.type";
 import type { Participant } from "@/types/match.type";
 import { ShieldX, Trophy, Unlock, Users } from "lucide-react";
 
-// ── Private: RosterStat ──────────────────────────────────────────────────────
+// Private: RosterStat 
 function RosterStat({
   label,
   value,
@@ -59,7 +59,7 @@ function RosterStat({
   );
 }
 
-// ── Public: MatchCreatorPanel ─────────────────────────────────────────────────
+// Public: MatchCreatorPanel 
 export interface MatchCreatorPanelProps {
   status: MatchStatus;
   acceptedCount: number;

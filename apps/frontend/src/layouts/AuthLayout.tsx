@@ -18,7 +18,7 @@ const HIGHLIGHTS = [
 export function AuthLayout() {
   return (
     <div className="relative min-h-screen lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-      {/* ── LEFT · Cinematic "Matchday" panel ───────────────────────── */}
+      {/*  LEFT · Cinematic "Matchday" panel  */}
       <aside
         className="relative isolate hidden overflow-hidden bg-slate-950 text-white lg:flex lg:flex-col"
       >
@@ -153,7 +153,7 @@ export function AuthLayout() {
         </div>
       </aside>
 
-      {/* ── RIGHT · Form canvas ─────────────────────────────────────── */}
+      {/*  RIGHT · Form canvas  */}
       <main className="relative flex min-h-screen flex-col overflow-hidden bg-background px-4 sm:px-6 lg:min-h-0 lg:h-full lg:px-10 xl:px-14">
         {/* subtle backdrop */}
         <div
