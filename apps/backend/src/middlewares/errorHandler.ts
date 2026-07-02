@@ -31,7 +31,8 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     status = err.status;
     message = err.message;
   } else if (err instanceof Error) {
-    message = err.message;
+    console.error("Unhandled Internal Server Error:", err);
+    message = "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.";
   }
 
   const reason = getReasonByStatus(status);

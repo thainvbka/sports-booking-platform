@@ -1,0 +1,3161 @@
+openapi: 3.0.3
+info:
+  title: Sports Booking Platform API
+  description: OpenAPI 3.0 specification for the Sports Booking Platform backend APIs.
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Local Server
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns health status of the API service
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            example: ok
+                          timestamp:
+                            type: string
+                            format: date-time
+                            example: "2026-07-02T11:28:12Z"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1:
+    get:
+      summary: API V1 Root Ping
+      description: Public ping endpoint to check if API v1 is active.
+      responses:
+        "200":
+          description: API V1 running
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "API v1 is running"
+
+  /v1/public/complexes:
+    get:
+      summary: Get active complexes
+      description: Retrieve paginated list of active complexes with optional search, sport type, and price filters.
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Limit items per page
+          schema:
+            type: integer
+            default: 8
+        - name: search
+          in: query
+          description: Search term for complex name or address
+          schema:
+            type: string
+        - name: sport_types
+          in: query
+          description: Filter complexes by sport types
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/SportType"
+        - name: minPrice
+          in: query
+          description: Minimum price filter
+          schema:
+            type: integer
+        - name: maxPrice
+          in: query
+          description: Maximum price filter
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Complexes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/public/complexes/{id}:
+    get:
+      summary: Get public complex by ID
+      description: Get public detailed information of a complex by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Complex ID
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number for paginating subfields
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Limit items per page for subfields
+          schema:
+            type: integer
+            default: 8
+        - name: search
+          in: query
+          description: Search term for subfields
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Complex retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Complex not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/public/subfields:
+    get:
+      summary: Get all public subfields
+      description: Retrieve public subfields list with filters and search query.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 8
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sport_types
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/SportType"
+        - name: minCapacity
+          in: query
+          schema:
+            type: integer
+        - name: maxCapacity
+          in: query
+          schema:
+            type: integer
+        - name: minPrice
+          in: query
+          schema:
+            type: integer
+        - name: maxPrice
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subfields retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/public/subfields/{id}:
+    get:
+      summary: Get public subfield by ID
+      description: Get details of a public subfield by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subfield ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subfield detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Subfield not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/public/subfields/{id}/availability:
+    get:
+      summary: Get subfield availability
+      description: Check subfield's booking availability slots on a specific date.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subfield ID
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          description: Booking date in format YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+          example: "2026-07-02"
+      responses:
+        "200":
+          description: Availability slots retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Missing date parameter or invalid format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/public/subfields/{id}/reviews:
+    get:
+      summary: Get subfield reviews
+      description: Get reviews for a subfield.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: rating
+          in: query
+          schema:
+            type: integer
+        - name: has_images
+          in: query
+          schema:
+            type: boolean
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [newest, oldest, rating_desc, rating_asc]
+            default: newest
+      responses:
+        "200":
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/public/matches:
+    get:
+      summary: Get public matches list
+      description: Search public matches looking for participants.
+      parameters:
+        - name: sport_type
+          in: query
+          schema:
+            $ref: "#/components/schemas/SportType"
+        - name: skill_level
+          in: query
+          schema:
+            $ref: "#/components/schemas/MatchSkillLevel"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/MatchStatus"
+        - name: from_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: complex_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: sub_field_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: province
+          in: query
+          schema:
+            type: string
+        - name: district
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [start_time:asc, start_time:desc, created_at:desc]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Matches retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/public/matches/{id}:
+    get:
+      summary: Get public match by ID
+      description: Retrieve public match details by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Match retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/auth/signup:
+    post:
+      summary: User registration
+      description: Register a new account as PLAYER, OWNER or ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          needVerify:
+                            type: boolean
+                            example: true
+        "400":
+          description: Validation error or account already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /v1/auth/verify-email/{token}:
+    post:
+      summary: Verify email address
+      description: Verify email using verification token sent during signup.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Email verification token
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Email verified successfully, sets refresh token cookie
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+                          accessToken:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auth/login:
+    post:
+      summary: User login
+      description: Login with email and password to receive JWT credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in successfully, sets refresh token cookie
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+                          accessToken:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "400":
+          description: Invalid validation fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auth/refresh-token:
+    post:
+      summary: Refresh access token
+      description: Request a new access token using the HttpOnly refresh token cookie.
+      responses:
+        "200":
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: No refresh token provided or revoked/expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auth/logout:
+    post:
+      summary: User logout
+      description: Logout current session by revoking the refresh token.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/auth/forgot-password:
+    post:
+      summary: Request password reset link
+      description: Sends a password reset verification link to the provided email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordInput"
+      responses:
+        "200":
+          description: Link sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/auth/reset-password/{token}:
+    put:
+      summary: Reset password
+      description: Set a new password using the reset password token.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordInput"
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid token or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /v1/auth/me:
+    get:
+      summary: Get current authenticated user details
+      description: Fetch authenticated account profiles info.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User details retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+
+  /v1/account/roles:
+    post:
+      summary: Add new role to account
+      description: Request addition of PLAYER or OWNER role to current authenticated account.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddRoleInput"
+      responses:
+        "200":
+          description: Role added successfully, returns updated JWT metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+                          accessToken:
+                            type: string
+
+  /v1/account/profile:
+    put:
+      summary: Update user profile
+      description: Update profile fields like full_name, phone_number, and upload avatar.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                phone_number:
+                  type: string
+                company_name:
+                  type: string
+                  description: Required if role includes OWNER
+                avatar:
+                  type: string
+                  format: binary
+                  description: Profile avatar image file
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/analytics:
+    get:
+      summary: Get platform analytics
+      description: Retrieve admin dashboard analytics metrics.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Analytics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/users:
+    get:
+      summary: Get platform users list
+      description: Retrieve paginated, filterable list of all registered platform users.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [PLAYER, OWNER, ADMIN]
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Users list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/users/{id}/status:
+    patch:
+      summary: Update user account status
+      description: Block/activate user access status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role
+                - status
+              properties:
+                role:
+                  type: string
+                  enum: [PLAYER, OWNER, ADMIN]
+                status:
+                  type: string
+                  example: "BANNED"
+      responses:
+        "200":
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/complexes:
+    get:
+      summary: Get admin complexes list
+      description: Retrieve complexes list for review and monitoring.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ComplexStatus"
+      responses:
+        "200":
+          description: Complexes list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/complexes/{id}/status:
+    patch:
+      summary: Update complex status
+      description: Approve (ACTIVE) or reject/deactivate complex status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  $ref: "#/components/schemas/ComplexStatus"
+      responses:
+        "200":
+          description: Complex status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/bookings:
+    get:
+      summary: Monitor bookings
+      description: Retrieve platform-wide booking list for monitoring.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/bookings/recurring:
+    get:
+      summary: Monitor recurring bookings
+      description: Monitor recurring booking schedules.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recurring bookings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/admin/payments:
+    get:
+      summary: Get platform transactions
+      description: Retrieve history of payments made in the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Transactions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/complexes:
+    post:
+      summary: Register complex (Owner)
+      description: Submit details for registration of a new sports complex, pending approval from admin.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - complex_name
+                - complex_address
+                - complex_image
+                - verification_docs
+              properties:
+                complex_name:
+                  type: string
+                  example: "Sân bóng cỏ nhân tạo Đại học Bách Khoa"
+                complex_address:
+                  type: string
+                  example: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội"
+                complex_image:
+                  type: string
+                  format: binary
+                  description: Front image of complex
+                verification_docs:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Legal documents, license etc.
+      responses:
+        "201":
+          description: Complex created and pending approval
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    get:
+      summary: Owner complexes list
+      description: Get active complexes owned by currently authenticated Owner profile.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Owner complexes retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/complexes/{id}:
+    get:
+      summary: Owner get complex by ID
+      description: Get complex detail by ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Complex detail retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Update complex details
+      description: Update complex name or address details.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateComplexInput"
+      responses:
+        "200":
+          description: Complex updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      summary: Delete complex
+      description: Soft deletes the complex.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Complex deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/complexes/{id}/sub-fields:
+    post:
+      summary: Add subfield to complex
+      description: Create a subfield (court) under the specified complex ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Complex ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - subfield_name
+                - capacity
+                - sport_type
+                - subfield_image
+              properties:
+                subfield_name:
+                  type: string
+                  example: "Sân 5 số 1"
+                capacity:
+                  type: integer
+                  example: 10
+                sport_type:
+                  $ref: "#/components/schemas/SportType"
+                subfield_image:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Subfield created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/complexes/{id}/reactivate:
+    post:
+      summary: Reactivate deleted complex
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Complex reactivated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/sub-fields/{id}/products:
+    get:
+      summary: Get subfield available products
+      description: Get active sale/rental products for a specific subfield.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subfield ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subfield products retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/sub-fields/{id}:
+    get:
+      summary: Owner subfield detail
+      description: Retrieve detailed view of a subfield for Owner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subfield details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Update subfield details
+      description: Modify subfield capacity, type or name.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubfieldInput"
+      responses:
+        "200":
+          description: Subfield details updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      summary: Delete subfield
+      description: Marks subfield as deleted (isDelete = true).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Subfield deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/pricing-rules:
+    post:
+      summary: Create pricing rules
+      description: Create pricing time rules for subfield rates based on days of the week.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePricingRuleInput"
+      responses:
+        "201":
+          description: Pricing rules created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    get:
+      summary: Get owner pricing rules
+      description: Get active rules for a subfield on a weekday.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sub_field_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: day_of_week
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+      responses:
+        "200":
+          description: Rules retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/pricing-rules/{id}:
+    patch:
+      summary: Update pricing rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePricingRuleInput"
+      responses:
+        "200":
+          description: Pricing rule updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      summary: Delete pricing rule
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Pricing rule deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/pricing-rules/bulk-delete:
+    post:
+      summary: Bulk delete pricing rules
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pricingRuleIds
+              properties:
+                pricingRuleIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Rules deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/pricing-rules/copy:
+    post:
+      summary: Copy pricing rules
+      description: Copy pricing rules from one source weekday to multiple target days.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CopyPricingRuleInput"
+      responses:
+        "200":
+          description: Rules copied successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings:
+    get:
+      summary: Get player bookings
+      description: Get active and past bookings made by currently authenticated player.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 9
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, CONFIRMED, CANCELED, COMPLETED]
+      responses:
+        "200":
+          description: Player bookings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/{id}:
+    post:
+      summary: Create booking (Player)
+      description: Place booking request on a subfield.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subfield ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingInput"
+      responses:
+        "201":
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    put:
+      summary: Update booking schedule
+      description: Change booking timing or addons.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingInput"
+      responses:
+        "200":
+          description: Booking updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Cancel booking (Player)
+      description: Cancel a booking.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    get:
+      summary: Owner get booking details
+      description: Fetch detail of booking.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/review/{id}:
+    get:
+      summary: Get booking checkout details
+      description: Review billing details of a booking before payment checkout.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Checkout details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/recurring/{id}:
+    post:
+      summary: Create recurring booking
+      description: Book a subfield at matching hours recurring weekly/monthly.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Subfield ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRecurringBookingInput"
+      responses:
+        "201":
+          description: Recurring schedule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      summary: Cancel recurring booking (Player)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Recurring Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Recurring booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/recurring/review/{id}:
+    get:
+      summary: Review recurring booking slots
+      description: Preview and calculate cost for matching slots in recurrence.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Recurring Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reviewed slot list with prices
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/confirm/{id}:
+    patch:
+      summary: Confirm single booking (Owner)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/recurring/confirm/{id}:
+    patch:
+      summary: Confirm recurring booking slots (Owner)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Recurring Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Recurring booking confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/cancel/{id}:
+    patch:
+      summary: Cancel booking (Owner)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/recurring/cancel/{id}:
+    patch:
+      summary: Cancel recurring booking (Owner)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Recurring Booking ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Recurring booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/stats:
+    get:
+      summary: Owner get booking stats
+      description: Get performance dashboard statistics of bookings.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stats retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/bookings/all:
+    get:
+      summary: Get all bookings (Owner)
+      description: Retrieve bookings for complexes managed by the Owner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 8
+        - name: filter
+          in: query
+          description: JSON string filtering properties (search, status, start_date, end_date etc.)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bookings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches:
+    post:
+      summary: Create a match
+      description: Create a public match seeking participants linked to an active booking ID.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMatchInput"
+      responses:
+        "201":
+          description: Match created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/me:
+    get:
+      summary: Get player matches
+      description: Retrieve matches created or joined by the authenticated player.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [created, joined, pending]
+            default: created
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/MatchStatus"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Player matches retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}:
+    get:
+      summary: Get match detail for player
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Match details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/join:
+    post:
+      summary: Request to join match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinMatchInput"
+      responses:
+        "200":
+          description: Join request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      summary: Leave match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Left match successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/participants:
+    get:
+      summary: Get match participants
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, ACCEPTED, REJECTED, WITHDRAWN, REMOVED]
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Participants retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/participants/{participantId}/accept:
+    patch:
+      summary: Accept match participant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          description: Participant ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Participant accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/participants/{participantId}/reject:
+    patch:
+      summary: Reject match participant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Match ID
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          description: Participant ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Participant rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/close:
+    patch:
+      summary: Close match registrations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Match closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/reopen:
+    patch:
+      summary: Reopen closed match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Match reopened
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/matches/{id}/cancel:
+    patch:
+      summary: Cancel match
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Match cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/products:
+    get:
+      summary: Get owner products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: complex_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE]
+        - name: sport_type
+          in: query
+          schema:
+            $ref: "#/components/schemas/SportType"
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [SALE, RENTAL]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: min_price
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: min_stock
+          in: query
+          schema:
+            type: integer
+        - name: max_stock
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Products list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    post:
+      summary: Create product
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - complex_id
+                - name
+                - price
+                - stock
+              properties:
+                complex_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                sport_types:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SportType"
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+                type:
+                  type: string
+                  enum: [SALE, RENTAL]
+                product_image:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/products/{id}:
+    patch:
+      summary: Update product details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                sport_types:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SportType"
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+                type:
+                  type: string
+                  enum: [SALE, RENTAL]
+                product_image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/products/{id}/stock:
+    patch:
+      summary: Increment product stock quantity
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductStockInput"
+      responses:
+        "200":
+          description: Stock incremented successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payments/stripe/connect-account:
+    post:
+      summary: Create Stripe Connect Account
+      description: Redirect link is returned to perform onboarding to Stripe.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Direct checkout onboard link returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payments/stripe/check-status:
+    get:
+      summary: Complete Stripe Connect onboarding check
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stripe onboarding status complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payments/checkout-session:
+    post:
+      summary: Create Stripe payment checkout session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - booking_ids
+              properties:
+                booking_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Checkout session created, returns redirect URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payments/vnpay/checkout-session:
+    post:
+      summary: Create VNPay payment checkout session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - booking_ids
+              properties:
+                booking_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: VNPay checkout session URL returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payments/vnpay/ipn:
+    get:
+      summary: Public IPN endpoint from VNPay
+      description: Verification and processing of transaction query payload parameters sent from VNPay.
+      responses:
+        "200":
+          description: Acknowledged response structure sent to VNPay
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  RspCode:
+                    type: string
+                    example: "00"
+                  Message:
+                    type: string
+                    example: "Confirm Success"
+
+  /v1/payments/stripe/cancel-checkout:
+    post:
+      summary: Cancel Stripe checkout
+      description: Notifies backend to release pending bookings since player aborted checkout.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - booking_ids
+              properties:
+                booking_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Booking cancellation processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /payments/webhook:
+    post:
+      summary: Raw Stripe event webhook receiver
+      description: Mounts on root `/api/v1/payments/webhook` with raw request body parser.
+      responses:
+        "200":
+          description: Handled successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/owner/wallet:
+    get:
+      summary: Get owner wallet details
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Wallet history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/owner/bank-details:
+    post:
+      summary: Update owner bank details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOwnerBankDetailsInput"
+      responses:
+        "200":
+          description: Bank details updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/owner/payout-request:
+    post:
+      summary: Send payout request (Owner)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Payout request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/admin:
+    get:
+      summary: Get payout batches (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/PayoutStatus"
+      responses:
+        "200":
+          description: Payout batches retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/admin/wallets:
+    get:
+      summary: View owner wallets (Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Wallets retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/admin/{batchId}/process:
+    post:
+      summary: Mark payout batch as processing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Batch status updated to PROCESSING
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/admin/{batchId}/approve:
+    post:
+      summary: Approve payout batch
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transaction_ref
+              properties:
+                transaction_ref:
+                  type: string
+                  example: "TXN123456789"
+                note:
+                  type: string
+                  example: "Completed bank transfer manually"
+      responses:
+        "200":
+          description: Payout batch approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/payouts/admin/{batchId}/cancel:
+    post:
+      summary: Cancel payout batch
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  example: "Rejected due to incorrect bank account details"
+      responses:
+        "200":
+          description: Batch canceled and payouts reverted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/owner-dashboard/stats-metrics:
+    get:
+      summary: Get owner dashboard stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stats retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/notifications:
+    get:
+      summary: Get notifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [BOOKING, MATCH, PAYMENT, SYSTEM]
+        - name: target_role
+          in: query
+          schema:
+            type: string
+            enum: [PLAYER, OWNER, ADMIN]
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/notifications/unread-count:
+    get:
+      summary: Get unread count
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: target_role
+          in: query
+          schema:
+            type: string
+            enum: [PLAYER, OWNER, ADMIN]
+      responses:
+        "200":
+          description: Count returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/notifications/{id}/read:
+    patch:
+      summary: Mark notification as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Notification status marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/notifications/read-all:
+    patch:
+      summary: Mark all notifications read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: target_role
+          in: query
+          schema:
+            type: string
+            enum: [PLAYER, OWNER, ADMIN]
+      responses:
+        "200":
+          description: All notifications marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/reviews:
+    post:
+      summary: Create review (Player)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - booking_id
+                - rating
+              properties:
+                booking_id:
+                  type: string
+                  format: uuid
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Max 5 images
+      responses:
+        "201":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/reviews/{id}:
+    patch:
+      summary: Update review (Player)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Max 5 images
+      responses:
+        "200":
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      summary: Delete review (Player)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Review deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/reviews/owner/{id}:
+    delete:
+      summary: Delete review (Owner)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Review deleted by owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /v1/recommendations:
+    get:
+      summary: Get recommendations (Player)
+      description: Get AI recommended subfields tailored for Player sports interest.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Recommendations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SportType:
+      type: string
+      enum: [FOOTBALL, BASKETBALL, TENNIS, BADMINTON, VOLLEYBALL, PICKLEBALL]
+      example: "FOOTBALL"
+
+    BookingStatus:
+      type: string
+      enum: [PENDING, CONFIRMED, CANCELED, COMPLETED]
+      example: "PENDING"
+
+    ComplexStatus:
+      type: string
+      enum: [DRAFT, PENDING, ACTIVE, REJECTED, INACTIVE]
+      example: "PENDING"
+
+    PayoutStatus:
+      type: string
+      enum: [PENDING, REQUESTED, PROCESSING, PAID, CANCELLED]
+      example: "PENDING"
+
+    MatchStatus:
+      type: string
+      enum: [OPEN, FULL, CLOSED, EXPIRED, CANCELED, COMPLETED]
+      example: "OPEN"
+
+    MatchSkillLevel:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+      example: "INTERMEDIATE"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        status:
+          type: integer
+          example: 200
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Operation completed successfully"
+        reason:
+          type: string
+          example: "OK"
+        data:
+          type: object
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        status:
+          type: integer
+          example: 400
+        code:
+          type: integer
+          example: 400
+        reason:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Error message details"
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        status:
+          type: integer
+          example: 400
+        code:
+          type: integer
+          example: 400
+        reason:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Invalid input data"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path:
+                type: array
+                items:
+                  type: string
+                example: ["body", "email"]
+              message:
+                type: string
+                example: "Email không hợp lệ"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        phone_number:
+          type: string
+        avatar:
+          type: string
+          nullable: true
+        email_verified:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["PLAYER"]
+
+    RegisterInput:
+      type: object
+      required:
+        - email
+        - password
+        - full_name
+        - phone_number
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "password123"
+        full_name:
+          type: string
+          minLength: 5
+          example: "Nguyen Van A"
+        phone_number:
+          type: string
+          minLength: 10
+          example: "0987654321"
+        role:
+          type: string
+          enum: [PLAYER, OWNER, ADMIN]
+          example: "PLAYER"
+        company_name:
+          type: string
+          description: Required if role is OWNER
+          example: "Công ty Cổ phần Sân cỏ BK"
+
+    LoginInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "password123"
+
+    ForgotPasswordInput:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+
+    ResetPasswordInput:
+      type: object
+      required:
+        - new_password
+      properties:
+        new_password:
+          type: string
+          minLength: 8
+          example: "newpassword123"
+
+    AddRoleInput:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum: [PLAYER, OWNER]
+          example: "OWNER"
+        company_name:
+          type: string
+          example: "BK Sports Complex"
+
+    UpdateComplexInput:
+      type: object
+      properties:
+        complex_name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "BK Sports Ground Updated"
+        complex_address:
+          type: string
+          minLength: 10
+          maxLength: 500
+          example: "Số 2 Đại Cồ Việt, Hai Bà Trưng, Hà Nội"
+
+    UpdateSubfieldInput:
+      type: object
+      properties:
+        subfield_name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "Sân 5 vip 1"
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 30
+          example: 10
+        sport_type:
+          $ref: "#/components/schemas/SportType"
+
+    CreatePricingRuleInput:
+      type: object
+      required:
+        - sub_field_id
+        - day_of_week
+        - time_slots
+      properties:
+        sub_field_id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        day_of_week:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          example: [1, 2, 3, 4, 5]
+        time_slots:
+          type: array
+          items:
+            type: object
+            required:
+              - start_time
+              - end_time
+              - base_price
+            properties:
+              start_time:
+                type: string
+                pattern: "^([0-1]\\d|2[0-3]):([0-5]\\d)$"
+                example: "17:00"
+              end_time:
+                type: string
+                pattern: "^([0-1]\\d|2[0-3]):([0-5]\\d)$"
+                example: "18:30"
+              base_price:
+                type: number
+                minimum: 0
+                example: 150000
+
+    UpdatePricingRuleInput:
+      type: object
+      required:
+        - sub_field_id
+      properties:
+        sub_field_id:
+          type: string
+          format: uuid
+        day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        start_time:
+          type: string
+          pattern: "^([0-1]\\d|2[0-3]):([0-5]\\d)$"
+          example: "18:00"
+        end_time:
+          type: string
+          pattern: "^([0-1]\\d|2[0-3]):([0-5]\\d)$"
+          example: "19:30"
+        base_price:
+          type: number
+          minimum: 0
+          example: 160000
+
+    CopyPricingRuleInput:
+      type: object
+      required:
+        - sub_field_id
+        - source_day
+        - target_days
+      properties:
+        sub_field_id:
+          type: string
+          format: uuid
+        source_day:
+          type: integer
+          minimum: 0
+          maximum: 6
+          example: 1
+        target_days:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          example: [2, 3, 4, 5]
+
+    CreateBookingInput:
+      type: object
+      required:
+        - start_time
+        - end_time
+      properties:
+        start_time:
+          type: string
+          format: date-time
+          example: "2026-07-02T17:00:00.000Z"
+        end_time:
+          type: string
+          format: date-time
+          example: "2026-07-02T18:30:00.000Z"
+        addons:
+          type: array
+          items:
+            type: object
+            required:
+              - product_id
+              - quantity
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 1
+          example: []
+
+    CreateRecurringBookingInput:
+      type: object
+      required:
+        - start_time
+        - end_time
+        - start_date
+        - end_date
+        - recurrence_type
+      properties:
+        start_time:
+          type: string
+          format: date-time
+          example: "2026-07-02T17:00:00.000Z"
+        end_time:
+          type: string
+          format: date-time
+          example: "2026-07-02T18:30:00.000Z"
+        start_date:
+          type: string
+          format: date-time
+          example: "2026-07-02T00:00:00.000Z"
+        end_date:
+          type: string
+          format: date-time
+          example: "2026-08-02T00:00:00.000Z"
+        recurrence_type:
+          type: string
+          enum: [WEEKLY, MONTHLY]
+          example: "WEEKLY"
+        type:
+          type: string
+          enum: [ONE_TIME, RECURRING]
+          example: "RECURRING"
+
+    CreateMatchInput:
+      type: object
+      required:
+        - booking_id
+        - title
+        - slots_needed
+      properties:
+        booking_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 5
+          maxLength: 200
+          example: "Tìm đối giao lưu bóng đá sân BK"
+        description:
+          type: string
+          maxLength: 1000
+          example: "Cần tìm thêm 2-3 bạn đá giao lưu vui vẻ, sân đã đặt sẵn"
+        slots_needed:
+          type: integer
+          minimum: 1
+          maximum: 30
+          example: 3
+        skill_level:
+          $ref: "#/components/schemas/MatchSkillLevel"
+        join_deadline:
+          type: string
+          format: date-time
+
+    JoinMatchInput:
+      type: object
+      properties:
+        introduction:
+          type: string
+          maxLength: 1000
+          example: "Mình chơi tiền đạo, đá phủi được 2 năm"
+
+    UpdateProductStockInput:
+      type: object
+      required:
+        - increment
+      properties:
+        increment:
+          type: integer
+          minimum: 1
+          example: 10
+
+    UpdateOwnerBankDetailsInput:
+      type: object
+      required:
+        - bank_name
+        - bank_account_number
+        - bank_account_name
+      properties:
+        bank_name:
+          type: string
+          example: "Vietcombank"
+        bank_account_number:
+          type: string
+          example: "0011001234567"
+        bank_account_name:
+          type: string
+          example: "NGUYEN VAN A"
+        bank_branch:
+          type: string
+          example: "Chi nhánh Hà Nội"
