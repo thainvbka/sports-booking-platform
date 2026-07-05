@@ -87,7 +87,6 @@ export default function AdminUsersPage() {
             <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
             <SelectItem value="ACTIVE">Hoạt động</SelectItem>
             <SelectItem value="INACTIVE">Bị khóa</SelectItem>
-            <SelectItem value="PENDING">Chờ duyệt</SelectItem>
           </SelectContent>
         </Select>
       </AdminFiltersBar>

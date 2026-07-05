@@ -17,7 +17,6 @@ import { sendNotificationIfNotExists } from "./notification.service";
 export const getAnalytics = async () => {
   const now = new Date();
 
-  // Time windows 
   const sixMonthsAgo = new Date(
     now.getFullYear(),
     now.getMonth() - 5,
@@ -29,7 +28,7 @@ export const getAnalytics = async () => {
   );
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(now.getDate() - 30);
-  thirtyDaysAgo.setHours(0, 0, 0, 0); // normalize về midnight
+  thirtyDaysAgo.setHours(0, 0, 0, 0);
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(
@@ -42,7 +41,6 @@ export const getAnalytics = async () => {
     999,
   );
 
-  // Fetch tất cả data song song 
   const [
     // KPIs: so sánh tháng này vs tháng trước
     kpiThisRevenue,
@@ -71,7 +69,7 @@ export const getAnalytics = async () => {
     bookingStatusCounts,
 
     // Revenue by sport type (COMPLETED)
-    bookingsBySport,
+    bookingsBySport,  
 
     // Addon upsell
     addonAggregate,
@@ -916,102 +914,6 @@ export const getBookings = async (
   };
 };
 
-export const getPayments = async (
-  page: number = 1,
-  limit: number = 10,
-  search?: string,
-  status?: string,
-) => {
-  const skip = (page - 1) * limit;
-
-  const where: any = {};
-  if (search?.trim()) {
-    const searchStr = search.trim();
-    where.OR = [
-      { transaction_code: { contains: searchStr, mode: "insensitive" } },
-      {
-        bookings: {
-          some: {
-            player: {
-              account: {
-                OR: [
-                  { full_name: { contains: searchStr, mode: "insensitive" } },
-                  { email: { contains: searchStr, mode: "insensitive" } },
-                ],
-              },
-            },
-          },
-        },
-      },
-    ];
-  }
-
-  if (status && status !== "ALL") {
-    where.status = status;
-  }
-
-  // Build a separate where for stats that excludes the status filter
-  // so all status counts are visible even when filtering by a specific status
-  const statsWhere: any = { ...where };
-  delete statsWhere.status;
-
-  const [payments, total, paymentStats, statusCounts] = await Promise.all([
-    prisma.payment.findMany({
-      where,
-      skip,
-      take: limit,
-      include: {
-        bookings: {
-          include: {
-            player: {
-              include: {
-                account: { select: { full_name: true, email: true } },
-              },
-            },
-            sub_field: {
-              include: {
-                complex: {
-                  select: { complex_name: true },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { created_at: "desc" },
-    }),
-    prisma.payment.count({ where }),
-    prisma.payment.aggregate({
-      where: { ...statsWhere, status: "SUCCESS" },
-      _sum: { amount: true },
-    }),
-    prisma.payment.groupBy({
-      by: ["status"],
-      where: statsWhere,
-      _count: { id: true },
-    }),
-  ]);
-
-  const statsMap = statusCounts.reduce(
-    (acc, s) => ({ ...acc, [s.status]: s._count.id }),
-    {} as any,
-  );
-
-  return {
-    payments,
-    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    stats: {
-      totalRevenue: Number(paymentStats._sum.amount) || 0,
-      pendingCount: statsMap["PENDING"] || 0,
-      failedCount: statsMap["FAILED"] || 0,
-      successCount: statsMap["SUCCESS"] || 0,
-      refundedCount: statsMap["REFUNDED"] || 0,
-    },
-  };
-};
-
-// Recurring Bookings 
-
 export const getRecurringBookings = async (
   page: number = 1,
   limit: number = 10,
@@ -1119,3 +1021,100 @@ export const getRecurringBookings = async (
     },
   };
 };
+
+export const getPayments = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  status?: string,
+) => {
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+  if (search?.trim()) {
+    const searchStr = search.trim();
+    where.OR = [
+      { transaction_code: { contains: searchStr, mode: "insensitive" } },
+      {
+        bookings: {
+          some: {
+            player: {
+              account: {
+                OR: [
+                  { full_name: { contains: searchStr, mode: "insensitive" } },
+                  { email: { contains: searchStr, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  if (status && status !== "ALL") {
+    where.status = status;
+  }
+
+  // Build a separate where for stats that excludes the status filter
+  // so all status counts are visible even when filtering by a specific status
+  const statsWhere: any = { ...where };
+  delete statsWhere.status;
+
+  const [payments, total, paymentStats, statusCounts] = await Promise.all([
+    prisma.payment.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        bookings: {
+          include: {
+            player: {
+              include: {
+                account: { select: { full_name: true, email: true } },
+              },
+            },
+            sub_field: {
+              include: {
+                complex: {
+                  select: { complex_name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.payment.count({ where }),
+    prisma.payment.aggregate({
+      where: { ...statsWhere, status: "SUCCESS" },
+      _sum: { amount: true },
+    }),
+    prisma.payment.groupBy({
+      by: ["status"],
+      where: statsWhere,
+      _count: { id: true },
+    }),
+  ]);
+
+  const statsMap = statusCounts.reduce(
+    (acc, s) => ({ ...acc, [s.status]: s._count.id }),
+    {} as any,
+  );
+
+  return {
+    payments,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    stats: {
+      totalRevenue: Number(paymentStats._sum.amount) || 0,
+      pendingCount: statsMap["PENDING"] || 0,
+      failedCount: statsMap["FAILED"] || 0,
+      successCount: statsMap["SUCCESS"] || 0,
+      refundedCount: statsMap["REFUNDED"] || 0,
+    },
+  };
+};
+
+
+

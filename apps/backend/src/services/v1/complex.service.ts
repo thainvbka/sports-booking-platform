@@ -7,6 +7,7 @@ import {
   NotFoundError,
 } from "../../utils/error.response";
 import { CreateComplexInput, UpdateComplexInput } from "../../validations";
+import { sendNotificationIfNotExists } from "./notification.service";
 
 interface CreateComplexData extends CreateComplexInput {
   files: {
@@ -84,6 +85,24 @@ export const createComplex = async (
       },
     },
   });
+
+  const admins = await prisma.admin.findMany({
+    where: { status: "ACTIVE" },
+    select: { account_id: true },
+  });
+
+  if (admins.length > 0) {
+    await Promise.all(
+      admins.map((admin) =>
+        sendNotificationIfNotExists(admin.account_id, {
+          message: `Khu phức hợp mới "${newComplex.complex_name}" đang chờ duyệt.`,
+          type: "SYSTEM",
+          target_role: "ADMIN",
+          link_to: "/admin/complexes",
+        }),
+      ),
+    );
+  }
 
   return newComplex;
 };

@@ -1,3 +1,4 @@
+import { PaymentDetailDialog } from "@/components/admin/payments/PaymentDetailDialog";
 import { AdminFiltersBar } from "@/components/admin/shell/AdminFiltersBar";
 import { AdminPageHeader } from "@/components/admin/shell/AdminPageHeader";
 import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
@@ -12,9 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PAYMENT_STATUS_LABELS } from "@/constants";
-import { PaymentDetailDialog } from "@/components/admin/payments/PaymentDetailDialog";
-import { usePaymentColumns } from "@/hooks/admin/usePaymentColumns";
 import { useAdminPaymentsData } from "@/hooks/admin/useAdminPaymentsData";
+import { usePaymentColumns } from "@/hooks/admin/usePaymentColumns";
 import { Search } from "lucide-react";
 
 export default function AdminPaymentsPage() {
@@ -86,7 +86,7 @@ export default function AdminPaymentsPage() {
       <AdminTableSection
         index={4}
         eyebrow="Data · Ledger"
-        title="Sổ cái giao dịch"
+        title="Sổ giao dịch"
         description="Nhấp vào một dòng để xem chi tiết và các lượt đặt liên kết."
         count={totalCount}
         countLabel="giao dịch"
