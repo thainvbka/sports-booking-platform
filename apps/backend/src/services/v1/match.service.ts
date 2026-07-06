@@ -1,61 +1,34 @@
 import {
-    BookingStatus,
-    MatchSkillLevel,
-    MatchStatus,
-    ParticipantStatus,
-    Prisma,
+  BookingStatus,
+  MatchSkillLevel,
+  MatchStatus,
+  ParticipantStatus,
+  Prisma,
 } from "@prisma/client";
 import {
-    CACHE_KEYS,
-    buildMatchDetailCacheKey,
-    buildPublicMatchesCacheKey,
-    CACHE_TTL,
-    cacheHelper
+  buildMatchDetailCacheKey,
+  buildPublicMatchesCacheKey,
+  CACHE_KEYS,
+  CACHE_TTL,
+  cacheHelper,
 } from "../../helpers/cache";
 import { prisma } from "../../libs/prisma";
+import { runSerializableWithRetry } from "../../utils/db.utils";
 import {
-    BadRequestError,
-    ConflictRequestError,
-    ForbiddenError,
-    NotFoundError,
+  BadRequestError,
+  ConflictRequestError,
+  ForbiddenError,
+  NotFoundError,
 } from "../../utils/error.response";
 import {
-    CreateMatchInput,
-    MatchParticipantsQuery,
-    MyMatchesQuery,
-    PublicMatchesQuery,
+  CreateMatchInput,
+  MatchParticipantsQuery,
+  MyMatchesQuery,
+  PublicMatchesQuery,
 } from "../../validations";
 import { sendNotificationIfNotExists } from "./notification.service";
 
 const DEFAULT_JOIN_DEADLINE_MINUTES = 30;
-const SERIALIZABLE_MAX_ATTEMPTS = 3;
-const SERIALIZATION_FAILURE_CODE = "P2034";
-
-const isSerializableRetryableError = (error: unknown) => {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === SERIALIZATION_FAILURE_CODE
-  );
-};
-
-const runSerializableWithRetry = async <T>(
-  operation: () => Promise<T>,
-): Promise<T> => {
-  for (let attempt = 1; attempt <= SERIALIZABLE_MAX_ATTEMPTS; attempt += 1) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (
-        !isSerializableRetryableError(error) ||
-        attempt === SERIALIZABLE_MAX_ATTEMPTS
-      ) {
-        throw error;
-      }
-    }
-  }
-
-  throw new ConflictRequestError("SERIALIZATION_RETRY_FAILED: Please retry");
-};
 
 const invalidateMatchCaches = async (matchId?: string) => {
   if (matchId) {
@@ -409,7 +382,9 @@ export const getPublicMatches = async (query: PublicMatchesQuery) => {
     }
     console.log(`[Cache MISS] Matches list: ${cacheKey}`);
   } else {
-    console.log(`[Cache SKIP] Search or time filters present - bypassing matches list cache`);
+    console.log(
+      `[Cache SKIP] Search or time filters present - bypassing matches list cache`,
+    );
   }
 
   const where = buildPublicMatchWhere(query);
@@ -493,20 +468,23 @@ export const getPublicMatchById = async (matchId: string) => {
     throw new NotFoundError("Match not found");
   }
 
-  const [accepted_count, pending_count] = await prisma.$transaction([
-    prisma.matchParticipant.count({
-      where: {
-        match_id: match.id,
-        status: ParticipantStatus.ACCEPTED,
+  const counts = await prisma.matchParticipant.groupBy({
+    by: ["status"],
+    where: {
+      match_id: match.id,
+      status: {
+        in: [ParticipantStatus.ACCEPTED, ParticipantStatus.PENDING],
       },
-    }),
-    prisma.matchParticipant.count({
-      where: {
-        match_id: match.id,
-        status: ParticipantStatus.PENDING,
-      },
-    }),
-  ]);
+    },
+    _count: {
+      id: true,
+    },
+  });
+
+  const accepted_count =
+    counts.find((c) => c.status === ParticipantStatus.ACCEPTED)?._count.id ?? 0;
+  const pending_count =
+    counts.find((c) => c.status === ParticipantStatus.PENDING)?._count.id ?? 0;
 
   const result = mapMatchDetailItem(match, accepted_count, pending_count);
 
@@ -880,34 +858,9 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
   const limit = query.limit ?? 10;
   const skip = (page - 1) * limit;
 
-  const where: Prisma.MatchWhereInput = {};
-  const statusFilter = query.status ? { status: query.status as MatchStatus } : {};
-
-  if (query.status) {
-    where.status = query.status as MatchStatus;
-  }
-
-  if (query.type === "created") {
-    where.creator_id = playerId;
-  }
-
-  if (query.type === "joined") {
-    where.participants = {
-      some: {
-        player_id: playerId,
-        status: ParticipantStatus.ACCEPTED,
-      },
-    };
-  }
-
-  if (query.type === "pending") {
-    where.participants = {
-      some: {
-        player_id: playerId,
-        status: ParticipantStatus.PENDING,
-      },
-    };
-  }
+  const statusFilter = query.status
+    ? { status: query.status as MatchStatus }
+    : {};
 
   const createdWhere: Prisma.MatchWhereInput = {
     ...statusFilter,
@@ -934,31 +887,43 @@ export const getMyMatches = async (playerId: string, query: MyMatchesQuery) => {
     },
   };
 
-  const [createdCount, joinedCount, pendingCount, matches] = await prisma.$transaction([
-    prisma.match.count({ where: createdWhere }),
-    prisma.match.count({ where: joinedWhere }),
-    prisma.match.count({ where: pendingWhere }),
-    prisma.match.findMany({
-      where,
-      orderBy: {
-        created_at: "desc",
-      },
-      skip,
-      take: limit,
-      select: {
-        ...matchListSelect,
-        participants: {
-          where: {
-            player_id: playerId,
-          },
-          select: {
-            status: true,
-          },
-          take: 1,
+  let where: Prisma.MatchWhereInput;
+  if (query.type === "created") {
+    where = createdWhere;
+  } else if (query.type === "joined") {
+    where = joinedWhere;
+  } else if (query.type === "pending") {
+    where = pendingWhere;
+  } else {
+    where = statusFilter;
+  }
+
+  const [createdCount, joinedCount, pendingCount, matches] =
+    await prisma.$transaction([
+      prisma.match.count({ where: createdWhere }),
+      prisma.match.count({ where: joinedWhere }),
+      prisma.match.count({ where: pendingWhere }),
+      prisma.match.findMany({
+        where,
+        orderBy: {
+          created_at: "desc",
         },
-      },
-    }),
-  ]);
+        skip,
+        take: limit,
+        select: {
+          ...matchListSelect,
+          participants: {
+            where: {
+              player_id: playerId,
+            },
+            select: {
+              status: true,
+            },
+            take: 1,
+          },
+        },
+      }),
+    ]);
 
   let total: number;
   if (query.type === "created") {
@@ -1099,7 +1064,7 @@ export const acceptMatchParticipant = async (
 ) => {
   const now = new Date();
 
-  const resolvedParticipantId = await runSerializableWithRetry(() =>
+  const { participantId: resolvedParticipantId, playerAccountId, matchTitle } = await runSerializableWithRetry(() =>
     prisma.$transaction(
       async (tx) => {
         const match = await tx.match.findFirst({
@@ -1155,7 +1120,11 @@ export const acceptMatchParticipant = async (
         }
 
         if (participant.status === ParticipantStatus.ACCEPTED) {
-          return participant.id;
+          return {
+            participantId: participant.id,
+            playerAccountId: null,
+            matchTitle: null,
+          };
         }
 
         if (participant.status !== ParticipantStatus.PENDING) {
@@ -1225,6 +1194,18 @@ export const acceptMatchParticipant = async (
             status: ParticipantStatus.ACCEPTED,
             responded_at: now,
           },
+          include: {
+            player: {
+              select: {
+                account_id: true,
+              },
+            },
+            match: {
+              select: {
+                title: true,
+              },
+            },
+          },
         });
 
         if (match.slots_filled + 1 >= match.slots_needed) {
@@ -1246,39 +1227,27 @@ export const acceptMatchParticipant = async (
           });
 
           if (markedFull.count === 0) {
-            throw new ConflictRequestError(
-              "MATCH_STATE_CHANGED: Please retry",
-            );
+            throw new ConflictRequestError("MATCH_STATE_CHANGED: Please retry");
           }
         }
 
-        return updatedParticipant.id;
+        return {
+          participantId: updatedParticipant.id,
+          playerAccountId: updatedParticipant.player.account_id,
+          matchTitle: updatedParticipant.match.title,
+        };
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     ),
   );
-  const result = await getMappedParticipantById(resolvedParticipantId);
-  const acceptedParticipant = await prisma.matchParticipant.findUnique({
-    where: { id: resolvedParticipantId },
-    select: {
-      player: {
-        select: {
-          account_id: true,
-        },
-      },
-      match: {
-        select: {
-          title: true,
-        },
-      },
-    },
-  });
 
-  if (acceptedParticipant?.player.account_id) {
-    await sendNotificationIfNotExists(acceptedParticipant.player.account_id, {
-      message: `Yêu cầu tham gia kèo ${acceptedParticipant.match.title} của bạn đã được chấp nhận.`,
+  const result = await getMappedParticipantById(resolvedParticipantId);
+
+  if (playerAccountId) {
+    await sendNotificationIfNotExists(playerAccountId, {
+      message: `Yêu cầu tham gia kèo ${matchTitle} của bạn đã được chấp nhận.`,
       type: "MATCH",
       target_role: "PLAYER",
       link_to: `/matches/${matchId}`,
@@ -1296,7 +1265,7 @@ export const rejectMatchParticipant = async (
 ) => {
   const now = new Date();
 
-  const resolvedParticipantId = await runSerializableWithRetry(() =>
+  const { participantId: resolvedParticipantId, playerAccountId, matchTitle } = await runSerializableWithRetry(() =>
     prisma.$transaction(
       async (tx) => {
         const match = await tx.match.findFirst({
@@ -1348,58 +1317,56 @@ export const rejectMatchParticipant = async (
         }
 
         if (participant.status === ParticipantStatus.REJECTED) {
-          return participant.id;
+          return {
+            participantId: participant.id,
+            playerAccountId: null,
+            matchTitle: null,
+          };
         }
 
         if (participant.status !== ParticipantStatus.PENDING) {
           throw new BadRequestError("Only pending requests can be rejected");
         }
 
-        const updated = await tx.matchParticipant.updateMany({
+        const updatedParticipant = await tx.matchParticipant.update({
           where: {
             id: participant.id,
-            status: ParticipantStatus.PENDING,
           },
           data: {
             status: ParticipantStatus.REJECTED,
             responded_at: now,
           },
+          include: {
+            player: {
+              select: {
+                account_id: true,
+              },
+            },
+            match: {
+              select: {
+                title: true,
+              },
+            },
+          },
         });
 
-        if (updated.count === 0) {
-          throw new ConflictRequestError(
-            "PARTICIPANT_STATE_CHANGED: Please retry",
-          );
-        }
-
-        return participant.id;
+        return {
+          participantId: updatedParticipant.id,
+          playerAccountId: updatedParticipant.player.account_id,
+          matchTitle: updatedParticipant.match.title,
+        };
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     ),
   );
+
   const result = await getMappedParticipantById(resolvedParticipantId);
 
-  const rejectedParticipant = await prisma.matchParticipant.findUnique({
-    where: { id: resolvedParticipantId },
-    select: {
-      player: {
-        select: {
-          account_id: true,
-        },
-      },
-      match: {
-        select: {
-          title: true,
-        },
-      },
-    },
-  });
-
-  if (rejectedParticipant?.player.account_id) {
-    await sendNotificationIfNotExists(rejectedParticipant.player.account_id, {
-      message: `Yêu cầu tham gia kèo ${rejectedParticipant.match.title} của bạn đã bị từ chối.`,
+  if (playerAccountId) {
+    await sendNotificationIfNotExists(playerAccountId, {
+      message: `Yêu cầu tham gia kèo ${matchTitle} của bạn đã bị từ chối.`,
       type: "MATCH",
       target_role: "PLAYER",
       link_to: `/matches/${matchId}`,
