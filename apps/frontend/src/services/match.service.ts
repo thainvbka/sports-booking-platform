@@ -19,58 +19,13 @@ import type {
   PublicMatchesPaginatedResult,
   SkillLevel,
   SportType,
+  CreateMatchInput,
+  MatchParticipantsQuery,
+  MyMatchesQuery,
+  PublicMatchesQuery,
+  RawMatchDetail,
 } from "@/types/match.type";
 
-// Query params for public listing
-export interface PublicMatchesQuery {
-  sport_type?: SportType;
-  skill_level?: SkillLevel;
-  status?: MatchStatus;
-  from_time?: string;
-  to_time?: string;
-  complex_id?: string;
-  sub_field_id?: string;
-  province?: string;
-  district?: string;
-  q?: string;
-  sort?: MatchSortOption;
-  page?: number;
-  limit?: number;
-}
-
-export interface MyMatchesQuery {
-  type?: MyMatchType;
-  status?: MatchStatus;
-  page?: number;
-  limit?: number;
-}
-
-export interface MatchParticipantsQuery {
-  status?: ParticipantStatus;
-  q?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface CreateMatchInput {
-  booking_id: string;
-  title: string;
-  description?: string;
-  slots_needed: number;
-  skill_level?: SkillLevel;
-  join_deadline?: string;
-}
-
-type RawMatchDetail = Partial<MatchDetail> & {
-  slots_left?: number;
-  accepted_count?: number;
-  pending_count?: number;
-  participant_summary?: {
-    accepted_count?: number;
-    pending_count?: number;
-    slots_left?: number;
-  };
-};
 
 const EMPTY_BOOKING: MatchBooking = {
   id: "",

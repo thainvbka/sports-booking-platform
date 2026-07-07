@@ -11,21 +11,10 @@ import type {
   ProductQueryParams,
   UpdateProductPayload,
   UpdateProductStockPayload,
+  OwnerProductRaw,
+  OwnerProductsResponseRaw,
+  ProductMutationResponseRaw,
 } from "@/types";
-
-type OwnerProductRaw = Omit<OwnerProduct, "price" | "stock"> & {
-  price: number | string;
-  stock: number | string;
-};
-
-type OwnerProductsResponseRaw = {
-  products: OwnerProductRaw[];
-  pagination: PaginationMeta;
-};
-
-type ProductMutationResponseRaw = {
-  product: OwnerProductRaw;
-};
 
 const normalizeProduct = (product: OwnerProductRaw): OwnerProduct => ({
   ...product,

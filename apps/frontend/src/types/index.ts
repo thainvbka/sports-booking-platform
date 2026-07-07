@@ -107,6 +107,8 @@ export * from "./product.types";
 export * from "./public.types";
 export * from "./recommendation.types";
 export * from "./review.types";
+export * from "./payout.types";
+export * from "./match.type";
 export * from "./user.types";
 
 // Interfaces

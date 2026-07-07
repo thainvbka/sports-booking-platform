@@ -67,3 +67,18 @@ export interface UpdateProductPayload {
 export interface UpdateProductStockPayload {
   increment: number;
 }
+
+export type OwnerProductRaw = Omit<OwnerProduct, "price" | "stock"> & {
+  price: number | string;
+  stock: number | string;
+};
+
+export type OwnerProductsResponseRaw = {
+  products: OwnerProductRaw[];
+  pagination: PaginationMeta;
+};
+
+export type ProductMutationResponseRaw = {
+  product: OwnerProductRaw;
+};
+
