@@ -134,42 +134,35 @@ jobs:
             done
             
             echo "::::: Running database migrations..."
-            docker compose -f docker-compose.prod.yml --env-file .env.production run -T --rm backend npx prisma migrate deploy < /dev/null
+            docker compose -f docker-compose.prod.yml --env-file .env.production run -T --rm backend-1 npx prisma migrate deploy < /dev/null
             
-            echo "::::: Starting backend services (scale=2)..."
-            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans backend
+            echo "::::: Starting backend services (2 instances)..."
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --remove-orphans backend-1 backend-2
             
             echo "::::: Waiting for all backend replicas to be healthy..."
             for i in {1..40}; do
               ALL_HEALTHY=true
-              CONTAINERS=$(docker compose -f docker-compose.prod.yml --env-file .env.production ps backend -q)
-              
-              if [ -z "$CONTAINERS" ]; then
-                echo "::::: No backend containers found yet..."
-                ALL_HEALTHY=false
-              else
-                for CONTAINER in $CONTAINERS; do
-                  STATUS=$(docker inspect --format='{{json .State.Health.Status}}' "$CONTAINER" 2>/dev/null || echo "")
-                  STATE=$(docker inspect --format='{{json .State.Status}}' "$CONTAINER" 2>/dev/null || echo "")
-                  
-                  if [ "$STATE" = "\"exited\"" ]; then
-                    echo "ERROR: Backend container $CONTAINER has exited/crashed!"
-                    docker compose -f docker-compose.prod.yml --env-file .env.production logs backend
-                    exit 1
-                  fi
-                  
-                  if [ "$STATUS" != "\"healthy\"" ]; then
-                    ALL_HEALTHY=false
-                  fi
-                done
-              fi
-              
-              if [ "$ALL_HEALTHY" = true ] && [ -n "$CONTAINERS" ]; then
-                echo "::::: All backend replicas are healthy!"
+              for CONTAINER in sports-booking-backend-1 sports-booking-backend-2; do
+                STATUS=$(docker inspect --format='{{json .State.Health.Status}}' "$CONTAINER" 2>/dev/null || echo "")
+                STATE=$(docker inspect --format='{{json .State.Status}}' "$CONTAINER" 2>/dev/null || echo "")
+
+                if [ "$STATE" = "\"exited\"" ]; then
+                  echo "ERROR: $CONTAINER has exited/crashed!"
+                  docker logs "$CONTAINER" --tail=100
+                  exit 1
+                fi
+
+                if [ "$STATUS" != "\"healthy\"" ]; then
+                  ALL_HEALTHY=false
+                fi
+              done
+
+              if [ "$ALL_HEALTHY" = true ]; then
+                echo "::::: Both backend replicas are healthy!"
                 break
               fi
-              
-              echo "::::: Waiting for all backend replicas to be healthy ($i/40)..."
+
+              echo "::::: Waiting for backend replicas to be healthy ($i/40)..."
               sleep 3
             done
             
@@ -190,7 +183,7 @@ jobs:
             curl -sf http://localhost/api/health || {
               echo "Final backend health check failed!"
               echo "::::: Printing backend logs for debugging..."
-              docker compose -f docker-compose.prod.yml --env-file .env.production logs --tail=100 backend
+              docker compose -f docker-compose.prod.yml --env-file .env.production logs --tail=100 backend-1 backend-2
               exit 1
             }
             

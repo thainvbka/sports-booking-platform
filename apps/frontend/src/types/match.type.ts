@@ -371,16 +371,6 @@ export interface CreateMatchInput {
   join_deadline?: string;
 }
 
-export type RawMatchDetail = Partial<MatchDetail> & {
-  slots_left?: number;
-  accepted_count?: number;
-  pending_count?: number;
-  participant_summary?: {
-    accepted_count?: number;
-    pending_count?: number;
-    slots_left?: number;
-  };
-};
 
 
 

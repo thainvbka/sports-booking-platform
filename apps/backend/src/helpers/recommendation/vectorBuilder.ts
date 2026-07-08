@@ -152,7 +152,7 @@ export const buildSubfieldVector = async (
 ): Promise<number[]> => {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
 
-  const [subfield, bookingsInLast30Days] = await Promise.all([
+  const [subfield, bookingsInLast30Days, lastBooking] = await Promise.all([
     prisma.subField.findUnique({
       where: { id: subfieldId },
       select: {
@@ -175,6 +175,18 @@ export const buildSubfieldVector = async (
       where: {
         sub_field_id: subfieldId,
         start_time: { gte: thirtyDaysAgo },
+      },
+    }),
+    prisma.booking.findFirst({
+      where: {
+        sub_field_id: subfieldId,
+        status: "COMPLETED",
+      },
+      orderBy: {
+        start_time: "desc",
+      },
+      select: {
+        start_time: true,
       },
     }),
   ]);
@@ -216,6 +228,16 @@ export const buildSubfieldVector = async (
       ? weekendRulesCount / subfield.pricing_rules.length
       : 0;
 
+  // Calculate dynamic recency based on the last completed booking
+  let recency = 0.5; // neutral fallback
+  if (lastBooking) {
+    const daysAgo = Math.max(
+      0,
+      (new Date().getTime() - lastBooking.start_time.getTime()) / (1000 * 3600 * 24),
+    );
+    recency = normalizeRecency(daysAgo);
+  }
+
   const vector = [
     normalizeSport(subfield.sport_type),
     normalizeHour(avgHour),
@@ -224,7 +246,7 @@ export const buildSubfieldVector = async (
     normalizeDistrict(subfield.complex.complex_address),
     normalizeRating(subfield.avg_rating ? Number(subfield.avg_rating) : null),
     normalizeFrequency(bookingsInLast30Days, maxSubfieldFrequency),
-    1.0, // Subfield recency is always 1.0
+    recency,
   ];
 
   return vector;

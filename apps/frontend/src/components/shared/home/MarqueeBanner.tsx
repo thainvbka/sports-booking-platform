@@ -28,7 +28,7 @@ export function MarqueeBanner() {
         });
 
         // 2. Matches
-        const matches = matchesRes?.items || [];
+        const matches = matchesRes?.data?.items || [];
         matches.forEach((m) => {
           const emoji = SPORT_CATEGORIES.find((cat) => cat.type === m.sport_type)?.emoji || "🔥";
           const slotsLeft = Math.max(m.slots_needed - m.slots_filled, 0);

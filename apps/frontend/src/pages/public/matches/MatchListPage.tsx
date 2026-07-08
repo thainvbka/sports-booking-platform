@@ -13,6 +13,8 @@ import { useMatchStore } from "@/store/useMatchStore";
 import { SportType } from "@/types";
 import {
   MATCH_DEFAULT_SORT,
+  MATCH_STATUS_OPTIONS,
+  MATCH_SORT_OPTIONS,
   type MatchSortOption,
   type SportType as MatchSportType,
   type MatchStatus,
@@ -30,8 +32,8 @@ interface MatchFilterValues {
 }
 const DEFAULT_FILTER: MatchFilterValues = { q: "", sort: MATCH_DEFAULT_SORT };
 const VALID_SPORT_TYPES = new Set<string>(Object.values(SportType));
-const VALID_MATCH_STATUS = new Set(["OPEN", "FULL", "CLOSED", "EXPIRED", "CANCELED", "COMPLETED"]);
-const VALID_MATCH_SORT = new Set(["created_at:desc", "start_time:asc", "start_time:desc"]);
+const VALID_MATCH_STATUS = new Set<string>(MATCH_STATUS_OPTIONS);
+const VALID_MATCH_SORT = new Set<string>(MATCH_SORT_OPTIONS);
 
 export function MatchListPage() {
   const [searchParams, setSearchParams] = useSearchParams();

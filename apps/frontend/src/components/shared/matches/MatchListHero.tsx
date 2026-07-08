@@ -87,7 +87,6 @@ function ScoreboardChip({
 }
 
 // Public: MatchListHero 
-const VALID_SPORT_TYPES = new Set<string>(Object.values(SportType));
 
 export interface MatchListHeroProps {
   total: number;
@@ -207,7 +206,7 @@ export function MatchListHero({
             sportValue={sportValue}
             onSportChange={(value) =>
               onSportChange(
-                value === "ALL" || VALID_SPORT_TYPES.has(value) ? value : "ALL",
+                value === "ALL" || (Object.values(SportType) as string[]).includes(value) ? value : "ALL",
               )
             }
             onSubmit={onSubmit}

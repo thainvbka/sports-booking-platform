@@ -1,25 +1,29 @@
 import { SportType } from "@prisma/client";
+import { DISTRICT_COORDINATES, PROVINCE_COORDINATES } from "./constants";
 
 /**
  * Normalizes different features into a [0, 1] range for feature vectors.
  */
 
 export const normalizeSport = (sport: SportType): number => {
+  
   const sportMap: Record<SportType, number> = {
-    [SportType.FOOTBALL]: 0.0,
-    [SportType.BASKETBALL]: 0.2,
-    [SportType.TENNIS]: 0.4,
-    [SportType.BADMINTON]: 0.6,
+    [SportType.FOOTBALL]: 1.0,
     [SportType.VOLLEYBALL]: 0.8,
-    [SportType.PICKLEBALL]: 1.0,
+    [SportType.BASKETBALL]: 0.6,
+    [SportType.TENNIS]: 0.4,
+    [SportType.BADMINTON]: 0.2,
+    [SportType.PICKLEBALL]: 0.1,
   };
   return sportMap[sport] ?? 0.5;
 };
 
 export const normalizeHour = (hour: number): number => {
-  if (hour < 12) return 0.0;
-  if (hour < 18) return 0.5;
-  return 1.0;
+  // Linear scaling between 5:00 AM (typical earliest booking slot) and 11:00 PM (23:00, latest slot)
+  const minHour = 5;
+  const maxHour = 23;
+  const clamped = Math.max(minHour, Math.min(hour, maxHour));
+  return (clamped - minHour) / (maxHour - minHour);
 };
 
 export const normalizeWeekday = (ratio: number): number => {
@@ -123,25 +127,42 @@ export const extractLocationScope = (address: string): string => {
   return cleanAddr;
 };
 
-const hashString = (str: string): number => {
-  let hash = 5381;
-  const normalizedStr = str.trim().toLowerCase();
-  for (let i = 0; i < normalizedStr.length; i++) {
-    hash = (hash * 33) ^ normalizedStr.charCodeAt(i);
-  }
-  // Convert to [0, 1] range deterministically
-  return (hash >>> 0) / 0xffffffff;
-};
-
 export const normalizeDistrict = (address: string): number => {
   if (!address) return 0.5;
 
-  const locScope = extractLocationScope(address);
-  if (!locScope) {
-    return 0.5; // fallback
+  const locScope = extractLocationScope(address).toLowerCase();
+  
+  // Default coordinates (approximate center point of Vietnam, e.g., Da Nang)
+  let coord = { lat: 16.0, lng: 106.0 };
+  let found = false;
+
+  // 1. Match specific district coordinate first
+  for (const [key, val] of Object.entries(DISTRICT_COORDINATES)) {
+    if (locScope.includes(key)) {
+      coord = val;
+      found = true;
+      break;
+    }
   }
 
-  return hashString(locScope);
+  // 2. If not found, match general province coordinate
+  if (!found) {
+    for (const [key, val] of Object.entries(PROVINCE_COORDINATES)) {
+      if (locScope.includes(key)) {
+        coord = val;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  // Normalize Lat [10.0, 22.0] -> [0.0, 1.0]
+  const latNorm = (coord.lat - 10.0) / 12.0;
+  // Normalize Lng [105.0, 109.0] -> [0.0, 1.0]
+  const lngNorm = (coord.lng - 105.0) / 4.0;
+
+  const projected = 0.6 * Math.max(0, Math.min(latNorm, 1)) + 0.4 * Math.max(0, Math.min(lngNorm, 1));
+  return Math.max(0, Math.min(projected, 1));
 };
 
 export const normalizeRating = (avg: number | null): number => {

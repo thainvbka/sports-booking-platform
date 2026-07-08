@@ -65,7 +65,7 @@ const OWNER_MENU_ITEMS: MenuItem[] = [
   { icon: Calendar, label: "Lịch đặt sân", path: "/owner/bookings" },
   { icon: Package, label: "Sản phẩm", path: "/owner/products" },
   { icon: Wallet, label: "Ví & Đối soát", path: "/owner/wallet" },
-  { icon: Settings, label: "Cài đặt", path: "/owner/settings", disabled: true },
+  // { icon: Settings, label: "Cài đặt", path: "/owner/settings", disabled: true },
 ];
 
 const ADMIN_MENU_ITEMS: MenuItem[] = [

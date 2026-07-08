@@ -1,6 +1,7 @@
+import { MATCH_SKILL_LEVELS } from "@/types/match.type";
 import { z } from "zod";
 
-const skillLevelSchema = z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]);
+const skillLevelSchema = z.enum(MATCH_SKILL_LEVELS as [string, ...string[]]);
 
 export const createMatchFormSchema = z.object({
   title: z

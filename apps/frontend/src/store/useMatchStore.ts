@@ -1,9 +1,3 @@
-import type {
-  CreateMatchInput,
-  MatchParticipantsQuery,
-  MyMatchesQuery,
-  PublicMatchesQuery,
-} from "@/services/match.service";
 import {
   acceptParticipant as acceptParticipantRequest,
   cancelMatch as cancelMatchRequest,
@@ -27,9 +21,12 @@ import type {
   Pagination,
   Participant,
   PublicMatchesSummary,
-} from "@/types/match.type";
+  CreateMatchInput,
+  MatchParticipantsQuery,
+  MyMatchesQuery,
+  PublicMatchesQuery,
+} from "@/types";
 import { create } from "zustand";
-import { immer } from "zustand/middleware/immer";
 
 interface MatchStoreState {
   matches: Match[];
@@ -96,12 +93,10 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
         };
       };
     };
-
     const apiMessage = maybeAxiosError.response?.data?.message;
     if (typeof apiMessage === "string" && apiMessage.trim().length > 0) {
       return apiMessage;
     }
-
     if (
       typeof maybeAxiosError.message === "string" &&
       maybeAxiosError.message.trim().length > 0
@@ -109,562 +104,227 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
       return maybeAxiosError.message;
     }
   }
-
   return fallback;
 };
 
-const upsertParticipant = (
-  participants: Participant[],
-  participant: Participant,
-): Participant[] => {
-  const index = participants.findIndex((item) => item.id === participant.id);
+export const useMatchStore = create<MatchStoreState>((set) => ({
+  ...INITIAL_STATE,
 
-  if (index === -1) {
-    return [participant, ...participants];
-  }
-
-  const existing = participants[index];
-  const next = [...participants];
-  next[index] = {
-    ...existing,
-    ...participant,
-    player: {
-      ...existing.player,
-      ...participant.player,
-      id: participant.player.id || existing.player.id,
-      full_name: participant.player.full_name || existing.player.full_name,
-    },
-  };
-
-  return next;
-};
-
-const mergeMatchToState = (
-  state: MatchStoreState,
-  updatedMatch: Match,
-): void => {
-  const index = state.matches.findIndex((item) => item.id === updatedMatch.id);
-
-  if (index !== -1) {
-    state.matches[index] = updatedMatch;
-  }
-
-  if (state.currentMatch?.id === updatedMatch.id) {
-    const { slots_left, ...matchForDetail } = updatedMatch;
-    void slots_left;
-    state.currentMatch = {
-      ...state.currentMatch,
-      ...matchForDetail,
-    };
-  }
-};
-
-export const useMatchStore = create<MatchStoreState>()(
-  immer((set, get) => ({
-    ...INITIAL_STATE,
-
-    fetchPublicMatches: async (query = {}) => {
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
+  fetchPublicMatches: async (query = {}) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await getPublicMatches(query);
+      set({
+        matches: res.data.items,
+        pagination: res.data.pagination,
+        publicMatchesSummary: res.data.summary,
       });
+    } catch (error) {
+      set({ error: getErrorMessage(error, "Khong the tai danh sach tran dau cong khai") });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const result = await getPublicMatches(query);
+  fetchMatchById: async (id, scope = "public") => {
+    set({ isLoadingDetail: true, error: null });
+    try {
+      const res =
+        scope === "player"
+          ? await getMatchByIdForPlayer(id)
+          : await getPublicMatchById(id);
+      set({ currentMatch: res.data.match });
+    } catch (error) {
+      set({ error: getErrorMessage(error, "Khong the tai chi tiet tran dau") });
+    } finally {
+      set({ isLoadingDetail: false });
+    }
+  },
 
-        set((state) => {
-          state.matches = result.items;
-          state.pagination = result.pagination;
-          state.publicMatchesSummary = result.summary;
-          state.isLoading = false;
-        });
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(
-            error,
-            "Khong the tai danh sach tran dau cong khai",
-          );
-          state.isLoading = false;
-        });
-      }
-    },
-
-    fetchMatchById: async (id, scope = "public") => {
-      set((state) => {
-        state.isLoadingDetail = true;
-        state.error = null;
+  fetchMyMatches: async (query = {}) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await getMyMatches(query);
+      set({
+        matches: res.data.items,
+        pagination: res.data.pagination,
+        myMatchesSummary: res.data.summary,
       });
+    } catch (error) {
+      set({ error: getErrorMessage(error, "Khong the tai danh sach tran dau cua ban") });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const match =
-          scope === "player"
-            ? await getMatchByIdForPlayer(id)
-            : await getPublicMatchById(id);
-
-        set((state) => {
-          state.currentMatch = match;
-          state.isLoadingDetail = false;
-        });
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(error, "Khong the tai chi tiet tran dau");
-          state.isLoadingDetail = false;
-        });
-      }
-    },
-
-    fetchMyMatches: async (query = {}) => {
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
+  fetchParticipants: async (id, query = {}) => {
+    set({ isLoadingParticipants: true, error: null });
+    try {
+      const res = await getMatchParticipants(id, query);
+      set({
+        participantsMatch: res.data.match,
+        participants: res.data.participants,
+        participantsPagination: res.data.pagination,
       });
+    } catch (error) {
+      set({ error: getErrorMessage(error, "Khong the tai danh sach nguoi tham gia") });
+    } finally {
+      set({ isLoadingParticipants: false });
+    }
+  },
 
-      try {
-        const result = await getMyMatches(query);
-
-        set((state) => {
-          state.matches = result.items;
-          state.pagination = result.pagination;
-          state.myMatchesSummary = result.summary;
-          state.isLoading = false;
-        });
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(
-            error,
-            "Khong the tai danh sach tran dau cua ban",
-          );
-          state.isLoading = false;
-        });
-      }
-    },
-
-    fetchParticipants: async (id, query = {}) => {
+  createMatch: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await createMatchRequest(data);
+      const createdMatch = res.data.match;
       set((state) => {
-        state.isLoadingParticipants = true;
-        state.error = null;
-      });
-
-      try {
-        const result = await getMatchParticipants(id, query);
-
-        set((state) => {
-          state.participantsMatch = result.match;
-          state.participants = result.items;
-          state.participantsPagination = result.pagination;
-          state.isLoadingParticipants = false;
-        });
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(
-            error,
-            "Khong the tai danh sach nguoi tham gia",
-          );
-          state.isLoadingParticipants = false;
-        });
-      }
-    },
-
-    createMatch: async (data) => {
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
-      });
-
-      try {
-        const createdMatch = await createMatchRequest(data);
-
-        set((state) => {
-          state.matches = [createdMatch, ...state.matches];
-
-          if (state.pagination) {
-            state.pagination.total_items += 1;
-            state.pagination.total_pages = Math.ceil(
-              state.pagination.total_items / state.pagination.limit,
-            );
-            state.pagination.has_next =
-              state.pagination.page * state.pagination.limit <
-              state.pagination.total_items;
-          }
-
-          state.isLoading = false;
-        });
-
-        return createdMatch;
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(error, "Khong the tao tran dau");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    joinMatch: async (id, introduction) => {
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
-      });
-
-      try {
-        const participant = await joinMatchRequest(id, introduction);
-
-        set((state) => {
-          if (state.currentMatch?.id === id && participant.status === "PENDING") {
-            state.currentMatch.pending_count += 1;
-            state.currentMatch.my_participation_status = "PENDING";
-          }
-
-          state.participants = upsertParticipant(state.participants, participant);
-          state.isLoading = false;
-        });
-
-        return participant;
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(error, "Khong the gui yeu cau tham gia");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    leaveMatch: async (id) => {
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
-      });
-
-      try {
-        const participant = await leaveMatchRequest(id);
-
-        set((state) => {
-          const previousParticipant = state.participants.find(
-            (item) => item.id === participant.id,
-          );
-
-          if (
-            state.currentMatch?.id === id &&
-            previousParticipant?.status === "PENDING"
-          ) {
-            state.currentMatch.pending_count = Math.max(
-              0,
-              state.currentMatch.pending_count - 1,
-            );
-            state.currentMatch.my_participation_status = null;
-          }
-
-          if (
-            state.currentMatch?.id === id &&
-            previousParticipant?.status === "ACCEPTED"
-          ) {
-            state.currentMatch.accepted_count = Math.max(
-              0,
-              state.currentMatch.accepted_count - 1,
-            );
-            state.currentMatch.slots_filled = Math.max(
-              0,
-              state.currentMatch.slots_filled - 1,
-            );
-
-            if (state.currentMatch.status === "FULL") {
-              state.currentMatch.status = "OPEN";
+        const nextMatches = [createdMatch, ...state.matches];
+        const nextPagination = state.pagination
+          ? {
+              ...state.pagination,
+              total_items: state.pagination.total_items + 1,
+              total_pages: Math.ceil((state.pagination.total_items + 1) / state.pagination.limit),
+              has_next: (state.pagination.page * state.pagination.limit) < (state.pagination.total_items + 1),
             }
-
-            state.currentMatch.my_participation_status = null;
-          }
-
-          const match = state.matches.find((item) => item.id === id);
-          if (match && previousParticipant?.status === "ACCEPTED") {
-            match.slots_filled = Math.max(0, match.slots_filled - 1);
-            match.slots_left = Math.max(match.slots_needed - match.slots_filled, 0);
-            if (match.status === "FULL") {
-              match.status = "OPEN";
-            }
-          }
-
-          state.participants = upsertParticipant(state.participants, participant);
-          state.isLoading = false;
-        });
-
-        return participant;
-      } catch (error) {
-        set((state) => {
-          state.error = getErrorMessage(error, "Khong the roi tran dau");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    acceptParticipant: async (matchId, participantId) => {
-      const previous = {
-        matches: get().matches,
-        currentMatch: get().currentMatch,
-        participants: get().participants,
-      };
-
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
-
-        const target = state.participants.find((item) => item.id === participantId);
-        const shouldAdjustSlots = target?.status === "PENDING";
-
-        if (target) {
-          target.status = "ACCEPTED";
-          target.responded_at = new Date().toISOString();
-        }
-
-        if (state.currentMatch?.id === matchId && shouldAdjustSlots) {
-          state.currentMatch.pending_count = Math.max(
-            0,
-            state.currentMatch.pending_count - 1,
-          );
-          state.currentMatch.accepted_count += 1;
-          state.currentMatch.slots_filled = Math.min(
-            state.currentMatch.slots_needed,
-            state.currentMatch.slots_filled + 1,
-          );
-
-          if (state.currentMatch.slots_filled >= state.currentMatch.slots_needed) {
-            state.currentMatch.status = "FULL";
-          }
-        }
-
-        const match = state.matches.find((item) => item.id === matchId);
-        if (match && shouldAdjustSlots) {
-          match.slots_filled = Math.min(match.slots_needed, match.slots_filled + 1);
-          match.slots_left = Math.max(match.slots_needed - match.slots_filled, 0);
-
-          if (match.slots_filled >= match.slots_needed) {
-            match.status = "FULL";
-          }
-        }
+          : null;
+        return { matches: nextMatches, pagination: nextPagination };
       });
+      return createdMatch;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const participant = await acceptParticipantRequest(matchId, participantId);
+  joinMatch: async (id, introduction) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await joinMatchRequest(id, introduction);
+      return res.data.participant;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-        set((state) => {
-          state.participants = upsertParticipant(state.participants, participant);
-          state.isLoading = false;
-        });
+  leaveMatch: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await leaveMatchRequest(id);
+      return res.data.participant;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-        return participant;
-      } catch (error) {
-        set((state) => {
-          state.matches = previous.matches;
-          state.currentMatch = previous.currentMatch;
-          state.participants = previous.participants;
-          state.error = getErrorMessage(error, "Khong the chap nhan nguoi tham gia");
-          state.isLoading = false;
-        });
+  acceptParticipant: async (matchId, participantId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await acceptParticipantRequest(matchId, participantId);
+      return res.data.participant;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-        return null;
-      }
-    },
+  rejectParticipant: async (matchId, participantId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await rejectParticipantRequest(matchId, participantId);
+      return res.data.participant;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-    rejectParticipant: async (matchId, participantId) => {
-      const previous = {
-        currentMatch: get().currentMatch,
-        participants: get().participants,
-      };
-
+  closeMatch: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await closeMatchRequest(id);
+      const updatedMatch = res.data.match;
       set((state) => {
-        state.isLoading = true;
-        state.error = null;
-
-        const target = state.participants.find((item) => item.id === participantId);
-        const shouldAdjustPending = target?.status === "PENDING";
-
-        if (target) {
-          target.status = "REJECTED";
-          target.responded_at = new Date().toISOString();
-        }
-
-        if (state.currentMatch?.id === matchId && shouldAdjustPending) {
-          state.currentMatch.pending_count = Math.max(
-            0,
-            state.currentMatch.pending_count - 1,
-          );
-        }
+        const nextCurrentMatch =
+          state.currentMatch?.id === id
+            ? { ...state.currentMatch, status: "CLOSED" as const }
+            : state.currentMatch;
+        const nextMatches = state.matches.map((m) =>
+          m.id === id ? { ...m, status: "CLOSED" as const } : m,
+        );
+        return { currentMatch: nextCurrentMatch, matches: nextMatches };
       });
+      return updatedMatch;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const participant = await rejectParticipantRequest(matchId, participantId);
-
-        set((state) => {
-          state.participants = upsertParticipant(state.participants, participant);
-          state.isLoading = false;
-        });
-
-        return participant;
-      } catch (error) {
-        set((state) => {
-          state.currentMatch = previous.currentMatch;
-          state.participants = previous.participants;
-          state.error = getErrorMessage(error, "Khong the tu choi nguoi tham gia");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    closeMatch: async (id) => {
-      const previous = {
-        matches: get().matches,
-        currentMatch: get().currentMatch,
-      };
-
+  reopenMatch: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await reopenMatchRequest(id);
+      const updatedMatch = res.data.match;
       set((state) => {
-        state.isLoading = true;
-        state.error = null;
-
-        const match = state.matches.find((item) => item.id === id);
-        if (match) {
-          match.status = "CLOSED";
-        }
-
-        if (state.currentMatch?.id === id) {
-          state.currentMatch.status = "CLOSED";
-        }
+        const nextCurrentMatch =
+          state.currentMatch?.id === id
+            ? { ...state.currentMatch, status: updatedMatch.status }
+            : state.currentMatch;
+        const nextMatches = state.matches.map((m) =>
+          m.id === id ? { ...m, status: updatedMatch.status } : m,
+        );
+        return { currentMatch: nextCurrentMatch, matches: nextMatches };
       });
+      return updatedMatch;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const updatedMatch = await closeMatchRequest(id);
-
-        set((state) => {
-          mergeMatchToState(state, updatedMatch);
-          state.isLoading = false;
-        });
-
-        return updatedMatch;
-      } catch (error) {
-        set((state) => {
-          state.matches = previous.matches;
-          state.currentMatch = previous.currentMatch;
-          state.error = getErrorMessage(error, "Khong the dong tran dau");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    reopenMatch: async (id) => {
-      const previous = {
-        matches: get().matches,
-        currentMatch: get().currentMatch,
-      };
-
+  cancelMatch: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await cancelMatchRequest(id);
+      const updatedMatch = res.data.match;
       set((state) => {
-        state.isLoading = true;
-        state.error = null;
-
-        const match = state.matches.find((item) => item.id === id);
-        if (match) {
-          match.status = match.slots_filled >= match.slots_needed ? "FULL" : "OPEN";
-        }
-
-        if (state.currentMatch?.id === id) {
-          state.currentMatch.status =
-            state.currentMatch.slots_filled >= state.currentMatch.slots_needed
-              ? "FULL"
-              : "OPEN";
-        }
+        const nextCurrentMatch =
+          state.currentMatch?.id === id
+            ? { ...state.currentMatch, status: "CANCELED" as const }
+            : state.currentMatch;
+        const nextMatches = state.matches.map((m) =>
+          m.id === id ? { ...m, status: "CANCELED" as const } : m,
+        );
+        return { currentMatch: nextCurrentMatch, matches: nextMatches };
       });
+      return updatedMatch;
+    } catch {
+      return null;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      try {
-        const updatedMatch = await reopenMatchRequest(id);
+  clearMatchDetail: () => {
+    set({
+      currentMatch: null,
+      participants: [],
+      participantsMatch: null,
+      participantsPagination: null,
+    });
+  },
 
-        set((state) => {
-          mergeMatchToState(state, updatedMatch);
-          state.isLoading = false;
-        });
-
-        return updatedMatch;
-      } catch (error) {
-        set((state) => {
-          state.matches = previous.matches;
-          state.currentMatch = previous.currentMatch;
-          state.error = getErrorMessage(error, "Khong the mo lai tran dau");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    cancelMatch: async (id) => {
-      const previous = {
-        matches: get().matches,
-        currentMatch: get().currentMatch,
-      };
-
-      set((state) => {
-        state.isLoading = true;
-        state.error = null;
-
-        const match = state.matches.find((item) => item.id === id);
-        if (match) {
-          match.status = "CANCELED";
-        }
-
-        if (state.currentMatch?.id === id) {
-          state.currentMatch.status = "CANCELED";
-        }
-      });
-
-      try {
-        const updatedMatch = await cancelMatchRequest(id);
-
-        set((state) => {
-          mergeMatchToState(state, updatedMatch);
-          state.isLoading = false;
-        });
-
-        return updatedMatch;
-      } catch (error) {
-        set((state) => {
-          state.matches = previous.matches;
-          state.currentMatch = previous.currentMatch;
-          state.error = getErrorMessage(error, "Khong the huy tran dau");
-          state.isLoading = false;
-        });
-
-        return null;
-      }
-    },
-
-    clearMatchDetail: () => {
-      set((state) => {
-        state.currentMatch = null;
-        state.participants = [];
-        state.participantsMatch = null;
-        state.participantsPagination = null;
-      });
-    },
-
-    reset: () => {
-      set((state) => {
-        state.matches = [];
-        state.pagination = null;
-        state.isLoading = false;
-        state.error = null;
-        state.myMatchesSummary = null;
-        state.publicMatchesSummary = null;
-        state.currentMatch = null;
-        state.isLoadingDetail = false;
-        state.participants = [];
-        state.participantsMatch = null;
-        state.participantsPagination = null;
-        state.isLoadingParticipants = false;
-      });
-    },
-  })),
-);
+  reset: () => {
+    set(INITIAL_STATE);
+  },
+}));
