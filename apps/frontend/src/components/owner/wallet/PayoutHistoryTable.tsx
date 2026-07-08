@@ -23,7 +23,7 @@ import { formatPrice } from "@/utils";
 import { FileText } from "lucide-react";
 import { PayoutBatchDetailDialog } from "./PayoutBatchDetailDialog";
 
-import type { PayoutBatchRecord } from "@/services/payout.service";
+import type { PayoutBatchRecord } from "@/types";
 
 interface PayoutHistoryTableProps {
   batches: PayoutBatchRecord[] | undefined;

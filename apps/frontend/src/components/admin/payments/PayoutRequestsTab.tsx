@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePayoutBatchColumns } from "@/hooks/admin/usePayoutBatchColumns";
-import type { AdminPayoutBatchRecord } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord } from "@/types";
 
 interface PayoutRequestsTabProps {
   filteredBatches: AdminPayoutBatchRecord[];

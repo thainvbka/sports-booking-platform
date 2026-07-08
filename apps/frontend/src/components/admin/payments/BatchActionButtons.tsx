@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { AdminPayoutBatchRecord } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord } from "@/types";
 import { CheckCircle2, RefreshCw, XCircle } from "lucide-react";
 
 interface BatchActionButtonsProps {

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useBankDetailsForm } from "@/hooks/owner/useBankDetailsForm";
-import type { OwnerWalletResponse } from "@/services/payout.service";
+import type { OwnerWalletResponse } from "@/types";
 import { getBankDisplayName, VIETNAM_BANKS } from "@/utils";
 import { AlertCircle, CreditCard, ShieldCheck } from "lucide-react";
 

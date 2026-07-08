@@ -1,6 +1,6 @@
 import type { Column } from "@/components/shared/ui-utility/DataTable";
 import { formatPrice, getBankDisplayName } from "@/utils";
-import type { AdminOwnerWalletRecord } from "@/services/payout.service";
+import type { AdminOwnerWalletRecord } from "@/types";
 
 export function useOwnerWalletColumns() {
   const columns: Column<AdminOwnerWalletRecord>[] = [

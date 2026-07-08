@@ -4,7 +4,7 @@ import {
   DetailSummaryRow,
 } from "@/components/admin/details/AdminDetailDialog";
 import { PAYOUT_STATUS_COLORS, PAYOUT_STATUS_LABELS } from "@/constants";
-import type { AdminPayoutBatchRecord } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord } from "@/types";
 import { formatDateVn, formatPrice, getBankDisplayName } from "@/utils";
 import { Receipt } from "lucide-react";
 import { BatchActionButtons } from "./BatchActionButtons";

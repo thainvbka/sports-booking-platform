@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatPrice, formatDateVn } from "@/utils";
 
-import type { PayoutBatchRecord } from "@/services/payout.service";
+import type { PayoutBatchRecord } from "@/types";
 import type { LucideIcon } from "lucide-react";
 
 interface PayoutBatchDetailDialogProps {

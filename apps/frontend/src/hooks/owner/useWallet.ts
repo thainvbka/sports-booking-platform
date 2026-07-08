@@ -1,4 +1,5 @@
-import { payoutService, type OwnerWalletResponse } from "@/services/payout.service";
+import { payoutService } from "@/services/payout.service";
+import type { OwnerWalletResponse } from "@/types";
 import { mapToBankBin } from "@/utils";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

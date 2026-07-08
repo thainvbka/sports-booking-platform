@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Eye } from "lucide-react";
 import { PAYOUT_STATUS_COLORS, PAYOUT_STATUS_LABELS } from "@/constants";
 import { formatDateVn, formatPrice, getBankDisplayName } from "@/utils";
-import type { AdminPayoutBatchRecord } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord } from "@/types";
 
 interface UsePayoutBatchColumnsProps {
   onViewDetail: (batch: AdminPayoutBatchRecord) => void;

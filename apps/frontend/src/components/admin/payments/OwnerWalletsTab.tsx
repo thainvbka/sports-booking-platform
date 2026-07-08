@@ -3,7 +3,7 @@ import { AdminTableSection } from "@/components/admin/shell/AdminTableSection";
 import { DataTable } from "@/components/shared/ui-utility/DataTable";
 import { Input } from "@/components/ui/input";
 import { useOwnerWalletColumns } from "@/hooks/admin/useOwnerWalletColumns";
-import type { AdminOwnerWalletRecord } from "@/services/payout.service";
+import type { AdminOwnerWalletRecord } from "@/types";
 
 interface OwnerWalletsTabProps {
   filteredWallets: AdminOwnerWalletRecord[];

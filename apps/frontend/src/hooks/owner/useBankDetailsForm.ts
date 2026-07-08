@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { payoutService, type OwnerWalletResponse } from "@/services/payout.service";
+import { payoutService } from "@/services/payout.service";
+import type { OwnerWalletResponse } from "@/types";
 import { mapToBankBin } from "@/utils";
 import { toast } from "sonner";
 

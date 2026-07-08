@@ -1,4 +1,4 @@
-import type { AdminPayoutBatchRecord } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord } from "@/types";
 import { ExternalLink } from "lucide-react";
 
 interface VietQRGeneratorProps {

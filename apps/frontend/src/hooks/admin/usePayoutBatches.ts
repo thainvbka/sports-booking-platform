@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   payoutService,
-  type AdminPayoutBatchRecord,
-  type PayoutStatus,
 } from "@/services/payout.service";
+import type { AdminPayoutBatchRecord, PayoutStatus } from "@/types";
 
 export function usePayoutBatches(activeTab: "requests" | "wallets") {
   const [batches, setBatches] = useState<AdminPayoutBatchRecord[]>([]);

@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  payoutService,
-  type AdminOwnerWalletRecord,
-} from "@/services/payout.service";
+import { payoutService } from "@/services/payout.service";
+import type { AdminOwnerWalletRecord } from "@/types";
 
 export function useOwnerWallets(activeTab: "requests" | "wallets") {
   const [wallets, setWallets] = useState<AdminOwnerWalletRecord[]>([]);
