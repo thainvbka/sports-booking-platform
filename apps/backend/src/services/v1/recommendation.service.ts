@@ -7,11 +7,11 @@ import {
   findSimilarSubfields,
   RerankCandidate,
   rerankWithGemini,
+  SPORT_NAME_MAP,
+  translatePreferredDays,
+  translatePreferredTime,
   updateSubfieldEmbedding,
   UserProfileSummary,
-  SPORT_NAME_MAP,
-  translatePreferredTime,
-  translatePreferredDays,
 } from "../../helpers/recommendation";
 import { prisma } from "../../libs/prisma";
 import { acquireLock, releaseLock } from "../../libs/redis";
@@ -231,8 +231,10 @@ export const getRecommendationsForPlayer = async (
       "Thứ Sáu",
       "Thứ Bảy",
     ];
-    const currentDayOfWeek = weekdaysVi[now.getDay()];
-    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+  
+    const vnDate = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const currentDayOfWeek = weekdaysVi[vnDate.getUTCDay()];
+    const isWeekend = vnDate.getUTCDay() === 0 || vnDate.getUTCDay() === 6;
 
     const userProfileSummary: UserProfileSummary = {
       player_id: playerId,

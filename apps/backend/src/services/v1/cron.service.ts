@@ -271,6 +271,7 @@ export const sendUpcomingBookingReminders = async () => {
       const startTime = booking.start_time.toLocaleTimeString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Asia/Ho_Chi_Minh",
       });
 
       await sendNotificationIfNotExists(booking.player.account_id, {
@@ -327,6 +328,7 @@ export const sendOwnerBookingConfirmationReminders = async () => {
       const startTime = booking.start_time.toLocaleTimeString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Asia/Ho_Chi_Minh",
       });
 
       await sendNotificationIfNotExists(

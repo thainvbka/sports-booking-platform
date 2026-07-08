@@ -311,7 +311,7 @@ export const adminProcessPayoutBatch = async (batchId: string) => {
     }).format(Number(result.totalPayout));
 
     await sendNotificationIfNotExists(result.accountId, {
-      message: `Yêu cầu rút tiền ngày ${new Date(result.createdAt).toLocaleDateString("vi-VN")} trị giá ${formattedAmount} của bạn đã được Admin chuyển sang trạng thái: ĐANG XỬ LÝ.`,
+      message: `Yêu cầu rút tiền ngày ${new Date(result.createdAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })} trị giá ${formattedAmount} của bạn đã được Admin chuyển sang trạng thái: ĐANG XỬ LÝ.`,
       type: "SYSTEM",
       target_role: "OWNER",
       link_to: "/owner/wallet",

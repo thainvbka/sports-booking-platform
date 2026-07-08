@@ -226,7 +226,7 @@ export const createRecurringBookingService = async (
     for (const slot of bookingSlots) {
       if (slot.start < new Date()) {
         throw new BadRequestError(
-          `Cannot create booking in the past: ${slot.start.toLocaleString()}`,
+          `Cannot create booking in the past: ${slot.start.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`,
         );
       }
 
@@ -236,7 +236,7 @@ export const createRecurringBookingService = async (
 
       if (overlapping) {
         throw new BadRequestError(
-          `Slot at ${slot.start.toLocaleString()} is already booked. Recurring booking failed.`,
+          `Slot at ${slot.start.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })} is already booked. Recurring booking failed.`,
         );
       }
 
@@ -437,7 +437,7 @@ export const reviewRecurringBookingService = async (
 
   if (conflictBooking) {
     throw new BadRequestError(
-      `One of the slots (around ${conflictBooking.start_time.toLocaleString()}) has been booked by someone else.`,
+      `One of the slots (around ${conflictBooking.start_time.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}) has been booked by someone else.`,
     );
   }
 
