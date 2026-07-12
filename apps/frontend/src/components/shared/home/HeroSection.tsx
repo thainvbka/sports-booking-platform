@@ -30,16 +30,16 @@ export function HeroSection() {
       />
 
       <div className="page-shell relative z-10 pb-24 pt-16 sm:pt-20 lg:pt-24">
-        <div className="grid gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+        <div className="grid gap-14 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
           <div>
-            <h1 className="mt-6 leading-[0.95] text-white sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] text-display">
+            <h1 className="mt-6 leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem] xl:text-[4rem] text-display">
               Chơi thể thao là quyền{" "}
-              <span className="bg-gradient-to-br from-primary via-blue-500 to-accent-sport bg-clip-text italic text-transparent">
+              <span className="bg-gradient-to-br from-primary via-blue-500 to-accent-sport bg-clip-text italic text-transparent whitespace-nowrap">
                 cơ bản.
               </span>
               <br />
               Tìm sân không phải là{" "}
-              <span className="bg-gradient-to-br from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text italic text-transparent">
+              <span className="bg-gradient-to-br from-accent-sport via-emerald-300 to-cyan-300 bg-clip-text italic text-transparent whitespace-nowrap">
                 rào cản.
               </span>
             </h1>

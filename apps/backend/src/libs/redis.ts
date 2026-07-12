@@ -80,6 +80,28 @@ export const acquireLock = async (key: string, value: string, ttlSeconds: number
   }
 };
 
+export const acquireLockWithRetry = async (
+  key: string,
+  value: string,
+  ttlSeconds: number,
+  retries = 3,
+  delayMs = 100
+): Promise<boolean> => {
+  let attempt = 0;
+  while (attempt <= retries) {
+    const acquired = await acquireLock(key, value, ttlSeconds);
+    if (acquired) {
+      return true;
+    }
+    attempt++;
+    if (attempt <= retries) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  return false;
+};
+
+
 export const releaseLock = async (key: string, value: string): Promise<void> => {
   try {
     const client = getRedis();

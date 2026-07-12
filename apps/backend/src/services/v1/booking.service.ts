@@ -4,7 +4,7 @@ import { BOOKING_TIMEOUT } from "../../configs";
 import { fetchAndCalculatePrice } from "../../helpers/pricing.helper";
 import { formatVietnamTime } from "../../helpers/time.helper";
 import { prisma } from "../../libs/prisma";
-import { acquireLock, releaseLock } from "../../libs/redis";
+import { acquireLock, acquireLockWithRetry, releaseLock } from "../../libs/redis";
 import {
   BadRequestError,
   ForbiddenError,
@@ -68,7 +68,7 @@ export const createBooking = async (
   const lockValue = crypto.randomUUID();
   const lockTTL = 15; // 15 seconds
 
-  const acquired = await acquireLock(lockKey, lockValue, lockTTL);
+  const acquired = await acquireLockWithRetry(lockKey, lockValue, lockTTL);
   if (!acquired) {
     throw new BadRequestError("Sân đang có nhiều người đặt cùng lúc. Vui lòng thử lại sau giây lát.");
   }
@@ -404,7 +404,7 @@ export const updateBooking = async (
   const lockValue = crypto.randomUUID();
   const lockTTL = 15;
 
-  const acquired = await acquireLock(lockKey, lockValue, lockTTL);
+  const acquired = await acquireLockWithRetry(lockKey, lockValue, lockTTL);
   if (!acquired) {
     throw new BadRequestError("Sân đang có người thao tác. Vui lòng thử lại sau giây lát.");
   }

@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { bookingService } from "@/services/booking.service";
-import { Loader2, CheckCircle2, XCircle, Calendar, ArrowRight, ShieldCheck, FileText } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar, ArrowRight, ShieldCheck, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/utils";
 
@@ -12,7 +12,7 @@ export function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
+  const [status, setStatus] = useState<"loading" | "success">("loading");
   const [transactionId, setTransactionId] = useState<string>("");
   const [provider, setProvider] = useState<"Stripe" | "VNPAY">("Stripe");
   const [amount, setAmount] = useState<number | null>(null);
@@ -25,18 +25,10 @@ export function PaymentSuccessPage() {
 
     if (isVnpay) {
       setProvider("VNPAY");
-      const txnRef = searchParams.get("vnp_TxnRef") || "";
-      const vnpAmount = searchParams.get("vnp_Amount");
       const responseCode = searchParams.get("vnp_ResponseCode");
-      
-      setTransactionId(txnRef);
-      if (vnpAmount) {
-        setAmount(Number(vnpAmount) / 100); // VNPAY amount is multiplied by 100
-      }
 
       // 1. Kiểm tra ngay nếu VNPAY báo lỗi hoặc khách hàng hủy thanh toán (ResponseCode !== "00")
       if (responseCode && responseCode !== "00") {
-        setStatus("failed");
         toast.error("Giao dịch VNPAY đã bị hủy hoặc không thành công.");
         
         // Gọi âm thầm API backend để cập nhật DB chuyển trạng thái payment sang FAILED
@@ -46,7 +38,18 @@ export function PaymentSuccessPage() {
             console.error("VNPAY backend fail update error:", err);
           });
         }
+        
+        // Redirect người dùng tới trang Failed chính thức
+        navigate("/bookings/failed", { replace: true });
         return;
+      }
+
+      const txnRef = searchParams.get("vnp_TxnRef") || "";
+      const vnpAmount = searchParams.get("vnp_Amount");
+      
+      setTransactionId(txnRef);
+      if (vnpAmount) {
+        setAmount(Number(vnpAmount) / 100); // VNPAY amount is multiplied by 100
       }
 
       if (hasCalled.current) return;
@@ -61,14 +64,14 @@ export function PaymentSuccessPage() {
             setStatus("success");
             toast.success("Thanh toán qua VNPAY thành công!");
           } else {
-            setStatus("failed");
             toast.error(res.Message || "Xác thực giao dịch VNPAY thất bại.");
+            navigate("/bookings/failed", { replace: true });
           }
         })
         .catch((err) => {
           console.error("VNPAY verification error:", err);
-          setStatus("failed");
           toast.error("Đã xảy ra lỗi khi xác thực giao dịch với máy chủ.");
+          navigate("/bookings/failed", { replace: true });
         });
     } else {
       // Luồng Stripe
@@ -94,44 +97,6 @@ export function PaymentSuccessPage() {
             </CardDescription>
           </CardHeader>
           <div className="pb-8" />
-        </Card>
-      </div>
-    );
-  }
-
-  if (status === "failed") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[85vh] text-center px-4 relative overflow-hidden bg-background">
-        {/* Failed Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-destructive/10 blur-[120px] pointer-events-none" />
-        
-        <Card className="relative z-10 max-w-md w-full border border-destructive/20 bg-card/60 backdrop-blur-lg shadow-2xl">
-          <CardHeader className="space-y-4 pt-8">
-            <div className="w-16 h-16 bg-destructive/10 border border-destructive/20 rounded-full flex items-center justify-center mx-auto text-destructive animate-pulse">
-              <XCircle className="w-10 h-10" />
-            </div>
-            <CardTitle className="text-2xl font-extrabold text-foreground">Thanh toán thất bại</CardTitle>
-            <CardDescription className="text-muted-foreground text-sm leading-relaxed px-4">
-              Giao dịch qua {provider} của bạn đã bị từ chối, hết hạn hoặc không thể xác thực được chữ ký bảo mật. Tài khoản của bạn chưa bị trừ tiền.
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="px-6 py-2">
-            {transactionId && (
-              <div className="p-3 bg-muted/60 rounded-lg text-xs font-mono text-muted-foreground border border-border/85 text-center">
-                Mã tham chiếu: {transactionId}
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter className="flex flex-col sm:flex-row gap-3 px-6 pb-6 pt-2">
-            <Button className="w-full sm:flex-1 bg-foreground text-background hover:bg-foreground/90 font-medium" onClick={() => navigate("/search")}>
-              Quay lại đặt sân
-            </Button>
-            <Button variant="outline" className="w-full sm:flex-1 border-border hover:bg-muted font-medium" onClick={() => navigate("/bookings")}>
-              Lịch sử giao dịch
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     );
