@@ -13,18 +13,8 @@ out/
 .tmp/
 *.tsbuildinfo
 
-docs/
 
 .github/workflows/backup.yml
-sports-booking-platform.md
 
-.agents/
 .vscode/
-skills-lock.json
-.codegraph/
-.vscode/
-images/
-baocao/
-review-data-flow/
 local_backup.sql
-diagrams/
