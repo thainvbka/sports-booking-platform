@@ -24,7 +24,7 @@ Khi lên **Production** (EC2), bạn **không cần Stripe CLI** nữa. Thay và
 #### Bước 2: Lấy Webhook Signing Secret (Production)
 Sau khi tạo endpoint, Stripe sẽ sinh ra một **Signing Secret** mới dành riêng cho endpoint production này, có dạng:
 ```
-whsec_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 ⚠️ **Lưu ý quan trọng:** Signing Secret này **khác hoàn toàn** so với cái `whsec_7afea...` bạn đang dùng ở local (cái kia là của Stripe CLI). Bạn **bắt buộc phải dùng cái mới** do Stripe Dashboard cấp.
 
